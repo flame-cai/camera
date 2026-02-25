@@ -6,547 +6,539 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>PRISM Depth - Camera Control</title>
+<title>PRISM Depth Research</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet">
 <style>
+
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 :root{
-  --bg:#07090a;--card:#0f1518;--card2:#141c20;
-  --border:#1a2830;--border2:#22333d;
-  --a1:#00ffc8;--a2:#ff4444;--a3:#ffd700;--a4:#7c6fff;
-  --text:#dde8ec;--muted:#4a6070;--muted2:#243040;
+  --bg:#060809;--card:#0e1418;--card2:#131c22;--card3:#18242c;
+  --border:#1a2830;--border2:#223040;
+  --a1:#00ffc8;--a2:#ff4444;--a3:#ffd700;--a4:#a78bfa;--a5:#38bdf8;
+  --text:#dce8ec;--muted:#4a6070;--muted2:#1e2e38;
   --safe-top:env(safe-area-inset-top,0px);--safe-bot:env(safe-area-inset-bottom,0px);
 }
-html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM Mono',monospace;overflow:hidden}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM Mono',monospace;overflow:hidden;-webkit-font-smoothing:antialiased}
 
 /* INIT */
-#initScreen{position:fixed;inset:0;z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;background:var(--bg);padding:32px 24px;overflow-y:auto}
-.logo{font-family:'Syne',sans-serif;font-size:2.8rem;font-weight:800;color:var(--a1);letter-spacing:10px;text-align:center}
-.logo-sub{font-size:0.48rem;letter-spacing:5px;text-transform:uppercase;color:var(--muted);text-align:center;margin-top:-12px}
-.init-btn{font-family:'DM Mono',monospace;font-size:0.7rem;letter-spacing:3px;text-transform:uppercase;padding:15px 40px;border:1.5px solid var(--a1);background:transparent;color:var(--a1);border-radius:2px;cursor:pointer;-webkit-appearance:none}
-.init-btn:active{background:var(--a1);color:#000}
-.init-btn:disabled{opacity:0.3;cursor:not-allowed}
-.err-box{width:100%;max-width:360px;border:1px solid var(--a2);background:rgba(255,68,68,.06);padding:13px 15px;border-radius:2px;font-size:0.56rem;line-height:1.9;color:#ff8a8a;display:none;white-space:pre-line}
-.err-title{font-size:0.6rem;color:var(--a2);font-weight:500;letter-spacing:2px;text-transform:uppercase;margin-bottom:7px}
-.hint-box{width:100%;max-width:360px;border:1px solid var(--border);background:var(--card);padding:12px 15px;border-radius:2px;font-size:0.53rem;line-height:2;color:var(--muted);display:none;white-space:pre-line}
-.spinner{width:20px;height:20px;border:2px solid var(--border2);border-top-color:var(--a1);border-radius:50%;animation:spin .8s linear infinite;display:none}
-@keyframes spin{to{transform:rotate(360deg)}}
+#initScreen{position:fixed;inset:0;z-index:300;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;background:var(--bg);padding:28px 22px;overflow-y:auto}
+.logo{font-family:'Syne',sans-serif;font-size:2.6rem;font-weight:800;color:var(--a1);letter-spacing:10px;text-align:center}
+.logo-tag{font-size:0.44rem;letter-spacing:5px;text-transform:uppercase;color:var(--muted);text-align:center;margin-top:-10px}
+.logo-desc{font-size:0.5rem;letter-spacing:1.5px;color:var(--muted);text-align:center;line-height:1.9;max-width:300px}
+.ibtn{font-family:'DM Mono',monospace;font-size:0.68rem;letter-spacing:3px;text-transform:uppercase;padding:14px 36px;border:1.5px solid var(--a1);background:transparent;color:var(--a1);border-radius:2px;cursor:pointer;-webkit-appearance:none;transition:all .15s}
+.ibtn:active{background:var(--a1);color:#000}
+.ibtn:disabled{opacity:.3;cursor:not-allowed}
+.ibtn.sec{border-color:var(--border2);color:var(--muted);display:none}
+.err-box{width:100%;max-width:340px;border:1px solid var(--a2);background:rgba(255,68,68,.05);padding:12px 14px;border-radius:2px;font-size:0.55rem;line-height:1.9;color:#ff8a8a;display:none;white-space:pre-line}
+.err-title{font-size:0.58rem;color:var(--a2);font-weight:500;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px}
+.hint-box{width:100%;max-width:340px;border:1px solid var(--border);background:var(--card);padding:11px 14px;border-radius:2px;font-size:0.52rem;line-height:2;color:var(--muted);display:none;white-space:pre-line}
+.spin{width:20px;height:20px;border:2px solid var(--border2);border-top-color:var(--a1);border-radius:50%;animation:sp .8s linear infinite;display:none}
+@keyframes sp{to{transform:rotate(360deg)}}
 
 /* APP */
 #app{position:fixed;inset:0;display:none;flex-direction:column}
 
 /* VIDEO */
-#videoWrap{position:relative;background:#000;width:100%;overflow:hidden;flex:0 0 auto}
+#vWrap{position:relative;background:#000;width:100%;overflow:hidden;flex:0 0 auto}
 video{width:100%;display:block;object-fit:cover}
+#depthCanvas{position:absolute;inset:0;width:100%;height:100%;display:none;pointer-events:none;opacity:.7}
 .flash{position:absolute;inset:0;background:#fff;pointer-events:none;opacity:0}
-@keyframes flashOut{0%{opacity:.9}100%{opacity:0}}
-.crosshair{position:absolute;inset:0;pointer-events:none;display:flex;align-items:center;justify-content:center}
-.crosshair::before{content:'';width:40px;height:1px;background:rgba(0,255,200,.4);position:absolute}
-.crosshair::after{content:'';width:1px;height:40px;background:rgba(0,255,200,.4);position:absolute}
-.ch-corner{position:absolute;width:12px;height:12px;border-color:rgba(0,255,200,.5);border-style:solid;pointer-events:none}
-.ch-tl{top:calc(50% - 20px);left:calc(50% - 20px);border-width:1.5px 0 0 1.5px}
-.ch-tr{top:calc(50% - 20px);right:calc(50% - 20px);border-width:1.5px 1.5px 0 0}
-.ch-bl{bottom:calc(50% - 20px);left:calc(50% - 20px);border-width:0 0 1.5px 1.5px}
-.ch-br{bottom:calc(50% - 20px);right:calc(50% - 20px);border-width:0 1.5px 1.5px 0}
-.vid-top{position:absolute;top:0;left:0;right:0;padding:calc(var(--safe-top) + 6px) 10px 6px;display:flex;justify-content:space-between;align-items:flex-start;pointer-events:none}
-.badge{font-size:0.48rem;letter-spacing:1.5px;text-transform:uppercase;background:rgba(0,0,0,.65);border:1px solid rgba(255,255,255,.1);padding:5px 8px;border-radius:2px;line-height:2;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
-.live-dot{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--a2);margin-right:4px;vertical-align:middle;animation:blink 1s infinite}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:.1}}
-.dist-overlay{position:absolute;bottom:68px;left:0;right:0;text-align:center;pointer-events:none;display:none}
-.dist-badge{display:inline-block;font-size:1.4rem;font-family:'Syne',sans-serif;font-weight:700;color:var(--a1);background:rgba(0,0,0,.7);padding:4px 18px;border-radius:3px;border:1px solid var(--a1);text-shadow:0 0 20px rgba(0,255,200,.5)}
-.dist-label{font-size:0.45rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);display:block;margin-top:2px}
-.vid-bot{position:absolute;bottom:0;left:0;right:0;padding:6px 14px calc(var(--safe-bot) + 4px);display:flex;justify-content:space-between;align-items:center;background:linear-gradient(transparent,rgba(0,0,0,.8))}
-.icon-btn{width:42px;height:42px;border-radius:50%;border:1.5px solid rgba(255,255,255,.2);background:rgba(0,0,0,.5);color:#fff;font-size:1rem;display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-appearance:none;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
-.icon-btn:active{transform:scale(.88)}
-.icon-btn.on{border-color:var(--a1);color:var(--a1);background:rgba(0,255,200,.15)}
-.shutter{width:56px;height:56px;border-radius:50%;border:3px solid var(--a1);background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-appearance:none}
-.shutter-inner{width:40px;height:40px;border-radius:50%;background:rgba(0,255,200,.1);transition:all .1s}
-.shutter:active .shutter-inner{background:var(--a1);transform:scale(.84)}
-.mode-btn{font-family:'DM Mono',monospace;font-size:0.44rem;letter-spacing:1.5px;text-transform:uppercase;padding:5px 10px;border:1px solid var(--border2);background:transparent;color:var(--muted);border-radius:2px;cursor:pointer;white-space:nowrap}
-.mode-btn.active{border-color:var(--a3);color:var(--a3)}
-
-/* DEPTH CANVAS OVERLAY */
-#depthCanvas{position:absolute;inset:0;width:100%;height:100%;opacity:0.65;display:none;pointer-events:none}
+@keyframes fOut{0%{opacity:.85}100%{opacity:0}}
+/* crosshair */
+.xhair{position:absolute;inset:0;pointer-events:none}
+.xhair::before{content:'';position:absolute;width:32px;height:1px;background:rgba(0,255,200,.45);top:50%;left:50%;transform:translate(-50%,-50%)}
+.xhair::after{content:'';position:absolute;width:1px;height:32px;background:rgba(0,255,200,.45);top:50%;left:50%;transform:translate(-50%,-50%)}
+.xc{position:absolute;width:10px;height:10px;border-color:rgba(0,255,200,.5);border-style:solid;pointer-events:none}
+.xtl{top:calc(50% - 16px);left:calc(50% - 16px);border-width:1.5px 0 0 1.5px}
+.xtr{top:calc(50% - 16px);right:calc(50% - 16px);border-width:1.5px 1.5px 0 0}
+.xbl{bottom:calc(50% - 16px);left:calc(50% - 16px);border-width:0 0 1.5px 1.5px}
+.xbr{bottom:calc(50% - 16px);right:calc(50% - 16px);border-width:0 1.5px 1.5px 0}
+/* top HUD */
+.vid-top{position:absolute;top:0;left:0;right:0;padding:calc(var(--safe-top) + 6px) 10px 6px;display:flex;justify-content:space-between;align-items:flex-start;pointer-events:none;gap:6px}
+.hud{font-size:0.44rem;letter-spacing:1.5px;text-transform:uppercase;background:rgba(0,0,0,.7);border:1px solid rgba(255,255,255,.08);padding:5px 8px;border-radius:2px;line-height:2;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.live-dot{display:inline-block;width:4px;height:4px;border-radius:50%;background:var(--a2);margin-right:4px;vertical-align:middle;animation:bl 1s infinite}
+@keyframes bl{0%,100%{opacity:1}50%{opacity:.1}}
+/* distance badge */
+#distHud{position:absolute;left:50%;transform:translateX(-50%);bottom:72px;text-align:center;pointer-events:none;display:none}
+.dist-num{font-family:'Syne',sans-serif;font-size:1.6rem;font-weight:800;color:var(--a1);text-shadow:0 0 24px rgba(0,255,200,.5);display:block;line-height:1}
+.dist-lbl{font-size:0.4rem;letter-spacing:2.5px;text-transform:uppercase;color:var(--a1);opacity:.7;margin-top:2px;display:block}
+.dist-method{font-size:0.38rem;letter-spacing:1px;color:var(--muted);margin-top:1px;display:block}
+/* bottom controls */
+.vid-bot{position:absolute;bottom:0;left:0;right:0;padding:6px 12px calc(var(--safe-bot) + 4px);display:flex;justify-content:space-between;align-items:center;background:linear-gradient(transparent,rgba(0,0,0,.85))}
+.iBtn{width:40px;height:40px;border-radius:50%;border:1.5px solid rgba(255,255,255,.18);background:rgba(0,0,0,.55);color:#fff;font-size:.95rem;display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-appearance:none;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);flex-shrink:0}
+.iBtn:active{transform:scale(.87)}
+.iBtn.on{border-color:var(--a1);color:var(--a1);background:rgba(0,255,200,.12)}
+.shutter{width:54px;height:54px;border-radius:50%;border:2.5px solid var(--a1);background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-appearance:none;flex-shrink:0}
+.shutter-in{width:38px;height:38px;border-radius:50%;background:rgba(0,255,200,.1);transition:all .1s}
+.shutter:active .shutter-in{background:var(--a1);transform:scale(.82)}
+.mode-pills{display:flex;flex-direction:column;align-items:center;gap:4px}
+.mpill{font-family:'DM Mono',monospace;font-size:0.4rem;letter-spacing:1.5px;text-transform:uppercase;padding:3px 8px;border:1px solid var(--border2);background:rgba(0,0,0,.5);color:var(--muted);border-radius:10px;cursor:pointer;white-space:nowrap}
+.mpill.active{border-color:var(--a3);color:var(--a3);background:rgba(255,215,0,.06)}
 
 /* DEVICE BAR */
-.dev-bar{display:flex;overflow-x:auto;background:var(--card2);border-top:1px solid var(--border);flex-shrink:0;-webkit-overflow-scrolling:touch;scrollbar-width:none}
-.dev-bar::-webkit-scrollbar{display:none}
-.dev-btn{flex-shrink:0;font-family:'DM Mono',monospace;font-size:0.48rem;letter-spacing:1px;text-transform:uppercase;padding:8px 13px;border:none;border-right:1px solid var(--border);border-bottom:2px solid transparent;background:transparent;color:var(--muted);cursor:pointer;white-space:nowrap}
-.dev-btn.active{color:var(--a1);border-bottom-color:var(--a1)}
-.dev-btn .dev-facing{font-size:0.38rem;display:block;color:var(--muted2);margin-top:1px}
+.devbar{display:flex;overflow-x:auto;background:var(--card2);border-top:1px solid var(--border);flex-shrink:0;scrollbar-width:none}
+.devbar::-webkit-scrollbar{display:none}
+.dbtn{flex-shrink:0;font-family:'DM Mono',monospace;font-size:0.46rem;letter-spacing:1px;text-transform:uppercase;padding:7px 12px;border:none;border-right:1px solid var(--border);border-bottom:2px solid transparent;background:transparent;color:var(--muted);cursor:pointer;white-space:nowrap;line-height:1.4;text-align:left}
+.dbtn.active{color:var(--a1);border-bottom-color:var(--a1)}
+.dfacing{font-size:0.35rem;color:var(--muted2);display:block;letter-spacing:.5px}
 
 /* WARN */
-.warn{background:rgba(255,68,68,.08);border-bottom:1px solid rgba(255,68,68,.3);padding:6px 13px;font-size:0.5rem;color:#ff8a8a;display:none;flex-shrink:0}
+.warn{background:rgba(255,68,68,.07);border-bottom:1px solid rgba(255,68,68,.25);padding:5px 12px;font-size:0.48rem;color:#ff8a8a;display:none;flex-shrink:0}
 
 /* TABS */
-.tabs{display:flex;background:var(--card);border-bottom:1px solid var(--border);flex-shrink:0}
-.tab{flex:1;padding:9px 2px;font-size:0.44rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);text-align:center;cursor:pointer;border-bottom:2px solid transparent;-webkit-appearance:none;background:none;border-top:none;border-left:none;border-right:none;font-family:'DM Mono',monospace;line-height:1.3}
-.tab .ti{font-size:.85rem;display:block;margin-bottom:2px}
+.tabs{display:flex;background:var(--card);border-bottom:1px solid var(--border);flex-shrink:0;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:0 0 auto;padding:8px 10px;font-size:0.42rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);text-align:center;cursor:pointer;border-bottom:2px solid transparent;-webkit-appearance:none;background:none;border-top:none;border-left:none;border-right:none;font-family:'DM Mono',monospace;line-height:1.3;white-space:nowrap}
+.tab .ti{font-size:.78rem;display:block;margin-bottom:1px}
 .tab.active{color:var(--a1);border-bottom-color:var(--a1)}
 
 /* PANEL */
 #panelWrap{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;background:var(--bg);scrollbar-width:none}
 #panelWrap::-webkit-scrollbar{display:none}
-.tab-panel{display:none;padding:10px 12px 90px}
-.tab-panel.active{display:block}
+.tp{display:none;padding:8px 10px 88px}
+.tp.active{display:block}
 
 /* SECTION */
-.section{margin-bottom:8px;border:1px solid var(--border);border-radius:3px;overflow:hidden;background:var(--card)}
-.sec-head{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--card2);cursor:pointer;user-select:none;-webkit-user-select:none}
-.sec-left{display:flex;align-items:center;gap:8px}
-.sec-title{font-size:0.52rem;letter-spacing:2.5px;text-transform:uppercase;color:var(--text)}
-.sec-tag{font-size:0.4rem;letter-spacing:1.5px;text-transform:uppercase;border:1px solid var(--a1);color:var(--a1);padding:2px 5px;border-radius:1px}
-.sec-tag.warn{border-color:var(--a3);color:var(--a3)}
-.sec-chev{font-size:0.5rem;color:var(--muted);transition:transform .2s}
-.sec-head.closed .sec-chev{transform:rotate(-90deg)}
-.sec-body{padding:12px;display:flex;flex-direction:column;gap:14px}
-.sec-body.hidden{display:none}
+.sec{margin-bottom:7px;border:1px solid var(--border);border-radius:3px;overflow:hidden;background:var(--card)}
+.sh{display:flex;align-items:center;justify-content:space-between;padding:9px 11px;background:var(--card2);cursor:pointer;user-select:none;-webkit-user-select:none}
+.sl{display:flex;align-items:center;gap:7px}
+.st{font-size:0.5rem;letter-spacing:2.5px;text-transform:uppercase;color:var(--text)}
+.stag{font-size:0.38rem;letter-spacing:1.5px;text-transform:uppercase;border:1px solid var(--a1);color:var(--a1);padding:1px 5px;border-radius:1px}
+.stag.y{border-color:var(--a3);color:var(--a3)}
+.stag.p{border-color:var(--a4);color:var(--a4)}
+.stag.b{border-color:var(--a5);color:var(--a5)}
+.sch{font-size:0.48rem;color:var(--muted);transition:transform .2s}
+.sh.closed .sch{transform:rotate(-90deg)}
+.sb{padding:10px 11px;display:flex;flex-direction:column;gap:13px}
+.sb.hidden{display:none}
 
-/* CONTROL */
+/* CTRL */
 .ctrl{display:flex;flex-direction:column;gap:5px}
-.ctrl-head{display:flex;justify-content:space-between;align-items:center}
-.ctrl-name{font-size:0.52rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--text)}
-.ctrl-val{font-size:0.58rem;color:var(--a1);font-weight:500;letter-spacing:1px;min-width:68px;text-align:right}
-.ctrl-range-info{font-size:0.42rem;color:var(--muted);display:flex;justify-content:space-between}
-.na-badge{font-size:0.42rem;color:var(--muted);border:1px solid var(--border2);padding:2px 6px;border-radius:1px}
-input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:4px;background:var(--border2);outline:none;cursor:pointer;border-radius:2px;margin:4px 0}
+.ch2{display:flex;justify-content:space-between;align-items:center}
+.cn{font-size:0.5rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--text)}
+.cv{font-size:0.56rem;color:var(--a1);font-weight:500;letter-spacing:1px;min-width:64px;text-align:right}
+.cri{font-size:0.4rem;color:var(--muted);display:flex;justify-content:space-between;margin-top:-2px}
+.nab{font-size:0.4rem;color:var(--muted);border:1px solid var(--border2);padding:2px 6px;border-radius:1px}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:4px;background:var(--border2);outline:none;cursor:pointer;border-radius:2px;margin:3px 0}
 input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;border-radius:50%;background:var(--a1);cursor:pointer;border:3px solid var(--bg);box-shadow:0 0 0 1.5px var(--a1)}
-input[type=range]:active::-webkit-slider-thumb{transform:scale(1.3)}
-input[type=range]:disabled{opacity:.2}
-select{width:100%;background:var(--bg);border:1px solid var(--border2);color:var(--text);font-family:'DM Mono',monospace;font-size:0.6rem;padding:10px 11px;outline:none;cursor:pointer;border-radius:2px;-webkit-appearance:none;appearance:none}
+input[type=range]:active::-webkit-slider-thumb{transform:scale(1.28)}
+input[type=range]:disabled{opacity:.18}
+select{width:100%;background:var(--bg);border:1px solid var(--border2);color:var(--text);font-family:'DM Mono',monospace;font-size:0.58rem;padding:9px 10px;outline:none;cursor:pointer;border-radius:2px;-webkit-appearance:none;appearance:none}
 select:focus{border-color:var(--a1)}
-select:disabled{opacity:.25}
-.tog-row{display:flex;align-items:center;justify-content:space-between}
-.tog-name{font-size:0.52rem;letter-spacing:1.5px;text-transform:uppercase}
-.toggle{position:relative;width:48px;height:26px;flex-shrink:0}
-.toggle input{opacity:0;width:0;height:0}
-.tog-track{position:absolute;inset:0;background:var(--border2);border-radius:13px;cursor:pointer;transition:all .2s;border:1px solid var(--border2)}
-.tog-track::before{content:'';position:absolute;width:20px;height:20px;left:2px;top:2px;border-radius:50%;background:var(--muted);transition:all .2s}
-input:checked+.tog-track{background:rgba(0,255,200,.12);border-color:var(--a1)}
-input:checked+.tog-track::before{transform:translateX(22px);background:var(--a1)}
-input:disabled+.tog-track{opacity:.2}
+select:disabled{opacity:.22}
+.trow{display:flex;align-items:center;justify-content:space-between}
+.tn{font-size:0.5rem;letter-spacing:1.5px;text-transform:uppercase}
+.tog{position:relative;width:46px;height:24px;flex-shrink:0}
+.tog input{opacity:0;width:0;height:0}
+.ttr{position:absolute;inset:0;background:var(--border2);border-radius:12px;cursor:pointer;transition:all .2s;border:1px solid var(--border2)}
+.ttr::before{content:'';position:absolute;width:18px;height:18px;left:2px;top:2px;border-radius:50%;background:var(--muted);transition:all .2s}
+input:checked+.ttr{background:rgba(0,255,200,.1);border-color:var(--a1)}
+input:checked+.ttr::before{transform:translateX(22px);background:var(--a1)}
+input:disabled+.ttr{opacity:.18}
 
 /* DEPTH TAB */
-.depth-card{background:var(--card);border:1px solid var(--border);border-radius:3px;overflow:hidden;margin-bottom:8px}
-.depth-card-head{padding:10px 12px;background:var(--card2);font-size:0.52rem;letter-spacing:2px;text-transform:uppercase;display:flex;align-items:center;justify-content:space-between}
-.depth-card-body{padding:12px}
-#bracketCanvas{width:100%;border-radius:2px;display:block;background:#000}
-#depthMapCanvas{width:100%;border-radius:2px;display:block;background:#000;margin-top:8px}
-.progress-bar{height:3px;background:var(--border2);border-radius:2px;overflow:hidden;margin:8px 0}
-.progress-fill{height:100%;background:var(--a1);border-radius:2px;width:0%;transition:width .3s}
-.stat-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin-top:8px}
-.stat-cell{background:var(--card2);border:1px solid var(--border);border-radius:2px;padding:7px 8px;text-align:center}
-.stat-k{font-size:0.4rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:2px}
-.stat-v{font-size:0.7rem;color:var(--a1);font-weight:500}
-.btn-row{display:flex;gap:6px;flex-wrap:wrap}
-.dep-btn{font-family:'DM Mono',monospace;font-size:0.52rem;letter-spacing:2px;text-transform:uppercase;padding:11px 14px;border-radius:2px;cursor:pointer;-webkit-appearance:none;flex:1;min-width:80px;text-align:center}
+.dcrd{background:var(--card);border:1px solid var(--border);border-radius:3px;overflow:hidden;margin-bottom:7px}
+.dch{padding:9px 11px;background:var(--card2);font-size:0.5rem;letter-spacing:2px;text-transform:uppercase;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.dcb{padding:10px 11px}
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
+.stat-grid.g4{grid-template-columns:repeat(2,1fr)}
+.sc{background:var(--card2);border:1px solid var(--border);border-radius:2px;padding:6px 8px;text-align:center}
+.sk{font-size:0.38rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:2px}
+.sv{font-size:0.68rem;color:var(--a1);font-weight:500;letter-spacing:.5px;word-break:break-all}
+.sv.sm{font-size:0.52rem}
+.pbar{height:3px;background:var(--border2);border-radius:2px;overflow:hidden;margin:7px 0}
+.pfill{height:100%;background:var(--a1);border-radius:2px;width:0%;transition:width .25s}
+canvas.dc{width:100%;display:block;background:#000;border-radius:2px;image-rendering:pixelated}
+.dlegend{display:flex;align-items:center;gap:6px;margin-top:5px;font-size:0.4rem;color:var(--muted)}
+.lbar{flex:1;height:6px;border-radius:2px}
+.lb-near{background:linear-gradient(to right,#ff2200,#ffaa00,#ffff00)}
+.lb-far{background:linear-gradient(to right,#ffff00,#00ff88,#0044ff)}
+.btn-row{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}
+.dbtn2{font-family:'DM Mono',monospace;font-size:0.48rem;letter-spacing:2px;text-transform:uppercase;padding:10px 12px;border-radius:2px;cursor:pointer;-webkit-appearance:none;flex:1;min-width:70px;text-align:center;background:transparent}
+.method-tabs{display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap}
+.mtab{font-family:'DM Mono',monospace;font-size:0.42rem;letter-spacing:1.5px;text-transform:uppercase;padding:5px 10px;border:1px solid var(--border2);background:transparent;color:var(--muted);border-radius:1px;cursor:pointer}
+.mtab.active{border-color:var(--a4);color:var(--a4);background:rgba(167,139,250,.08)}
+.tip-text{font-size:0.48rem;color:var(--muted);line-height:1.9}
 
-/* INFO */
-.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px}
-.ic{background:var(--card2);border:1px solid var(--border);border-radius:2px;padding:7px 9px}
-.ic.full{grid-column:1/-1}
-.ik{font-size:0.42rem;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:2px}
-.iv{font-size:0.6rem;color:var(--a1);word-break:break-all;line-height:1.4}
-.cap-tbl{width:100%;border-collapse:collapse;font-size:0.5rem}
-.cap-tbl th{text-align:left;color:var(--muted);font-size:0.4rem;letter-spacing:2px;text-transform:uppercase;padding:6px 9px;border-bottom:1px solid var(--border);background:var(--card2);font-weight:400}
+/* CAPS TABLE */
+.cap-tbl{width:100%;border-collapse:collapse;font-size:0.48rem}
+.cap-tbl th{text-align:left;color:var(--muted);font-size:0.38rem;letter-spacing:2px;text-transform:uppercase;padding:6px 9px;border-bottom:1px solid var(--border);background:var(--card2);font-weight:400}
 .cap-tbl td{padding:7px 9px;border-bottom:1px solid var(--border);vertical-align:top;line-height:1.6}
 .cap-tbl tr:last-child td{border-bottom:none}
-.cap-tbl td:first-child{color:var(--text);width:40%;font-size:0.48rem}
-.cap-tbl .ok{color:var(--a1)}
-.cap-tbl .no{color:var(--muted)}
-.v-chip{display:inline-block;background:var(--card2);border:1px solid var(--border2);padding:1px 5px;margin:1px;border-radius:1px;font-size:0.44rem;color:var(--a1)}
+.cap-tbl td:first-child{color:var(--text);width:38%;font-size:0.46rem}
+.ok{color:var(--a1)}.no{color:var(--muted)}
+.vc{display:inline-block;background:var(--card2);border:1px solid var(--border2);padding:1px 5px;margin:1px;border-radius:1px;font-size:0.42rem;color:var(--a1)}
+
+/* INFO */
+.igrid{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+.ic{background:var(--card2);border:1px solid var(--border);border-radius:2px;padding:7px 9px}
+.ic.full{grid-column:1/-1}
+.ik{font-size:0.4rem;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:2px}
+.iv{font-size:0.58rem;color:var(--a1);word-break:break-all;line-height:1.4}
 
 /* TOAST */
-.toast{position:fixed;bottom:calc(var(--safe-bot) + 72px);left:50%;transform:translateX(-50%);background:var(--card2);border:1px solid var(--border2);color:var(--text);font-size:0.55rem;letter-spacing:1.5px;padding:8px 16px;border-radius:2px;z-index:999;opacity:0;transition:opacity .2s;white-space:nowrap;pointer-events:none}
+.toast{position:fixed;bottom:calc(var(--safe-bot) + 68px);left:50%;transform:translateX(-50%);background:var(--card2);border:1px solid var(--border2);color:var(--text);font-size:0.52rem;letter-spacing:1.5px;padding:7px 15px;border-radius:2px;z-index:999;opacity:0;transition:opacity .2s;white-space:nowrap;pointer-events:none}
 .toast.show{opacity:1}
 .toast.ok{border-color:var(--a1);color:var(--a1)}
 .toast.err{border-color:var(--a2);color:var(--a2)}
-.toast.warn{border-color:var(--a3);color:var(--a3)}
+.toast.w{border-color:var(--a3);color:var(--a3)}
 
-.act-btn{flex:1;font-family:'DM Mono',monospace;font-size:0.52rem;letter-spacing:2px;text-transform:uppercase;padding:12px;border-radius:2px;cursor:pointer;-webkit-appearance:none}
+.abtn{flex:1;font-family:'DM Mono',monospace;font-size:0.5rem;letter-spacing:2px;text-transform:uppercase;padding:11px;border-radius:2px;cursor:pointer;-webkit-appearance:none;background:transparent}
 
-.depth-legend{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:0.44rem;color:var(--muted)}
-.legend-bar{flex:1;height:8px;border-radius:2px;background:linear-gradient(to right,#0000ff,#00ff00,#ffff00,#ff0000)}
 </style>
 </head>
 <body>
 
-<!-- INIT -->
 <div id="initScreen">
   <div>
     <div class="logo">PRISM</div>
-    <div class="logo-sub">Depth Camera Control</div>
+    <div class="logo-tag">Depth Research Camera</div>
   </div>
-  <div class="spinner" id="spinner"></div>
-  <button class="init-btn" id="startBtn" onclick="startCam()">INITIALIZE CAMERA</button>
+  <div class="logo-desc">Multi-method depth estimation: Focus API, Depth from Defocus bracketing, Monocular edge analysis, and Stereo (dual camera).</div>
+  <div class="spin" id="spin"></div>
+  <button class="ibtn" id="startBtn" onclick="startCam()">INITIALIZE CAMERA</button>
+  <button class="ibtn sec" id="frontBtn" onclick="startCam(null,'user')">TRY FRONT CAMERA</button>
   <div class="err-box" id="errBox"><div class="err-title" id="errTitle"></div><span id="errMsg"></span></div>
   <div class="hint-box" id="hintBox"></div>
 </div>
 
-<!-- APP -->
 <div id="app">
-  <div id="videoWrap">
+  <div id="vWrap">
     <video id="video" autoplay muted playsinline webkit-playsinline></video>
     <canvas id="depthCanvas"></canvas>
     <div class="flash" id="flash"></div>
-    <div class="crosshair">
-      <div class="ch-corner ch-tl"></div>
-      <div class="ch-corner ch-tr"></div>
-      <div class="ch-corner ch-bl"></div>
-      <div class="ch-corner ch-br"></div>
+    <div class="xhair">
+      <div class="xc xtl"></div><div class="xc xtr"></div>
+      <div class="xc xbl"></div><div class="xc xbr"></div>
     </div>
     <div class="vid-top">
-      <div class="badge" id="liveBadge">
-        <span class="live-dot"></span>LIVE<br>
-        <span id="resText" style="color:var(--muted)">...</span>
+      <div class="hud" id="hudL"><span class="live-dot"></span>LIVE<br><span id="resT" style="color:var(--muted)">...</span></div>
+      <div class="hud" id="hudC" style="text-align:center;display:none">
+        <span id="scanStatus" style="color:var(--a3)">SCANNING</span><br>
+        <div class="pbar" style="margin:2px 0;min-width:80px"><div class="pfill" id="scanProg"></div></div>
       </div>
-      <div class="badge" id="readout" style="text-align:right;font-size:0.44rem;line-height:2;min-width:80px"></div>
+      <div class="hud" id="hudR" style="text-align:right;font-size:0.42rem;line-height:2"></div>
     </div>
-    <div class="dist-overlay" id="distOverlay">
-      <div class="dist-badge" id="distBadge">--</div>
-      <span class="dist-label">estimated distance</span>
+    <div id="distHud">
+      <span class="dist-num" id="distNum">--</span>
+      <span class="dist-lbl">distance</span>
+      <span class="dist-method" id="distMeth"></span>
     </div>
     <div class="vid-bot">
-      <button class="icon-btn" id="torchBtn" onclick="toggleTorch()" title="Torch">&#128294;</button>
-      <div style="display:flex;flex-direction:column;align-items:center;gap:5px">
-        <div style="display:flex;gap:6px">
-          <button class="mode-btn" id="modeNormal" onclick="setMode('normal')">PHOTO</button>
-          <button class="mode-btn active" id="modeDepth" onclick="setMode('depth')">DEPTH</button>
-          <button class="mode-btn" id="modeDepthMap" onclick="setMode('depthmap')">MAP</button>
+      <button class="iBtn" id="torchBtn" onclick="toggleTorch()">&#128294;</button>
+      <div class="mode-pills">
+        <div style="display:flex;gap:4px">
+          <button class="mpill" id="mpPhoto" onclick="setMode('photo')">PHOTO</button>
+          <button class="mpill active" id="mpDFD" onclick="setMode('dfd')">DFD SCAN</button>
+          <button class="mpill" id="mpEdge" onclick="setMode('edge')">EDGE MAP</button>
         </div>
-        <button class="shutter" onclick="triggerCapture()" title="Capture"><div class="shutter-inner"></div></button>
+        <button class="shutter" onclick="triggerCapture()"><div class="shutter-in"></div></button>
       </div>
-      <button class="icon-btn" onclick="flipCam()" title="Flip">&#128260;</button>
+      <button class="iBtn" onclick="flipCam()">&#128260;</button>
     </div>
   </div>
 
-  <div class="dev-bar" id="devBar"></div>
+  <div class="devbar" id="devBar"></div>
   <div class="warn" id="warn"></div>
 
   <div class="tabs">
     <button class="tab active" onclick="showTab('ctrl')" id="tab-ctrl"><span class="ti">&#127917;</span>Controls</button>
     <button class="tab" onclick="showTab('depth')" id="tab-depth"><span class="ti">&#128256;</span>Depth</button>
+    <button class="tab" onclick="showTab('stereo')" id="tab-stereo"><span class="ti">&#128065;</span>Stereo</button>
     <button class="tab" onclick="showTab('caps')" id="tab-caps"><span class="ti">&#128203;</span>Caps</button>
-    <button class="tab" onclick="showTab('info')" id="tab-info"><span class="ti">&#9432;&#65039;</span>Info</button>
+    <button class="tab" onclick="showTab('info')" id="tab-info"><span class="ti">&#9432;</span>Info</button>
   </div>
 
   <div id="panelWrap">
+
     <!-- CONTROLS -->
-    <div class="tab-panel active" id="panel-ctrl">
-      <div id="cExposure"></div>
-      <div id="cFocus"></div>
-      <div id="cWB"></div>
-      <div id="cImage"></div>
-      <div id="cStream"></div>
-      <div id="cTorch"></div>
-      <div style="margin-top:10px;display:flex;gap:7px">
-        <button class="act-btn" style="border:1px solid var(--border2);background:transparent;color:var(--text)" onclick="resetAll()">RESET</button>
-        <button class="act-btn" style="border:1px solid var(--a1);background:transparent;color:var(--a1)" onclick="refresh()">REFRESH</button>
-        <button class="act-btn" style="border:1px solid var(--a2);background:transparent;color:var(--a2)" onclick="stopCam()">STOP</button>
+    <div class="tp active" id="panel-ctrl">
+      <div id="cExposure"></div><div id="cFocus"></div>
+      <div id="cWB"></div><div id="cImage"></div>
+      <div id="cStream"></div><div id="cTorch"></div>
+      <div style="margin-top:9px;display:flex;gap:6px">
+        <button class="abtn" style="border:1px solid var(--border2);color:var(--text)" onclick="resetAll()">RESET</button>
+        <button class="abtn" style="border:1px solid var(--a1);color:var(--a1)" onclick="refresh()">REFRESH</button>
+        <button class="abtn" style="border:1px solid var(--a2);color:var(--a2)" onclick="stopCam()">STOP</button>
       </div>
     </div>
 
-    <!-- DEPTH TAB -->
-    <div class="tab-panel" id="panel-depth">
+    <!-- DEPTH -->
+    <div class="tp" id="panel-depth">
 
-      <!-- Distance readout -->
-      <div class="depth-card">
-        <div class="depth-card-head">
-          Live Distance Estimate
-          <span id="liveDistBadge" style="font-size:1rem;color:var(--a1);font-family:'Syne',sans-serif;font-weight:700">--</span>
+      <!-- Live distance card -->
+      <div class="dcrd">
+        <div class="dch">Live Distance Estimate
+          <span id="ldBig" style="font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800;color:var(--a1)">--</span>
         </div>
-        <div class="depth-card-body">
-          <div class="stat-grid">
-            <div class="stat-cell"><div class="stat-k">From Focus API</div><div class="stat-v" id="dFocusApi">--</div></div>
-            <div class="stat-cell"><div class="stat-k">Sharpness Score</div><div class="stat-v" id="dSharpness">--</div></div>
-            <div class="stat-cell"><div class="stat-k">Est. Method</div><div class="stat-v" id="dMethod" style="font-size:0.5rem">--</div></div>
-          </div>
-          <div style="margin-top:10px;font-size:0.48rem;color:var(--muted);line-height:1.8">
-            Tap subject on viewfinder or use DEPTH SCAN for multi-focus bracketed depth estimation.
+        <div class="dcb">
+          <div class="stat-grid g4">
+            <div class="sc"><div class="sk">Focus API</div><div class="sv sm" id="dFocAPI">--</div></div>
+            <div class="sc"><div class="sk">Unit Guess</div><div class="sv sm" id="dFocUnit">--</div></div>
+            <div class="sc"><div class="sk">Center Edge</div><div class="sv sm" id="dEdge">--</div></div>
+            <div class="sc"><div class="sk">Method Used</div><div class="sv sm" id="dMeth">--</div></div>
           </div>
         </div>
       </div>
 
-      <!-- Focus bracketing -->
-      <div class="depth-card">
-        <div class="depth-card-head">
-          Focus Bracket Depth Scan
-          <span id="bracketStatus" style="font-size:0.44rem;color:var(--muted)">IDLE</span>
+      <!-- DFD Scan -->
+      <div class="dcrd">
+        <div class="dch">Depth from Defocus (DFD)
+          <span id="dfdStatus" style="font-size:0.4rem;color:var(--muted);letter-spacing:1px">IDLE</span>
         </div>
-        <div class="depth-card-body">
-          <div class="ctrl" style="margin-bottom:10px">
-            <div class="ctrl-head">
-              <span class="ctrl-name">Number of Steps</span>
-              <span class="ctrl-val" id="bStepsVal">8</span>
+        <div class="dcb">
+          <div class="method-tabs">
+            <button class="mtab active" id="mtLap" onclick="setDFDMethod('laplacian')">LAPLACIAN VAR</button>
+            <button class="mtab" id="mtSob" onclick="setDFDMethod('sobel')">SOBEL RMS</button>
+            <button class="mtab" id="mtTen" onclick="setDFDMethod('tenengrad')">TENENGRAD</button>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <div class="ctrl" style="flex:1;min-width:120px">
+              <div class="ch2"><span class="cn">Steps</span><span class="cv" id="bStV">10</span></div>
+              <input type="range" id="bSt" min="5" max="24" step="1" value="10" oninput="$('bStV').textContent=this.value">
             </div>
-            <input type="range" id="bSteps" min="4" max="20" step="1" value="8" oninput="$('bStepsVal').textContent=this.value">
+            <div class="ctrl" style="flex:1;min-width:120px">
+              <div class="ch2"><span class="cn">Settle (ms)</span><span class="cv" id="bStlV">250</span></div>
+              <input type="range" id="bStl" min="100" max="800" step="50" value="250" oninput="$('bStlV').textContent=this.value">
+            </div>
           </div>
-          <div class="progress-bar"><div class="progress-fill" id="bracketProgress"></div></div>
-          <canvas id="bracketCanvas" height="120"></canvas>
-          <canvas id="depthMapCanvas" height="180"></canvas>
-          <div class="depth-legend">
-            <span>NEAR</span><div class="legend-bar"></div><span>FAR</span>
+          <div class="pbar"><div class="pfill" id="dfdProg"></div></div>
+          <canvas id="bracketCanvas" class="dc" height="100"></canvas>
+          <canvas id="dfdMapCanvas" class="dc" height="160" style="margin-top:6px"></canvas>
+          <div class="dlegend">
+            <span>NEAR</span><div class="lbar lb-near" style="flex:.5"></div><div class="lbar lb-far" style="flex:.5"></div><span>FAR</span>
           </div>
-          <div class="stat-grid" id="bracketStats" style="margin-top:8px">
-            <div class="stat-cell"><div class="stat-k">Focus Steps</div><div class="stat-v" id="bsSteps">--</div></div>
-            <div class="stat-cell"><div class="stat-k">Nearest</div><div class="stat-v" id="bsNear">--</div></div>
-            <div class="stat-cell"><div class="stat-k">Farthest</div><div class="stat-v" id="bsFar">--</div></div>
+          <div class="stat-grid" style="margin-top:6px">
+            <div class="sc"><div class="sk">Steps Done</div><div class="sv" id="bsS">--</div></div>
+            <div class="sc"><div class="sk">Nearest</div><div class="sv sm" id="bsN">--</div></div>
+            <div class="sc"><div class="sk">Farthest</div><div class="sv sm" id="bsF">--</div></div>
           </div>
-          <div class="btn-row" style="margin-top:10px">
-            <button class="dep-btn" id="btnBracket" style="border:1px solid var(--a1);background:transparent;color:var(--a1)" onclick="runFocusBracket()">RUN DEPTH SCAN</button>
-            <button class="dep-btn" style="border:1px solid var(--border2);background:transparent;color:var(--muted)" onclick="clearDepth()">CLEAR</button>
+          <div class="btn-row">
+            <button class="dbtn2" id="btnDFD" style="border:1px solid var(--a1);color:var(--a1)" onclick="runDFD()">RUN DFD SCAN</button>
+            <button class="dbtn2" style="border:1px solid var(--border2);color:var(--muted)" onclick="saveDepthMap()">SAVE MAP</button>
+            <button class="dbtn2" style="border:1px solid var(--border2);color:var(--muted)" onclick="clearDFD()">CLEAR</button>
+          </div>
+          <div style="margin-top:8px;padding:8px;background:var(--card2);border-radius:2px;font-size:0.44rem;color:var(--muted);line-height:1.9">
+            Requires a camera with <b style="color:var(--text)">focusDistance + focusMode=manual</b> support (most Android back cameras). Sweeps focus near-to-far, measures sharpness at each step per grid cell. Peak sharpness focus distance = depth of that cell.
           </div>
         </div>
       </div>
 
-      <!-- Live depth map -->
-      <div class="depth-card">
-        <div class="depth-card-head">
-          Live Depth Map (Edge-based)
-          <button class="mode-btn" id="btnLiveDepth" onclick="toggleLiveDepth()">START</button>
+      <!-- Live edge depth -->
+      <div class="dcrd">
+        <div class="dch">Live Edge Depth Map (Monocular)
+          <button class="mpill" id="btnEdge" onclick="toggleEdgeLive()" style="font-size:0.4rem">START</button>
         </div>
-        <div class="depth-card-body" style="font-size:0.48rem;color:var(--muted);line-height:1.8">
-          Computes a real-time approximate depth map using gradient/edge analysis. 
-          Sharp edges = near objects (hot colors), soft/blurry regions = far (cool colors).
-          Overlaid on camera view.
+        <div class="dcb">
+          <canvas id="edgeMapCanvas" class="dc" height="140" style="display:none"></canvas>
+          <div class="dlegend" style="margin-top:5px">
+            <span style="color:#ff4400">NEAR/SHARP</span><div class="lbar" style="background:linear-gradient(to right,#ff4400,#ffff00,#0088ff)"></div><span style="color:#0088ff">FAR/BLURRY</span>
+          </div>
+          <div style="margin-top:6px" class="stat-grid">
+            <div class="sc"><div class="sk">Max Edge</div><div class="sv sm" id="emMax">--</div></div>
+            <div class="sc"><div class="sk">Avg Edge</div><div class="sv sm" id="emAvg">--</div></div>
+            <div class="sc"><div class="sk">Near Cells</div><div class="sv sm" id="emNear">--</div></div>
+          </div>
+          <div style="margin-top:6px;font-size:0.44rem;color:var(--muted);line-height:1.9">
+            Sobel gradient per cell. High gradient = near/sharp (hot). Low gradient = far/blurry (cool). Works on ALL cameras including fixed-focus front. Not metric -- relative only.
+          </div>
         </div>
       </div>
 
-      <!-- Tips -->
-      <div class="section" style="margin-top:4px">
-        <div class="sec-head" onclick="togSec(this)">
-          <div class="sec-left"><span class="sec-title">How Depth Works</span></div>
-          <span class="sec-chev">&#9662;</span>
+      <!-- Point cloud placeholder -->
+      <div class="dcrd">
+        <div class="dch">3D Point Cloud View
+          <span id="pcStatus" style="font-size:0.4rem;color:var(--muted)">Run DFD first</span>
         </div>
-        <div class="sec-body" style="font-size:0.5rem;color:var(--muted);line-height:2">
-          <b style="color:var(--text)">Focus API:</b> If your camera reports focusDistance, that value (in meters, diopters, or normalized) is used directly.<br>
-          <b style="color:var(--text)">Depth from Defocus (DFD):</b> DEPTH SCAN sweeps focus from near to far, captures a frame at each step, and measures sharpness (Laplacian variance) per region. The focus distance at peak sharpness = depth of that region.<br>
-          <b style="color:var(--text)">Live Edge Map:</b> Uses Sobel gradient operator on each frame. High gradient = near/sharp. Low gradient = far/blurry. This is an approximation -- works best with manual focus cameras.<br>
-          <b style="color:var(--text)">Front camera:</b> Focus is usually fixed (hyperfocal) -- DFD won't work. Use Edge Map only.
+        <div class="dcb">
+          <canvas id="pcCanvas" class="dc" height="200"></canvas>
+          <div class="btn-row" style="margin-top:6px">
+            <button class="dbtn2" id="btnPC" style="border:1px solid var(--a4);color:var(--a4)" onclick="renderPointCloud()">RENDER 3D</button>
+            <button class="dbtn2" id="btnPCRot" style="border:1px solid var(--border2);color:var(--muted)" onclick="togglePCRotate()">AUTO ROTATE</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEREO -->
+    <div class="tp" id="panel-stereo">
+      <div class="dcrd">
+        <div class="dch">Stereo Vision Setup</div>
+        <div class="dcb">
+          <div style="display:flex;gap:5px;margin-bottom:8px">
+            <div style="flex:1">
+              <div style="font-size:0.42rem;color:var(--muted);margin-bottom:4px;letter-spacing:1px;text-transform:uppercase">Left Camera</div>
+              <select id="camL" style="font-size:0.5rem"></select>
+            </div>
+            <div style="flex:1">
+              <div style="font-size:0.42rem;color:var(--muted);margin-bottom:4px;letter-spacing:1px;text-transform:uppercase">Right Camera</div>
+              <select id="camR" style="font-size:0.5rem"></select>
+            </div>
+          </div>
+          <div class="btn-row">
+            <button class="dbtn2" id="btnStereo" style="border:1px solid var(--a5);color:var(--a5)" onclick="runStereo()">CAPTURE STEREO PAIR</button>
+          </div>
+          <div class="stat-grid g4" style="margin-top:8px">
+            <div class="sc"><div class="sk">Status</div><div class="sv sm" id="stereoStatus">Idle</div></div>
+            <div class="sc"><div class="sk">Baseline</div><div class="sv sm" id="stereoBaseline">Unknown</div></div>
+          </div>
+          <canvas id="stereoCanvas" class="dc" height="140" style="margin-top:8px"></canvas>
+          <canvas id="stereoDispCanvas" class="dc" height="140" style="margin-top:6px"></canvas>
+          <div style="margin-top:6px;font-size:0.44rem;color:var(--muted);line-height:1.9">
+            Captures simultaneously from two cameras, computes a disparity map using block matching (SAD). Wider baseline = better depth. Android multi-camera: try main + ultrawide. iOS: limited to one camera at a time via browser.
+          </div>
         </div>
       </div>
     </div>
 
     <!-- CAPS -->
-    <div class="tab-panel" id="panel-caps">
-      <div class="section">
-        <div class="sec-head" onclick="togSec(this)">
-          <div class="sec-left"><span class="sec-title">All Capabilities &amp; Ranges</span></div>
-          <span class="sec-chev">&#9662;</span>
-        </div>
-        <div class="sec-body">
-          <table class="cap-tbl">
-            <thead><tr><th>Property</th><th>Range / Values</th></tr></thead>
-            <tbody id="capBody"></tbody>
-          </table>
+    <div class="tp" id="panel-caps">
+      <div class="sec">
+        <div class="sh" onclick="togS(this)"><div class="sl"><span class="st">All Capabilities &amp; Ranges</span></div><span class="sch">&#9662;</span></div>
+        <div class="sb">
+          <table class="cap-tbl"><thead><tr><th>Property</th><th>Range / Values</th></tr></thead><tbody id="capBody"></tbody></table>
         </div>
       </div>
     </div>
 
     <!-- INFO -->
-    <div class="tab-panel" id="panel-info">
-      <div class="info-grid" id="infoGrid"></div>
-      <div style="margin-top:8px" class="section">
-        <div class="sec-head" onclick="togSec(this)">
-          <div class="sec-left"><span class="sec-title">Current Settings</span></div>
-          <span class="sec-chev">&#9662;</span>
-        </div>
-        <div class="sec-body">
-          <table class="cap-tbl">
-            <thead><tr><th>Setting</th><th>Value</th></tr></thead>
-            <tbody id="setBody"></tbody>
-          </table>
+    <div class="tp" id="panel-info">
+      <div class="igrid" id="infoGrid"></div>
+      <div style="margin-top:7px" class="sec">
+        <div class="sh" onclick="togS(this)"><div class="sl"><span class="st">Current Settings</span></div><span class="sch">&#9662;</span></div>
+        <div class="sb">
+          <table class="cap-tbl"><thead><tr><th>Setting</th><th>Value</th></tr></thead><tbody id="setBody"></tbody></table>
         </div>
       </div>
     </div>
+
   </div>
 </div>
-
 <div class="toast" id="toast"></div>
-<canvas id="captureCanvas" style="display:none"></canvas>
-<canvas id="sharpCanvas" style="display:none"></canvas>
+<canvas id="capCanvas" style="display:none"></canvas>
+<canvas id="workCanvas" style="display:none"></canvas>
 
 <script>
-'use strict';
 
-// ---- STATE -------------------------------------------------------
-var stream=null, track=null, ic=null, caps={}, sets={};
-var torchOn=false, facing='environment', devs=[];
-var captureMode='depth';  // normal | depth | depthmap
-var liveDepthRunning=false, liveDepthRAF=null;
-var bracketRunning=false;
-var distTimerRunning=false, distTimer=null;
-var lastDepthData=null;
+'use strict';
+var stream=null,track=null,ic=null,caps={},sets={};
+var torchOn=false,facing='environment',devs=[];
+var captureMode='dfd';
+var dfdMethod='laplacian';
+var edgeLiveOn=false,edgeRAF=null;
+var dfdRunning=false;
+var pcRotating=false,pcRotRAF=null,pcAngle=0;
+var lastDFDResult=null;
+var distTimer=null;
+var streamL=null,streamR=null;
 
 function $(id){return document.getElementById(id);}
+function sleep(ms){return new Promise(function(r){setTimeout(r,ms);});}
 
-// ---- VIEWPORT HEIGHT -----------------------------------------------
+/* VH */
 function setVH(){
-  var vw=window.innerWidth, vh=window.innerHeight;
-  var h=vw>vh?Math.round(vh*0.5):Math.round(vh*0.36);
-  $('videoWrap').style.height=h+'px';
-  $('depthCanvas').width=$('videoWrap').offsetWidth;
-  $('depthCanvas').height=h;
+  var vw=window.innerWidth,vh=window.innerHeight;
+  $('vWrap').style.height=(vw>vh?Math.round(vh*.5):Math.round(vh*.35))+'px';
+  var dc=$('depthCanvas');dc.width=$('vWrap').offsetWidth;dc.height=$('vWrap').offsetHeight;
 }
 window.addEventListener('load',function(){
   setVH();
-  if(!window.isSecureContext){
-    showInitErr('Insecure Context','Camera requires HTTPS or localhost.',
-      'Android Chrome: access via http://localhost\niOS Safari: use localhost or https://');
-    $('startBtn').disabled=true;return;
-  }
-  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
-    showInitErr('Camera API Unavailable','getUserMedia not supported.',
-      'Use Chrome on Android or Safari 14.3+ on iOS\nMust be on localhost or HTTPS');
-    $('startBtn').disabled=true;
-  }
+  if(!window.isSecureContext){showInitErr('Insecure Context','Camera requires HTTPS or localhost.','Android: http://localhost in Chrome\niOS: localhost or https://');$('startBtn').disabled=true;return;}
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){showInitErr('Camera API Unavailable','getUserMedia not supported.','Chrome on Android\nSafari 14.3+ on iOS\nMust be localhost or HTTPS');$('startBtn').disabled=true;}
 });
 window.addEventListener('resize',function(){setVH();});
-window.addEventListener('orientationchange',function(){setTimeout(setVH,300);});
+window.addEventListener('orientationchange',function(){setTimeout(setVH,350);});
 
-// ---- CAMERA INIT --------------------------------------------------
-// Android multi-camera: enumerate ALL devices first, then let user pick
-// We try WITHOUT facingMode constraint so Android exposes all cameras
-
-async function startCam(deviceId, f){
-  var btn=$('startBtn');
-  btn.disabled=true; btn.textContent='REQUESTING...';
-  $('spinner').style.display='block';
-  hideErr();
-
+/* CAMERA */
+async function startCam(deviceId,f){
+  var btn=$('startBtn');btn.disabled=true;btn.textContent='REQUESTING...';
+  $('spin').style.display='block';hideErr();
+  var fc=f||facing;
   try{
     if(stream) stream.getTracks().forEach(function(t){t.stop();});
 
-    var constraints;
+    var s;
     if(deviceId){
-      // Exact device - use minimal constraints so we don't overconstrain
-      constraints={
-        video:{
-          deviceId:{exact:deviceId},
-          width:{ideal:1920}, height:{ideal:1080}
-        }, audio:false
-      };
-    } else if(f){
-      constraints={
-        video:{facingMode:{exact:f}, width:{ideal:1920}, height:{ideal:1080}},
-        audio:false
-      };
-    } else {
-      // First launch: try environment facing, fall back to any
-      try{
-        constraints={video:{facingMode:{exact:'environment'},width:{ideal:1920},height:{ideal:1080}},audio:false};
-        stream=await navigator.mediaDevices.getUserMedia(constraints);
-      }catch(e){
-        // Fall back to any camera - triggers permission prompt
-        constraints={video:{width:{ideal:1920},height:{ideal:1080}},audio:false};
-        stream=await navigator.mediaDevices.getUserMedia(constraints);
+      s=await navigator.mediaDevices.getUserMedia({video:{deviceId:{exact:deviceId},width:{ideal:3840},height:{ideal:2160}},audio:false});
+    }else{
+      /* Try exact environment first, fall back to ideal, then any */
+      try{s=await navigator.mediaDevices.getUserMedia({video:{facingMode:{exact:fc},width:{ideal:3840},height:{ideal:2160}},audio:false});}
+      catch(e1){
+        try{s=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:fc},width:{ideal:1920},height:{ideal:1080}},audio:false});}
+        catch(e2){s=await navigator.mediaDevices.getUserMedia({video:true,audio:false});}
       }
     }
-
-    if(!stream) stream=await navigator.mediaDevices.getUserMedia(constraints);
-
-    var vid=$('video');
-    vid.srcObject=stream;
-    await new Promise(function(r){vid.onloadedmetadata=r; setTimeout(r,3000);});
+    stream=s;
+    var vid=$('video');vid.srcObject=s;
+    await new Promise(function(r){vid.onloadedmetadata=r;setTimeout(r,3500);});
     await vid.play().catch(function(){});
-
     track=stream.getVideoTracks()[0];
-    if(track.getSettings) facing=track.getSettings().facingMode||facing;
-
-    if('ImageCapture' in window){
-      try{ic=new ImageCapture(track);}catch(e){ic=null;}
-    }
-
-    // Enumerate ALL cameras after permission granted
+    if(track.getSettings) facing=track.getSettings().facingMode||fc;
+    try{if('ImageCapture'in window)ic=new ImageCapture(track);}catch(e){ic=null;}
     await loadDevs();
-    readCaps();
-    buildAll();
-    startOv();
-    startDistMonitor();
-
+    readCaps();buildAll();startOv();startDistMonitor();populateStereoSelects();
     $('initScreen').style.display='none';
-    $('app').style.display='flex';
-    $('app').style.flexDirection='column';
-    setVH();
-    updateTorchBtn();
-    showToast('Camera ready - '+devs.length+' camera(s) found','ok');
-
+    $('app').style.display='flex';$('app').style.flexDirection='column';
+    setVH();updateTorchBtn();
+    showToast(devs.length+' camera(s) found','ok');
   }catch(e){
-    handleErr(e);
-    btn.disabled=false;
-    btn.textContent='TRY AGAIN';
+    handleErr(e);btn.disabled=false;btn.textContent='TRY AGAIN';
   }
-  $('spinner').style.display='none';
+  $('spin').style.display='none';
 }
 
 function handleErr(e){
-  var title='Error', msg=e.message||String(e), hint='';
+  var title='Error',msg=e.message||String(e),hint='';
   if(e.name==='NotAllowedError'||e.name==='PermissionDeniedError'){
-    title='Permission Denied'; msg='Camera access blocked.';
-    hint='Android Chrome:\n  Tap lock icon in address bar\n  Site Settings > Camera > Allow\n\niOS Safari:\n  Settings > Safari > Camera > Allow\n\nThen reload and try again.';
-  }else if(e.name==='NotFoundError'){
-    title='No Camera Found'; msg='No camera detected.';
-    hint='Check no other app is using the camera.';
-  }else if(e.name==='NotReadableError'||e.name==='TrackStartError'){
-    title='Camera Busy'; msg='Camera in use by another app.';
-    hint='Close Zoom, Meet, or other camera apps, then retry.';
-  }else if(e.name==='OverconstrainedError'){
-    title='Retrying...'; msg='Constraint failed - trying minimal config.';
+    title='Permission Denied';msg='Camera access blocked by browser.';
+    hint='Android Chrome:\n  Tap lock icon in address bar\n  Site Settings > Camera > Allow\n  Reload the page\n\niOS Safari:\n  Settings > Safari > Camera > Allow\n  Reload the page';
+    $('frontBtn').style.display='block';
+  }else if(e.name==='NotFoundError'){title='No Camera Found';msg='No camera detected.';hint='Close other apps using the camera.';}
+  else if(e.name==='NotReadableError'||e.name==='TrackStartError'){title='Camera Busy';msg='Camera in use by another app.';hint='Close video call apps and retry.';}
+  else if(e.name==='OverconstrainedError'){
+    title='Retrying';msg='Trying minimal constraints...';
     navigator.mediaDevices.getUserMedia({video:true,audio:false}).then(function(s){
-      stream=s; $('video').srcObject=s;
-      return new Promise(function(r){$('video').onloadedmetadata=r;setTimeout(r,2000);});
-    }).then(function(){
-      track=stream.getVideoTracks()[0];
-      readCaps(); buildAll(); startOv(); startDistMonitor();
-      $('initScreen').style.display='none';
-      $('app').style.display='flex'; $('app').style.flexDirection='column';
+      stream=s;$('video').srcObject=s;track=s.getVideoTracks()[0];
+      readCaps();buildAll();startOv();startDistMonitor();populateStereoSelects();
+      $('initScreen').style.display='none';$('app').style.display='flex';$('app').style.flexDirection='column';
       loadDevs();
-    }).catch(function(e2){handleErr(e2);});
-    return;
+    }).catch(function(e2){handleErr(e2);});return;
   }
-  showInitErr(title, msg, hint);
+  showInitErr(title,msg,hint);
 }
 
 async function loadDevs(){
   try{
-    // Must call after getUserMedia to get real labels
     var all=await navigator.mediaDevices.enumerateDevices();
     devs=all.filter(function(d){return d.kind==='videoinput';});
-    var bar=$('devBar'); bar.innerHTML='';
+    var bar=$('devBar');bar.innerHTML='';
     var cur=track&&track.getSettings?track.getSettings().deviceId:null;
     devs.forEach(function(d,i){
-      var b=document.createElement('button');
-      // Try to guess facing from label (Android often includes 'back','front','0','1','2' etc)
       var lbl=d.label||'Camera '+(i+1);
-      var facing_guess='';
       var ll=lbl.toLowerCase();
-      if(ll.includes('back')||ll.includes('rear')||ll.includes('environment')||ll.includes('main')||ll.match(/camera [0-9]/) ){
-        facing_guess='BACK';
-      }else if(ll.includes('front')||ll.includes('user')||ll.includes('selfie')||ll.includes('facetime')){
-        facing_guess='FRONT';
-      }
-      var active=d.deviceId===cur;
-      b.className='dev-btn'+(active?' active':'');
-      b.innerHTML=lbl+(facing_guess?'<span class="dev-facing">'+facing_guess+'</span>':'');
+      var fg='';
+      if(ll.match(/back|rear|environment|wide|tele|ultra|main|0$/)||ll.match(/camera [0-3]$/))fg='BACK';
+      else if(ll.match(/front|user|selfie|facetime/))fg='FRONT';
+      var b=document.createElement('button');
+      b.className='dbtn'+(d.deviceId===cur?' active':'');
+      b.innerHTML=lbl+(fg?'<span class="dfacing">'+fg+'</span>':'');
       b.onclick=(function(did){return function(){startCam(did);};})(d.deviceId);
       bar.appendChild(b);
     });
-  }catch(e){console.warn('enumerateDevices failed',e);}
+  }catch(e){}
 }
 
-function flipCam(){
-  facing=facing==='environment'?'user':'environment';
-  startCam(null,facing);
-}
+function flipCam(){facing=facing==='environment'?'user':'environment';startCam(null,facing);}
 
 function stopCam(){
-  clearInterval(distTimer); distTimerRunning=false;
-  stopLiveDepth();
-  if(stream) stream.getTracks().forEach(function(t){t.stop();});
-  $('video').srcObject=null; stream=null; track=null; ic=null;
-  $('app').style.display='none';
-  $('initScreen').style.display='flex';
-  $('startBtn').disabled=false; $('startBtn').textContent='INITIALIZE CAMERA';
+  clearInterval(distTimer);stopEdgeLive();
+  if(pcRotRAF){cancelAnimationFrame(pcRotRAF);pcRotRAF=null;}
+  if(stream)stream.getTracks().forEach(function(t){t.stop();});
+  if(streamL)streamL.getTracks().forEach(function(t){t.stop();});
+  if(streamR)streamR.getTracks().forEach(function(t){t.stop();});
+  $('video').srcObject=null;stream=track=ic=streamL=streamR=null;
+  $('app').style.display='none';$('initScreen').style.display='flex';
+  $('startBtn').disabled=false;$('startBtn').textContent='INITIALIZE CAMERA';
 }
 
 function readCaps(){
@@ -557,729 +549,879 @@ function readCaps(){
 
 async function applyC(obj){
   if(!track)return;
-  try{
-    await track.applyConstraints({advanced:[obj]});
-    sets=track.getSettings();
-    updReadout();
-  }catch(e){
-    showWarn('Cannot apply ['+Object.keys(obj).join(',')+'] - '+e.message);
-  }
+  try{await track.applyConstraints({advanced:[obj]});sets=track.getSettings();updHUD();}
+  catch(e){showWarn('Cannot apply ['+Object.keys(obj).join(',')+'] - '+e.message);}
 }
 
-function showWarn(msg){
-  var w=$('warn'); w.textContent=msg; w.style.display='block';
-  clearTimeout(showWarn._t);
-  showWarn._t=setTimeout(function(){w.style.display='none';},5000);
-}
+function showWarn(msg){var w=$('warn');w.textContent=msg;w.style.display='block';clearTimeout(showWarn._t);showWarn._t=setTimeout(function(){w.style.display='none';},5000);}
 
-// ---- BUILD CONTROLS ----------------------------------------------
+/* BUILD CONTROLS */
 function buildAll(){buildCtrl();buildCapsTab();buildInfoTab();}
 
 function buildCtrl(){
-  buildSec('cExposure','Exposure','LIVE',[
-    mkSel('exposureMode','Exposure Mode',caps.exposureMode,sets.exposureMode,function(v){applyC({exposureMode:v});},!!caps.exposureMode),
-    mkRange('exposureTime','Exposure Time',caps.exposureTime,sets.exposureTime,'us',function(v){applyC({exposureTime:v});},!!caps.exposureTime),
-    mkRange('expComp','Exp Compensation (EV)',caps.exposureCompensation||{min:-3,max:3,step:0.1},
-      sets.exposureCompensation!=null?sets.exposureCompensation:0,'EV',
-      function(v){applyC({exposureCompensation:v});},!!caps.exposureCompensation),
-    mkRange('iso','ISO',caps.iso,sets.iso,'',function(v){applyC({iso:v});},!!caps.iso),
+  buildSec('cExposure','Exposure','LIVE','a1',[
+    mkSel('expMode','Exposure Mode',caps.exposureMode,sets.exposureMode,function(v){applyC({exposureMode:v});},!!caps.exposureMode),
+    mkR('expTime','Exposure Time',caps.exposureTime,sets.exposureTime,'us',function(v){applyC({exposureTime:v});},!!caps.exposureTime),
+    mkR('expComp','EV Compensation',caps.exposureCompensation||{min:-3,max:3,step:.1},sets.exposureCompensation!=null?sets.exposureCompensation:0,'EV',function(v){applyC({exposureCompensation:v});},!!caps.exposureCompensation),
+    mkR('iso','ISO',caps.iso,sets.iso,'',function(v){applyC({iso:v});},!!caps.iso),
   ]);
-  buildSec('cFocus','Focus','LIVE',[
-    mkSel('focusMode','Focus Mode',caps.focusMode,sets.focusMode,function(v){
+  buildSec('cFocus','Focus','LIVE','a1',[
+    mkSel('focMode','Focus Mode',caps.focusMode,sets.focusMode,function(v){
       applyC({focusMode:v});
-      // When manual, enable distance slider
-      var r=$('focusDist'); if(r) r.disabled=(v!=='manual');
+      var r=$('focDist');if(r)r.disabled=(v!=='manual');
     },!!caps.focusMode),
-    mkRange('focusDist','Focus Distance',caps.focusDistance,sets.focusDistance,'m',
-      function(v){
-        applyC({focusDistance:v});
-        updateDistFromFocus(v);
-      },
-      !!caps.focusDistance),
+    mkR('focDist','Focus Distance',caps.focusDistance,sets.focusDistance,'m',function(v){
+      applyC({focusDistance:v});updateFocusDist(v);
+    },!!caps.focusDistance),
   ]);
-  buildSec('cWB','White Balance','LIVE',[
+  buildSec('cWB','White Balance','LIVE','a1',[
     mkSel('wbMode','WB Mode',caps.whiteBalanceMode,sets.whiteBalanceMode,function(v){applyC({whiteBalanceMode:v});},!!caps.whiteBalanceMode),
-    mkRange('colorTemp','Color Temp',caps.colorTemperature,sets.colorTemperature,'K',function(v){applyC({colorTemperature:v});},!!caps.colorTemperature),
+    mkR('colTemp','Color Temp',caps.colorTemperature,sets.colorTemperature,'K',function(v){applyC({colorTemperature:v});},!!caps.colorTemperature),
   ]);
-  buildSec('cImage','Image Adjustments','LIVE',[
-    mkRange('brightness','Brightness',caps.brightness,sets.brightness,'%',function(v){applyC({brightness:v});},!!caps.brightness),
-    mkRange('contrast','Contrast',caps.contrast,sets.contrast,'%',function(v){applyC({contrast:v});},!!caps.contrast),
-    mkRange('saturation','Saturation',caps.saturation,sets.saturation,'%',function(v){applyC({saturation:v});},!!caps.saturation),
-    mkRange('sharpness','Sharpness',caps.sharpness,sets.sharpness,'',function(v){applyC({sharpness:v});},!!caps.sharpness),
-    mkRange('pan','Pan',caps.pan,sets.pan,'deg',function(v){applyC({pan:v});},!!caps.pan),
-    mkRange('tilt','Tilt',caps.tilt,sets.tilt,'deg',function(v){applyC({tilt:v});},!!caps.tilt),
+  buildSec('cImage','Image Adjustments','LIVE','a1',[
+    mkR('brightness','Brightness',caps.brightness,sets.brightness,'%',function(v){applyC({brightness:v});},!!caps.brightness),
+    mkR('contrast','Contrast',caps.contrast,sets.contrast,'%',function(v){applyC({contrast:v});},!!caps.contrast),
+    mkR('saturation','Saturation',caps.saturation,sets.saturation,'%',function(v){applyC({saturation:v});},!!caps.saturation),
+    mkR('sharpness','Sharpness',caps.sharpness,sets.sharpness,'',function(v){applyC({sharpness:v});},!!caps.sharpness),
+    mkR('pan','Pan',caps.pan,sets.pan,'deg',function(v){applyC({pan:v});},!!caps.pan),
+    mkR('tilt','Tilt',caps.tilt,sets.tilt,'deg',function(v){applyC({tilt:v});},!!caps.tilt),
   ]);
-  buildSec('cStream','Resolution & Frame Rate',null,[
-    mkRange('rW','Width',caps.width,sets.width,'px',function(v){track.applyConstraints({width:{ideal:Math.round(v)}}).then(function(){sets=track.getSettings();}).catch(function(){});},!!caps.width),
-    mkRange('rH','Height',caps.height,sets.height,'px',function(v){track.applyConstraints({height:{ideal:Math.round(v)}}).then(function(){sets=track.getSettings();}).catch(function(){});},!!caps.height),
-    mkRange('fps','Frame Rate',caps.frameRate,sets.frameRate,'fps',function(v){track.applyConstraints({frameRate:{ideal:v}}).then(function(){sets=track.getSettings();}).catch(function(){});},!!caps.frameRate),
-    mkSel('resizeMode','Resize Mode',caps.resizeMode,sets.resizeMode,function(v){track.applyConstraints({resizeMode:v}).catch(function(){});},!!caps.resizeMode),
+  buildSec('cStream','Resolution & FPS',null,null,[
+    mkR('rW','Width',caps.width,sets.width,'px',function(v){track.applyConstraints({width:{ideal:Math.round(v)}}).then(function(){sets=track.getSettings();}).catch(function(){});},!!caps.width),
+    mkR('rH','Height',caps.height,sets.height,'px',function(v){track.applyConstraints({height:{ideal:Math.round(v)}}).then(function(){sets=track.getSettings();}).catch(function(){});},!!caps.height),
+    mkR('fps','Frame Rate',caps.frameRate,sets.frameRate,'fps',function(v){track.applyConstraints({frameRate:{ideal:v}}).then(function(){sets=track.getSettings();}).catch(function(){});},!!caps.frameRate),
+    mkSel('resMode','Resize Mode',caps.resizeMode,sets.resizeMode,function(v){track.applyConstraints({resizeMode:v}).catch(function(){});},!!caps.resizeMode),
   ]);
-  buildSec('cTorch','Torch & Zoom','LIVE',[
-    mkTog('tToggle','Torch',sets.torch||false,function(v){torchOn=v;applyC({torch:v});updateTorchBtn();},!!caps.torch),
-    mkRange('zoom','Zoom',caps.zoom,sets.zoom,'x',function(v){applyC({zoom:v});},!!caps.zoom),
+  buildSec('cTorch','Torch & Zoom','LIVE','a1',[
+    mkTog('tTog','Torch',sets.torch||false,function(v){torchOn=v;applyC({torch:v});updateTorchBtn();},!!caps.torch),
+    mkR('zoom','Zoom',caps.zoom,sets.zoom,'x',function(v){applyC({zoom:v});},!!caps.zoom),
   ]);
 }
 
-function buildSec(mountId,title,tag,items){
-  var el=$(mountId); el.innerHTML='';
-  var sec=document.createElement('div'); sec.className='section';
-  var head=document.createElement('div'); head.className='sec-head';
-  head.onclick=function(){togSec(head);};
-  var left=document.createElement('div'); left.className='sec-left';
-  var t=document.createElement('span'); t.className='sec-title'; t.textContent=title; left.appendChild(t);
-  if(tag){var tg=document.createElement('span');tg.className='sec-tag';tg.textContent=tag;left.appendChild(tg);}
-  var ch=document.createElement('span'); ch.className='sec-chev'; ch.textContent='\u25be';
-  head.appendChild(left); head.appendChild(ch);
-  var body=document.createElement('div'); body.className='sec-body';
+function buildSec(mnt,title,tag,col,items){
+  var el=$(mnt);el.innerHTML='';
+  var sec=document.createElement('div');sec.className='sec';
+  var head=document.createElement('div');head.className='sh';head.onclick=function(){togS(head);};
+  var left=document.createElement('div');left.className='sl';
+  var t=document.createElement('span');t.className='st';t.textContent=title;left.appendChild(t);
+  if(tag){var tg=document.createElement('span');tg.className='stag'+(col?' '+col:'');tg.textContent=tag;left.appendChild(tg);}
+  var ch=document.createElement('span');ch.className='sch';ch.textContent='\u25be';
+  head.appendChild(left);head.appendChild(ch);
+  var body=document.createElement('div');body.className='sb';
   items.forEach(function(i){body.appendChild(i);});
-  sec.appendChild(head); sec.appendChild(body); el.appendChild(sec);
+  sec.appendChild(head);sec.appendChild(body);el.appendChild(sec);
 }
 
-// ---- WIDGET MAKERS -----------------------------------------------
-function fmtV(v,unit){
-  if(typeof v!=='number') return '--';
-  if(unit==='us') return v>=1000?(v/1000).toFixed(2)+'ms':Math.round(v)+'\u00b5s';
-  if(unit==='%') return Math.round(v)+'%';
-  if(unit==='deg') return Math.round(v)+'\u00b0';
-  if(unit==='px') return Math.round(v)+'px';
-  if(unit==='fps') return v.toFixed(1)+'fps';
-  if(unit==='x') return v.toFixed(2)+'\u00d7';
-  if(unit==='m') return v.toFixed(4)+'m';
-  if(unit==='EV') return(v>=0?'+':'')+v.toFixed(2)+'EV';
-  if(unit==='K') return Math.round(v)+'K';
-  return Number.isInteger(v)?v+(unit||''):v.toFixed(2)+(unit||'');
+/* WIDGET MAKERS */
+function fmtV(v,u){
+  if(typeof v!=='number')return '--';
+  if(u==='us')return v>=1000?(v/1000).toFixed(2)+'ms':Math.round(v)+'\u00b5s';
+  if(u==='%')return Math.round(v)+'%';
+  if(u==='deg')return Math.round(v)+'\u00b0';
+  if(u==='px')return Math.round(v)+'px';
+  if(u==='fps')return v.toFixed(1)+'fps';
+  if(u==='x')return v.toFixed(2)+'\u00d7';
+  if(u==='m')return v.toFixed(4)+'m';
+  if(u==='EV')return(v>=0?'+':'')+v.toFixed(2)+'EV';
+  if(u==='K')return Math.round(v)+'K';
+  return Number.isInteger(v)?v+(u||''):v.toFixed(2)+(u||'');
 }
 
-function mkRange(id,label,capObj,cur,unit,onChange,supported){
-  var wrap=document.createElement('div'); wrap.className='ctrl';
-  var hd=document.createElement('div'); hd.className='ctrl-head';
-  var nm=document.createElement('span'); nm.className='ctrl-name'; nm.textContent=label; hd.appendChild(nm);
-  if(!supported){
-    var b=document.createElement('span');b.className='na-badge';b.textContent='NOT SUPPORTED';hd.appendChild(b);wrap.appendChild(hd);return wrap;
-  }
-  var mn=capObj&&capObj.min!=null?capObj.min:0;
-  var mx=capObj&&capObj.max!=null?capObj.max:100;
-  var st=capObj&&capObj.step!=null?capObj.step:((mx-mn)/100)||1;
-  var vl=document.createElement('span'); vl.className='ctrl-val'; vl.id=id+'_v';
-  vl.textContent=fmtV(cur!=null?cur:mn,unit); hd.appendChild(vl); wrap.appendChild(hd);
-  var ri=document.createElement('div'); ri.className='ctrl-range-info';
-  ri.innerHTML='<span>'+fmtV(mn,unit)+'</span><span>min &mdash; max</span><span>'+fmtV(mx,unit)+'</span>';
+function mkR(id,lbl,cap,cur,u,fn,sup){
+  var wrap=document.createElement('div');wrap.className='ctrl';
+  var hd=document.createElement('div');hd.className='ch2';
+  var nm=document.createElement('span');nm.className='cn';nm.textContent=lbl;hd.appendChild(nm);
+  if(!sup){var b=document.createElement('span');b.className='nab';b.textContent='NOT SUPPORTED';hd.appendChild(b);wrap.appendChild(hd);return wrap;}
+  var mn=cap&&cap.min!=null?cap.min:0,mx=cap&&cap.max!=null?cap.max:100,st=cap&&cap.step!=null?cap.step:((mx-mn)/100)||1;
+  var vl=document.createElement('span');vl.className='cv';vl.id=id+'_v';vl.textContent=fmtV(cur!=null?cur:mn,u);hd.appendChild(vl);wrap.appendChild(hd);
+  var ri=document.createElement('div');ri.className='cri';
+  ri.innerHTML='<span>'+fmtV(mn,u)+'</span><span>min &mdash; max</span><span>'+fmtV(mx,u)+'</span>';
   wrap.appendChild(ri);
-  var r=document.createElement('input'); r.type='range'; r.id=id;
-  r.min=mn; r.max=mx; r.step=st; r.value=cur!=null?cur:mn;
-  r.addEventListener('input',function(){
-    var v=parseFloat(r.value); vl.textContent=fmtV(v,unit); onChange(v);
-  });
-  wrap.appendChild(r); return wrap;
+  var r=document.createElement('input');r.type='range';r.id=id;r.min=mn;r.max=mx;r.step=st;r.value=cur!=null?cur:mn;
+  r.addEventListener('input',function(){var v=parseFloat(r.value);vl.textContent=fmtV(v,u);fn(v);});
+  wrap.appendChild(r);return wrap;
 }
 
-function mkSel(id,label,options,cur,onChange,supported){
-  var wrap=document.createElement('div'); wrap.className='ctrl';
-  var hd=document.createElement('div'); hd.className='ctrl-head';
-  var nm=document.createElement('span'); nm.className='ctrl-name'; nm.textContent=label; hd.appendChild(nm);
-  if(!supported||!options||!options.length){
-    var b=document.createElement('span');b.className='na-badge';b.textContent='NOT SUPPORTED';hd.appendChild(b);wrap.appendChild(hd);return wrap;
-  }
+function mkSel(id,lbl,opts,cur,fn,sup){
+  var wrap=document.createElement('div');wrap.className='ctrl';
+  var hd=document.createElement('div');hd.className='ch2';
+  var nm=document.createElement('span');nm.className='cn';nm.textContent=lbl;hd.appendChild(nm);
+  if(!sup||!opts||!opts.length){var b=document.createElement('span');b.className='nab';b.textContent='NOT SUPPORTED';hd.appendChild(b);wrap.appendChild(hd);return wrap;}
   wrap.appendChild(hd);
-  var sel=document.createElement('select'); sel.id=id;
-  options.forEach(function(o){
-    var opt=document.createElement('option'); opt.value=o; opt.textContent=o;
-    if(o===cur)opt.selected=true; sel.appendChild(opt);
-  });
-  sel.addEventListener('change',function(){onChange(sel.value);});
-  wrap.appendChild(sel); return wrap;
+  var sel=document.createElement('select');sel.id=id;
+  opts.forEach(function(o){var opt=document.createElement('option');opt.value=o;opt.textContent=o;if(o===cur)opt.selected=true;sel.appendChild(opt);});
+  sel.addEventListener('change',function(){fn(sel.value);});
+  wrap.appendChild(sel);return wrap;
 }
 
-function mkTog(id,label,checked,onChange,supported){
-  var wrap=document.createElement('div'); wrap.className='ctrl';
-  var row=document.createElement('div'); row.className='tog-row';
-  var lbl=document.createElement('span'); lbl.className='tog-name'; lbl.textContent=label; row.appendChild(lbl);
-  if(!supported){
-    var b=document.createElement('span');b.className='na-badge';b.textContent='NOT SUPPORTED';row.appendChild(b);wrap.appendChild(row);return wrap;
-  }
-  var tog=document.createElement('label'); tog.className='toggle';
-  var inp=document.createElement('input'); inp.type='checkbox'; inp.checked=checked; inp.id=id;
-  inp.addEventListener('change',function(){onChange(inp.checked);});
-  var tr=document.createElement('span'); tr.className='tog-track';
-  tog.appendChild(inp); tog.appendChild(tr); row.appendChild(tog); wrap.appendChild(row); return wrap;
+function mkTog(id,lbl,chk,fn,sup){
+  var wrap=document.createElement('div');wrap.className='ctrl';
+  var row=document.createElement('div');row.className='trow';
+  var l=document.createElement('span');l.className='tn';l.textContent=lbl;row.appendChild(l);
+  if(!sup){var b=document.createElement('span');b.className='nab';b.textContent='NOT SUPPORTED';row.appendChild(b);wrap.appendChild(row);return wrap;}
+  var tog=document.createElement('label');tog.className='tog';
+  var inp=document.createElement('input');inp.type='checkbox';inp.checked=chk;inp.id=id;
+  inp.addEventListener('change',function(){fn(inp.checked);});
+  var tr=document.createElement('span');tr.className='ttr';
+  tog.appendChild(inp);tog.appendChild(tr);row.appendChild(tog);wrap.appendChild(row);return wrap;
 }
 
-// ---- CAPABILITIES TABLE ------------------------------------------
-var ALL_PROPS=['width','height','frameRate','aspectRatio','facingMode','resizeMode','zoom','torch',
+/* CAPS TABLE */
+var ALLP=['width','height','frameRate','aspectRatio','facingMode','resizeMode','zoom','torch',
   'focusMode','focusDistance','exposureMode','exposureTime','exposureCompensation','iso',
   'whiteBalanceMode','colorTemperature','brightness','contrast','saturation','sharpness',
-  'pan','tilt','sampleRate','channelCount','latency'];
+  'pan','tilt','channelCount','latency','sampleRate'];
 
 function buildCapsTab(){
-  var body=$('capBody'); body.innerHTML='';
+  var body=$('capBody');body.innerHTML='';
   var done={};
-  function renderRow(key,val){
-    done[key]=true;
-    var tr=document.createElement('tr');
-    var td1=document.createElement('td'); td1.textContent=key; tr.appendChild(td1);
+  function rr(k,v){
+    done[k]=true;var tr=document.createElement('tr');
+    var td1=document.createElement('td');td1.textContent=k;tr.appendChild(td1);
     var td2=document.createElement('td');
-    if(val===undefined||val===null){
-      td2.innerHTML='<span class="no">not reported</span>';
-    }else if(Array.isArray(val)){
-      td2.innerHTML=val.map(function(v){return '<span class="v-chip">'+v+'</span>';}).join('');
-    }else if(typeof val==='object'&&('min' in val||'max' in val)){
+    if(v===undefined||v===null){td2.innerHTML='<span class="no">not reported</span>';}
+    else if(Array.isArray(v)){td2.innerHTML=v.map(function(x){return '<span class="vc">'+x+'</span>';}).join('');}
+    else if(typeof v==='object'&&('min'in v||'max'in v)){
       var s='';
-      if('min' in val&&'max' in val) s+='min: '+fmtCapV(key,val.min)+'&nbsp; max: '+fmtCapV(key,val.max);
-      if('step' in val) s+='&nbsp; step: '+val.step;
+      if('min'in v&&'max'in v)s+='min: '+fmtCapV(k,v.min)+'&nbsp;&nbsp;max: '+fmtCapV(k,v.max);
+      if('step'in v)s+='&nbsp;&nbsp;step: '+v.step;
       td2.innerHTML='<span class="ok">'+s+'</span>';
-    }else if(typeof val==='boolean'){
-      td2.innerHTML=val?'<span class="ok">true</span>':'<span class="no">false</span>';
-    }else{
-      td2.innerHTML='<span class="ok">'+val+'</span>';
-    }
-    tr.appendChild(td2); body.appendChild(tr);
+    }else if(typeof v==='boolean'){td2.innerHTML=v?'<span class="ok">true</span>':'<span class="no">false</span>';}
+    else{td2.innerHTML='<span class="ok">'+v+'</span>';}
+    tr.appendChild(td2);body.appendChild(tr);
   }
-  ALL_PROPS.forEach(function(k){renderRow(k,caps[k]);});
-  Object.keys(caps).forEach(function(k){if(!done[k])renderRow(k+' *',caps[k]);});
+  ALLP.forEach(function(k){rr(k,caps[k]);});
+  Object.keys(caps).forEach(function(k){if(!done[k])rr(k+' *',caps[k]);});
 }
 
-function fmtCapV(key,v){
-  if(typeof v!=='number') return String(v);
-  var umap={width:'px',height:'px',frameRate:'fps',zoom:'x',focusDistance:'m',
-    exposureTime:'us',colorTemperature:'K',pan:'deg',tilt:'deg',exposureCompensation:'EV'};
-  return fmtV(v, umap[key]||'');
+function fmtCapV(k,v){
+  if(typeof v!=='number')return String(v);
+  var u={width:'px',height:'px',frameRate:'fps',zoom:'x',focusDistance:'m',exposureTime:'us',colorTemperature:'K',pan:'deg',tilt:'deg',exposureCompensation:'EV'};
+  return fmtV(v,u[k]||'');
 }
 
 function buildInfoTab(){
-  var s=track.getSettings();
-  var grid=$('infoGrid'); grid.innerHTML='';
-  var devLabel='Unknown';
-  for(var i=0;i<devs.length;i++){
-    if(devs[i].deviceId===s.deviceId){devLabel=devs[i].label||'Camera '+(i+1);break;}
-  }
+  var s=track.getSettings();var grid=$('infoGrid');grid.innerHTML='';
+  var dl='Unknown';for(var i=0;i<devs.length;i++){if(devs[i].deviceId===s.deviceId){dl=devs[i].label||'Camera '+(i+1);break;}}
   var rows=[
-    ['Device',devLabel,true],['Facing',s.facingMode||'--',false],
+    ['Device',dl,true],['Facing',s.facingMode||'--',false],
     ['Resolution',(s.width||'?')+'x'+(s.height||'?'),false],
-    ['FPS',s.frameRate?(+s.frameRate).toFixed(2)+' fps':'--',false],
+    ['Frame Rate',s.frameRate?(+s.frameRate).toFixed(2)+' fps':'--',false],
     ['Aspect',s.aspectRatio?(+s.aspectRatio).toFixed(4):'--',false],
-    ['Resize',s.resizeMode||'--',false],
     ['Exp Mode',s.exposureMode||'--',false],['Focus Mode',s.focusMode||'--',false],
     ['WB Mode',s.whiteBalanceMode||'--',false],['ISO',s.iso!=null?s.iso:'--',false],
-    ['EV',s.exposureCompensation!=null?s.exposureCompensation+'EV':'--',false],
-    ['Zoom',s.zoom!=null?s.zoom+'x':'--',false],
-    ['Torch',s.torch!=null?(s.torch?'ON':'OFF'):'--',false],
-    ['Has focusDist',caps.focusDistance?'YES - '+fmtCapV('focusDistance',caps.focusDistance.min)+' to '+fmtCapV('focusDistance',caps.focusDistance.max):'NO',true],
+    ['Zoom',s.zoom!=null?s.zoom+'x':'--',false],['Torch',s.torch!=null?(s.torch?'ON':'OFF'):'--',false],
+    ['focusDist cap',caps.focusDistance?'YES: '+fmtCapV('focusDistance',caps.focusDistance.min)+' to '+fmtCapV('focusDistance',caps.focusDistance.max):'NOT REPORTED',true],
     ['Device ID',(s.deviceId||'--').slice(0,20),true],
   ];
   rows.forEach(function(row){
-    var c=document.createElement('div'); c.className='ic'+(row[2]?' full':'');
+    var c=document.createElement('div');c.className='ic'+(row[2]?' full':'');
     c.innerHTML='<div class="ik">'+row[0]+'</div><div class="iv">'+row[1]+'</div>';
     grid.appendChild(c);
   });
-  var sb=$('setBody'); sb.innerHTML='';
-  var entries=Object.entries(s);
-  entries.forEach(function(pair){
-    var k=pair[0], v=pair[1];
+  var sb=$('setBody');sb.innerHTML='';
+  Object.entries(s).forEach(function(p){
     var tr=document.createElement('tr');
-    var fmt=typeof v==='number'&&v%1!==0?v.toFixed(6):String(v);
-    tr.innerHTML='<td>'+k+'</td><td style="color:var(--a1)">'+fmt+'</td>';
-    sb.appendChild(tr);
+    var fmt=typeof p[1]==='number'&&p[1]%1!==0?p[1].toFixed(6):String(p[1]);
+    tr.innerHTML='<td>'+p[0]+'</td><td style="color:var(--a1)">'+fmt+'</td>';sb.appendChild(tr);
   });
 }
 
-// ---- OVERLAY & READOUT -------------------------------------------
-var ovTimer=null;
+/* OVERLAY */
+var ovT=null;
 function startOv(){
-  clearInterval(ovTimer);
-  ovTimer=setInterval(function(){
+  clearInterval(ovT);
+  ovT=setInterval(function(){
     if(!track)return;
     var s=track.getSettings();
-    $('resText').textContent=(s.width||'?')+'x'+(s.height||'?')+' '+(+(s.frameRate||0)).toFixed(1)+'fps';
-    updReadout();
+    $('resT').textContent=(s.width||'?')+'x'+(s.height||'?')+' '+(+(s.frameRate||0)).toFixed(1)+'fps';
+    updHUD();
   },1500);
 }
-function updReadout(){
+function updHUD(){
   if(!track)return;
   var s=track.getSettings();
   var lines=[];
-  if(s.facingMode) lines.push(s.facingMode.toUpperCase());
-  if(s.focusMode) lines.push('FOC:'+s.focusMode.slice(0,4));
-  if(s.exposureMode) lines.push('EXP:'+s.exposureMode.slice(0,4));
-  if(s.iso!=null) lines.push('ISO'+s.iso);
-  if(s.zoom!=null&&s.zoom!==1) lines.push((+s.zoom).toFixed(1)+'x');
-  $('readout').innerHTML=lines.join('<br>');
+  if(s.facingMode)lines.push(s.facingMode.toUpperCase());
+  if(s.focusMode)lines.push('F:'+s.focusMode.slice(0,5));
+  if(s.exposureMode)lines.push('E:'+s.exposureMode.slice(0,4));
+  if(s.iso!=null)lines.push('ISO'+s.iso);
+  if(s.zoom!=null&&s.zoom!==1)lines.push((+s.zoom).toFixed(1)+'x');
+  $('hudR').innerHTML=lines.join('<br>');
 }
 
-// ---- DISTANCE MONITORING -----------------------------------------
+/* DISTANCE MONITORING */
 function startDistMonitor(){
   clearInterval(distTimer);
-  distTimerRunning=true;
   distTimer=setInterval(function(){
     if(!track)return;
     var s=track.getSettings();
-    var dist=null;
-    var method='--';
+    var dist=null,meth='--';
     if(s.focusDistance!=null){
-      // focusDistance in meters (spec), some devices use diopters (1/m), some normalized 0-1
-      var fd=+s.focusDistance;
-      var fdCap=caps.focusDistance;
-      if(fdCap){
-        if(fdCap.max<=1.0){
-          // Normalized 0-1: 0=near (~0.1m), 1=infinity
-          // Map: dist = 0.1 + fd*9.9 (rough)
-          dist=0.1 + fd*9.9;
-          method='focus(norm)';
-        }else if(fdCap.max>10){
-          // Diopters: dist = 1/fd
-          dist=fd>0?1/fd:null;
-          method='focus(diop)';
-        }else{
-          // Likely meters directly
-          dist=fd;
-          method='focus(m)';
-        }
+      var fd=+s.focusDistance;var fc=caps.focusDistance;
+      if(fc){
+        if(fc.max<=1.0){dist=fd<0.01?null:(0.08+fd*12);meth='focus(norm)';}
+        else if(fc.max>50){dist=fd>0.001?1/fd:null;meth='focus(diop)';}
+        else{dist=fd>0?fd:null;meth='focus(m)';}
       }
-      $('dFocusApi').textContent=fmtDist(dist);
-    }else{
-      $('dFocusApi').textContent='N/A';
-      method='edge';
-    }
-    updateDistDisplay(dist,method);
-  },500);
+      $('dFocAPI').textContent=dist?fmtDist(dist):'fd='+fd.toFixed(4);
+      $('dFocUnit').textContent=meth;
+    }else{$('dFocAPI').textContent='N/A';$('dFocUnit').textContent='no API';}
+    setDistDisplay(dist,meth);
+  },600);
 }
 
-function updateDistFromFocus(v){
-  var fdCap=caps.focusDistance;
-  var dist=null;
-  if(fdCap){
-    if(fdCap.max<=1.0){ dist=0.1+v*9.9; }
-    else if(fdCap.max>10){ dist=v>0?1/v:null; }
-    else{ dist=v; }
+function updateFocusDist(fd){
+  var fc=caps.focusDistance;var dist=null,meth='manual';
+  if(fc){
+    if(fc.max<=1.0){dist=0.08+fd*12;meth='focus(norm)';}
+    else if(fc.max>50){dist=fd>0.001?1/fd:null;meth='focus(diop)';}
+    else{dist=fd>0?fd:null;meth='focus(m)';}
   }
-  updateDistDisplay(dist,'focus(manual)');
+  setDistDisplay(dist,meth);
 }
 
-function updateDistDisplay(dist, method){
-  if(dist!=null&&dist>0&&dist<100){
-    var dstr=fmtDist(dist);
-    $('distBadge').textContent=dstr;
-    $('liveDistBadge').textContent=dstr;
-    $('distOverlay').style.display='block';
-    $('dMethod').textContent=method;
+function setDistDisplay(dist,meth){
+  $('dMeth').textContent=meth;
+  if(dist!=null&&dist>0&&dist<200){
+    var ds=fmtDist(dist);
+    $('distNum').textContent=ds;$('ldBig').textContent=ds;
+    $('distMeth').textContent=meth;$('distHud').style.display='block';
   }else{
-    $('liveDistBadge').textContent='--';
-    $('distOverlay').style.display='none';
+    $('ldBig').textContent='--';$('distHud').style.display='none';
   }
 }
 
 function fmtDist(d){
-  if(d==null||isNaN(d)||d<=0) return '--';
-  if(d<1) return (d*100).toFixed(1)+'cm';
-  if(d>50) return '>50m';
+  if(d==null||isNaN(d)||d<=0)return '--';
+  if(d<0.01)return (d*1000).toFixed(1)+'mm';
+  if(d<1)return (d*100).toFixed(1)+'cm';
+  if(d>100)return '>100m';
   return d.toFixed(2)+'m';
 }
 
-// ---- CAPTURE MODES -----------------------------------------------
+/* CAPTURE MODES */
 function setMode(m){
   captureMode=m;
-  document.querySelectorAll('.mode-btn').forEach(function(b){b.classList.remove('active');});
-  $('mode'+m.charAt(0).toUpperCase()+m.slice(1)).classList.add('active');
-  if(m==='depthmap'){
-    startLiveDepth();
-  }else{
-    stopLiveDepth();
-  }
+  document.querySelectorAll('.mpill').forEach(function(b){b.classList.remove('active');});
+  $('mp'+m.charAt(0).toUpperCase()+m.slice(1)).classList.add('active');
+  if(m!=='edge')stopEdgeLive();
+  if(m==='edge')startEdgeLive();
 }
 
 async function triggerCapture(){
-  if(captureMode==='depth'){
-    runFocusBracket();
-    showTab('depth');
-  }else if(captureMode==='depthmap'){
-    captureSingleDepthMap();
-  }else{
-    snapPhoto();
-  }
+  if(captureMode==='dfd'){runDFD();showTab('depth');}
+  else if(captureMode==='edge'){toggleEdgeLive();showTab('depth');}
+  else{snapPhoto();}
 }
 
-// ---- SNAPSHOT ----------------------------------------------------
 async function snapPhoto(){
-  var fl=$('flash'); fl.style.animation='none'; fl.style.opacity='0';
-  void fl.offsetWidth; fl.style.animation='flashOut 0.4s ease-out forwards';
+  var fl=$('flash');fl.style.animation='none';fl.style.opacity='0';void fl.offsetWidth;
+  fl.style.animation='fOut 0.4s ease-out forwards';
   try{
     var blob=null;
     if(ic){try{blob=await ic.takePhoto();}catch(e){blob=null;}}
     if(!blob){
-      var v=$('video'), c=$('captureCanvas');
-      c.width=v.videoWidth; c.height=v.videoHeight;
+      var v=$('video'),c=$('capCanvas');c.width=v.videoWidth;c.height=v.videoHeight;
       c.getContext('2d').drawImage(v,0,0);
-      blob=await new Promise(function(r){c.toBlob(r,'image/jpeg',0.97);});
+      blob=await new Promise(function(r){c.toBlob(r,'image/jpeg',.97);});
     }
     if(blob){
-      var url=URL.createObjectURL(blob);
-      var a=document.createElement('a'); a.href=url; a.download='prism-'+Date.now()+'.jpg';
-      document.body.appendChild(a); a.click(); document.body.removeChild(a);
-      URL.revokeObjectURL(url); showToast('Photo saved!','ok');
+      var url=URL.createObjectURL(blob);var a=document.createElement('a');a.href=url;
+      a.download='prism-'+Date.now()+'.jpg';document.body.appendChild(a);a.click();document.body.removeChild(a);
+      URL.revokeObjectURL(url);showToast('Photo saved','ok');
     }
   }catch(e){showToast('Capture failed','err');}
 }
 
-// ---- FOCUS BRACKETING & DEPTH FROM DEFOCUS -----------------------
-async function runFocusBracket(){
-  if(bracketRunning){showToast('Already running...','warn');return;}
-  if(!caps.focusDistance||!caps.focusMode){
-    showToast('Focus control not supported on this camera','warn');
-    // Still try edge-based on current frame
-    captureSingleDepthMap();
-    return;
+/* DFD SCAN */
+function setDFDMethod(m){
+  dfdMethod=m;
+  document.querySelectorAll('.mtab').forEach(function(b){b.classList.remove('active');});
+  $('mt'+m.charAt(0).toUpperCase()+m.slice(1)).classList.add('active');
+}
+
+async function runDFD(){
+  if(dfdRunning){showToast('Already running','w');return;}
+  if(!caps.focusDistance){
+    showToast('focusDistance not supported - using edge map instead','w');
+    runEdgeCapture();return;
   }
 
-  bracketRunning=true;
-  var btn=$('btnBracket');
-  btn.textContent='SCANNING...'; btn.disabled=true;
-  $('bracketStatus').textContent='RUNNING';
+  dfdRunning=true;
+  var btn=$('btnDFD');btn.textContent='SCANNING...';btn.disabled=true;
+  $('dfdStatus').textContent='RUNNING';
+  $('hudC').style.display='block';
 
-  var steps=parseInt($('bSteps').value)||8;
-  var fdMin=caps.focusDistance.min;
-  var fdMax=caps.focusDistance.max;
+  var steps=parseInt($('bSt').value)||10;
+  var settle=parseInt($('bStl').value)||250;
+  var fdCap=caps.focusDistance;
+  var fdMin=fdCap.min,fdMax=fdCap.max;
   var vid=$('video');
-  var W=vid.videoWidth||640, H=vid.videoHeight||480;
+  var W=vid.videoWidth||1280,H=vid.videoHeight||720;
 
-  // Switch to manual focus
+  /* Switch to manual */
   try{await applyC({focusMode:'manual'});}catch(e){}
 
-  var sharpMaps=[]; // array of {fd, sharpnessMap}
-  var bracketImages=[];
-  var sc=$('sharpCanvas');
-  sc.width=W; sc.height=H;
-  var sctx=sc.getContext('2d');
+  var wc=$('workCanvas');wc.width=W;wc.height=H;
+  var wctx=wc.getContext('2d');
+
+  var GRID_W=20,GRID_H=15;
+  var sharpStacks=[];/* [step][cell] = sharpness value */
+  var fdValues=[];
+  var bracketFrames=[];
 
   for(var i=0;i<steps;i++){
     var fd=fdMin+(fdMax-fdMin)*(i/(steps-1));
+    fdValues.push(fd);
     try{await applyC({focusDistance:fd});}catch(e){}
-    // Wait for focus to settle
-    await sleep(300);
+    await sleep(settle);
 
-    // Capture frame
-    sctx.drawImage(vid,0,0,W,H);
-    var imgData=sctx.getImageData(0,0,W,H);
+    wctx.drawImage(vid,0,0,W,H);
+    var imgData=wctx.getImageData(0,0,W,H);
+    var sharp=computeSharpMap(imgData,W,H,GRID_W,GRID_H,dfdMethod);
+    sharpStacks.push(sharp);
+    bracketFrames.push({fd:fd,imgData:imgData});
 
-    // Compute Laplacian variance map (grid of NxM cells)
-    var gridW=16, gridH=12;
-    var sharpMap=computeSharpnessMap(imgData,W,H,gridW,gridH);
-    sharpMaps.push({fd:fd, map:sharpMap});
-    bracketImages.push({fd:fd, data:imgData.data.slice(0)});
+    /* Update progress */
+    var pct=Math.round((i+1)/steps*100);
+    $('dfdProg').style.width=pct+'%';
+    $('scanProg').style.width=pct+'%';
+    $('scanStatus').textContent='STEP '+(i+1)+'/'+steps;
+    $('dfdStatus').textContent=(i+1)+'/'+steps;
 
-    // Update progress
-    $('bracketProgress').style.width=Math.round((i+1)/steps*100)+'%';
-    $('bracketStatus').textContent='Step '+(i+1)+'/'+steps;
-
-    // Draw strip in bracket canvas
-    drawBracketStrip(bracketImages, $('bracketCanvas'), W, H, steps);
-
-    await sleep(20);
+    drawBracketViz(bracketFrames,$('bracketCanvas'),W,H,steps);
+    await sleep(10);
   }
 
-  // Compute depth map from sharpness maps
-  var gridW=16, gridH=12;
-  var depthMap=computeDepthFromSharpness(sharpMaps, gridW, gridH, fdMin, fdMax);
-  lastDepthData={map:depthMap, gW:gridW, gH:gridH, fdMin:fdMin, fdMax:fdMax};
-
-  // Render depth map
-  renderDepthMap(depthMap, gridW, gridH, $('depthMapCanvas'));
-
-  // Stats
-  $('bsSteps').textContent=steps;
-  var dvals=depthMap.filter(function(v){return v>0;});
-  if(dvals.length){
-    var sorted=dvals.slice().sort(function(a,b){return a-b;});
-    $('bsNear').textContent=fmtDist(sorted[0]);
-    $('bsFar').textContent=fmtDist(sorted[sorted.length-1]);
-  }
-
-  // Restore auto focus
-  try{
-    if(caps.focusMode&&caps.focusMode.includes('continuous')){
-      await applyC({focusMode:'continuous'});
+  /* Build depth map: for each cell, find step with max sharpness */
+  var N=GRID_W*GRID_H;
+  var depthMap=new Array(N);
+  var peakSharp=new Array(N).fill(0);
+  for(var c=0;c<N;c++){
+    var bestFd=fdValues[0],best=sharpStacks[0][c];
+    for(var si=1;si<steps;si++){
+      if(sharpStacks[si][c]>best){best=sharpStacks[si][c];bestFd=fdValues[si];}
     }
+    depthMap[c]=fdToMeters(bestFd,fdCap);
+    peakSharp[c]=best;
+  }
+
+  lastDFDResult={map:depthMap,gW:GRID_W,gH:GRID_H,fdMin:fdMin,fdMax:fdMax,W:W,H:H,frames:bracketFrames};
+
+  renderDFDMap(depthMap,GRID_W,GRID_H,$('dfdMapCanvas'));
+
+  /* Stats */
+  $('bsS').textContent=steps;
+  var valid=depthMap.filter(function(v){return v>0;});
+  if(valid.length){
+    var sorted=valid.slice().sort(function(a,b){return a-b;});
+    $('bsN').textContent=fmtDist(sorted[0]);
+    $('bsF').textContent=fmtDist(sorted[sorted.length-1]);
+    $('ldBig').textContent=fmtDist(sorted[Math.floor(sorted.length/2)]);
+  }
+
+  /* Restore auto focus */
+  try{
+    if(caps.focusMode&&caps.focusMode.indexOf('continuous')>=0)await applyC({focusMode:'continuous'});
+    else if(caps.focusMode&&caps.focusMode.length)await applyC({focusMode:caps.focusMode[0]});
   }catch(e){}
 
-  btn.textContent='RUN DEPTH SCAN'; btn.disabled=false;
-  $('bracketStatus').textContent='DONE';
-  $('bracketProgress').style.width='100%';
-  bracketRunning=false;
-  showToast('Depth scan complete!','ok');
+  btn.textContent='RUN DFD SCAN';btn.disabled=false;
+  $('dfdStatus').textContent='DONE';$('hudC').style.display='none';
+  dfdRunning=false;
+  $('pcStatus').textContent='Ready - click RENDER 3D';
+  showToast('DFD scan complete!','ok');
 }
 
-async function sleep(ms){
-  return new Promise(function(r){setTimeout(r,ms);});
+function fdToMeters(fd,fdCap){
+  if(!fdCap)return fd;
+  if(fdCap.max<=1.0)return 0.08+fd*12;
+  if(fdCap.max>50)return fd>0.001?1/fd:20;
+  return fd>0?fd:0;
 }
 
-function computeSharpnessMap(imgData,W,H,gW,gH){
+function computeSharpMap(imgData,W,H,gW,gH,method){
   var data=imgData.data;
-  var cellW=Math.floor(W/gW), cellH=Math.floor(H/gH);
+  var cW=Math.floor(W/gW),cH=Math.floor(H/gH);
   var map=[];
   for(var gy=0;gy<gH;gy++){
     for(var gx=0;gx<gW;gx++){
-      var x0=gx*cellW, y0=gy*cellH;
-      var x1=Math.min(x0+cellW,W), y1=Math.min(y0+cellH,H);
-      // Laplacian variance
-      var sum=0, sumSq=0, n=0;
-      for(var y=y0+1;y<y1-1;y++){
-        for(var x=x0+1;x<x1-1;x++){
-          // Get grayscale
-          var idx=(y*W+x)*4;
-          var g=0.299*data[idx]+0.587*data[idx+1]+0.114*data[idx+2];
-          // Laplacian: 4*center - top - bottom - left - right
-          var it=((y-1)*W+x)*4, ib=((y+1)*W+x)*4;
-          var il=(y*W+(x-1))*4, ir=(y*W+(x+1))*4;
-          var gt=0.299*data[it]+0.587*data[it+1]+0.114*data[it+2];
-          var gb=0.299*data[ib]+0.587*data[ib+1]+0.114*data[ib+2];
-          var gl=0.299*data[il]+0.587*data[il+1]+0.114*data[il+2];
-          var gr=0.299*data[ir]+0.587*data[ir+1]+0.114*data[ir+2];
-          var lap=4*g-gt-gb-gl-gr;
-          sum+=lap; sumSq+=lap*lap; n++;
-        }
-      }
-      var variance=n>0?(sumSq/n - (sum/n)*(sum/n)):0;
-      map.push(variance);
+      var x0=gx*cW,y0=gy*cH,x1=Math.min(x0+cW,W),y1=Math.min(y0+cH,H);
+      var score=0;
+      if(method==='laplacian'){score=laplacianVar(data,W,x0,y0,x1,y1);}
+      else if(method==='sobel'){score=sobelRMS(data,W,x0,y0,x1,y1);}
+      else{score=tenengrad(data,W,x0,y0,x1,y1);}
+      map.push(score);
     }
   }
   return map;
 }
 
-function computeDepthFromSharpness(sharpMaps, gW, gH, fdMin, fdMax){
-  var numCells=gW*gH;
-  var depthMap=new Array(numCells).fill(0);
-  for(var cell=0;cell<numCells;cell++){
-    var maxSharp=-1, bestFd=0;
-    sharpMaps.forEach(function(sm){
-      if(sm.map[cell]>maxSharp){
-        maxSharp=sm.map[cell]; bestFd=sm.fd;
-      }
-    });
-    // Convert fd to distance using same heuristic as live monitor
-    var dist=bestFd;
-    if(caps.focusDistance){
-      var fdCap=caps.focusDistance;
-      if(fdCap.max<=1.0){ dist=0.1+bestFd*9.9; }
-      else if(fdCap.max>10){ dist=bestFd>0?1/bestFd:10; }
-    }
-    depthMap[cell]=dist;
-  }
-  return depthMap;
+function gray(data,W,x,y){var i=(y*W+x)*4;return .299*data[i]+.587*data[i+1]+.114*data[i+2];}
+
+function laplacianVar(data,W,x0,y0,x1,y1){
+  var sum=0,sq=0,n=0;
+  for(var y=y0+1;y<y1-1;y++){for(var x=x0+1;x<x1-1;x++){
+    var lap=4*gray(data,W,x,y)-gray(data,W,x-1,y)-gray(data,W,x+1,y)-gray(data,W,x,y-1)-gray(data,W,x,y+1);
+    sum+=lap;sq+=lap*lap;n++;
+  }}
+  return n>0?(sq/n-(sum/n)*(sum/n)):0;
 }
 
-function drawBracketStrip(images,canvas,W,H,totalSteps){
-  var ctx=canvas.getContext('2d');
-  var cw=canvas.clientWidth||canvas.width;
-  canvas.width=cw; // actual px
-  var ch=canvas.height;
-  var sw=Math.floor(cw/totalSteps);
-  ctx.fillStyle='#000'; ctx.fillRect(0,0,cw,ch);
-  images.forEach(function(img,i){
-    // Draw a small column from the center of this capture
-    var sc=$('sharpCanvas');
-    var x=i*sw;
-    ctx.drawImage(sc, Math.floor(W/2)-Math.floor(W/totalSteps/2), 0, Math.floor(W/totalSteps), H,
-                  x, 0, sw, ch);
+function sobelRMS(data,W,x0,y0,x1,y1){
+  var sq=0,n=0;
+  for(var y=y0+1;y<y1-1;y++){for(var x=x0+1;x<x1-1;x++){
+    var gx=gray(data,W,x+1,y-1)+2*gray(data,W,x+1,y)+gray(data,W,x+1,y+1)-gray(data,W,x-1,y-1)-2*gray(data,W,x-1,y)-gray(data,W,x-1,y+1);
+    var gy=gray(data,W,x-1,y+1)+2*gray(data,W,x,y+1)+gray(data,W,x+1,y+1)-gray(data,W,x-1,y-1)-2*gray(data,W,x,y-1)-gray(data,W,x+1,y-1);
+    sq+=gx*gx+gy*gy;n++;
+  }}
+  return n>0?Math.sqrt(sq/n):0;
+}
+
+function tenengrad(data,W,x0,y0,x1,y1){
+  var T=10,sum=0,n=0;
+  for(var y=y0+1;y<y1-1;y++){for(var x=x0+1;x<x1-1;x++){
+    var gx=gray(data,W,x+1,y-1)+2*gray(data,W,x+1,y)+gray(data,W,x+1,y+1)-gray(data,W,x-1,y-1)-2*gray(data,W,x-1,y)-gray(data,W,x-1,y+1);
+    var gy=gray(data,W,x-1,y+1)+2*gray(data,W,x,y+1)+gray(data,W,x+1,y+1)-gray(data,W,x-1,y-1)-2*gray(data,W,x,y-1)-gray(data,W,x+1,y-1);
+    var g2=gx*gx+gy*gy;if(g2>T*T){sum+=g2;n++;}
+  }}
+  return n>0?sum/n:0;
+}
+
+function drawBracketViz(frames,canvas,W,H,total){
+  var cw=canvas.clientWidth||300;canvas.width=cw;
+  var ch=canvas.height||100;var ctx=canvas.getContext('2d');
+  ctx.fillStyle='#000';ctx.fillRect(0,0,cw,ch);
+  var sw=Math.floor(cw/total);
+  var wc=$('workCanvas');
+  frames.forEach(function(fr,i){
+    wc.width=W;wc.height=H;
+    var wctx=wc.getContext('2d');
+    var tmp=new ImageData(fr.imgData.data.slice(),W,H);
+    wctx.putImageData(tmp,0,0);
+    ctx.drawImage(wc,Math.floor(W/2-W/(total*2)),0,Math.floor(W/total),H,i*sw,0,sw,ch);
+    /* FD label */
+    ctx.fillStyle='rgba(0,255,200,.6)';ctx.font='7px monospace';
+    ctx.fillText(fr.fd.toFixed(2),i*sw+1,ch-2);
   });
 }
 
-function renderDepthMap(depthMap,gW,gH,canvas){
+function renderDFDMap(depthMap,gW,gH,canvas){
+  var cw=canvas.clientWidth||300;canvas.width=cw;var ch=canvas.height||160;
   var ctx=canvas.getContext('2d');
-  var cw=canvas.clientWidth||300;
-  canvas.width=cw;
-  var ch=canvas.height||180;
-  var cellW=cw/gW, cellH=ch/gH;
-
-  var validVals=depthMap.filter(function(v){return v>0;});
-  if(!validVals.length) return;
-  var dmin=Math.min.apply(null,validVals);
-  var dmax=Math.max.apply(null,validVals);
-  var range=dmax-dmin||1;
-
-  for(var i=0;i<depthMap.length;i++){
-    var gy=Math.floor(i/gW), gx=i%gW;
-    var t=(depthMap[i]-dmin)/range; // 0=near, 1=far
-    // Color: near=red, mid=green, far=blue (like heatmap)
+  var valid=depthMap.filter(function(v){return v>0;});
+  if(!valid.length){ctx.fillStyle='#111';ctx.fillRect(0,0,cw,ch);return;}
+  var dmin=Math.min.apply(null,valid),dmax=Math.max.apply(null,valid),rng=dmax-dmin||1;
+  var cW=cw/gW,cH=ch/gH;
+  depthMap.forEach(function(d,i){
+    var gy=Math.floor(i/gW),gx=i%gW;
+    var t=Math.max(0,Math.min(1,(d-dmin)/rng));
     var r,g,b;
-    if(t<0.5){r=Math.round(255*(1-t*2));g=Math.round(255*t*2);b=0;}
-    else{r=0;g=Math.round(255*(1-(t-0.5)*2));b=Math.round(255*(t-0.5)*2);}
+    /* Jet colormap: near=red, mid=green, far=blue */
+    if(t<0.25){r=255;g=Math.round(255*t*4);b=0;}
+    else if(t<0.5){r=Math.round(255*(1-(t-.25)*4));g=255;b=0;}
+    else if(t<0.75){r=0;g=255;b=Math.round(255*(t-.5)*4);}
+    else{r=0;g=Math.round(255*(1-(t-.75)*4));b=255;}
     ctx.fillStyle='rgb('+r+','+g+','+b+')';
-    ctx.fillRect(Math.floor(gx*cellW), Math.floor(gy*cellH),
-                 Math.ceil(cellW)+1, Math.ceil(cellH)+1);
-  }
-
-  // Label corners
-  ctx.font='9px monospace'; ctx.fillStyle='rgba(255,255,255,0.8)';
-  ctx.fillText(fmtDist(dmin)+'(near)',2,12);
-  ctx.fillText(fmtDist(dmax)+'(far)',2,ch-4);
+    ctx.fillRect(Math.floor(gx*cW),Math.floor(gy*cH),Math.ceil(cW)+1,Math.ceil(cH)+1);
+  });
+  /* Overlay distance labels */
+  ctx.font='bold 9px monospace';
+  depthMap.forEach(function(d,i){
+    if(d<=0)return;
+    var gy=Math.floor(i/gW),gx=i%gW;
+    var cx=Math.floor(gx*cW+cW/2),cy=Math.floor(gy*cH+cH/2)+3;
+    ctx.fillStyle='rgba(0,0,0,.55)';ctx.fillRect(cx-12,cy-8,24,10);
+    ctx.fillStyle='#fff';ctx.textAlign='center';ctx.fillText(fmtDist(d),cx,cy);
+  });
+  ctx.textAlign='left';
 }
 
-function clearDepth(){
-  var bc=$('bracketCanvas'); bc.getContext('2d').clearRect(0,0,bc.width,bc.height);
-  var dc=$('depthMapCanvas'); dc.getContext('2d').clearRect(0,0,dc.width,dc.height);
-  $('bracketProgress').style.width='0';
-  $('bracketStatus').textContent='IDLE';
-  $('bsSteps').textContent='--'; $('bsNear').textContent='--'; $('bsFar').textContent='--';
-  lastDepthData=null;
+function clearDFD(){
+  [$('bracketCanvas'),$('dfdMapCanvas'),$('pcCanvas')].forEach(function(c){
+    c.getContext('2d').clearRect(0,0,c.width,c.height);
+  });
+  $('dfdProg').style.width='0';$('dfdStatus').textContent='IDLE';
+  $('bsS').textContent='--';$('bsN').textContent='--';$('bsF').textContent='--';
+  lastDFDResult=null;$('pcStatus').textContent='Run DFD first';
 }
 
-// ---- LIVE DEPTH MAP (EDGE/SOBEL BASED) ---------------------------
-function toggleLiveDepth(){
-  if(liveDepthRunning){ stopLiveDepth(); }
-  else{ startLiveDepth(); }
+function saveDepthMap(){
+  if(!lastDFDResult){showToast('Run DFD scan first','w');return;}
+  var c=$('dfdMapCanvas');
+  var url=c.toDataURL('image/png');
+  var a=document.createElement('a');a.href=url;a.download='depthmap-'+Date.now()+'.png';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  showToast('Depth map saved','ok');
 }
 
-function startLiveDepth(){
-  if(liveDepthRunning) return;
-  liveDepthRunning=true;
-  $('btnLiveDepth').textContent='STOP';
-  $('btnLiveDepth').style.borderColor='var(--a2)';
-  $('btnLiveDepth').style.color='var(--a2)';
-  $('depthCanvas').style.display='block';
-  liveDepthLoop();
+/* EDGE LIVE MAP */
+function toggleEdgeLive(){edgeLiveOn?stopEdgeLive():startEdgeLive();}
+
+function startEdgeLive(){
+  if(edgeLiveOn)return;edgeLiveOn=true;
+  $('btnEdge').textContent='STOP';$('btnEdge').style.color='var(--a2)';$('btnEdge').style.borderColor='var(--a2)';
+  $('edgeMapCanvas').style.display='block';
+  edgeLoop();
 }
 
-function stopLiveDepth(){
-  liveDepthRunning=false;
-  if(liveDepthRAF) cancelAnimationFrame(liveDepthRAF);
-  $('btnLiveDepth').textContent='START';
-  $('btnLiveDepth').style.borderColor='';$('btnLiveDepth').style.color='';
+function stopEdgeLive(){
+  edgeLiveOn=false;if(edgeRAF){cancelAnimationFrame(edgeRAF);edgeRAF=null;}
+  $('btnEdge').textContent='START';$('btnEdge').style.color='';$('btnEdge').style.borderColor='';
   $('depthCanvas').style.display='none';
 }
 
-function liveDepthLoop(){
-  if(!liveDepthRunning) return;
+function edgeLoop(){
+  if(!edgeLiveOn)return;
   var vid=$('video');
   if(vid.readyState>=2){
-    var W=vid.videoWidth, H=vid.videoHeight;
+    var W=vid.videoWidth,H=vid.videoHeight;
     if(W&&H){
-      var sc=$('sharpCanvas');
-      sc.width=W; sc.height=H;
-      var ctx=sc.getContext('2d');
-      ctx.drawImage(vid,0,0,W,H);
-      var imgData=ctx.getImageData(0,0,W,H);
-      renderLiveEdgeDepth(imgData, W, H);
+      var wc=$('workCanvas');wc.width=W;wc.height=H;
+      var wctx=wc.getContext('2d');wctx.drawImage(vid,0,0,W,H);
+      var imgData=wctx.getImageData(0,0,W,H);
+      renderEdgeMap(imgData,W,H,$('edgeMapCanvas'),$('depthCanvas'));
     }
   }
-  liveDepthRAF=requestAnimationFrame(liveDepthLoop);
+  edgeRAF=requestAnimationFrame(edgeLoop);
 }
 
-function renderLiveEdgeDepth(imgData, W, H){
-  var dc=$('depthCanvas');
-  var dW=dc.width, dH=dc.height;
-  var ctx=dc.getContext('2d');
-  ctx.clearRect(0,0,dW,dH);
+function runEdgeCapture(){
+  var vid=$('video'),W=vid.videoWidth,H=vid.videoHeight;
+  var wc=$('workCanvas');wc.width=W;wc.height=H;
+  wc.getContext('2d').drawImage(vid,0,0,W,H);
+  var img=wc.getContext('2d').getImageData(0,0,W,H);
+  renderEdgeMap(img,W,H,$('edgeMapCanvas'),$('depthCanvas'));
+  $('edgeMapCanvas').style.display='block';
+  showTab('depth');showToast('Edge map captured','ok');
+}
+
+function renderEdgeMap(imgData,W,H,outCanvas,overlayCanvas){
   var data=imgData.data;
+  var GW=32,GH=24;
+  var cW=Math.floor(W/GW),cH=Math.floor(H/GH);
+  var edges=new Float32Array(GW*GH);
+  var maxE=0,sumE=0;
 
-  // Compute Sobel gradient magnitude, downsample to 32x24 grid
-  var gW=32, gH=24;
-  var cellW=Math.floor(W/gW), cellH=Math.floor(H/gH);
-  var edgeMap=[];
-  var maxEdge=0;
-
-  for(var gy=0;gy<gH;gy++){
-    for(var gx=0;gx<gW;gx++){
-      var cx=gx*cellW+Math.floor(cellW/2);
-      var cy=gy*cellH+Math.floor(cellH/2);
-      cx=Math.max(1,Math.min(W-2,cx));
-      cy=Math.max(1,Math.min(H-2,cy));
-      // Sobel
-      function px(xx,yy){
-        var idx=(yy*W+xx)*4;
-        return 0.299*data[idx]+0.587*data[idx+1]+0.114*data[idx+2];
-      }
-      var gx_=px(cx+1,cy-1)+2*px(cx+1,cy)+px(cx+1,cy+1)-px(cx-1,cy-1)-2*px(cx-1,cy)-px(cx-1,cy+1);
-      var gy_=px(cx-1,cy+1)+2*px(cx,cy+1)+px(cx+1,cy+1)-px(cx-1,cy-1)-2*px(cx,cy-1)-px(cx+1,cy-1);
-      var mag=Math.sqrt(gx_*gx_+gy_*gy_);
-      edgeMap.push(mag);
-      if(mag>maxEdge) maxEdge=mag;
+  for(var gy=0;gy<GH;gy++){
+    for(var gx2=0;gx2<GW;gx2++){
+      var cx=gx2*cW+Math.floor(cW/2),cy=gy*cH+Math.floor(cH/2);
+      cx=Math.max(1,Math.min(W-2,cx));cy=Math.max(1,Math.min(H-2,cy));
+      var gxv=gray(data,W,cx+1,cy-1)+2*gray(data,W,cx+1,cy)+gray(data,W,cx+1,cy+1)
+             -gray(data,W,cx-1,cy-1)-2*gray(data,W,cx-1,cy)-gray(data,W,cx-1,cy+1);
+      var gyv=gray(data,W,cx-1,cy+1)+2*gray(data,W,cx,cy+1)+gray(data,W,cx+1,cy+1)
+             -gray(data,W,cx-1,cy-1)-2*gray(data,W,cx,cy-1)-gray(data,W,cx+1,cy-1);
+      var mag=Math.sqrt(gxv*gxv+gyv*gyv);
+      edges[gy*GW+gx2]=mag;if(mag>maxE)maxE=mag;sumE+=mag;
     }
   }
 
-  if(maxEdge<0.1) return;
+  var avgE=sumE/(GW*GH);
+  var nearCount=0;
+  if(maxE<0.5)return;
 
-  // Render colored overlay
-  var cellDW=dW/gW, cellDH=dH/gH;
-  edgeMap.forEach(function(mag,i){
-    var gy2=Math.floor(i/gW), gx2=i%gW;
-    var t=mag/maxEdge; // 0=far/blurry, 1=near/sharp
-    // Color: high edge (near) = hot red/yellow, low edge (far) = cool blue
-    var r,g,b,a;
-    if(t>0.6){r=255;g=Math.round(255*(1-t)*2.5);b=0;a=0.7;}
-    else if(t>0.3){r=255;g=255;b=0;a=0.5;}
-    else{r=0;g=Math.round(100*t);b=200;a=0.3;}
-    ctx.fillStyle='rgba('+r+','+g+','+b+','+a.toFixed(2)+')';
-    ctx.fillRect(Math.floor(gx2*cellDW),Math.floor(gy2*cellDH),Math.ceil(cellDW)+1,Math.ceil(cellDH)+1);
+  /* Render to edge canvas */
+  var ow=outCanvas.clientWidth||300;outCanvas.width=ow;var oh=outCanvas.height||140;
+  var ctx=outCanvas.getContext('2d');
+  var dcW=ow/GW,dcH=oh/GH;
+
+  edges.forEach(function(mag,i){
+    var gy2=Math.floor(i/GW),gx3=i%GW;
+    var t=mag/maxE;
+    var r,g,b;
+    if(t>0.7){r=255;g=Math.round(80*(1-t));b=0;nearCount++;}
+    else if(t>0.4){r=255;g=200;b=0;}
+    else if(t>0.2){r=0;g=200;b=100;}
+    else{r=0;g=60;b=220;}
+    ctx.fillStyle='rgb('+r+','+g+','+b+')';
+    ctx.fillRect(Math.floor(gx3*dcW),Math.floor(gy2*dcH),Math.ceil(dcW)+1,Math.ceil(dcH)+1);
   });
 
-  // Center sharpness indicator
-  var centerIdx=Math.floor(gH/2)*gW+Math.floor(gW/2);
-  var centerEdge=edgeMap[centerIdx]/maxEdge;
-  $('dSharpness').textContent=(centerEdge*100).toFixed(0)+'%';
+  /* Also draw on video overlay canvas */
+  if(overlayCanvas&&overlayCanvas.style.display!=='none'){
+    var ow2=overlayCanvas.width,oh2=overlayCanvas.height;
+    var ctx2=overlayCanvas.getContext('2d');
+    ctx2.clearRect(0,0,ow2,oh2);
+    var ocW=ow2/GW,ocH=oh2/GH;
+    edges.forEach(function(mag,i){
+      var gy2=Math.floor(i/GW),gx3=i%GW;
+      var t=mag/maxE;
+      var r,g,b,a;
+      if(t>0.7){r=255;g=60;b=0;a=.65;}
+      else if(t>0.4){r=255;g=220;b=0;a=.45;}
+      else if(t>0.2){r=0;g=180;b=60;a=.3;}
+      else{r=0;g=40;b=200;a=.25;}
+      ctx2.fillStyle='rgba('+r+','+g+','+b+','+a.toFixed(2)+')';
+      ctx2.fillRect(Math.floor(gx3*ocW),Math.floor(gy2*ocH),Math.ceil(ocW)+1,Math.ceil(ocH)+1);
+    });
+  }
+
+  /* Update stats */
+  var ci=Math.floor(GH/2)*GW+Math.floor(GW/2);
+  $('dEdge').textContent=(edges[ci]/maxE*100).toFixed(0)+'%';
+  $('emMax').textContent=maxE.toFixed(1);$('emAvg').textContent=avgE.toFixed(1);
+  $('emNear').textContent=nearCount+'/'+GW*GH;
 }
 
-function captureSingleDepthMap(){
-  var vid=$('video');
-  var W=vid.videoWidth, H=vid.videoHeight;
-  var sc=$('sharpCanvas');
-  sc.width=W; sc.height=H;
-  var ctx=sc.getContext('2d');
-  ctx.drawImage(vid,0,0,W,H);
-  var imgData=ctx.getImageData(0,0,W,H);
-  var dc=$('depthMapCanvas');
-  dc.width=dc.clientWidth||300;
-  dc.height=180;
-  renderLiveEdgeDepth(imgData,W,H);
-  showToast('Depth map captured','ok');
-  showTab('depth');
+/* 3D POINT CLOUD */
+function renderPointCloud(){
+  if(!lastDFDResult){showToast('Run DFD scan first','w');return;}
+  var r=lastDFDResult;
+  var canvas=$('pcCanvas');
+  var cw=canvas.clientWidth||300;canvas.width=cw;var ch=canvas.height||200;
+  var ctx=canvas.getContext('2d');
+  ctx.fillStyle='#060809';ctx.fillRect(0,0,cw,ch);
+
+  /* Build points */
+  var pts=[];
+  r.map.forEach(function(d,i){
+    if(d<=0)return;
+    var gy=Math.floor(i/r.gW),gx=i%r.gW;
+    var nx=(gx/r.gW-.5)*2;/* -1..1 */
+    var ny=(gy/r.gH-.5)*2;
+    var nz=d;/* meters = Z */
+    pts.push({x:nx,y:ny,z:nz,d:d});
+  });
+  if(!pts.length){$('pcStatus').textContent='No depth data';return;}
+
+  var dmin=Math.min.apply(null,pts.map(function(p){return p.d;}));
+  var dmax=Math.max.apply(null,pts.map(function(p){return p.d;}));
+
+  drawPC(ctx,pts,cw,ch,pcAngle,dmin,dmax);
+  $('pcStatus').textContent=pts.length+' pts, '+fmtDist(dmin)+' - '+fmtDist(dmax);
 }
 
-// ---- TORCH -------------------------------------------------------
+function drawPC(ctx,pts,cw,ch,angle,dmin,dmax){
+  ctx.fillStyle='#060809';ctx.fillRect(0,0,cw,ch);
+  var cosA=Math.cos(angle),sinA=Math.sin(angle);
+  var scale=cw*.35;var cx=cw/2,cy=ch/2;
+  /* Project and sort by depth */
+  var proj=pts.map(function(p){
+    var rx=p.x*cosA-p.z*.15*sinA;
+    var rz=p.x*sinA+p.z*.15*cosA;
+    var perspective=1/(1+rz*.4);
+    var sx=cx+rx*scale*perspective;
+    var sy=cy+p.y*scale*perspective*.6;
+    var sz=rz;
+    var t=(p.d-dmin)/(dmax-dmin||1);
+    /* Jet color */
+    var r2,g,b;
+    if(t<.25){r2=255;g=Math.round(255*t*4);b=0;}
+    else if(t<.5){r2=Math.round(255*(1-(t-.25)*4));g=255;b=0;}
+    else if(t<.75){r2=0;g=255;b=Math.round(255*(t-.5)*4);}
+    else{r2=0;g=Math.round(255*(1-(t-.75)*4));b=255;}
+    return {sx:sx,sy:sy,sz:sz,r:r2,g:g,b:b,size:Math.max(2,Math.round(perspective*5))};
+  });
+  proj.sort(function(a,b){return b.sz-a.sz;});
+  proj.forEach(function(p){
+    ctx.fillStyle='rgb('+p.r+','+p.g+','+p.b+')';
+    ctx.beginPath();ctx.arc(p.sx,p.sy,p.size,0,Math.PI*2);ctx.fill();
+  });
+  /* Axes */
+  ctx.strokeStyle='rgba(255,255,255,.15)';ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(cx-scale*.5,cy);ctx.lineTo(cx+scale*.5,cy);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(cx,cy-scale*.5);ctx.lineTo(cx,cy+scale*.5);ctx.stroke();
+  ctx.font='8px monospace';ctx.fillStyle='rgba(255,255,255,.3)';
+  ctx.fillText('X',cx+scale*.5+2,cy+4);ctx.fillText('Y',cx+2,cy-scale*.5);
+}
+
+function togglePCRotate(){
+  pcRotating=!pcRotating;
+  $('btnPCRot').style.color=pcRotating?'var(--a1)':'var(--muted)';
+  $('btnPCRot').style.borderColor=pcRotating?'var(--a1)':'var(--border2)';
+  if(pcRotating) pcRotLoop();
+  else if(pcRotRAF){cancelAnimationFrame(pcRotRAF);pcRotRAF=null;}
+}
+
+function pcRotLoop(){
+  if(!pcRotating)return;
+  if(!lastDFDResult){pcRotating=false;return;}
+  pcAngle+=0.02;
+  var r=lastDFDResult;
+  var canvas=$('pcCanvas');var cw=canvas.width||300;var ch=canvas.height||200;
+  var ctx=canvas.getContext('2d');
+  var pts=[];
+  r.map.forEach(function(d,i){
+    if(d<=0)return;
+    var gy=Math.floor(i/r.gW),gx=i%r.gW;
+    pts.push({x:(gx/r.gW-.5)*2,y:(gy/r.gH-.5)*2,z:d,d:d});
+  });
+  var dmin=Math.min.apply(null,pts.map(function(p){return p.d;}));
+  var dmax=Math.max.apply(null,pts.map(function(p){return p.d;}));
+  drawPC(ctx,pts,cw,ch,pcAngle,dmin,dmax);
+  pcRotRAF=requestAnimationFrame(pcRotLoop);
+}
+
+/* STEREO VISION */
+function populateStereoSelects(){
+  [$('camL'),$('camR')].forEach(function(sel,si){
+    sel.innerHTML='';
+    devs.forEach(function(d,i){
+      var o=document.createElement('option');o.value=d.deviceId;o.textContent=d.label||'Camera '+(i+1);
+      if(i===si&&i<devs.length)o.selected=true;
+      sel.appendChild(o);
+    });
+  });
+  if(devs.length<2)$('btnStereo').style.opacity='.4';
+}
+
+async function runStereo(){
+  $('stereoStatus').textContent='Capturing...';
+  var idL=$('camL').value,idR=$('camR').value;
+  if(idL===idR){showToast('Select different cameras for stereo','w');$('stereoStatus').textContent='Need 2 cameras';return;}
+
+  try{
+    /* Capture from left cam */
+    if(streamL)streamL.getTracks().forEach(function(t){t.stop();});
+    streamL=await navigator.mediaDevices.getUserMedia({video:{deviceId:{exact:idL},width:{ideal:1280},height:{ideal:720}},audio:false});
+    var vidL=document.createElement('video');vidL.srcObject=streamL;vidL.muted=true;vidL.playsInline=true;
+    await new Promise(function(r){vidL.onloadedmetadata=r;setTimeout(r,3000);});
+    await vidL.play().catch(function(){});
+    await sleep(500);
+
+    var wc=$('workCanvas');wc.width=vidL.videoWidth;wc.height=vidL.videoHeight;
+    var wctx=wc.getContext('2d');
+    wctx.drawImage(vidL,0,0);
+    var imgL=wctx.getImageData(0,0,vidL.videoWidth,vidL.videoHeight);
+    streamL.getTracks().forEach(function(t){t.stop();});streamL=null;
+
+    /* Capture from right cam */
+    if(streamR)streamR.getTracks().forEach(function(t){t.stop();});
+    streamR=await navigator.mediaDevices.getUserMedia({video:{deviceId:{exact:idR},width:{ideal:1280},height:{ideal:720}},audio:false});
+    var vidR=document.createElement('video');vidR.srcObject=streamR;vidR.muted=true;vidR.playsInline=true;
+    await new Promise(function(r){vidR.onloadedmetadata=r;setTimeout(r,3000);});
+    await vidR.play().catch(function(){});
+    await sleep(500);
+
+    wc.width=vidR.videoWidth;wc.height=vidR.videoHeight;
+    wctx.drawImage(vidR,0,0);
+    var imgR=wctx.getImageData(0,0,vidR.videoWidth,vidR.videoHeight);
+    streamR.getTracks().forEach(function(t){t.stop();});streamR=null;
+
+    $('stereoStatus').textContent='Computing disparity...';
+    await sleep(30);/* let UI update */
+
+    /* Show side by side */
+    var sc=$('stereoCanvas');
+    var W=Math.min(imgL.width,imgR.width),H=Math.min(imgL.height,imgR.height);
+    var cw=sc.clientWidth||300;sc.width=cw;sc.height=Math.round(cw/4);
+    var sctx=sc.getContext('2d');
+    var half=Math.floor(cw/2);
+
+    var tmpL=document.createElement('canvas');tmpL.width=W;tmpL.height=H;
+    tmpL.getContext('2d').putImageData(imgL,0,0);
+    var tmpR=document.createElement('canvas');tmpR.width=W;tmpR.height=H;
+    tmpR.getContext('2d').putImageData(imgR,0,0);
+
+    sctx.drawImage(tmpL,0,0,W,H,0,0,half,sc.height);
+    sctx.drawImage(tmpR,0,0,W,H,half,0,half,sc.height);
+    sctx.strokeStyle='rgba(0,255,200,.3)';sctx.lineWidth=1;sctx.beginPath();sctx.moveTo(half,0);sctx.lineTo(half,sc.height);sctx.stroke();
+
+    /* Compute disparity map (SAD block matching) */
+    var disp=computeDisparity(imgL.data,imgR.data,W,H);
+    var dc=$('stereoDispCanvas');dc.width=cw;dc.height=Math.round(cw/3);
+    renderDisparityMap(disp,W,H,dc);
+
+    $('stereoStatus').textContent='Done - '+W+'x'+H;
+    $('stereoBaseline').textContent='Two cameras';
+    showToast('Stereo pair captured','ok');
+
+  }catch(e){
+    $('stereoStatus').textContent='Failed: '+e.name;
+    showToast('Stereo failed: '+e.message,'err');
+    if(streamL){streamL.getTracks().forEach(function(t){t.stop();});streamL=null;}
+    if(streamR){streamR.getTracks().forEach(function(t){t.stop();});streamR=null;}
+  }
+}
+
+function computeDisparity(dL,dR,W,H){
+  /* Simple SAD block matching */
+  var BH=8,BW=8,maxDisp=Math.min(64,Math.floor(W/4));
+  var dmap=new Float32Array(W*H);
+  for(var y=BH;y<H-BH;y+=4){
+    for(var x=BH;x<W-BH;x+=4){
+      var bestSAD=1e9,bestD=0;
+      for(var d=0;d<maxDisp;d++){
+        if(x-d-BW<0)break;
+        var sad=0;
+        for(var by=-BH;by<=BH;by+=2){for(var bx=-BW;bx<=BW;bx+=2){
+          var il=((y+by)*W+(x+bx))*4,ir=((y+by)*W+(x+bx-d))*4;
+          sad+=Math.abs(.299*(dL[il]-dR[ir])+.587*(dL[il+1]-dR[ir+1])+.114*(dL[il+2]-dR[ir+2]));
+        }}
+        if(sad<bestSAD){bestSAD=sad;bestD=d;}
+      }
+      for(var fy=0;fy<4;fy++)for(var fx=0;fx<4;fx++)if(y+fy<H&&x+fx<W)dmap[(y+fy)*W+(x+fx)]=bestD;
+    }
+  }
+  return dmap;
+}
+
+function renderDisparityMap(disp,W,H,canvas){
+  var cw=canvas.width,ch=canvas.height;
+  var ctx=canvas.getContext('2d');
+  var img=ctx.createImageData(cw,ch);
+  var dmax=0;for(var i=0;i<disp.length;i++)if(disp[i]>dmax)dmax=disp[i];
+  if(dmax<1)return;
+  for(var y=0;y<ch;y++){for(var x=0;x<cw;x++){
+    var sx=Math.floor(x/cw*W),sy=Math.floor(y/ch*H);
+    var d=disp[sy*W+sx]/dmax;
+    var ii=(y*cw+x)*4;
+    /* Jet */
+    var r,g,b;
+    if(d<.25){r=0;g=Math.round(255*d*4);b=255;}
+    else if(d<.5){r=0;g=255;b=Math.round(255*(1-(d-.25)*4));}
+    else if(d<.75){r=Math.round(255*(d-.5)*4);g=255;b=0;}
+    else{r=255;g=Math.round(255*(1-(d-.75)*4));b=0;}
+    img.data[ii]=r;img.data[ii+1]=g;img.data[ii+2]=b;img.data[ii+3]=255;
+  }}
+  ctx.putImageData(img,0,0);
+  ctx.font='8px monospace';ctx.fillStyle='rgba(255,255,255,.6)';
+  ctx.fillText('DISPARITY MAP (high=near)',2,10);
+}
+
+/* TORCH */
 async function toggleTorch(){
-  if(!caps.torch){showToast('Torch not supported','warn');return;}
-  torchOn=!torchOn;
-  await applyC({torch:torchOn});
-  updateTorchBtn();
-  var t=$('tToggle'); if(t) t.checked=torchOn;
+  if(!caps.torch){showToast('Torch not supported on this camera','w');return;}
+  torchOn=!torchOn;await applyC({torch:torchOn});updateTorchBtn();
+  var t=$('tTog');if(t)t.checked=torchOn;
 }
-function updateTorchBtn(){
-  var b=$('torchBtn');
-  torchOn?b.classList.add('on'):b.classList.remove('on');
-}
+function updateTorchBtn(){var b=$('torchBtn');torchOn?b.classList.add('on'):b.classList.remove('on');}
 
-// ---- RESET / REFRESH / STOP --------------------------------------
+/* RESET */
 async function resetAll(){
-  if(!track)return;
-  var o={};
-  if(caps.brightness) o.brightness=Math.round((caps.brightness.min+caps.brightness.max)/2);
-  if(caps.contrast) o.contrast=Math.round((caps.contrast.min+caps.contrast.max)/2);
-  if(caps.saturation) o.saturation=Math.round((caps.saturation.min+caps.saturation.max)/2);
-  if(caps.sharpness) o.sharpness=Math.round((caps.sharpness.min+caps.sharpness.max)/2);
-  if(caps.exposureCompensation) o.exposureCompensation=0;
-  if(caps.zoom) o.zoom=caps.zoom.min;
-  if(caps.torch) o.torch=false;
-  if(Object.keys(o).length) await applyC(o);
-  torchOn=false; updateTorchBtn(); buildAll(); showToast('Reset','ok');
+  if(!track)return;var o={};
+  if(caps.brightness)o.brightness=Math.round((caps.brightness.min+caps.brightness.max)/2);
+  if(caps.contrast)o.contrast=Math.round((caps.contrast.min+caps.contrast.max)/2);
+  if(caps.saturation)o.saturation=Math.round((caps.saturation.min+caps.saturation.max)/2);
+  if(caps.sharpness)o.sharpness=Math.round((caps.sharpness.min+caps.sharpness.max)/2);
+  if(caps.exposureCompensation)o.exposureCompensation=0;
+  if(caps.zoom)o.zoom=caps.zoom.min;
+  if(caps.torch)o.torch=false;
+  if(Object.keys(o).length)await applyC(o);
+  torchOn=false;updateTorchBtn();buildAll();showToast('Reset','ok');
 }
 function refresh(){readCaps();buildAll();showToast('Refreshed','ok');}
 
-// ---- UI HELPERS --------------------------------------------------
-function togSec(h){h.classList.toggle('closed');h.nextElementSibling.classList.toggle('hidden');}
+/* UI */
+function togS(h){h.classList.toggle('closed');h.nextElementSibling.classList.toggle('hidden');}
 function showTab(n){
-  document.querySelectorAll('.tab-panel').forEach(function(p){p.classList.remove('active');});
+  document.querySelectorAll('.tp').forEach(function(p){p.classList.remove('active');});
   document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});
-  $('panel-'+n).classList.add('active'); $('tab-'+n).classList.add('active');
+  $('panel-'+n).classList.add('active');$('tab-'+n).classList.add('active');
   $('panelWrap').scrollTop=0;
 }
 var _tt=null;
-function showToast(msg,type){
-  var t=$('toast'); t.textContent=msg; t.className='toast show'+(type?' '+type:'');
-  clearTimeout(_tt); _tt=setTimeout(function(){t.className='toast';},2500);
+function showToast(msg,t){
+  var el=$('toast');el.textContent=msg;el.className='toast show'+(t?' '+t:'');
+  clearTimeout(_tt);_tt=setTimeout(function(){el.className='toast';},2800);
 }
 function showInitErr(title,msg,hint){
-  $('errTitle').textContent=title; $('errMsg').textContent=msg; $('errBox').style.display='block';
-  if(hint){$('hintBox').textContent=hint; $('hintBox').style.display='block';}
+  $('errTitle').textContent=title;$('errMsg').textContent=msg;$('errBox').style.display='block';
+  if(hint){$('hintBox').textContent=hint;$('hintBox').style.display='block';}
 }
-function hideErr(){$('errBox').style.display='none'; $('hintBox').style.display='none';}
+function hideErr(){$('errBox').style.display='none';$('hintBox').style.display='none';}
+
 </script>
 </body>
 </html>

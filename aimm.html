@@ -45,7 +45,7 @@
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html,body{
   width:100%;height:100%;overflow:hidden;
-  background:var(--bg);color:var(--text);
+  background:#000;color:var(--text);
   font-family:var(--font);
   -webkit-tap-highlight-color:transparent;
   touch-action:none;overscroll-behavior:none;
@@ -62,12 +62,23 @@ html,body{
 #dwall p{color:#444;font-size:.88rem;max-width:300px;line-height:1.65}
 @media(min-width:1024px){#dwall{display:flex}#app{display:none!important}}
 
-/* ── App ── */
-#app{position:fixed;inset:0;background:#000;overflow:hidden}
+/* ── App shell — full screen, centred ── */
+#app{position:fixed;inset:0;background:#000;overflow:hidden;display:flex;align-items:center;justify-content:center;}
 
-/* ── Camera ── */
-#cam-wrap{position:absolute;inset:0;overflow:hidden;background:#000}
-#video{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:100%;height:100%;object-fit:cover}
+/* ── Camera viewport — strictly 3:4 portrait ── */
+#cam-wrap{
+  position:relative;
+  /* Fill height first; if too wide, constrain by width */
+  width:min(100vw, calc(100vh * 3/4));
+  height:min(100vh, calc(100vw * 4/3));
+  overflow:hidden;background:#000;flex-shrink:0;
+}
+#video{
+  position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  /* Fill the 3:4 box, crop if needed */
+  width:100%;height:100%;object-fit:cover;
+}
 #pose-canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2}
 
 /* ── Border ring ── */
@@ -138,50 +149,29 @@ html,body{
 }
 .mpb.on{background:var(--accent);color:#fff}
 
-/* ── Phase flash ── */
-#phase-flash{
-  position:absolute;inset:0;z-index:25;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:10px;text-align:center;
-  background:rgba(9,9,11,.82);backdrop-filter:blur(8px);
-  opacity:0;pointer-events:none;transition:opacity .25s var(--ease);
-}
-[data-theme="light"] #phase-flash{background:rgba(241,241,238,.85)}
-#phase-flash.show{opacity:1;pointer-events:all}
-.pf-num{font-family:var(--mono);font-size:.65rem;letter-spacing:.18em;color:var(--text3)}
-.pf-title{font-size:2rem;font-weight:700;line-height:1.1;color:var(--text)}
-.pf-sub{font-family:var(--mono);font-size:.7rem;letter-spacing:.04em;color:var(--text2)}
-.pf-tap{
-  margin-top:16px;padding:12px 28px;border-radius:10px;
-  background:var(--accent);color:#fff;border:none;
-  font-family:var(--font);font-size:.9rem;font-weight:600;cursor:pointer;
-}
-.pf-tap:active{opacity:.85}
-
 /* ── Chips ── */
 #chips-row{
   position:absolute;left:0;right:0;z-index:20;
-  display:flex;gap:5px;align-items:center;justify-content:center;
+  display:flex;gap:4px;align-items:center;justify-content:center;
   flex-wrap:nowrap;overflow:hidden;pointer-events:none;
   bottom:calc(max(env(safe-area-inset-bottom,0px),16px) + 108px);
-  padding:0 12px;
+  padding:0 8px;
 }
 .chip{
-  display:flex;align-items:center;gap:5px;
+  display:flex;align-items:center;gap:4px;
   background:rgba(14,14,17,.78);border:1px solid var(--border2);
-  border-radius:100px;padding:5px 9px;backdrop-filter:blur(8px);
+  border-radius:100px;padding:5px 8px;backdrop-filter:blur(8px);
   transition:all .18s var(--ease);flex-shrink:0;
 }
 [data-theme="light"] .chip{background:rgba(255,255,255,.84)}
-.chip-dot{width:6px;height:6px;border-radius:50%;background:var(--text3);transition:background .18s;flex-shrink:0}
-.chip-lbl{font-family:var(--mono);font-size:.57rem;font-weight:500;letter-spacing:.05em;color:var(--text3);transition:color .18s}
+.chip-dot{width:5px;height:5px;border-radius:50%;background:var(--text3);transition:background .18s;flex-shrink:0}
+.chip-lbl{font-family:var(--mono);font-size:.52rem;font-weight:500;letter-spacing:.05em;color:var(--text3);transition:color .18s}
 .chip.ok{border-color:rgba(52,211,153,.28);background:rgba(52,211,153,.07)}
 .chip.ok .chip-dot{background:var(--green)}.chip.ok .chip-lbl{color:var(--green)}
 .chip.bad{border-color:rgba(248,113,113,.28);background:rgba(248,113,113,.07)}
 .chip.bad .chip-dot{background:var(--red)}.chip.bad .chip-lbl{color:var(--red)}
 .chip.wrn{border-color:rgba(251,191,36,.28);background:rgba(251,191,36,.07)}
 .chip.wrn .chip-dot{background:var(--amber)}.chip.wrn .chip-lbl{color:var(--amber)}
-/* disabled chip — greyed out, no color */
 .chip.dis{border-color:var(--border);background:transparent;opacity:.4}
 .chip.dis .chip-dot{background:var(--text3)}.chip.dis .chip-lbl{color:var(--text3)}
 
@@ -240,8 +230,8 @@ html,body{
 #capture-popup.show{opacity:1;pointer-events:all}
 .cp-label{font-family:var(--mono);font-size:.65rem;letter-spacing:.14em;color:var(--text3);flex-shrink:0}
 .cp-img-wrap{
-  width:min(90vw, calc(90vh * .75));
-  height:min(90vh, calc(90vw * 4/3));
+  width:min(80vw, calc(80vh * .75));
+  height:min(80vh, calc(80vw * 4/3));
   border-radius:14px;overflow:hidden;
   border:1px solid var(--border2);background:#000;
   box-shadow:0 24px 80px rgba(0,0,0,.7);flex-shrink:0;
@@ -249,7 +239,7 @@ html,body{
 .cp-img-wrap img{width:100%;height:100%;object-fit:cover;display:block}
 .cp-btns{
   display:flex;gap:12px;
-  width:min(90vw, calc(90vh * .75));
+  width:min(80vw, calc(80vh * .75));
   flex-shrink:0;
 }
 .cp-btn{
@@ -284,6 +274,21 @@ html,body{
 .up-btn:active{opacity:.8}
 .up-btn-p{background:var(--accent);color:#fff}
 .up-btn-s{background:var(--surface2);color:var(--text2);border:1px solid var(--border2)}
+
+/* ── Model info badge ── */
+#model-badge{
+  position:absolute;
+  bottom:calc(max(env(safe-area-inset-bottom,0px),16px) + 108px + 30px);
+  right:12px;z-index:21;
+  display:none;align-items:center;gap:5px;
+  background:rgba(14,14,17,.72);border:1px solid var(--border2);
+  border-radius:100px;padding:4px 9px;backdrop-filter:blur(8px);
+  pointer-events:none;
+}
+#model-badge.show{display:flex}
+[data-theme="light"] #model-badge{background:rgba(255,255,255,.84)}
+.mb-dot{width:5px;height:5px;border-radius:50%;background:var(--green);flex-shrink:0}
+.mb-txt{font-family:var(--mono);font-size:.52rem;letter-spacing:.06em;color:var(--text2)}
 
 /* ══ LOADING SCREEN ══ */
 #loading{
@@ -350,19 +355,6 @@ html,body{
 }
 .ld-skip-btn:active{opacity:.85}
 
-/* ── Model info badge ── */
-#model-badge{
-  position:absolute;bottom:calc(max(env(safe-area-inset-bottom,0px),16px) + 108px + 30px);
-  right:12px;z-index:21;
-  display:none;align-items:center;gap:5px;
-  background:rgba(14,14,17,.72);border:1px solid var(--border2);
-  border-radius:100px;padding:4px 9px;backdrop-filter:blur(8px);
-  pointer-events:none;
-}
-#model-badge.show{display:flex}
-[data-theme="light"] #model-badge{background:rgba(255,255,255,.84)}
-.mb-dot{width:5px;height:5px;border-radius:50%;background:var(--green);flex-shrink:0}
-.mb-txt{font-family:var(--mono);font-size:.52rem;letter-spacing:.06em;color:var(--text2)}
 .hidden{display:none!important}
 </style>
 </head>
@@ -380,90 +372,83 @@ html,body{
     <canvas id="pose-canvas"></canvas>
     <div id="cam-ring" class="blocked"></div>
     <div id="sil-wrap"></div>
-  </div>
 
-  <!-- No-pose banner (shown when MP is unavailable) -->
-  <div id="npose-banner">
-    <div class="nb-dot"></div>
-    <span class="nb-txt">POSE DETECTION UNAVAILABLE — WARN MODE ONLY</span>
-  </div>
+    <!-- No-pose banner (inside cam-wrap so it overlays the viewport) -->
+    <div id="npose-banner">
+      <div class="nb-dot"></div>
+      <span class="nb-txt">POSE DETECTION UNAVAILABLE — WARN MODE ONLY</span>
+    </div>
 
-  <div id="phase-flash">
-    <div class="pf-num" id="pf-num"></div>
-    <div class="pf-title" id="pf-title"></div>
-    <div class="pf-sub" id="pf-sub"></div>
-    <button class="pf-tap" id="pf-tap">Got it →</button>
-  </div>
-
-  <div class="topbar" id="topbar">
-    <span class="tb-logo">AIMM</span>
-    <div class="tb-right">
-      <div class="mode-pill" id="mode-pill">
-        <button class="mpb on" id="btn-block">BLOCK</button>
-        <button class="mpb" id="btn-warn">WARN</button>
+    <div class="topbar" id="topbar">
+      <span class="tb-logo">AIMM</span>
+      <div class="tb-right">
+        <div class="mode-pill" id="mode-pill">
+          <button class="mpb on" id="btn-block">BLOCK</button>
+          <button class="mpb" id="btn-warn">WARN</button>
+        </div>
+        <button class="icon-btn" id="btn-theme">◑</button>
       </div>
-      <button class="icon-btn" id="btn-theme">◑</button>
     </div>
-  </div>
 
-  <div id="chips-row">
-    <div class="chip" id="c-tilt"><div class="chip-dot"></div><span class="chip-lbl">LEVEL</span></div>
-    <div class="chip" id="c-shake"><div class="chip-dot"></div><span class="chip-lbl">STEADY</span></div>
-    <div class="chip" id="c-light"><div class="chip-dot"></div><span class="chip-lbl">LIGHT</span></div>
-    <div class="chip" id="c-body"><div class="chip-dot"></div><span class="chip-lbl">BODY</span></div>
-    <div class="chip" id="c-pose"><div class="chip-dot"></div><span class="chip-lbl">POSE</span></div>
-  </div>
-  <div id="guidance">Initialising…</div>
-
-
-  <div id="model-badge">
-    <div class="mb-dot"></div>
-    <span class="mb-txt" id="mb-txt">heavy · VIDEO · GPU</span>
-  </div>
-
-  <div id="shutter-zone">
-    <button id="shutter" class="off" aria-label="Capture"></button>
-  </div>
-
-  <div id="flash"></div>
-
-  <div id="capture-popup">
-    <div class="cp-label" id="cp-label"></div>
-    <div class="cp-img-wrap"><img id="cp-img" src="" alt="Preview"></div>
-    <div class="cp-btns">
-      <button class="cp-btn cp-retake" id="btn-retake">↩ Retake</button>
-      <button class="cp-btn cp-next" id="btn-next">Next →</button>
+    <div id="chips-row">
+      <div class="chip" id="c-light"><div class="chip-dot"></div><span class="chip-lbl">LIGHT</span></div>
+      <div class="chip" id="c-shake"><div class="chip-dot"></div><span class="chip-lbl">STEADY</span></div>
+      <div class="chip" id="c-tilt"><div class="chip-dot"></div><span class="chip-lbl">LEVEL</span></div>
+      <div class="chip" id="c-height"><div class="chip-dot"></div><span class="chip-lbl">HEIGHT</span></div>
+      <div class="chip" id="c-dist"><div class="chip-dot"></div><span class="chip-lbl">DIST</span></div>
+      <div class="chip" id="c-body"><div class="chip-dot"></div><span class="chip-lbl">BODY</span></div>
+      <div class="chip" id="c-pose"><div class="chip-dot"></div><span class="chip-lbl">POSE</span></div>
     </div>
-  </div>
+    <div id="guidance">Initialising…</div>
 
-  <div id="upload-over">
-    <div id="up-uploading" style="display:none;flex-direction:column;align-items:center;gap:20px">
-      <div class="spin-ring"></div>
-      <div class="up-title">Uploading</div>
-      <div class="up-sub" id="up-sub">Sending front photo…</div>
-      <div class="up-prog"><div class="up-prog-fill" id="up-bar"></div></div>
+    <div id="model-badge">
+      <div class="mb-dot"></div>
+      <span class="mb-txt" id="mb-txt">heavy · VIDEO · GPU</span>
     </div>
-    <div id="up-success" class="hidden" style="display:flex;flex-direction:column;align-items:center;gap:16px">
-      <div class="suc-ico">✓</div>
-      <div class="up-title">Upload Complete</div>
-      <div class="up-sub">Both photos sent successfully.</div>
-      <button class="up-btn up-btn-p" id="btn-new">New Session →</button>
-    </div>
-    <div id="up-error" class="hidden" style="display:flex;flex-direction:column;align-items:center;gap:14px">
-      <div class="err-ico">✕</div>
-      <div class="up-title">Upload Failed</div>
-      <div class="up-sub" id="up-errmsg"></div>
-      <button class="up-btn up-btn-p" id="btn-retry">Retry</button>
-      <button class="up-btn up-btn-s" id="btn-restart">Start Over</button>
-    </div>
-  </div>
 
-  <!-- ══ LOADING SCREEN ══ -->
+    <div id="shutter-zone">
+      <button id="shutter" class="off" aria-label="Capture"></button>
+    </div>
+
+    <div id="flash"></div>
+
+    <div id="capture-popup">
+      <div class="cp-label" id="cp-label"></div>
+      <div class="cp-img-wrap"><img id="cp-img" src="" alt="Preview"></div>
+      <div class="cp-btns">
+        <button class="cp-btn cp-retake" id="btn-retake">↩ Retake</button>
+        <button class="cp-btn cp-next" id="btn-next">Next →</button>
+      </div>
+    </div>
+
+    <div id="upload-over">
+      <div id="up-uploading" style="display:none;flex-direction:column;align-items:center;gap:20px">
+        <div class="spin-ring"></div>
+        <div class="up-title">Uploading</div>
+        <div class="up-sub" id="up-sub">Sending front photo…</div>
+        <div class="up-prog"><div class="up-prog-fill" id="up-bar"></div></div>
+      </div>
+      <div id="up-success" class="hidden" style="display:flex;flex-direction:column;align-items:center;gap:16px">
+        <div class="suc-ico">✓</div>
+        <div class="up-title">Upload Complete</div>
+        <div class="up-sub">Both photos sent successfully.</div>
+        <button class="up-btn up-btn-p" id="btn-new">New Session →</button>
+      </div>
+      <div id="up-error" class="hidden" style="display:flex;flex-direction:column;align-items:center;gap:14px">
+        <div class="err-ico">✕</div>
+        <div class="up-title">Upload Failed</div>
+        <div class="up-sub" id="up-errmsg"></div>
+        <button class="up-btn up-btn-p" id="btn-retry">Retry</button>
+        <button class="up-btn up-btn-s" id="btn-restart">Start Over</button>
+      </div>
+    </div>
+
+  </div><!-- #cam-wrap -->
+
+  <!-- ══ LOADING SCREEN (outside cam-wrap — covers full app) ══ -->
   <div id="loading">
     <div class="ld-logo">AIMM</div>
-
     <div class="ld-steps" id="ld-steps">
-      <!-- Step 0: MediaPipe script -->
       <div class="ld-step" id="ls-0">
         <div class="ld-step-icon" id="ls-0-icon">1</div>
         <div class="ld-step-body">
@@ -471,7 +456,6 @@ html,body{
           <div class="ld-step-sub" id="ls-0-sub">Waiting…</div>
         </div>
       </div>
-      <!-- Step 1: WASM + model -->
       <div class="ld-step" id="ls-1">
         <div class="ld-step-icon" id="ls-1-icon">2</div>
         <div class="ld-step-body">
@@ -480,7 +464,6 @@ html,body{
           <div class="ld-byte-bar hidden" id="ls-1-bar"><div class="ld-byte-fill" id="ls-1-fill"></div></div>
         </div>
       </div>
-      <!-- Step 2: Camera -->
       <div class="ld-step" id="ls-2">
         <div class="ld-step-icon" id="ls-2-icon">3</div>
         <div class="ld-step-body">
@@ -489,12 +472,10 @@ html,body{
         </div>
       </div>
     </div>
-
     <div class="ld-global" id="ld-global">
       <div class="ld-global-bar"><div class="ld-global-fill" id="ld-gfill"></div></div>
       <div class="ld-global-lbl" id="ld-glbl">Starting…</div>
     </div>
-
     <div id="ld-error-box">
       <div class="err-title" id="ld-err-title">Error</div>
       <div class="err-detail" id="ld-err-detail"></div>
@@ -543,9 +524,16 @@ let DrawingUtilsRef = null;
 let webcamRunning = false;
 let lastVideoTime = -1;
 let uploadPending = false;
-let activeDelegate = 'GPU'; // updated after model init
-let mpAvailable = false;  // true only if pose detection fully loaded
-let checks = {tilt:false, shake:false, light:false, body:false, pose:false};
+let activeDelegate = 'GPU';
+let mpAvailable = false;
+// Mask readback canvas — reused every frame
+const maskCvs = document.createElement('canvas');
+const maskCtx = maskCvs.getContext('2d', {willReadFrequently: true});
+// Frame-level: store last mask for span check
+let lastMaskFloat = null;
+let lastMaskW = 0, lastMaskH = 0;
+
+let checks = {light:false, shake:false, tilt:false, height:false, dist:false, body:false, pose:false};
 
 // ── Elements ───────────────────────────────────────────
 const video        = document.getElementById('video');
@@ -561,25 +549,18 @@ const uploadOver   = document.getElementById('upload-over');
 const loadEl       = document.getElementById('loading');
 const flashEl      = document.getElementById('flash');
 const silWrap      = document.getElementById('sil-wrap');
-const phaseFlash   = document.getElementById('phase-flash');
 const nposeBanner  = document.getElementById('npose-banner');
 const modePill     = document.getElementById('mode-pill');
 const topbar       = document.getElementById('topbar');
 
-// ── CDN URLs — all pinned to same version ──────────────
-// CRITICAL: WASM_BASE version must exactly match the vision_bundle.mjs version.
-// Model is fetched manually as ArrayBuffer so we bypass FilesetResolver's internal
-// fetch (which can fail on mobile due to CORS / redirect issues on storage.googleapis.com).
+// ── CDN URLs ───────────────────────────────────────────
 const MP_VERSION = '0.10.14';
 const WASM_BASE  = `https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${MP_VERSION}/wasm`;
 const MODEL_URL  = 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_heavy/float16/1/pose_landmarker_heavy.task';
-// Fallback: unpkg serves the same googleapis model (just a redirect), 
-// but retry logic means transient failures get a second chance.
-const MODEL_URL_FALLBACK = MODEL_URL; // same URL — fetchModelBuffer retries on failure
+const API        = 'https://aimm-450300910281.asia-south1.run.app';
 
 // ── Global error surface ───────────────────────────────
 window.addEventListener('error', e => {
-  // Only surface errors that happen outside the loading flow
   if(!loadEl.classList.contains('out')){
     showFatalError('Unhandled JS Error', e.message + '\n' + (e.filename||'') + ':' + e.lineno);
   }
@@ -601,13 +582,12 @@ function setGlobal(pct, lbl){
   document.getElementById('ld-glbl').textContent = lbl;
 }
 
-// state: 'idle' | 'active' | 'done' | 'err' | 'skipped'
 function stepState(i, state, sub){
   const step = document.getElementById('ls-'+i);
   const icon = document.getElementById('ls-'+i+'-icon');
   step.className = 'ld-step '+state;
   if(sub !== undefined) document.getElementById('ls-'+i+'-sub').textContent = sub;
-  if(state==='active')   icon.innerHTML = '<div class="ld-spinner"></div>';
+  if(state==='active')       icon.innerHTML = '<div class="ld-spinner"></div>';
   else if(state==='done')    icon.textContent = '✓';
   else if(state==='err')     icon.textContent = '✕';
   else if(state==='skipped') icon.textContent = '–';
@@ -629,7 +609,6 @@ function hideLoader(){
   setTimeout(()=>{ loadEl.style.display='none'; }, 500);
 }
 
-// ── Retry ──────────────────────────────────────────────
 document.getElementById('ld-retry').addEventListener('click',()=>{
   document.getElementById('ld-error-box').style.display='none';
   document.getElementById('ld-retry').classList.add('hidden');
@@ -640,48 +619,39 @@ document.getElementById('ld-retry').addEventListener('click',()=>{
   initAll();
 });
 
-// ── Skip (no pose) ─────────────────────────────────────
 document.getElementById('ld-skip').addEventListener('click',()=>{
   enterNoPoseMode();
-  // Camera may not be started yet — attempt it now
   if(!webcamRunning){
     startCam().then(()=>{
       hideLoader();
-      showPhaseFlash();
+      setSil();
     }).catch(e=>{
       showFatalError('Camera Failed', e.message);
     });
   } else {
     hideLoader();
-    showPhaseFlash();
+    setSil();
   }
 });
 
-// ── No-pose mode setup ─────────────────────────────────
 function enterNoPoseMode(){
   mpAvailable = false;
-  // Body and pose checks are bypassed — always pass visually but shown as disabled chips
-  checks.body = true;
-  checks.pose = true;
-  // Force warn mode, hide the block/warn toggle
+  checks.height = true; checks.dist = true;
+  checks.body = true; checks.pose = true;
   blockMode = false;
   document.getElementById('btn-warn').classList.add('on');
   document.getElementById('btn-block').classList.remove('on');
   modePill.classList.add('hidden-pill');
-  // Show the persistent banner
   nposeBanner.classList.add('show');
   topbar.classList.add('banner-offset');
-  // Mark body/pose chips as disabled (greyed out)
-  document.getElementById('c-body').className = 'chip dis';
-  document.getElementById('c-pose').className = 'chip dis';
+  ['c-height','c-dist','c-body','c-pose'].forEach(id=>{
+    document.getElementById(id).className = 'chip dis';
+  });
 }
 
 // ══════════════════════════════════════════════════════
 //  STEP 0 — Verify MediaPipe module loaded
 // ══════════════════════════════════════════════════════
-// The <script type="module"> in <head> imports vision_bundle.mjs and stores
-// the named exports on window.__mpVision. We simply read from there.
-// If the module import threw, window.__mpVisionError is set instead.
 function checkMPLoaded(){
   const mp = window.__mpVision;
   if(!mp) return null;
@@ -693,18 +663,14 @@ function checkMPLoaded(){
 }
 
 // ══════════════════════════════════════════════════════
-//  STEP 1 — Init Pose Landmarker (WASM + model)
+//  STEP 1 — Init Pose Landmarker
 // ══════════════════════════════════════════════════════
-
-// Fetch model as ArrayBuffer — we do this ourselves so we get real byte-level
-// progress and can fall back to a second URL if the primary fails.
 async function fetchModelBuffer(){
   const bar  = document.getElementById('ls-1-bar');
   const fill = document.getElementById('ls-1-fill');
   const sub  = document.getElementById('ls-1-sub');
   bar.classList.remove('hidden');
 
-  // Retry up to 3 times — handles transient mobile network failures
   const MAX_TRIES = 3;
   let lastErr = '';
 
@@ -714,7 +680,6 @@ async function fetchModelBuffer(){
       const resp = await fetch(MODEL_URL);
       if(!resp.ok) throw new Error('HTTP '+resp.status);
 
-      // Stream with progress
       const total = parseInt(resp.headers.get('Content-Length')||'0',10);
       const reader = resp.body.getReader();
       const chunks = [];
@@ -737,7 +702,7 @@ async function fetchModelBuffer(){
     } catch(e){
       lastErr = e.message;
       if(attempt < MAX_TRIES) sub.textContent = `Fetch failed, retrying… (${e.message.slice(0,40)})`;
-      await new Promise(r=>setTimeout(r, 800 * attempt)); // backoff
+      await new Promise(r=>setTimeout(r, 800 * attempt));
     }
   }
   throw new Error('Model fetch failed after '+MAX_TRIES+' attempts: '+lastErr);
@@ -770,7 +735,6 @@ async function initPoseLandmarker(FR, PL){
 
   stepState(1,'active','Initialising detector (GPU)…');
 
-  // Helper: create landmarker from the already-downloaded ArrayBuffer
   async function createLandmarker(delegate){
     return PL.createFromOptions(vision, {
       baseOptions:{
@@ -778,10 +742,11 @@ async function initPoseLandmarker(FR, PL){
         delegate
       },
       runningMode: 'VIDEO',
-      numPoses: 1,
+      numPoses: 3,                       // up to 3 — we pick best
       minPoseDetectionConfidence: 0.55,
       minPosePresenceConfidence: 0.55,
-      minTrackingConfidence: 0.55
+      minTrackingConfidence: 0.55,
+      outputSegmentationMasks: true      // enables DrawingUtils.drawConfidenceMask + readback
     });
   }
 
@@ -789,7 +754,6 @@ async function initPoseLandmarker(FR, PL){
     poseLandmarker = await createLandmarker('GPU');
     activeDelegate = 'GPU';
   } catch(gpuErr){
-    // GPU delegate can fail on older Android WebViews — fall back to CPU
     stepState(1,'active','GPU failed, falling back to CPU…');
     try {
       poseLandmarker = await createLandmarker('CPU');
@@ -800,7 +764,7 @@ async function initPoseLandmarker(FR, PL){
   }
 
   document.getElementById('ls-1-fill').style.width='100%';
-  stepState(1,'done',`Heavy model · VIDEO · ${activeDelegate}`);
+  stepState(1,'done',`Heavy model · VIDEO · ${activeDelegate} · segmentation on`);
 }
 
 // ══════════════════════════════════════════════════════
@@ -824,10 +788,14 @@ async function startCam(){
 
   await new Promise((res,rej)=>{
     const onData = ()=>{ video.removeEventListener('error',onErr); res(); };
-    const onErr  = (e)=>{ video.removeEventListener('loadeddata',onData); rej(new Error('Video stream error')); };
+    const onErr  = ()=>{ video.removeEventListener('loadeddata',onData); rej(new Error('Video stream error')); };
     video.addEventListener('loadeddata', onData, {once:true});
     video.addEventListener('error', onErr, {once:true});
-    setTimeout(()=>{ video.removeEventListener('loadeddata',onData); video.removeEventListener('error',onErr); rej(new Error('Camera stream timeout (10s)')); }, 10000);
+    setTimeout(()=>{
+      video.removeEventListener('loadeddata',onData);
+      video.removeEventListener('error',onErr);
+      rej(new Error('Camera stream timeout (10s)'));
+    }, 10000);
   });
 
   stepState(2,'done','Camera live');
@@ -844,22 +812,17 @@ async function startCam(){
 //  MASTER INIT
 // ══════════════════════════════════════════════════════
 async function initAll(){
-  // ── Step 0: Check that the <script> tag loaded the library ──
   stepState(0,'active','Importing module…');
   setGlobal(5,'Importing MediaPipe…');
 
-  // The <script type="module"> import is async — poll until it resolves (or errors out).
-  // Timeout after 12s to account for slow CDN on mobile.
   let mp = null;
   const deadline = Date.now() + 12000;
   while(Date.now() < deadline){
     if(window.__mpVisionError){
-      // Module threw during import — surface the real error immediately
       stepState(0,'err','Import failed: '+window.__mpVisionError.slice(0,60));
       showFatalError(
         'MediaPipe Import Failed',
-        'Error loading vision_bundle.mjs:\n'+window.__mpVisionError+'\n\n'+
-        'Check your network connection and try again, or continue without pose detection.'
+        'Error loading vision_bundle.mjs:\n'+window.__mpVisionError+'\n\nCheck your network connection and try again, or continue without pose detection.'
       );
       return;
     }
@@ -872,9 +835,7 @@ async function initAll(){
     stepState(0,'err','Timed out waiting for MediaPipe');
     showFatalError(
       'MediaPipe Not Loaded',
-      'The vision_bundle.mjs module did not finish loading within 12 seconds.\n\n'+
-      'This usually means the CDN request is blocked or very slow.\n'+
-      'Check your network connection and try again, or continue without pose detection.'
+      'The vision_bundle.mjs module did not finish loading within 12 seconds.\n\nThis usually means the CDN request is blocked or very slow.\nCheck your network connection and try again, or continue without pose detection.'
     );
     return;
   }
@@ -884,7 +845,6 @@ async function initAll(){
   stepState(0,'done','Library ready');
   setGlobal(30,'Loading pose model…');
 
-  // ── Step 1: WASM + model ──
   try {
     await initPoseLandmarker(mp.FR, mp.PL);
     mpAvailable = true;
@@ -895,7 +855,6 @@ async function initAll(){
     return;
   }
 
-  // ── Step 2: Camera ──
   try {
     await startCam();
     setGlobal(100,'Ready');
@@ -905,14 +864,13 @@ async function initAll(){
     return;
   }
 
-  // Show model info badge
   if(mpAvailable){
     const badge = document.getElementById('model-badge');
     document.getElementById('mb-txt').textContent = `heavy · VIDEO · ${activeDelegate}`;
     badge.classList.add('show');
   }
   hideLoader();
-  showPhaseFlash();
+  setSil();
 }
 
 // ══════════════════════════════════════════════════════
@@ -921,9 +879,9 @@ async function initAll(){
 function predictWebcam(){
   if(!webcamRunning) return;
 
-  // Sync canvas size to rendered video
-  const rw = video.getBoundingClientRect().width  || video.videoWidth;
-  const rh = video.getBoundingClientRect().height || video.videoHeight;
+  // Sync canvas to cam-wrap rendered size
+  const rw = pCvs.parentElement.clientWidth  || video.videoWidth;
+  const rh = pCvs.parentElement.clientHeight || video.videoHeight;
   if(pCvs.width!==rw || pCvs.height!==rh){ pCvs.width=rw; pCvs.height=rh; }
 
   pCtx.save();
@@ -935,27 +893,58 @@ function predictWebcam(){
     lastVideoTime = video.currentTime;
     try {
       poseLandmarker.detectForVideo(video, performance.now(), (result)=>{
-        if(result.landmarks && result.landmarks.length > 0){
-          // numPoses=1 so always index 0, but guard anyway
-          const lm = result.landmarks[0];
-          // worldLandmarks give metric 3D coords — use z for landmark radius depth cue
-          const wlm = (result.worldLandmarks && result.worldLandmarks[0]) || null;
+        const hasLm = result.landmarks && result.landmarks.length > 0;
 
+        // ── Draw segmentation mask (Option D) ──────────────────────────────
+        // drawConfidenceMask stays GPU-side; mask readback for BODY span is separate
+        const maskPassColor  = {r:79,  g:211, b:153, a:60};   // green tint when body+pose ok
+        const maskFailColor  = {r:79,  g:143, b:255, a:50};   // accent blue otherwise
+        const maskBgColor    = {r:0,   g:0,   b:0,   a:0};    // transparent bg
+
+        if(drawingUtils && result.segmentationMasks && result.segmentationMasks.length > 0){
+          const bodyAndPoseOk = checks.body && checks.pose;
+          const fgColor = bodyAndPoseOk ? maskPassColor : maskFailColor;
+          try {
+            // Draw the confidence mask for the best (first) person; we pick best below
+            drawingUtils.drawConfidenceMask(
+              result.segmentationMasks[bestPersonIndex(result)],
+              fgColor,
+              maskBgColor
+            );
+          } catch(e){ /* non-fatal */ }
+        }
+
+        if(hasLm){
+          // ── Pick best person (largest + most centred) ─────────────────
+          const bi = bestPersonIndex(result);
+          const lm  = result.landmarks[bi];
+          const wlm = (result.worldLandmarks && result.worldLandmarks[bi]) || null;
+
+          // Mask readback for BODY span check — use the selected person's mask
+          if(result.segmentationMasks && result.segmentationMasks[bi]){
+            try {
+              const mask = result.segmentationMasks[bi];
+              const mw = mask.width, mh = mask.height;
+              if(mw>0 && mh>0){
+                lastMaskFloat = mask.getAsFloat32Array();
+                lastMaskW = mw; lastMaskH = mh;
+              }
+            } catch(e){ lastMaskFloat = null; }
+          }
+
+          // ── Draw skeleton ─────────────────────────────────────────────
           if(drawingUtils && PoseLandmarkerRef){
             const lineW = Math.max(2, pCvs.width * 0.004);
-            // Colour connectors green/amber/red based on overall check state
             const connColor = checks.body && checks.pose
               ? 'rgba(52,211,153,0.65)'
               : 'rgba(79,143,255,0.50)';
             drawingUtils.drawConnectors(lm, PoseLandmarkerRef.POSE_CONNECTIONS, {
-              color: connColor,
-              lineWidth: lineW
+              color: connColor, lineWidth: lineW
             });
             drawingUtils.drawLandmarks(lm, {
-              // Use world z (metric depth) for radius if available; else normalised z
               radius: (data) => {
                 const z = wlm && data.index !== undefined ? (wlm[data.index]||{z:0}).z : (data.from ? data.from.z : 0);
-                return DrawingUtils_lerp(z, -0.2, 0.2, 7, 2);
+                return duLerp(z, -0.2, 0.2, 7, 2);
               },
               color: 'rgba(255,255,255,0.85)',
               fillColor: connColor,
@@ -963,19 +952,17 @@ function predictWebcam(){
             });
           }
 
-          checks.body = fullBodyVisible(lm);
-          checks.pose = phase==='front' ? checkTpose(lm) : checkSide(lm);
+          // ── Run checks on best person ─────────────────────────────────
+          runPoseChecks(lm);
         } else {
-          checks.body = false;
-          checks.pose = false;
+          lastMaskFloat = null;
+          checks.height = false; checks.dist = false;
+          checks.body = false; checks.pose = false;
         }
         updateUI();
       });
-    } catch(e){
-      // Detection errors are non-fatal — just skip this frame
-    }
+    } catch(e){ /* skip frame */ }
   } else if(!mpAvailable){
-    // No pose detection — body/pose treated as bypassed, update other checks
     updateUI();
   }
 
@@ -983,13 +970,30 @@ function predictWebcam(){
   window.requestAnimationFrame(predictWebcam);
 }
 
-// DrawingUtils.lerp may or may not be a static method depending on bundle version
-function DrawingUtils_lerp(z, zMin, zMax, minVal, maxVal){
+// ── Pick best person — largest bounding box × centred score ──────────────
+function bestPersonIndex(result){
+  if(!result.landmarks || result.landmarks.length === 0) return 0;
+  if(result.landmarks.length === 1) return 0;
+  let best = 0, bestScore = -1;
+  for(let i=0; i<result.landmarks.length; i++){
+    const lm = result.landmarks[i];
+    let minX=1,maxX=0,minY=1,maxY=0;
+    for(const p of lm){ if(p.x<minX) minX=p.x; if(p.x>maxX) maxX=p.x; if(p.y<minY) minY=p.y; if(p.y>maxY) maxY=p.y; }
+    const area = (maxX-minX) * (maxY-minY);
+    const cx = (minX+maxX)/2, cy = (minY+maxY)/2;
+    const distFromCenter = Math.sqrt((cx-0.5)**2 + (cy-0.5)**2);
+    const score = area * (1 - distFromCenter);
+    if(score > bestScore){ bestScore=score; best=i; }
+  }
+  return best;
+}
+
+// DrawingUtils.lerp — safe wrapper
+function duLerp(z, zMin, zMax, minVal, maxVal){
   try {
     if(DrawingUtilsRef && typeof DrawingUtilsRef.lerp === 'function')
       return DrawingUtilsRef.lerp(z, zMin, zMax, minVal, maxVal);
   } catch(e){}
-  // Fallback: manual lerp
   const t = Math.max(0, Math.min(1, (z - zMin) / (zMax - zMin)));
   return minVal + t * (maxVal - minVal);
 }
@@ -1023,9 +1027,7 @@ if(typeof DeviceOrientationEvent!=='undefined'){
   } else {
     window.addEventListener('deviceorientation',handleOri);
   }
-} else {
-  checks.tilt=true;
-}
+} else { checks.tilt=true; }
 
 // ── Accelerometer ──────────────────────────────────────
 let lastA={x:0,y:0,z:0}, shakeOk=true, shakeTmr=null;
@@ -1049,235 +1051,216 @@ if(typeof DeviceMotionEvent!=='undefined'){
   } else {
     window.addEventListener('devicemotion',handleMotion);
   }
-} else {
-  checks.shake=true;
-}
+} else { checks.shake=true; }
 
 // ══════════════════════════════════════════════════════
-//  POSE CHECKS — using MediaPipe landmark data
+//  POSE CHECKS
 //
 //  MediaPipe Pose landmark indices (33 total):
-//   0  nose          1  left eye inner   2  left eye
-//   3  left eye out  4  right eye inner  5  right eye
-//   6  right eye out 7  left ear         8  right ear
-//   9  mouth left   10  mouth right
-//  11  left shoulder 12 right shoulder
-//  13  left elbow    14 right elbow
-//  15  left wrist    16 right wrist
-//  17  left pinky    18 right pinky
-//  19  left index    20 right index
-//  21  left thumb    22 right thumb
-//  23  left hip      24 right hip
-//  25  left knee     26 right knee
-//  27  left ankle    28 right ankle
-//  29  left heel     30 right heel
-//  31  left foot idx 32 right foot idx
+//   0  nose          11 L-shoulder   12 R-shoulder
+//  13  L-elbow       14 R-elbow      15 L-wrist    16 R-wrist
+//  23  L-hip         24 R-hip        25 L-knee     26 R-knee
+//  27  L-ankle       28 R-ankle      29 L-heel     30 R-heel
 //
-//  All coordinates are normalised [0,1] (x=left→right, y=top→bottom).
-//  .visibility  [0,1] — how confident MP is the landmark is visible.
-//  .presence    [0,1] — how confident MP is the landmark exists in frame.
+//  All normalised [0,1], x=left→right, y=top→bottom.
+//  .visibility [0,1]  .presence [0,1]
 //
-//  Strategy:
-//  • vis()  — gate on both visibility AND presence for robust filtering.
-//  • Body check — use head (nose) y-position for top, best ankle/heel for
-//    bottom; require the full torso height occupies > 55% of frame height.
-//  • T-pose — shoulders, elbows, wrists all within a tight horizontal band;
-//    wrists must be at or beyond the shoulder x-span; shoulder span > 22% frame.
-//    Also verify both upper arms (shoulder→elbow) and forearms (elbow→wrist)
-//    are roughly horizontal by computing the angle of each segment.
-//  • Side pose — shoulders stack tightly (small x-delta); arms hang down
-//    (wrists below hips or near hips); torso is present and tall enough.
-//    We do NOT require the subject to face a specific direction — either
-//    side works, we just need a true profile (not facing camera).
+//  All spatial thresholds expressed as ratios of body proportions
+//  (torsoHeight, bodySpan, shoulderSpan) — scale-invariant.
 // ══════════════════════════════════════════════════════
 
-// Visibility + presence gate — heavy model provides both
-function vis(lm, i, vThresh=0.5, pThresh=0.4){
+function vis(lm, i, vThresh=0.45, pThresh=0.35){
   const p = lm[i];
   if(!p) return false;
-  const v = (p.visibility  !== undefined) ? p.visibility  : 1;
-  const pr= (p.presence    !== undefined) ? p.presence    : 1;
+  const v  = (p.visibility !== undefined) ? p.visibility : 1;
+  const pr = (p.presence   !== undefined) ? p.presence   : 1;
   return v >= vThresh && pr >= pThresh;
 }
 
-// Angle (degrees) of the vector from point A to point B, measured from horizontal
-function segAngle(a, b){
-  return Math.abs(Math.atan2(b.y - a.y, b.x - a.x) * 180 / Math.PI);
-}
+// ── Master runner ──────────────────────────────────────
+function runPoseChecks(lm){
+  // Body span via landmarks (for HEIGHT + DIST + BODY)
+  const nose = vis(lm,0) ? lm[0] : null;
 
-// ── Full body visibility ───────────────────────────────
-// Requires: nose visible near top of frame, at least one ankle/heel near bottom.
-// Also checks that the total body span (nose→lowest point) covers ≥55% of frame.
-function fullBodyVisible(lm){
-  // HEAD — nose must be visible and near the top quarter of frame
-  if(!vis(lm,0,0.55,0.45)) return false;
-  const nose = lm[0];
-  if(nose.y > 0.30) return false;  // head cropped or person too far down
-
-  // FEET — at least one ankle or heel must be clearly visible near the bottom
-  // Prefer ankles (27,28), fall back to heels (29,30), then foot index (31,32)
-  const footCandidates = [
-    [27,0.4,0.3],[28,0.4,0.3],  // ankles — primary
-    [29,0.35,0.25],[30,0.35,0.25], // heels — secondary
-    [31,0.3,0.2],[32,0.3,0.2]   // foot index — last resort
-  ];
-  let bestFootY = 0;
-  for(const [idx, vt, pt] of footCandidates){
-    if(vis(lm, idx, vt, pt)){
-      bestFootY = Math.max(bestFootY, lm[idx].y);
-    }
+  // Best ankle y
+  const ankles = [[27,0.4,0.3],[28,0.4,0.3],[29,0.35,0.25],[30,0.35,0.25]];
+  let bestAnkleY = 0;
+  for(const [idx,vt,pt] of ankles){
+    if(vis(lm,idx,vt,pt)) bestAnkleY = Math.max(bestAnkleY, lm[idx].y);
   }
-  if(bestFootY < 0.68) return false; // feet not near bottom of frame
 
-  // TORSO SPAN — body must occupy a meaningful fraction of frame height
-  const bodySpan = bestFootY - nose.y;
-  if(bodySpan < 0.55) return false;  // person too small / partially in frame
+  const bodySpan = (nose && bestAnkleY > 0) ? bestAnkleY - nose.y : 0;
+  const noseY    = nose ? nose.y : 0;
+  const ankleY   = bestAnkleY;
 
-  // CORE LANDMARKS — shoulders and hips should be visible (torso present)
-  const coreOk = [11,12,23,24].filter(i => vis(lm,i,0.45,0.35)).length >= 3;
-  if(!coreOk) return false;
+  // HEIGHT — camera at correct height = person centred vertically
+  // top margin ≈ bottom margin: |noseY - (1-ankleY)| / bodySpan < threshold
+  if(bodySpan > 0.25){
+    const topMargin    = noseY;
+    const bottomMargin = 1 - ankleY;
+    const imbalance    = Math.abs(topMargin - bottomMargin) / bodySpan;
+    checks.height = imbalance < 0.35;  // within 35% of bodySpan asymmetry
+    checks.heightMsg = topMargin > bottomMargin + bodySpan * 0.15
+      ? 'Lower the camera'
+      : (bottomMargin > topMargin + bodySpan * 0.15 ? 'Raise the camera' : '');
+  } else {
+    checks.height = false;
+    checks.heightMsg = 'Cannot determine height';
+  }
 
-  return true;
+  // DIST — body span should fill 65–90% of frame height
+  if(bodySpan > 0){
+    if(bodySpan < 0.65)      { checks.dist = false; checks.distMsg = 'Move closer'; }
+    else if(bodySpan > 0.90) { checks.dist = false; checks.distMsg = 'Step back'; }
+    else                     { checks.dist = true;  checks.distMsg = ''; }
+  } else {
+    checks.dist = false; checks.distMsg = 'No person detected';
+  }
+
+  // BODY — landmark visibility list + mask span
+  checks.body = checkBody(lm, bodySpan);
+
+  // POSE — elbows only, ratio-based
+  checks.pose = phase === 'front' ? checkTpose(lm) : checkSide(lm);
 }
 
-// ── T-Pose check ───────────────────────────────────────
-// Arms must be extended horizontally, level with shoulders.
-// Uses per-segment angle checks (not just y-position proximity).
+// ── BODY check ─────────────────────────────────────────
+function checkBody(lm, bodySpan){
+  // Mask span ≥ 60% of frame height (readback from lastMaskFloat)
+  if(lastMaskFloat && lastMaskW > 0 && lastMaskH > 0){
+    const mw = lastMaskW, mh = lastMaskH;
+    const THR = 0.3; // confidence threshold for foreground
+    let topRow = mh, botRow = 0;
+    // Scan row by row for foreground pixels
+    for(let row=0; row<mh; row++){
+      const rowStart = row * mw;
+      for(let col=0; col<mw; col++){
+        if(lastMaskFloat[rowStart + col] >= THR){
+          if(row < topRow) topRow = row;
+          if(row > botRow) botRow = row;
+          break; // found fg in this row — enough to update topRow; don't need full scan
+        }
+      }
+      // Also scan from right to update botRow efficiently if top already found
+    }
+    const maskSpan = (botRow - topRow) / mh;
+    if(maskSpan < 0.60) return false;
+  } else if(bodySpan < 0.60) {
+    // Fallback: landmark-based span
+    return false;
+  }
+
+  if(phase === 'front'){
+    // All these must be visible: nose, both shoulders, both elbows, both wrists, both hips, both knees, both ankles
+    const required = [0, 11,12, 13,14, 15,16, 23,24, 25,26, 27,28];
+    return required.every(i => vis(lm, i));
+  } else {
+    // Side view — camera-facing side = shoulder with higher visibility
+    const lsVis = lm[11] ? (lm[11].visibility||0) : 0;
+    const rsVis = lm[12] ? (lm[12].visibility||0) : 0;
+    const isLeftSide = lsVis >= rsVis; // left shoulder more visible → person faces right → left side to camera
+    const [sh, el, wr, hi, kn, an] = isLeftSide
+      ? [11, 13, 15, 23, 25, 27]  // left side
+      : [12, 14, 16, 24, 26, 28]; // right side
+    const required = [0, sh, el, wr, hi, kn, an];
+    return required.every(i => vis(lm, i));
+  }
+}
+
+// ── T-Pose check (elbows only, ratio-based) ─────────────────────────────
 function checkTpose(lm){
-  // All upper-body landmarks must be clearly visible
-  const required = [11,12,13,14,15,16,23,24];
-  if(!required.every(i => vis(lm,i,0.5,0.4))) return false;
+  // Need: both shoulders + both elbows visible
+  if(![11,12,13,14].every(i => vis(lm,i,0.45,0.35))) return false;
 
-  const ls=lm[11], rs=lm[12]; // shoulders
-  const le=lm[13], re=lm[14]; // elbows
-  const lw=lm[15], rw=lm[16]; // wrists
-  const lh=lm[23], rh=lm[24]; // hips
+  const ls=lm[11], rs=lm[12];  // shoulders
+  const le=lm[13], re=lm[14];  // elbows
+  const lh=vis(lm,23)?lm[23]:null, rh=vis(lm,24)?lm[24]:null;
 
-  // 1. Shoulder span must be substantial (person not too far / turned)
-  const shoulderSpan = Math.abs(rs.x - ls.x);
-  if(shoulderSpan < 0.20) return false;
-
-  // 2. Reference y: mid-shoulder level
+  // Torso height as scale reference
   const shoulderY = (ls.y + rs.y) / 2;
+  const hipY = (lh && rh) ? (lh.y + rh.y) / 2 : shoulderY + 0.18;
+  const torsoH = Math.max(hipY - shoulderY, 0.06);
 
-  // 3. Body height reference (shoulder to hip midpoint)
-  const hipY = (lh.y + rh.y) / 2;
-  const torsoH = Math.max(hipY - shoulderY, 0.05);
+  // 1. Left elbow must be to the LEFT of left shoulder
+  if(le.x >= ls.x) return false;
+  // 2. Right elbow must be to the RIGHT of right shoulder
+  if(re.x <= rs.x) return false;
 
-  // 4. Arms must be roughly at shoulder level (not raised or dropped)
-  //    Allow ±15% of torso height deviation
-  const armYTol = torsoH * 0.35;
-  if(Math.abs(le.y - shoulderY) > armYTol) return false;
-  if(Math.abs(re.y - shoulderY) > armYTol) return false;
-  if(Math.abs(lw.y - shoulderY) > armYTol) return false;
-  if(Math.abs(rw.y - shoulderY) > armYTol) return false;
-
-  // 5. Segment angle check — upper arm (shoulder→elbow) must be near horizontal
-  //    Acceptable: within 25° of horizontal
-  const leftUpperArmAngle  = segAngle(ls, le);  // angle from horizontal
-  const rightUpperArmAngle = segAngle(rs, re);
-  if(leftUpperArmAngle  > 30) return false;
-  if(rightUpperArmAngle > 30) return false;
-
-  // 6. Forearm (elbow→wrist) also near horizontal
-  const leftForearmAngle  = segAngle(le, lw);
-  const rightForearmAngle = segAngle(re, rw);
-  if(leftForearmAngle  > 35) return false;
-  if(rightForearmAngle > 35) return false;
-
-  // 7. Wrists must extend BEYOND the shoulders (arms fully out, not tucked in)
-  //    Left wrist should be to the LEFT of left shoulder
-  //    Right wrist should be to the RIGHT of right shoulder
-  if(lw.x > ls.x + 0.03) return false;  // left wrist not far enough left
-  if(rw.x < rs.x - 0.03) return false;  // right wrist not far enough right
-
-  // 8. Wrist span must be large relative to shoulder span
-  const wristSpan = Math.abs(rw.x - lw.x);
-  if(wristSpan < shoulderSpan * 1.3) return false;  // arms not extended enough
+  // 3. Horizontal alignment: |elbow-y - shoulder-y| / vector-length < 0.4
+  const leftVecLen  = Math.sqrt((le.x-ls.x)**2 + (le.y-ls.y)**2);
+  const rightVecLen = Math.sqrt((re.x-rs.x)**2 + (re.y-rs.y)**2);
+  if(leftVecLen  > 0 && Math.abs(le.y - ls.y) / leftVecLen  > 0.4) return false;
+  if(rightVecLen > 0 && Math.abs(re.y - rs.y) / rightVecLen > 0.4) return false;
 
   return true;
 }
 
-// ── Side pose check ────────────────────────────────────
-// Person standing in profile (either left or right side to camera).
-// Shoulders appear stacked (small x-delta), arms hanging naturally.
+// ── Side pose check (ratio-based) ───────────────────────────────────────
 function checkSide(lm){
-  // Core body landmarks
-  const required = [11,12,23,24];
-  if(!required.every(i => vis(lm,i,0.45,0.35))) return false;
+  if(![11,12,23,24].every(i => vis(lm,i,0.45,0.35))) return false;
 
-  const ls=lm[11], rs=lm[12]; // shoulders
-  const lh=lm[23], rh=lm[24]; // hips
+  const ls=lm[11], rs=lm[12];
+  const lh=lm[23], rh=lm[24];
 
-  // 1. Shoulders must be stacked — small horizontal spread indicates true profile
-  //    If shoulder span is large, person is facing camera (not side)
-  const shoulderSpan = Math.abs(rs.x - ls.x);
-  if(shoulderSpan > 0.20) return false;  // too much shoulder width → facing camera
-
-  // 2. Torso must have meaningful vertical extent
   const shoulderMidY = (ls.y + rs.y) / 2;
   const hipMidY      = (lh.y + rh.y) / 2;
-  const torsoH = hipMidY - shoulderMidY;
-  if(torsoH < 0.08) return false;
+  const torsoH = Math.max(hipMidY - shoulderMidY, 0.06);
 
-  // 3. Arms should be hanging at sides (wrists near or below hip level)
-  //    At least one wrist must be visible and positioned naturally
-  const lwOk = vis(lm,15,0.4,0.3);
-  const rwOk = vis(lm,16,0.4,0.3);
-  if(lwOk || rwOk){
-    const wristY = lwOk ? lm[15].y : lm[16].y;
-    // Wrist should be between shoulder and 70% below hip — natural hang
-    if(wristY < shoulderMidY) return false;           // arms raised above shoulders
-    if(wristY > hipMidY + torsoH * 0.8) return false; // arms raised oddly high or extreme
-  }
+  // 1. Shoulders stacked: shoulder x-span / torsoHeight < 0.25
+  const shoulderSpan = Math.abs(rs.x - ls.x);
+  if(shoulderSpan / torsoH > 0.25) return false;
 
-  // 4. Nose / head should be roughly above the shoulder midpoint x (not twisted)
-  //    For a true side profile the head sits directly above the torso
-  if(vis(lm,0,0.5,0.4)){
-    const nose = lm[0];
-    const shoulderMidX = (ls.x + rs.x) / 2;
-    // Head should be close in x to shoulder midpoint (within 15% of frame width)
-    if(Math.abs(nose.x - shoulderMidX) > 0.18) return false;
-  }
-
-  // 5. Hips should also be stacked (reinforces side-on stance)
+  // 2. Hips stacked: hip x-span / torsoHeight < 0.22
   const hipSpan = Math.abs(rh.x - lh.x);
-  if(hipSpan > 0.18) return false;
+  if(hipSpan / torsoH > 0.22) return false;
+
+  // 3. Visible-side elbow at or below shoulder level (y-comparison)
+  const lsVis = lm[11] ? (lm[11].visibility||0) : 0;
+  const rsVis = lm[12] ? (lm[12].visibility||0) : 0;
+  const elIdx = lsVis >= rsVis ? 13 : 14;
+  if(vis(lm, elIdx, 0.35, 0.25)){
+    if(lm[elIdx].y < shoulderMidY - torsoH * 0.1) return false; // elbow above shoulder
+  }
+
+  // 4. Nose x close to shoulder midpoint x: |nose-x - shoulderMid-x| / torsoHeight < 0.3
+  if(vis(lm, 0)){
+    const shoulderMidX = (ls.x + rs.x) / 2;
+    if(Math.abs(lm[0].x - shoulderMidX) / torsoH > 0.30) return false;
+  }
 
   return true;
 }
 
 // ── UI update ──────────────────────────────────────────
-const chipIds={tilt:'c-tilt',shake:'c-shake',light:'c-light',body:'c-body',pose:'c-pose'};
-const msgs={
-  tilt: {bad:'Level the phone vertically',         wrn:'Phone slightly tilted'},
-  shake:{bad:'Hold the phone steady',              wrn:'Too much movement'},
-  light:{bad:'Too dark — move to better light',    wrn:'Low light — results may vary'},
-  body: {bad:'Step back — show head to feet',      wrn:'Body not fully in frame'},
+const chipIds = {
+  light:'c-light', shake:'c-shake', tilt:'c-tilt',
+  height:'c-height', dist:'c-dist', body:'c-body', pose:'c-pose'
+};
+const ALL_KEYS  = ['light','shake','tilt','height','dist','body','pose'];
+const POSE_KEYS = ['height','dist','body','pose']; // disabled in no-pose mode
+
+const msgs = {
+  light:  {bad:'Too dark — move to better light',      wrn:'Low light — results may vary'},
+  shake:  {bad:'Hold the phone steady',                wrn:'Too much movement'},
+  tilt:   {bad:'Level the phone vertically',           wrn:'Phone slightly tilted'},
+  height: {bad:'Adjust camera height',                 wrn:'Camera height off-centre'},
+  dist:   {bad:'Adjust distance to camera',            wrn:'Distance slightly off'},
+  body:   {bad:'Entire body must be visible',          wrn:'Body not fully in frame'},
   pose: {
-    front:{bad:'Extend both arms fully out sideways (T-pose)', wrn:'Arms not fully extended — spread wider'},
-    side: {bad:'Turn to your side — shoulder to camera',       wrn:'Not quite side-on — rotate more'}
+    front:{bad:'Extend both arms out sideways (T-pose)', wrn:'Arms not quite extended — spread wider'},
+    side: {bad:'Turn to your side — shoulder to camera', wrn:'Not quite side-on — rotate more'}
   }
 };
 
 function updateUI(){
-  // In no-pose mode: body and pose chips are always disabled (grey), not counted
-  const poseKeys = mpAvailable ? ['tilt','shake','light','body','pose'] : ['tilt','shake','light'];
-  const allOk = poseKeys.every(k=>checks[k]);
-
-  // Shutter: always active in warn mode; active only when all-ok in block mode
+  const activeKeys = mpAvailable ? ALL_KEYS : ['light','shake','tilt'];
+  const allOk = activeKeys.every(k=>checks[k]);
   const canShoot = blockMode ? allOk : true;
 
-  // Ring colour
-  if(allOk){
-    camRing.className='ready';
-  } else if(blockMode){
-    camRing.className='blocked';
-  } else {
-    camRing.className='warn';
-  }
+  // Ring
+  camRing.className = allOk ? 'ready' : (blockMode ? 'blocked' : 'warn');
 
-  // Shutter class
+  // Shutter
   if(!webcamRunning){
     shutterBtn.className='off';
   } else if(canShoot){
@@ -1287,88 +1270,108 @@ function updateUI(){
   }
 
   // Chips
-  Object.keys(checks).forEach(k=>{
-    const chip=document.getElementById(chipIds[k]);
+  ALL_KEYS.forEach(k=>{
+    const chip = document.getElementById(chipIds[k]);
     if(!chip) return;
-    // body/pose disabled when no MP
-    if(!mpAvailable && (k==='body'||k==='pose')){
-      chip.className='chip dis';
-      return;
+    if(!mpAvailable && POSE_KEYS.includes(k)){
+      chip.className='chip dis'; return;
     }
-    const ok=checks[k];
-    chip.className='chip '+(ok?'ok':(blockMode?'bad':'wrn'));
+    chip.className='chip '+(checks[k]?'ok':(blockMode?'bad':'wrn'));
   });
 
-  // Guidance text
-  const fails = poseKeys.filter(k=>!checks[k]);
+  // Guidance — show first failing check's message
+  const fails = activeKeys.filter(k=>!checks[k]);
   let msg;
-  if(!mpAvailable){
-    msg = fails.length===0
-      ? (phase==='front'?'Arms out to sides, head to feet visible':'Turn side-on — shoulder facing camera')
-      : (()=>{
-          const k=fails[0];
-          return blockMode ? msgs[k].bad : msgs[k].wrn;
-        })();
+  if(fails.length === 0){
+    msg = phase==='front' ? 'T-pose ready — arms out, head to feet visible' : 'Side view ready — shoulder facing camera';
   } else {
-    if(fails.length===0){
-      msg = phase==='front'?'Arms out to sides, head to feet visible':'Turn side-on — shoulder facing camera';
-    } else {
-      const k=fails[0];
-      msg = k==='pose'
-        ? (blockMode?msgs.pose[phase].bad:msgs.pose[phase].wrn)
-        : (blockMode?msgs[k].bad:msgs[k].wrn);
-    }
+    const k = fails[0];
+    if(k === 'height' && checks.heightMsg) msg = checks.heightMsg;
+    else if(k === 'dist' && checks.distMsg) msg = checks.distMsg;
+    else if(k === 'pose') msg = blockMode ? msgs.pose[phase].bad : msgs.pose[phase].wrn;
+    else msg = blockMode ? msgs[k].bad : msgs[k].wrn;
   }
   guidanceEl.textContent = msg;
   guidanceEl.style.color = allOk
     ? 'rgba(52,211,153,.9)'
-    : (blockMode?'rgba(248,113,113,.8)':'rgba(251,191,36,.85)');
+    : (blockMode ? 'rgba(248,113,113,.8)' : 'rgba(251,191,36,.85)');
 }
 
-// ── Silhouettes ────────────────────────────────────────
-const SIL_FRONT=`<svg viewBox="0 0 120 290" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <circle cx="60" cy="22" r="17" stroke="rgba(255,255,255,.18)" stroke-width="1.8"/>
-  <line x1="60" y1="39" x2="60" y2="62" stroke="rgba(255,255,255,.18)" stroke-width="1.8"/>
-  <line x1="60" y1="62" x2="60" y2="135" stroke="rgba(255,255,255,.18)" stroke-width="1.8"/>
-  <line x1="60" y1="76" x2="6" y2="76" stroke="rgba(255,255,255,.25)" stroke-width="2.2"/>
-  <circle cx="3" cy="76" r="4" fill="rgba(255,255,255,.25)"/>
-  <line x1="60" y1="76" x2="114" y2="76" stroke="rgba(255,255,255,.25)" stroke-width="2.2"/>
-  <circle cx="117" cy="76" r="4" fill="rgba(255,255,255,.25)"/>
-  <line x1="47" y1="135" x2="40" y2="200" stroke="rgba(255,255,255,.18)" stroke-width="1.8"/>
-  <line x1="40" y1="200" x2="34" y2="272" stroke="rgba(255,255,255,.18)" stroke-width="1.8"/>
-  <line x1="73" y1="135" x2="80" y2="200" stroke="rgba(255,255,255,.18)" stroke-width="1.8"/>
-  <line x1="80" y1="200" x2="86" y2="272" stroke="rgba(255,255,255,.18)" stroke-width="1.8"/>
-  <line x1="24" y1="273" x2="46" y2="273" stroke="rgba(255,255,255,.18)" stroke-width="1.8"/>
-  <line x1="74" y1="273" x2="96" y2="273" stroke="rgba(255,255,255,.18)" stroke-width="1.8"/>
-</svg>`;
-const SIL_SIDE=`<svg viewBox="0 0 54 290" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <ellipse cx="27" cy="22" rx="13" ry="17" stroke="rgba(255,255,255,.18)" stroke-width="1.8"/>
-  <line x1="27" y1="39" x2="27" y2="60" stroke="rgba(255,255,255,.18)" stroke-width="1.8"/>
-  <line x1="27" y1="60" x2="27" y2="135" stroke="rgba(255,255,255,.18)" stroke-width="1.8"/>
-  <line x1="27" y1="74" x2="34" y2="126" stroke="rgba(255,255,255,.18)" stroke-width="1.6"/>
-  <line x1="27" y1="74" x2="21" y2="126" stroke="rgba(255,255,255,.12)" stroke-width="1.4" stroke-dasharray="4 3"/>
-  <line x1="23" y1="135" x2="25" y2="200" stroke="rgba(255,255,255,.18)" stroke-width="1.8"/>
-  <line x1="25" y1="200" x2="26" y2="272" stroke="rgba(255,255,255,.18)" stroke-width="1.8"/>
-  <line x1="31" y1="135" x2="29" y2="200" stroke="rgba(255,255,255,.12)" stroke-width="1.4" stroke-dasharray="4 3"/>
-  <line x1="29" y1="200" x2="28" y2="272" stroke="rgba(255,255,255,.12)" stroke-width="1.4" stroke-dasharray="4 3"/>
-  <line x1="15" y1="273" x2="38" y2="273" stroke="rgba(255,255,255,.18)" stroke-width="1.8"/>
+// ══════════════════════════════════════════════════════
+//  SILHOUETTES — anatomical SVG shapes
+// ══════════════════════════════════════════════════════
+const SIL_FRONT = `<svg viewBox="0 0 160 380" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Head -->
+  <ellipse cx="80" cy="28" rx="22" ry="26" fill="rgba(255,255,255,.07)" stroke="rgba(255,255,255,.22)" stroke-width="1.5"/>
+  <!-- Neck -->
+  <rect x="72" y="52" width="16" height="14" fill="rgba(255,255,255,.06)" stroke="rgba(255,255,255,.15)" stroke-width="1.2"/>
+  <!-- Torso -->
+  <path d="M44 66 Q80 60 116 66 L112 160 Q80 168 48 160 Z" fill="rgba(255,255,255,.06)" stroke="rgba(255,255,255,.18)" stroke-width="1.4"/>
+  <!-- Left upper arm (extends left) -->
+  <path d="M44 80 L8 80" stroke="rgba(255,255,255,.28)" stroke-width="8" stroke-linecap="round"/>
+  <!-- Left elbow joint -->
+  <circle cx="8" cy="80" r="6" fill="rgba(255,255,255,.18)" stroke="rgba(255,255,255,.28)" stroke-width="1.2"/>
+  <!-- Left forearm (extends further left) -->
+  <path d="M8 80 L-16 80" stroke="rgba(255,255,255,.22)" stroke-width="6" stroke-linecap="round"/>
+  <!-- Right upper arm (extends right) -->
+  <path d="M116 80 L152 80" stroke="rgba(255,255,255,.28)" stroke-width="8" stroke-linecap="round"/>
+  <!-- Right elbow joint -->
+  <circle cx="152" cy="80" r="6" fill="rgba(255,255,255,.18)" stroke="rgba(255,255,255,.28)" stroke-width="1.2"/>
+  <!-- Right forearm (extends further right) -->
+  <path d="M152 80 L176 80" stroke="rgba(255,255,255,.22)" stroke-width="6" stroke-linecap="round"/>
+  <!-- Left hand -->
+  <ellipse cx="-20" cy="80" rx="7" ry="5" fill="rgba(255,255,255,.16)" stroke="rgba(255,255,255,.22)" stroke-width="1"/>
+  <!-- Right hand -->
+  <ellipse cx="180" cy="80" rx="7" ry="5" fill="rgba(255,255,255,.16)" stroke="rgba(255,255,255,.22)" stroke-width="1"/>
+  <!-- Hip area -->
+  <path d="M48 158 Q80 166 112 158 L108 178 Q80 184 52 178 Z" fill="rgba(255,255,255,.05)" stroke="rgba(255,255,255,.14)" stroke-width="1.2"/>
+  <!-- Left thigh -->
+  <path d="M62 176 L54 270" stroke="rgba(255,255,255,.18)" stroke-width="10" stroke-linecap="round"/>
+  <!-- Left knee -->
+  <circle cx="52" cy="272" r="7" fill="rgba(255,255,255,.1)" stroke="rgba(255,255,255,.2)" stroke-width="1.2"/>
+  <!-- Left shin -->
+  <path d="M52 272 L50 352" stroke="rgba(255,255,255,.16)" stroke-width="8" stroke-linecap="round"/>
+  <!-- Left foot -->
+  <ellipse cx="46" cy="356" rx="12" ry="5" fill="rgba(255,255,255,.12)" stroke="rgba(255,255,255,.2)" stroke-width="1"/>
+  <!-- Right thigh -->
+  <path d="M98 176 L106 270" stroke="rgba(255,255,255,.18)" stroke-width="10" stroke-linecap="round"/>
+  <!-- Right knee -->
+  <circle cx="108" cy="272" r="7" fill="rgba(255,255,255,.1)" stroke="rgba(255,255,255,.2)" stroke-width="1.2"/>
+  <!-- Right shin -->
+  <path d="M108 272 L110 352" stroke="rgba(255,255,255,.16)" stroke-width="8" stroke-linecap="round"/>
+  <!-- Right foot -->
+  <ellipse cx="114" cy="356" rx="12" ry="5" fill="rgba(255,255,255,.12)" stroke="rgba(255,255,255,.2)" stroke-width="1"/>
 </svg>`;
 
-function setSil(){ silWrap.innerHTML=phase==='front'?SIL_FRONT:SIL_SIDE; }
+const SIL_SIDE = `<svg viewBox="0 0 80 380" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Head (oval, slightly forward) -->
+  <ellipse cx="38" cy="28" rx="18" ry="24" fill="rgba(255,255,255,.07)" stroke="rgba(255,255,255,.22)" stroke-width="1.5"/>
+  <!-- Neck -->
+  <rect x="32" y="50" width="10" height="14" fill="rgba(255,255,255,.06)" stroke="rgba(255,255,255,.15)" stroke-width="1.2"/>
+  <!-- Torso (rectangle, side profile) -->
+  <path d="M28 64 L52 64 L50 162 L26 162 Z" fill="rgba(255,255,255,.06)" stroke="rgba(255,255,255,.18)" stroke-width="1.4"/>
+  <!-- Visible arm (hanging, slightly in front of torso) -->
+  <path d="M34 76 L30 140" stroke="rgba(255,255,255,.22)" stroke-width="7" stroke-linecap="round"/>
+  <circle cx="30" cy="143" r="5" fill="rgba(255,255,255,.12)" stroke="rgba(255,255,255,.2)" stroke-width="1"/>
+  <path d="M30 143 L28 180" stroke="rgba(255,255,255,.18)" stroke-width="5" stroke-linecap="round"/>
+  <ellipse cx="27" cy="184" rx="5" ry="4" fill="rgba(255,255,255,.12)" stroke="rgba(255,255,255,.18)" stroke-width="1"/>
+  <!-- Far arm (dashed, behind torso) -->
+  <path d="M44 78 L46 138" stroke="rgba(255,255,255,.10)" stroke-width="5" stroke-linecap="round" stroke-dasharray="5 4"/>
+  <!-- Hip -->
+  <path d="M26 160 L50 160 L48 180 L28 180 Z" fill="rgba(255,255,255,.05)" stroke="rgba(255,255,255,.12)" stroke-width="1"/>
+  <!-- Visible leg (front) -->
+  <path d="M32 178 L30 268" stroke="rgba(255,255,255,.18)" stroke-width="9" stroke-linecap="round"/>
+  <circle cx="30" cy="270" r="6" fill="rgba(255,255,255,.1)" stroke="rgba(255,255,255,.18)" stroke-width="1.2"/>
+  <path d="M30 270 L28 350" stroke="rgba(255,255,255,.16)" stroke-width="7" stroke-linecap="round"/>
+  <path d="M22 352 L42 352 L44 358 L20 358 Z" fill="rgba(255,255,255,.12)" stroke="rgba(255,255,255,.18)" stroke-width="1"/>
+  <!-- Far leg (dashed) -->
+  <path d="M40 180 L42 266" stroke="rgba(255,255,255,.10)" stroke-width="7" stroke-linecap="round" stroke-dasharray="5 4"/>
+  <path d="M42 266 L44 346" stroke="rgba(255,255,255,.09)" stroke-width="5" stroke-linecap="round" stroke-dasharray="5 4"/>
+</svg>`;
 
-// ── Phase flash ────────────────────────────────────────
-function showPhaseFlash(){
-  document.getElementById('pf-num').textContent  = phase==='front'?'PHOTO 1 OF 2':'PHOTO 2 OF 2';
-  document.getElementById('pf-title').innerHTML  = phase==='front'?'Front View<br>T-Pose':'Side View<br>Attention';
-  document.getElementById('pf-sub').textContent  = phase==='front'
-    ?'Stretch both arms fully out to the sides'
-    :'Stand with right side facing camera';
-  phaseFlash.classList.add('show');
-  setSil();
+function setSil(){
+  silWrap.innerHTML = phase === 'front' ? SIL_FRONT : SIL_SIDE;
 }
-document.getElementById('pf-tap').addEventListener('click',()=>{
-  phaseFlash.classList.remove('show');
-});
 
 // ── Shutter ────────────────────────────────────────────
 shutterBtn.addEventListener('click',()=>{
@@ -1380,20 +1383,22 @@ function doCapture(){
   flashEl.classList.add('on');
   requestAnimationFrame(()=>requestAnimationFrame(()=>flashEl.classList.remove('on')));
 
+  // Capture exactly 3:4 portrait crop at 1080×1440
   const W=1080, H=1440;
   const cap=document.createElement('canvas'); cap.width=W; cap.height=H;
   const ctx=cap.getContext('2d');
   const vw=video.videoWidth, vh=video.videoHeight;
   if(!vw||!vh) return;
-  const tr=3/4, sr=vw/vh;
+  const TR=3/4;          // target aspect ratio (width/height)
+  const SR=vw/vh;        // source aspect ratio
   let sx,sy,sw,sh;
-  if(sr>tr){ sh=vh; sw=vh*tr; sx=(vw-sw)/2; sy=0; }
-  else      { sw=vw; sh=vw/tr; sx=0; sy=(vh-sh)/2; }
-  ctx.drawImage(video,sx,sy,sw,sh,0,0,W,H);
+  if(SR > TR){ sh=vh; sw=Math.round(vh*TR); sx=Math.round((vw-sw)/2); sy=0; }
+  else        { sw=vw; sh=Math.round(vw/TR); sx=0; sy=Math.round((vh-sh)/2); }
+  ctx.drawImage(video, sx, sy, sw, sh, 0, 0, W, H);
 
   cap.toBlob(blob=>{
     if(!blob) return;
-    blob._ts=genTs();
+    blob._ts = genTs();
     if(phase==='front') frontBlob=blob; else sideBlob=blob;
     showPopup(cap.toDataURL('image/jpeg',.75));
   },'image/jpeg',.93);
@@ -1407,8 +1412,8 @@ function genTs(){
 
 // ── Capture popup ──────────────────────────────────────
 function showPopup(dataUrl){
-  cpImg.src=dataUrl;
-  cpLabel.textContent=phase==='front'?'FRONT VIEW — T-POSE':'SIDE VIEW — ATTENTION';
+  cpImg.src = dataUrl;
+  cpLabel.textContent = phase==='front' ? 'FRONT VIEW — T-POSE' : 'SIDE VIEW — ATTENTION';
   capturePopup.classList.add('show');
 }
 function hidePopup(){ capturePopup.classList.remove('show'); }
@@ -1420,44 +1425,42 @@ document.getElementById('btn-retake').addEventListener('click',()=>{
 document.getElementById('btn-next').addEventListener('click',()=>{
   hidePopup();
   if(phase==='front'){
-    phase='side'; setSil(); showPhaseFlash();
+    phase='side'; setSil();
   } else {
     beginUpload();
   }
 });
 
 // ── Upload ─────────────────────────────────────────────
-const API = 'https://aimm-450300910281.asia-south1.run.app';
-
 async function beginUpload(){
   if(uploadPending) return;
-  uploadPending=true;
+  uploadPending = true;
   showUpState('uploading');
   document.getElementById('up-bar').style.width='0%';
   try{
-    const ts=(frontBlob&&frontBlob._ts)||genTs();
-    document.getElementById('up-sub').textContent='Sending front photo…';
-    document.getElementById('up-bar').style.width='15%';
+    const ts = (frontBlob&&frontBlob._ts) || genTs();
+    document.getElementById('up-sub').textContent = 'Sending front photo…';
+    document.getElementById('up-bar').style.width = '15%';
     await sendFile(frontBlob, ts+'_front.jpg');
-    document.getElementById('up-bar').style.width='60%';
-    document.getElementById('up-sub').textContent='Sending side photo…';
+    document.getElementById('up-bar').style.width = '60%';
+    document.getElementById('up-sub').textContent = 'Sending side photo…';
     await sendFile(sideBlob, ts+'_side.jpg');
-    document.getElementById('up-bar').style.width='100%';
+    document.getElementById('up-bar').style.width = '100%';
     showUpState('success');
   }catch(e){
-    document.getElementById('up-errmsg').textContent=e.message||'Network error.';
+    document.getElementById('up-errmsg').textContent = e.message||'Network error.';
     showUpState('error');
   }
 }
 
-function sendFile(blob,name){
+function sendFile(blob, name){
   return new Promise((res,rej)=>{
-    const fd=new FormData(); fd.append('file',blob,name);
-    const xhr=new XMLHttpRequest();
-    xhr.open('POST',API,true);
-    xhr.onload=()=>xhr.status>=200&&xhr.status<300?res():rej(new Error('Server '+xhr.status));
-    xhr.onerror=()=>rej(new Error('Network error'));
-    xhr.timeout=60000; xhr.ontimeout=()=>rej(new Error('Timed out'));
+    const fd = new FormData(); fd.append('file', blob, name);
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', API, true);
+    xhr.onload = ()=>xhr.status>=200&&xhr.status<300?res():rej(new Error('Server '+xhr.status));
+    xhr.onerror = ()=>rej(new Error('Network error'));
+    xhr.timeout = 60000; xhr.ontimeout = ()=>rej(new Error('Timed out'));
     xhr.send(fd);
   });
 }
@@ -1479,6 +1482,7 @@ document.getElementById('btn-restart').addEventListener('click',reset);
 
 function reset(){
   uploadPending=false; frontBlob=null; sideBlob=null; phase='front';
+  lastMaskFloat=null;
   uploadOver.classList.remove('show');
   document.getElementById('up-uploading').style.display='none';
   document.getElementById('up-success').style.display='none';
@@ -1487,7 +1491,6 @@ function reset(){
   document.getElementById('up-error').classList.add('hidden');
   document.getElementById('up-bar').style.width='0%';
   setSil();
-  showPhaseFlash();
 }
 
 // ── Desktop block ──────────────────────────────────────

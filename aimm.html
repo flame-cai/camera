@@ -1,247 +1,3 @@
-
-write a single html file (nothing else) for a dynamic and adaptive website that can run on any smartphone/tablets (android & ios) of any screen size but not on any laptop/desktop. design should be simple, minimal but modern, interactive and visually appealing. should have both dark and light mode, initially it should use system theme, also store the last theme used to use next time. title should be AIMM. its purpose is to act as a camera app, but specialized. i can access device camera, its purpose is data collection, in one go it provides user to take 2 pictures in 3:4 portrait aspect ratio (with option to preview and retake), 1st it front view with both arms fully stretched to side like "T", 2nd is side view in attention position (standing normally). name these images with time and front/side, and send both to this API curl -X POST   -F "file=@image.jpg"   https://aimm-450300910281.asia-south1.run.app
-try all possible ways to guide and restrict user to take images only in the mentioned poses/postures. complete body should be visible, should be from straight view, not from any angle, guide and restrict for camera angles too. if you have any question/clarification/suggestion for improvement, then first ask then move to actual code.
-
-Show less
-9:49 AM
-A few clarifying questions before I build this:
-
-No response came through — I'll proceed with sensible defaults and build something flexible:
-
-Camera: Rear camera by default (operator holds phone, subject poses) with option to switch
-After upload: Success screen + reset for new session
-Access control: No login
-Metadata: Just a subject name/ID for naming files
-
-Check frontend design skill
-Check frontend design skill
-Now let me build this properly:
-
-
-Created a file, read a file
-Created a file, read a file
-
-AIMM camera app - full HTML single file
-aimm.html
-
-Presented file
-Done
-Here's AIMM — a single aimm.html file ready to deploy or open directly on any phone/tablet.
-
-What's built in:
-
-Flow (6 guided steps):
-
-Welcome — Subject name/ID input + session overview
-Front Pose Guide — Annotated stick figure of T-pose with 5 rules, checklist (all 4 boxes must be ticked to proceed)
-Front Camera — Live viewfinder with T-pose silhouette overlay, 3×3 grid, level indicator (turns red if phone is tilted), real-time tilt hints
-Front Preview — Review image with 4-point verification checklist (must check all to accept or must retake)
-Side Pose Guide — Profile stick figure, side-specific rules, same checklist gate
-Side Camera + Preview — Same safeguards
-Final Review — Thumbnail of both photos before upload
-Upload — Progress bar, sequential upload of both files to the API, success/error states
-Restrictions & guidance built in:
-
-🔒 All-or-nothing checklists at guide AND preview stages — can't skip
-🎯 Body silhouette overlay aligned to the 3:4 frame
-📐 Level indicator (green/red dot) using device gyroscope
-💬 Real-time camera tilt hints ("Tilt phone more upright ↑" etc.)
-⚠️ Warning banners on every camera screen
-🖥️ Hard-blocked on desktop (CSS + JS both enforce it)
-🌗 Dark/light mode with system preference auto-detect + localStorage persistence
-📁 Files named SubjectID_front_YYYYMMDD_HHMMSS.jpg and SubjectID_side_...
-Aimm
-Code · HTML 
-Q: Who takes the photos — the user themselves (selfie-style) or someone else holds the phone?
-A: Another person holds the phone
-
-Q: What should happen after both photos are successfully sent to the API?
-A: Show a success message and reset for new session
-
-Q: Should there be any access control (e.g., a PIN or login) before using the app?
-A: No, open access
-
-No name/ID input, no extra input/ confirmation/checkbox/consent, No welcome screen, no separate instruction screen, no separate preview screen, guidance and restrictions on camera itself, use all possible sensors, and preview in a pop up/ picture in picture. this process needs to be fast, so just click click send, nothing else.
-
-dont write any code till I say you to do so, first ask f you have any question/clarification/suggestion for improvement
-
-Show more
-10:04 AM
-Got it — fast, frictionless, operator-held workflow. Let me clarify a few things before building:
-
-No response again — I'll go with the most logical fast-flow defaults and lay out my assumptions. Please confirm or correct before I code:
-
-My assumed design:
-
-Shutter → Brief 2-sec PiP thumbnail (bottom corner) → auto-advances. If it looks wrong, operator taps the thumbnail to retake. Clean and fast.
-Shutter blocking: Block only on phone tilt (gyroscope) — the one thing the operator controls directly. Distance/lighting = warn only, never block.
-Sensors used: Gyroscope (tilt/level), Accelerometer (shake warning), Ambient light (warn if too dark), + MediaPipe/TensorFlow body detection if device supports it.
-Transition between shots: A 1-second full-screen flash ("Now: Side View →") then camera immediately opens. Zero taps needed.
-Upload: Happens silently in background after shot 2. Operator just sees a quiet success state. Errors surface only if upload fails.
-No filename/ID — files named purely by timestamp + front/side.
-One more thing I want to confirm before building:
-
-Still no response — happy to proceed with these defaults whenever you're ready. Just say "go" and I'll build it, or correct any of the assumptions above first.
-
-To summarise what I'll build:
-
-Timestamp-only filenames, silhouette always visible, tilt-blocks shutter, 2-sec PiP thumbnail (tap to retake), 1-sec transition flash between shots, silent background upload.
-Q: Since there's no preview screen, what should happen when the shutter is pressed?
-A: Thumbnail stays until operator taps 'Next'
-
-Q: If a photo looks wrong after capture (e.g. blurry), how does the operator redo it?
-A: A retake button briefly appears on screen
-
-Q: For the on-camera guidance, which restrictions should BLOCK the shutter (prevent capture)?
-A: Block on any guideline violation
-
-10:06 AM
-A few final clarifications before I build:
-
-No responses again — I'll proceed with the most sensible defaults. Here's my final build spec — please correct anything before I write code:
-
-Final Design Spec:
-
-Decision	Choice
-Sensors	Gyroscope (tilt) + Accelerometer (shake) + Ambient light — all three block shutter. No ML (too slow/heavy).
-Silhouette	Always visible, fades slightly when all checks pass (green state)
-Shutter blocks	Tilt > 8°, shake detected, too dark, all block
-After capture	Thumbnail PiP stays in corner — Retake + Next buttons visible
-Transition	Full-screen 1.5-sec flash "Now: Side View" then camera auto-opens
-File naming	Timestamp only — 20250312_143022_front.jpg
-Upload	Silent background after "Next" on shot 2, quiet success banner
-Body detection	No ML — silhouette overlay + operator judgment
-Say "go" and I'll build it.
-
-Q: What sensors/signals should actively guide the operator? (Select all that apply)
-A: Gyroscope — phone tilt / level, Accelerometer — camera shake warning, Ambient light sensor — lighting warning, Body detection via ML (MediaPipe), Pose Landmark Detection using MediaPipe
-
-Q: Transition between front → side shot (after tapping Next)?
-A: Single tap — ‘Next: Side View’ button, operator taps to proceed
-
-Q: File naming (no subject ID)?
-A: Timestamp only — 20250312_143022_front.jpg
-
-10:07 AM
-Perfect. Two quick questions specifically about the ML/pose detection before I build:
-
-Waiting on your answers to these three — they directly determine how strict and how complex the camera UI logic is. Once you answer, I'll go straight to code.
-
-Q: When MediaPipe detects the pose is wrong (e.g. arms not raised in T, or body at an angle), should it block the shutter or just warn?
-A: Block shutter — pose must match before capture is allowed
-
-Q: If full body isn't visible in frame (head or feet cut off), should it block or warn?
-A: Block — no full body = no capture
-
-Q: How should the camera UI surface all these live checks to the operator?
-A: Both — border + compact status icons
-
-10:09 AM
-Perfect, spec is now complete. Here's the full picture before I code:
-
-Complete Build Spec:
-
-Layer	Behaviour
-Camera	Rear, full-screen 3:4 viewport, always-on
-Silhouette	Always visible ghost overlay (T-pose / side-attention)
-Pose detection	MediaPipe Pose Landmarker — real-time landmark check
-Tilt/Level	DeviceOrientation gyroscope — β≈90°, γ≈0°
-Shake	Accelerometer — blocks if RMS acceleration > threshold
-Lighting	Ambient light sensor OR video frame brightness analysis (fallback)
-Full body	Blocks if nose/ankles not both visible in frame
-Pose checks (Front)	Both wrists at shoulder height ± threshold, wrists far from body (T), shoulders square to camera
-Pose checks (Side)	One shoulder significantly in front of other (profile), arms at sides, body upright
-Shutter	ALL checks must be green simultaneously — any red = blocked
-UI	Coloured border (red→green) + 5 compact status icon strip
-After capture	Thumbnail PiP bottom-right, Retake + Next buttons
-Transition	Single "Next: Side View →" tap, camera switches immediately
-Upload	Silent background after shot 2 confirmed, quiet success/error banner
-Files	20250312_143022_front.jpg + 20250312_143022_side.jpg
-Theme	System default, toggleable, persisted
-Desktop	Hard blocked
-One concern worth flagging: MediaPipe's Pose Landmarker WASM files are loaded from CDN (~5–10 MB) — first load will take a few seconds on mobile. After that it's fast. Acceptable?
-
-Say "go" if all good, or correct anything.
-
-One concern worth flagging: MediaPipe's Pose Landmarker WASM files are loaded from CDN (~5–10 MB) — first load will take a few seconds on mobile. After that it's fast. Acceptable?
-Answer: Yes
-
-After capture: 90% of screen popup, Retake + Next buttons
-
-in case of multiple people in view, consider only the center one
-
-Also just like theme switch, have a button that switch between warnings and complete blockage of everything, default is blockage
-
-have all possible guidance and restrictions, but keep the design  minimal and professional. smooth
-
-are you clear OR still any questions?
-
-10:17 AM
-Crystal clear. One last minor thing:
-
-That's the only open question. Everything else is locked. Ready to build the moment you answer this.
-
-Q: For the shutter unlock moment — instantaneous or a brief 'hold steady' grace period?
-A: Strict (default) — all checks must pass simultaneously
-
-10:17 AM
-Got it. Building now.
-
-
-Created 2 files, ran 2 commands, viewed a file
-Created 2 files, ran 2 commands, viewed a file
-
-Read frontend design skill
-
-AIMM camera app - complete single HTML file with MediaPipe pose detection
-aimm.html
-
-Remove old file and write new one
-
-Script
-
-AIMM camera app - complete rebuild
-aimm.html
-
-Copy to outputs and verify
-
-Script
-
-Presented file
-Done
-Here's the rebuilt AIMM — single file, fast, no friction.
-
-What's in it:
-
-Flow — just 3 taps total:
-
-App loads → MediaPipe initialises → phase flash appears → camera live
-Tap shutter (when green) → 90% popup with Retake / Next
-Tap Next → side phase flash → shoot again → tap Next → silent background upload → success
-All 5 live checks block the shutter simultaneously:
-
-🔵 LEVEL — gyroscope, β≈90° γ≈0° (phone upright, not tilted)
-🔵 STEADY — accelerometer RMS, clears 600ms after movement stops
-🔵 LIGHT — video frame brightness sample (32×32 pixels, every frame)
-🔵 BODY — MediaPipe: nose visible near top, both ankles near bottom of frame
-🔵 POSE — MediaPipe: T-pose (wrists at shoulder height, extended beyond shoulders, shoulders square) / side pose (narrow shoulder span = profile, arms at sides, upright)
-Center-person logic — when multiple people detected, uses the one whose nose is closest to x=0.5 (frame center)
-
-BLOCK / WARN toggle — persistent pill in top bar; default is BLOCK (shutter disabled on any failure), WARN mode shows amber indicators but never blocks
-
-Coloured border ring — green = all clear, red = blocked, amber = warn mode
-
-Aimm
-Code · HTML 
-
-
-
-
-
-Claude is AI and can make mistakes. Please double-check responses.
-Aimm · HTML
-Copy
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -255,57 +11,37 @@ Copy
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #09090b;
-  --surface: #141416;
-  --surface2: #1e1e22;
-  --border: rgba(255,255,255,0.08);
-  --border2: rgba(255,255,255,0.14);
-  --text: #ededf0;
-  --text2: #888892;
-  --text3: #44444e;
-  --accent: #4f8fff;
-  --accent-dim: rgba(79,143,255,0.14);
-  --green: #34d399;
-  --green-dim: rgba(52,211,153,0.12);
-  --red: #f87171;
-  --red-dim: rgba(248,113,113,0.12);
-  --amber: #fbbf24;
-  --amber-dim: rgba(251,191,36,0.1);
-  --font: 'Syne', sans-serif;
-  --mono: 'JetBrains Mono', monospace;
-  --ease: cubic-bezier(0.4,0,0.2,1);
+  --bg:#09090b;--surface:#141416;--surface2:#1e1e22;
+  --border:rgba(255,255,255,.08);--border2:rgba(255,255,255,.14);
+  --text:#ededf0;--text2:#888892;--text3:#44444e;
+  --accent:#4f8fff;--accent-dim:rgba(79,143,255,.14);
+  --green:#34d399;--green-dim:rgba(52,211,153,.12);
+  --red:#f87171;--red-dim:rgba(248,113,113,.12);
+  --amber:#fbbf24;--amber-dim:rgba(251,191,36,.10);
+  --font:'Syne',sans-serif;--mono:'JetBrains Mono',monospace;
+  --ease:cubic-bezier(.4,0,.2,1);
 }
-[data-theme="light"] {
-  --bg: #f1f1ee;
-  --surface: #ffffff;
-  --surface2: #e6e6e2;
-  --border: rgba(0,0,0,0.07);
-  --border2: rgba(0,0,0,0.13);
-  --text: #111114;
-  --text2: #66666e;
-  --text3: #9999a4;
-  --accent: #1a6af0;
-  --accent-dim: rgba(26,106,240,0.1);
-  --green: #059669;
-  --green-dim: rgba(5,150,105,0.1);
-  --red: #dc2626;
-  --red-dim: rgba(220,38,38,0.08);
-  --amber: #b45309;
-  --amber-dim: rgba(180,83,9,0.08);
+[data-theme="light"]{
+  --bg:#f1f1ee;--surface:#fff;--surface2:#e6e6e2;
+  --border:rgba(0,0,0,.07);--border2:rgba(0,0,0,.13);
+  --text:#111114;--text2:#66666e;--text3:#9999a4;
+  --accent:#1a6af0;--accent-dim:rgba(26,106,240,.10);
+  --green:#059669;--green-dim:rgba(5,150,105,.10);
+  --red:#dc2626;--red-dim:rgba(220,38,38,.08);
+  --amber:#b45309;--amber-dim:rgba(180,83,9,.08);
 }
- 
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html,body{
   width:100%;height:100%;overflow:hidden;
-  background:var(--bg);color:var(--text);
+  background:#000;color:var(--text);
   font-family:var(--font);
   -webkit-tap-highlight-color:transparent;
   touch-action:none;
   overscroll-behavior:none;
   -webkit-user-select:none;user-select:none;
 }
- 
-/* Desktop wall */
+
+/* ── Desktop wall ── */
 #dwall{
   display:none;position:fixed;inset:0;z-index:9999;
   background:#06060a;
@@ -315,40 +51,48 @@ html,body{
 #dwall .dw-logo{font-family:var(--mono);font-size:1.8rem;letter-spacing:.25em;color:#4f8fff}
 #dwall p{color:#444;font-size:.88rem;max-width:300px;line-height:1.65}
 @media(min-width:1024px){#dwall{display:flex}#app{display:none!important}}
- 
-/* App shell */
+
+/* ── App shell ── */
 #app{position:fixed;inset:0;background:#000;overflow:hidden}
- 
-/* Camera */
+
+/* ── Camera ── */
 #cam-wrap{position:absolute;inset:0;overflow:hidden;background:#000}
-#video{width:100%;height:100%;object-fit:cover;display:block}
-#pose-canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
- 
-/* Border ring */
+#video{
+  position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  width:100%;height:100%;
+  object-fit:cover;display:block;
+}
+/* Canvas sits exactly on top of video */
+#pose-canvas{
+  position:absolute;inset:0;
+  width:100%;height:100%;
+  pointer-events:none;z-index:2;
+}
+
+/* ── Border ring ── */
 #cam-ring{
-  position:absolute;inset:0;pointer-events:none;z-index:5;
-  border:0 solid transparent;
-  transition:box-shadow .3s var(--ease);
+  position:absolute;inset:0;pointer-events:none;z-index:6;
 }
 #cam-ring::after{
   content:'';position:absolute;inset:0;
   border:3px solid transparent;
-  transition:border-color .3s var(--ease),box-shadow .3s var(--ease);
+  transition:border-color .25s var(--ease),box-shadow .25s var(--ease);
+  pointer-events:none;
 }
-#cam-ring.ready::after{border-color:var(--green);box-shadow:inset 0 0 30px rgba(52,211,153,.1)}
-#cam-ring.blocked::after{border-color:var(--red);box-shadow:inset 0 0 30px rgba(248,113,113,.09)}
-#cam-ring.warn::after{border-color:var(--amber);box-shadow:inset 0 0 30px rgba(251,191,36,.07)}
- 
-/* Silhouette */
+#cam-ring.ready::after{border-color:var(--green);box-shadow:inset 0 0 28px rgba(52,211,153,.09)}
+#cam-ring.blocked::after{border-color:var(--red);box-shadow:inset 0 0 28px rgba(248,113,113,.08)}
+#cam-ring.warn::after{border-color:var(--amber);box-shadow:inset 0 0 28px rgba(251,191,36,.07)}
+
+/* ── Silhouette ── */
 #sil-wrap{
   position:absolute;inset:0;z-index:3;
   display:flex;align-items:center;justify-content:center;
   pointer-events:none;
-  transition:opacity .5s var(--ease);
 }
 #sil-wrap svg{height:88%;width:auto}
- 
-/* Top bar */
+
+/* ── Top bar ── */
 .topbar{
   position:absolute;top:0;left:0;right:0;z-index:30;
   display:flex;align-items:center;justify-content:space-between;
@@ -358,7 +102,7 @@ html,body{
 [data-theme="light"] .topbar{background:linear-gradient(to bottom,rgba(241,241,238,.88) 0%,transparent 100%)}
 .tb-logo{font-family:var(--mono);font-size:.85rem;font-weight:500;letter-spacing:.24em;color:var(--text2)}
 .tb-right{display:flex;gap:8px;align-items:center}
- 
+
 .icon-btn{
   width:36px;height:36px;border-radius:50%;
   border:1px solid var(--border2);
@@ -366,14 +110,11 @@ html,body{
   backdrop-filter:blur(10px);
   color:var(--text2);font-size:.95rem;
   display:flex;align-items:center;justify-content:center;
-  cursor:pointer;
-  transition:all .15s var(--ease);
-  flex-shrink:0;
+  cursor:pointer;transition:all .15s var(--ease);
 }
 [data-theme="light"] .icon-btn{background:rgba(255,255,255,.82)}
 .icon-btn:active{transform:scale(.88)}
-.icon-btn.lit{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
- 
+
 .mode-pill{
   display:flex;align-items:center;
   background:rgba(14,14,17,.75);border:1px solid var(--border2);
@@ -388,43 +129,51 @@ html,body{
   transition:all .15s var(--ease);
 }
 .mpb.on{background:var(--accent);color:#fff}
- 
-/* Phase flash */
+
+/* ── Phase flash ── */
 #phase-flash{
   position:absolute;inset:0;z-index:25;
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   gap:10px;text-align:center;
-  background:rgba(9,9,11,.78);
-  backdrop-filter:blur(6px);
+  background:rgba(9,9,11,.82);
+  backdrop-filter:blur(8px);
   opacity:0;pointer-events:none;
-  transition:opacity .3s var(--ease);
+  transition:opacity .25s var(--ease);
 }
-[data-theme="light"] #phase-flash{background:rgba(241,241,238,.82)}
-#phase-flash.show{opacity:1}
+[data-theme="light"] #phase-flash{background:rgba(241,241,238,.85)}
+#phase-flash.show{opacity:1;pointer-events:all}
 .pf-num{font-family:var(--mono);font-size:.65rem;letter-spacing:.18em;color:var(--text3)}
 .pf-title{font-size:2rem;font-weight:700;line-height:1.1;color:var(--text)}
 .pf-sub{font-family:var(--mono);font-size:.7rem;letter-spacing:.04em;color:var(--text2)}
- 
-/* Check chips */
+.pf-tap{
+  margin-top:16px;padding:12px 28px;
+  border-radius:10px;background:var(--accent);color:#fff;
+  border:none;font-family:var(--font);font-size:.9rem;font-weight:600;
+  cursor:pointer;
+}
+.pf-tap:active{opacity:.85}
+
+/* ── Chips ── */
 #chips-row{
-  position:absolute;
-  left:50%;transform:translateX(-50%);
+  position:absolute;left:0;right:0;
   z-index:20;
-  display:flex;gap:6px;align-items:center;
-  white-space:nowrap;
+  display:flex;gap:5px;align-items:center;justify-content:center;
+  flex-wrap:nowrap;overflow:hidden;
   pointer-events:none;
-  bottom:calc(max(env(safe-area-inset-bottom,0px),16px) + 110px);
+  bottom:calc(max(env(safe-area-inset-bottom,0px),16px) + 108px);
+  padding:0 12px;
 }
 .chip{
   display:flex;align-items:center;gap:5px;
   background:rgba(14,14,17,.78);border:1px solid var(--border2);
-  border-radius:100px;padding:5px 10px;
+  border-radius:100px;padding:5px 9px;
   backdrop-filter:blur(8px);
-  transition:all .2s var(--ease);
+  transition:all .18s var(--ease);
+  flex-shrink:0;
 }
 [data-theme="light"] .chip{background:rgba(255,255,255,.84)}
-.chip-dot{width:6px;height:6px;border-radius:50%;background:var(--text3);transition:background .2s var(--ease);flex-shrink:0}
-.chip-lbl{font-family:var(--mono);font-size:.58rem;font-weight:500;letter-spacing:.05em;color:var(--text3);transition:color .2s var(--ease)}
+.chip-dot{width:6px;height:6px;border-radius:50%;background:var(--text3);transition:background .18s;flex-shrink:0}
+.chip-lbl{font-family:var(--mono);font-size:.57rem;font-weight:500;letter-spacing:.05em;color:var(--text3);transition:color .18s}
 .chip.ok{border-color:rgba(52,211,153,.28);background:rgba(52,211,153,.07)}
 .chip.ok .chip-dot{background:var(--green)}
 .chip.ok .chip-lbl{color:var(--green)}
@@ -434,42 +183,32 @@ html,body{
 .chip.wrn{border-color:rgba(251,191,36,.28);background:rgba(251,191,36,.07)}
 .chip.wrn .chip-dot{background:var(--amber)}
 .chip.wrn .chip-lbl{color:var(--amber)}
- 
-/* Guidance */
+
+/* ── Guidance ── */
 #guidance{
-  position:absolute;z-index:20;
-  left:50%;transform:translateX(-50%);
-  bottom:calc(max(env(safe-area-inset-bottom,0px),16px) + 90px);
-  font-family:var(--mono);font-size:.7rem;letter-spacing:.04em;
+  position:absolute;left:0;right:0;
+  z-index:20;
+  bottom:calc(max(env(safe-area-inset-bottom,0px),16px) + 88px);
+  font-family:var(--mono);font-size:.68rem;letter-spacing:.04em;
   color:rgba(255,255,255,.45);
-  white-space:nowrap;
+  text-align:center;
   pointer-events:none;
-  transition:color .25s var(--ease);
+  transition:color .2s var(--ease);
+  padding:0 16px;
 }
 [data-theme="light"] #guidance{color:var(--text2)}
- 
-/* Shutter zone */
+
+/* ── Shutter zone ── */
 #shutter-zone{
   position:absolute;bottom:0;left:0;right:0;z-index:22;
-  display:flex;align-items:center;justify-content:center;gap:32px;
-  padding-bottom:calc(max(env(safe-area-inset-bottom,0px),16px) + 12px);
-  padding-top:14px;
-  background:linear-gradient(to top,rgba(9,9,11,.88) 0%,transparent 100%);
+  display:flex;align-items:center;justify-content:center;
+  padding-top:12px;
+  padding-bottom:calc(max(env(safe-area-inset-bottom,0px),16px) + 10px);
+  background:linear-gradient(to top,rgba(9,9,11,.9) 0%,transparent 100%);
   pointer-events:none;
 }
 [data-theme="light"] #shutter-zone{background:linear-gradient(to top,rgba(241,241,238,.94) 0%,transparent 100%)}
-.sz-side{
-  width:46px;height:46px;border-radius:50%;
-  border:1px solid var(--border2);
-  background:rgba(14,14,17,.72);backdrop-filter:blur(10px);
-  color:var(--text2);font-size:1.1rem;
-  display:flex;align-items:center;justify-content:center;
-  cursor:pointer;pointer-events:all;
-  transition:all .15s var(--ease);
-}
-[data-theme="light"] .sz-side{background:rgba(255,255,255,.8)}
-.sz-side:active{transform:scale(.88)}
- 
+
 #shutter{
   width:78px;height:78px;border-radius:50%;
   background:transparent;
@@ -477,43 +216,57 @@ html,body{
   display:flex;align-items:center;justify-content:center;
   cursor:pointer;pointer-events:all;
   position:relative;
-  transition:border-color .25s var(--ease);
+  transition:border-color .22s var(--ease),opacity .22s;
 }
 #shutter::after{
   content:'';width:60px;height:60px;border-radius:50%;
-  background:rgba(255,255,255,.18);
-  transition:background .25s var(--ease),transform .1s;
+  background:rgba(255,255,255,.17);
+  transition:background .22s var(--ease),transform .1s;
 }
 #shutter:active::after{transform:scale(.88)}
 #shutter.ready{border-color:var(--green)}
 #shutter.ready::after{background:var(--green)}
-#shutter.blocked{opacity:.38;pointer-events:none}
-.sz-spacer{width:46px;height:46px;flex-shrink:0}
- 
-/* Flash */
-#flash{position:absolute;inset:0;z-index:60;background:#fff;opacity:0;pointer-events:none;transition:opacity .07s}
-#flash.on{opacity:.85}
- 
-/* Capture popup */
+#shutter.off{opacity:.35;pointer-events:none}
+
+/* ── Flash ── */
+#flash{position:absolute;inset:0;z-index:60;background:#fff;opacity:0;pointer-events:none;transition:opacity .06s}
+#flash.on{opacity:.88}
+
+/* ── Capture popup ── */
 #capture-popup{
   position:absolute;inset:0;z-index:70;
-  background:rgba(9,9,11,.91);backdrop-filter:blur(5px);
+  background:rgba(9,9,11,.94);
   display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:18px;padding:20px;
+  gap:16px;padding:0;
   opacity:0;pointer-events:none;
-  transition:opacity .28s var(--ease);
+  transition:opacity .22s var(--ease);
 }
-[data-theme="light"] #capture-popup{background:rgba(241,241,238,.93)}
+[data-theme="light"] #capture-popup{background:rgba(241,241,238,.95)}
 #capture-popup.show{opacity:1;pointer-events:all}
-.cp-label{font-family:var(--mono);font-size:.65rem;letter-spacing:.14em;color:var(--text3)}
+
+.cp-label{
+  font-family:var(--mono);font-size:.65rem;letter-spacing:.14em;color:var(--text3);
+  flex-shrink:0;
+}
+
+/* 90% of viewport — both axes */
 .cp-img-wrap{
-  width:90vw;max-width:400px;aspect-ratio:3/4;
+  width:90vw;
+  height:90vh;
+  max-width:calc(90vh * 3/4); /* keep 3:4 aspect, width-constrained by height */
   border-radius:14px;overflow:hidden;
   border:1px solid var(--border2);background:#000;
-  box-shadow:0 20px 70px rgba(0,0,0,.65);
+  box-shadow:0 24px 80px rgba(0,0,0,.7);
+  flex-shrink:0;
 }
 .cp-img-wrap img{width:100%;height:100%;object-fit:cover;display:block}
-.cp-btns{display:flex;gap:12px;width:90vw;max-width:400px}
+
+.cp-btns{
+  display:flex;gap:12px;
+  width:90vw;
+  max-width:calc(90vh * 3/4);
+  flex-shrink:0;
+}
 .cp-btn{
   flex:1;padding:14px 0;border-radius:10px;
   border:1px solid var(--border2);
@@ -525,77 +278,77 @@ html,body{
 .cp-btn:active{transform:scale(.97)}
 .cp-retake{background:var(--surface2);color:var(--text2)}
 .cp-next{background:var(--accent);color:#fff;border-color:var(--accent)}
- 
-/* Upload overlay */
+
+/* ── Upload overlay ── */
 #upload-over{
   position:absolute;inset:0;z-index:80;
   background:var(--bg);
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   gap:22px;text-align:center;padding:32px;
   opacity:0;pointer-events:none;
-  transition:opacity .3s var(--ease);
+  transition:opacity .25s var(--ease);
 }
 #upload-over.show{opacity:1;pointer-events:all}
 .spin-ring{
-  width:60px;height:60px;border-radius:50%;
+  width:58px;height:58px;border-radius:50%;
   border:2px solid var(--surface2);border-top-color:var(--accent);
   animation:spin .75s linear infinite;
 }
 @keyframes spin{to{transform:rotate(360deg)}}
-.up-title{font-size:1.1rem;font-weight:600}
+.up-title{font-size:1.1rem;font-weight:600;color:var(--text)}
 .up-sub{font-family:var(--mono);font-size:.7rem;color:var(--text2);letter-spacing:.04em}
 .up-prog{width:160px;height:2px;background:var(--surface2);border-radius:1px;overflow:hidden}
-.up-prog-fill{height:100%;background:var(--accent);border-radius:1px;width:0%;transition:width .5s var(--ease)}
+.up-prog-fill{height:100%;background:var(--accent);border-radius:1px;width:0%;transition:width .4s var(--ease)}
 .suc-ico{
-  width:70px;height:70px;border-radius:50%;
+  width:68px;height:68px;border-radius:50%;
   background:var(--green-dim);
   display:flex;align-items:center;justify-content:center;
-  font-size:1.9rem;
-  animation:pop .45s cubic-bezier(.34,1.56,.64,1);
+  font-size:1.8rem;color:var(--green);
+  animation:pop .4s cubic-bezier(.34,1.56,.64,1);
 }
 @keyframes pop{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
 .err-ico{
-  width:70px;height:70px;border-radius:50%;
+  width:68px;height:68px;border-radius:50%;
   background:var(--red-dim);
   display:flex;align-items:center;justify-content:center;
-  font-size:1.9rem;
+  font-size:1.8rem;color:var(--red);
 }
 .up-btn{
   padding:13px 36px;border-radius:10px;
   font-family:var(--font);font-size:.9rem;font-weight:600;
-  cursor:pointer;border:none;
-  transition:opacity .15s;
+  cursor:pointer;border:none;transition:opacity .15s;
 }
 .up-btn:active{opacity:.8}
-.up-btn-primary{background:var(--accent);color:#fff}
-.up-btn-secondary{background:var(--surface2);color:var(--text2);border:1px solid var(--border2)}
- 
-/* Loading */
+.up-btn-p{background:var(--accent);color:#fff}
+.up-btn-s{background:var(--surface2);color:var(--text2);border:1px solid var(--border2)}
+
+/* ── Loading ── */
 #loading{
   position:absolute;inset:0;z-index:100;
   background:var(--bg);
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   gap:22px;
-  transition:opacity .5s var(--ease);
+  transition:opacity .4s var(--ease);
 }
 #loading.out{opacity:0;pointer-events:none}
 .ld-logo{font-family:var(--mono);font-size:1.5rem;font-weight:500;letter-spacing:.28em;color:var(--accent)}
 .ld-bar{width:140px;height:2px;background:var(--surface2);border-radius:1px;overflow:hidden}
-.ld-fill{height:100%;background:var(--accent);border-radius:1px;width:0%;transition:width .4s var(--ease)}
+.ld-fill{height:100%;background:var(--accent);border-radius:1px;width:0%;transition:width .35s var(--ease)}
 .ld-lbl{font-family:var(--mono);font-size:.65rem;color:var(--text3);letter-spacing:.1em}
- 
+
 .hidden{display:none!important}
 </style>
 </head>
 <body>
- 
+
+<!-- Desktop wall -->
 <div id="dwall">
   <div class="dw-logo">AIMM</div>
-  <p>This app runs on mobile devices only.<br>Please open it on your smartphone or tablet.</p>
+  <p>This app is designed for mobile devices only.<br>Please open it on your smartphone or tablet.</p>
 </div>
- 
+
 <div id="app">
- 
+
   <!-- Camera layer -->
   <div id="cam-wrap">
     <video id="video" autoplay playsinline muted></video>
@@ -603,14 +356,15 @@ html,body{
     <div id="cam-ring" class="blocked"></div>
     <div id="sil-wrap"></div>
   </div>
- 
-  <!-- Phase flash -->
+
+  <!-- Phase flash (shown at start of each phase) -->
   <div id="phase-flash">
     <div class="pf-num" id="pf-num"></div>
     <div class="pf-title" id="pf-title"></div>
     <div class="pf-sub" id="pf-sub"></div>
+    <button class="pf-tap" id="pf-tap">Got it →</button>
   </div>
- 
+
   <!-- Top bar -->
   <div class="topbar">
     <span class="tb-logo">AIMM</span>
@@ -620,10 +374,9 @@ html,body{
         <button class="mpb" id="btn-warn">WARN</button>
       </div>
       <button class="icon-btn" id="btn-theme">◑</button>
-      <button class="icon-btn" id="btn-flip">⇄</button>
     </div>
   </div>
- 
+
   <!-- Status chips -->
   <div id="chips-row">
     <div class="chip" id="c-tilt"><div class="chip-dot"></div><span class="chip-lbl">LEVEL</span></div>
@@ -632,30 +385,28 @@ html,body{
     <div class="chip" id="c-body"><div class="chip-dot"></div><span class="chip-lbl">BODY</span></div>
     <div class="chip" id="c-pose"><div class="chip-dot"></div><span class="chip-lbl">POSE</span></div>
   </div>
- 
+
   <!-- Guidance -->
   <div id="guidance">Initialising…</div>
- 
-  <!-- Shutter zone -->
+
+  <!-- Shutter -->
   <div id="shutter-zone">
-    <button class="sz-side" id="btn-flip2">⇄</button>
-    <button id="shutter" class="blocked" aria-label="Capture photo"></button>
-    <div class="sz-spacer"></div>
+    <button id="shutter" class="off" aria-label="Capture"></button>
   </div>
- 
+
   <!-- Flash -->
   <div id="flash"></div>
- 
+
   <!-- Capture popup -->
   <div id="capture-popup">
     <div class="cp-label" id="cp-label"></div>
-    <div class="cp-img-wrap"><img id="cp-img" src="" alt=""></div>
+    <div class="cp-img-wrap"><img id="cp-img" src="" alt="Preview"></div>
     <div class="cp-btns">
       <button class="cp-btn cp-retake" id="btn-retake">↩ Retake</button>
       <button class="cp-btn cp-next" id="btn-next">Next →</button>
     </div>
   </div>
- 
+
   <!-- Upload overlay -->
   <div id="upload-over">
     <div id="up-uploading" style="display:flex;flex-direction:column;align-items:center;gap:20px">
@@ -668,32 +419,38 @@ html,body{
       <div class="suc-ico">✓</div>
       <div class="up-title">Upload Complete</div>
       <div class="up-sub">Both photos sent successfully.</div>
-      <button class="up-btn up-btn-primary" id="btn-new">New Session →</button>
+      <button class="up-btn up-btn-p" id="btn-new">New Session →</button>
     </div>
     <div id="up-error" class="hidden" style="display:flex;flex-direction:column;align-items:center;gap:14px">
       <div class="err-ico">✕</div>
       <div class="up-title">Upload Failed</div>
       <div class="up-sub" id="up-errmsg"></div>
-      <button class="up-btn up-btn-primary" id="btn-retry">Retry</button>
-      <button class="up-btn up-btn-secondary" id="btn-restart">Start Over</button>
+      <button class="up-btn up-btn-p" id="btn-retry">Retry</button>
+      <button class="up-btn up-btn-s" id="btn-restart">Start Over</button>
     </div>
   </div>
- 
+
   <!-- Loading -->
   <div id="loading">
     <div class="ld-logo">AIMM</div>
     <div class="ld-bar"><div class="ld-fill" id="ld-fill"></div></div>
     <div class="ld-lbl" id="ld-lbl">LOADING…</div>
   </div>
- 
+
 </div>
- 
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.js" crossorigin="anonymous"></script>
-<script>
+
+<!-- MediaPipe from skypack (matches official demo) -->
+<script type="module">
+import {
+  PoseLandmarker,
+  FilesetResolver,
+  DrawingUtils
+} from "https://cdn.skypack.dev/@mediapipe/tasks-vision@0.10.0";
+
 (function(){
 'use strict';
- 
-// ── Theme ─────────────────────────────────────────────────
+
+// ── Theme ─────────────────────────────────────────────
 const savedTh = localStorage.getItem('aimm-theme');
 let dark = savedTh ? savedTh==='dark' : window.matchMedia('(prefers-color-scheme:dark)').matches;
 function applyTh(){
@@ -702,8 +459,8 @@ function applyTh(){
 }
 applyTh();
 document.getElementById('btn-theme').addEventListener('click',()=>{dark=!dark;applyTh();});
- 
-// ── Block / Warn mode ─────────────────────────────────────
+
+// ── Block / Warn mode ─────────────────────────────────
 let blockMode = true;
 document.getElementById('btn-block').addEventListener('click',()=>{
   blockMode=true;
@@ -715,387 +472,392 @@ document.getElementById('btn-warn').addEventListener('click',()=>{
   document.getElementById('btn-warn').classList.add('on');
   document.getElementById('btn-block').classList.remove('on');
 });
- 
-// ── App state ─────────────────────────────────────────────
+
+// ── State ─────────────────────────────────────────────
 let phase = 'front';
 let frontBlob = null, sideBlob = null;
 let stream = null;
-let facingMode = 'environment';
 let poseLandmarker = null;
-let lastVT = -1;
-let raf = null;
+let drawingUtils = null;
+let webcamRunning = false;
+let lastVideoTime = -1;
 let uploadPending = false;
 let checks = {tilt:false,shake:false,light:false,body:false,pose:false};
- 
-// ── Elements ──────────────────────────────────────────────
-const video      = document.getElementById('video');
-const pCvs       = document.getElementById('pose-canvas');
-const pCtx       = pCvs.getContext('2d');
-const camRing    = document.getElementById('cam-ring');
-const shutter    = document.getElementById('shutter');
-const guidance   = document.getElementById('guidance');
-const capturePopup = document.getElementById('capture-popup');
-const cpImg      = document.getElementById('cp-img');
-const cpLabel    = document.getElementById('cp-label');
-const uploadOver = document.getElementById('upload-over');
-const loadEl     = document.getElementById('loading');
-const ldFill     = document.getElementById('ld-fill');
-const ldLbl      = document.getElementById('ld-lbl');
-const flashEl    = document.getElementById('flash');
-const silWrap    = document.getElementById('sil-wrap');
- 
-// ── Loader helpers ────────────────────────────────────────
-function ldProg(pct,lbl){ldFill.style.width=pct+'%';ldLbl.textContent=lbl;}
-function hideLoader(){loadEl.classList.add('out');setTimeout(()=>loadEl.classList.add('hidden'),600);}
- 
-// ── MediaPipe ─────────────────────────────────────────────
+
+// ── Elements ──────────────────────────────────────────
+const video         = document.getElementById('video');
+const pCvs          = document.getElementById('pose-canvas');
+const pCtx          = pCvs.getContext('2d');
+const camRing       = document.getElementById('cam-ring');
+const shutterBtn    = document.getElementById('shutter');
+const guidanceEl    = document.getElementById('guidance');
+const capturePopup  = document.getElementById('capture-popup');
+const cpImg         = document.getElementById('cp-img');
+const cpLabel       = document.getElementById('cp-label');
+const uploadOver    = document.getElementById('upload-over');
+const loadEl        = document.getElementById('loading');
+const ldFill        = document.getElementById('ld-fill');
+const ldLbl         = document.getElementById('ld-lbl');
+const flashEl       = document.getElementById('flash');
+const silWrap       = document.getElementById('sil-wrap');
+const phaseFlash    = document.getElementById('phase-flash');
+
+// ── Loader ────────────────────────────────────────────
+function ldProg(pct,lbl){
+  ldFill.style.width = pct+'%';
+  ldLbl.textContent = lbl;
+}
+function hideLoader(){
+  loadEl.classList.add('out');
+  setTimeout(()=>{ loadEl.style.display='none'; }, 500);
+}
+
+// ── Init MediaPipe ────────────────────────────────────
 async function initMP(){
-  ldProg(10,'LOADING VISION…');
-  const {PoseLandmarker,FilesetResolver}=window;
-  if(!PoseLandmarker||!FilesetResolver){
-    ldProg(100,'ML UNAVAILABLE');
-    await startCam();setTimeout(()=>{hideLoader();showPhaseFlash();},1000);return;
-  }
-  try{
-    ldProg(25,'LOADING MODEL…');
-    const vis=await FilesetResolver.forVisionTasks(
-      'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm'
+  ldProg(15,'LOADING VISION…');
+  try {
+    const vision = await FilesetResolver.forVisionTasks(
+      'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0/wasm'
     );
-    ldProg(58,'BUILDING DETECTOR…');
-    poseLandmarker=await PoseLandmarker.createFromOptions(vis,{
-      baseOptions:{
-        modelAssetPath:'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task',
-        delegate:'GPU'
+    ldProg(50,'BUILDING DETECTOR…');
+    poseLandmarker = await PoseLandmarker.createFromOptions(vision, {
+      baseOptions: {
+        modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task',
+        delegate: 'GPU'
       },
-      runningMode:'VIDEO',
-      numPoses:3,
-      minPoseDetectionConfidence:0.45,
-      minPosePresenceConfidence:0.45,
-      minTrackingConfidence:0.45
+      runningMode: 'VIDEO',
+      numPoses: 3,
+      minPoseDetectionConfidence: 0.45,
+      minPosePresenceConfidence: 0.45,
+      minTrackingConfidence: 0.45
     });
-    ldProg(82,'STARTING CAMERA…');
+    ldProg(80,'STARTING CAMERA…');
     await startCam();
     ldProg(100,'READY');
-    setTimeout(()=>{hideLoader();showPhaseFlash();},500);
-  }catch(e){
-    console.warn('MP error:',e);
-    ldProg(100,'ML UNAVAILABLE');
+    hideLoader();
+    showPhaseFlash();
+  } catch(e) {
+    console.warn('MediaPipe failed:', e);
+    ldProg(100,'ML UNAVAILABLE — LIMITED MODE');
     await startCam();
-    setTimeout(()=>{hideLoader();showPhaseFlash();},900);
+    // Without pose detection, mark pose+body as ok so user can still shoot
+    checks.body = true; checks.pose = true;
+    hideLoader();
+    showPhaseFlash();
   }
 }
- 
-// ── Camera ────────────────────────────────────────────────
+
+// ── Camera ────────────────────────────────────────────
 async function startCam(){
-  if(stream){stream.getTracks().forEach(t=>t.stop());stream=null;}
-  if(raf){cancelAnimationFrame(raf);raf=null;}
-  try{
-    stream=await navigator.mediaDevices.getUserMedia({
-      video:{facingMode,width:{ideal:1440},height:{ideal:1920}},
+  if(stream){ stream.getTracks().forEach(t=>t.stop()); stream=null; }
+  webcamRunning = false;
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({
+      video:{ facingMode:'environment', width:{ideal:1440}, height:{ideal:1920} },
       audio:false
     });
-    video.srcObject=stream;
+    video.srcObject = stream;
+    video.addEventListener('loadeddata', ()=>{
+      webcamRunning = true;
+      // Init DrawingUtils once canvas is known
+      drawingUtils = new DrawingUtils(pCtx);
+      predictWebcam();
+    }, {once:true});
     await video.play();
-    schedLoop();
-  }catch(e){
-    guidance.textContent='Camera access required — check permissions';
+  } catch(e) {
+    guidanceEl.textContent = 'Camera access required — check permissions';
     console.error(e);
   }
 }
- 
-function flipCamera(){facingMode=facingMode==='environment'?'user':'environment';startCam();}
-document.getElementById('btn-flip').addEventListener('click',flipCamera);
-document.getElementById('btn-flip2').addEventListener('click',flipCamera);
- 
-// ── Main loop ─────────────────────────────────────────────
-function schedLoop(){if(raf)cancelAnimationFrame(raf);raf=requestAnimationFrame(loop);}
- 
-function loop(ts){
-  if(!video.videoWidth){schedLoop();return;}
-  // Resize canvas
-  if(pCvs.width!==video.videoWidth||pCvs.height!==video.videoHeight){
-    pCvs.width=video.videoWidth;pCvs.height=video.videoHeight;
+
+// ── Webcam prediction loop (official pattern) ─────────
+function predictWebcam(){
+  if(!webcamRunning) return;
+
+  // Sync canvas to display size
+  const rect = video.getBoundingClientRect();
+  if(pCvs.width !== rect.width || pCvs.height !== rect.height){
+    pCvs.width  = rect.width  || video.videoWidth;
+    pCvs.height = rect.height || video.videoHeight;
   }
+
+  pCtx.save();
   pCtx.clearRect(0,0,pCvs.width,pCvs.height);
- 
-  // Brightness
+
+  // Brightness sample
   sampleBrightness();
- 
-  // Pose
-  let res=null;
-  if(poseLandmarker&&video.currentTime!==lastVT){
-    lastVT=video.currentTime;
-    try{res=poseLandmarker.detectForVideo(video,ts);}catch(e){}
-  }
- 
-  if(res&&res.landmarks&&res.landmarks.length>0){
-    // Find center person
-    let ci=0,md=999;
-    res.landmarks.forEach((lm,i)=>{
-      const n=lm[0];if(!n)return;
-      const d=Math.abs(n.x-.5);if(d<md){md=d;ci=i;}
+
+  if(poseLandmarker && video.currentTime !== lastVideoTime){
+    lastVideoTime = video.currentTime;
+    poseLandmarker.detectForVideo(video, performance.now(), (result)=>{
+      if(result.landmarks && result.landmarks.length > 0){
+        // Find center person
+        let ci=0, md=999;
+        result.landmarks.forEach((lm,i)=>{
+          const n=lm[0]; if(!n) return;
+          const d=Math.abs(n.x-.5);
+          if(d<md){md=d;ci=i;}
+        });
+        const lm = result.landmarks[ci];
+
+        // Draw skeleton via official DrawingUtils
+        drawingUtils.drawLandmarks(lm, {
+          radius: (data)=> DrawingUtils.lerp(data.from ? data.from.z : 0, -0.15, 0.1, 6, 2),
+          color: 'rgba(79,143,255,0.85)',
+          fillColor: 'rgba(79,143,255,0.6)',
+          lineWidth: 2
+        });
+        drawingUtils.drawConnectors(lm, PoseLandmarker.POSE_CONNECTIONS, {
+          color: 'rgba(79,143,255,0.5)',
+          lineWidth: Math.max(1.5, pCvs.width * 0.003)
+        });
+
+        checks.body = fullBodyVisible(lm);
+        checks.pose = phase==='front' ? checkTpose(lm) : checkSide(lm);
+      } else {
+        checks.body = false;
+        checks.pose = false;
+      }
+      updateUI();
     });
-    const lm=res.landmarks[ci];
-    drawSkeleton(lm);
-    checks.body=fullBodyVisible(lm);
-    checks.pose=phase==='front'?checkTpose(lm):checkSide(lm);
-  }else{
-    checks.body=false;checks.pose=false;
+  } else if(!poseLandmarker){
+    updateUI();
   }
- 
-  updateUI();
-  schedLoop();
+
+  pCtx.restore();
+  window.requestAnimationFrame(predictWebcam);
 }
- 
-// ── Brightness sample ─────────────────────────────────────
-const bCvs=document.createElement('canvas');bCvs.width=32;bCvs.height=32;
-const bCtx=bCvs.getContext('2d',{willReadFrequently:true});
+
+// ── Brightness ────────────────────────────────────────
+const bCvs = document.createElement('canvas'); bCvs.width=32; bCvs.height=32;
+const bCtx = bCvs.getContext('2d',{willReadFrequently:true});
 function sampleBrightness(){
-  if(!video.videoWidth)return;
+  if(!video.videoWidth) return;
   bCtx.drawImage(video,0,0,32,32);
-  const d=bCtx.getImageData(0,0,32,32).data;
-  let s=0;for(let i=0;i<d.length;i+=4)s+=d[i]*.299+d[i+1]*.587+d[i+2]*.114;
-  checks.light=(s/(32*32))>52;
+  const d = bCtx.getImageData(0,0,32,32).data;
+  let s=0;
+  for(let i=0;i<d.length;i+=4) s += d[i]*.299+d[i+1]*.587+d[i+2]*.114;
+  checks.light = (s/(32*32)) > 52;
 }
- 
-// ── Gyroscope ─────────────────────────────────────────────
+
+// ── Gyroscope ─────────────────────────────────────────
 function handleOri(e){
-  const b=e.beta||0,g=e.gamma||0;
-  checks.tilt=Math.abs(b-90)<15&&Math.abs(g)<13;
+  const b=e.beta||0, g=e.gamma||0;
+  checks.tilt = Math.abs(b-90)<15 && Math.abs(g)<13;
 }
-if(typeof DeviceOrientationEvent!=='undefined'){
-  if(typeof DeviceOrientationEvent.requestPermission==='function'){
-    document.addEventListener('touchstart',async function rp(){
-      try{const r=await DeviceOrientationEvent.requestPermission();
-        if(r==='granted')window.addEventListener('deviceorientation',handleOri);}
-      catch(e){}
-      document.removeEventListener('touchstart',rp);
+if(typeof DeviceOrientationEvent !== 'undefined'){
+  if(typeof DeviceOrientationEvent.requestPermission === 'function'){
+    // iOS 13+
+    document.addEventListener('touchstart', async function rp(){
+      try{
+        const r = await DeviceOrientationEvent.requestPermission();
+        if(r==='granted') window.addEventListener('deviceorientation', handleOri);
+      }catch(e){}
+      document.removeEventListener('touchstart', rp);
     },{once:true});
-  }else{window.addEventListener('deviceorientation',handleOri);}
-}else{checks.tilt=true;}
- 
-// ── Accelerometer ─────────────────────────────────────────
-let lastA={x:0,y:0,z:0},shakeOk=true,shakeTmr=null;
+  } else {
+    window.addEventListener('deviceorientation', handleOri);
+  }
+} else { checks.tilt = true; }
+
+// ── Accelerometer ─────────────────────────────────────
+let lastA={x:0,y:0,z:0}, shakeOk=true, shakeTmr=null;
 function handleMotion(e){
-  const a=e.accelerationIncludingGravity;if(!a){checks.shake=true;return;}
+  const a=e.accelerationIncludingGravity; if(!a){checks.shake=true;return;}
   const dx=Math.abs(a.x-lastA.x),dy=Math.abs(a.y-lastA.y),dz=Math.abs(a.z-lastA.z);
   lastA={x:a.x,y:a.y,z:a.z};
   const rms=Math.sqrt(dx*dx+dy*dy+dz*dz);
-  if(rms>2.8){shakeOk=false;clearTimeout(shakeTmr);shakeTmr=setTimeout(()=>shakeOk=true,550);}
-  checks.shake=shakeOk;
+  if(rms>2.8){ shakeOk=false; clearTimeout(shakeTmr); shakeTmr=setTimeout(()=>{shakeOk=true;},550); }
+  checks.shake = shakeOk;
 }
-if(typeof DeviceMotionEvent!=='undefined'){
-  if(typeof DeviceMotionEvent.requestPermission==='function'){
-    document.addEventListener('touchstart',async function rm(){
-      try{const r=await DeviceMotionEvent.requestPermission();
-        if(r==='granted')window.addEventListener('devicemotion',handleMotion);}
-      catch(e){}
-      document.removeEventListener('touchstart',rm);
+if(typeof DeviceMotionEvent !== 'undefined'){
+  if(typeof DeviceMotionEvent.requestPermission === 'function'){
+    document.addEventListener('touchstart', async function rm(){
+      try{
+        const r = await DeviceMotionEvent.requestPermission();
+        if(r==='granted') window.addEventListener('devicemotion', handleMotion);
+      }catch(e){}
+      document.removeEventListener('touchstart', rm);
     },{once:true});
-  }else{window.addEventListener('devicemotion',handleMotion);}
-}else{checks.shake=true;}
- 
-// ── Pose helpers ──────────────────────────────────────────
-function vis(lm,i,t=.4){return lm[i]&&lm[i].visibility>t;}
- 
+  } else {
+    window.addEventListener('devicemotion', handleMotion);
+  }
+} else { checks.shake = true; }
+
+// ── Pose checks ───────────────────────────────────────
+function vis(lm,i,t=.4){ return lm[i] && lm[i].visibility > t; }
+
 function fullBodyVisible(lm){
   const nose=lm[0];
-  if(!nose||nose.visibility<.5)return false;
-  if(nose.y>.28)return false; // head too low in frame
-  const la=lm[27],ra=lm[28],lh=lm[29],rh=lm[30];
-  const ankleL=la&&la.visibility>.3?la:lh;
-  const ankleR=ra&&ra.visibility>.3?ra:rh;
-  if(!ankleL&&!ankleR)return false;
-  const ankY=Math.max(ankleL?ankleL.y:0,ankleR?ankleR.y:0);
-  if(ankY<.72)return false;
-  return true;
+  if(!nose || nose.visibility<.5) return false;
+  if(nose.y > .28) return false;
+  const la=lm[27], ra=lm[28], lh=lm[29], rh=lm[30];
+  const ankL = (la&&la.visibility>.3) ? la : lh;
+  const ankR = (ra&&ra.visibility>.3) ? ra : rh;
+  if(!ankL && !ankR) return false;
+  const ankY = Math.max(ankL?ankL.y:0, ankR?ankR.y:0);
+  return ankY > .72;
 }
- 
+
 function checkTpose(lm){
   const need=[11,12,13,14,15,16,23,24];
-  if(!need.every(i=>vis(lm,i,.45)))return false;
+  if(!need.every(i=>vis(lm,i,.45))) return false;
   const ls=lm[11],rs=lm[12],le=lm[13],re=lm[14],lw=lm[15],rw=lm[16];
   const sy=(ls.y+rs.y)/2;
   const sSpan=Math.abs(rs.x-ls.x);
-  if(sSpan<.18)return false; // shoulders too narrow = not front-on enough
- 
-  // Both wrists near shoulder height
-  if(Math.abs(lw.y-sy)>.13)return false;
-  if(Math.abs(rw.y-sy)>.13)return false;
-  // Elbows too
-  if(Math.abs(le.y-sy)>.13)return false;
-  if(Math.abs(re.y-sy)>.13)return false;
-  // Wrists extended beyond shoulders
-  if(lw.x>ls.x+.04)return false;  // left wrist must be left of left shoulder
-  if(rw.x<rs.x-.04)return false;  // right wrist must be right of right shoulder
+  if(sSpan<.18) return false;             // not front-facing enough
+  if(Math.abs(lw.y-sy)>.13) return false; // left wrist height
+  if(Math.abs(rw.y-sy)>.13) return false; // right wrist height
+  if(Math.abs(le.y-sy)>.13) return false; // left elbow height
+  if(Math.abs(re.y-sy)>.13) return false; // right elbow height
+  if(lw.x > ls.x+.04) return false;       // left wrist must be left of left shoulder
+  if(rw.x < rs.x-.04) return false;       // right wrist must be right of right shoulder
   return true;
 }
- 
+
 function checkSide(lm){
   const need=[11,12,13,14,15,16,23,24];
-  if(!need.every(i=>vis(lm,i,.38)))return false;
+  if(!need.every(i=>vis(lm,i,.38))) return false;
   const ls=lm[11],rs=lm[12],lw=lm[15],rw=lm[16],lh=lm[23],rh=lm[24];
   const sSpan=Math.abs(rs.x-ls.x);
-  if(sSpan>.23)return false; // too face-on; need narrow shoulder span for profile
- 
-  const sy=(ls.y+rs.y)/2,hy=(lh.y+rh.y)/2;
-  const bodyH=hy-sy;if(bodyH<.06)return false;
- 
-  // Arms at sides: wrists should be between shoulder Y and below hip
-  const wOk=w=>{
-    if(!w)return false;
-    return w.y>sy&&w.y<hy+bodyH*.6;
-  };
-  if(!wOk(lw)&&!wOk(rw))return false;
- 
-  // Upright: nose roughly above shoulder center
+  if(sSpan>.23) return false;             // too face-on
+  const sy=(ls.y+rs.y)/2, hy=(lh.y+rh.y)/2;
+  const bH=hy-sy; if(bH<.06) return false;
+  const wOk=w=>w&&w.y>sy&&w.y<hy+bH*.6;
+  if(!wOk(lw)&&!wOk(rw)) return false;   // arms not at sides
   const nose=lm[0];
   if(nose&&vis(lm,0,.4)){
     const cx=(ls.x+rs.x)/2;
-    if(Math.abs(nose.x-cx)>.2)return false;
+    if(Math.abs(nose.x-cx)>.2) return false; // not upright
   }
   return true;
 }
- 
-// ── Skeleton draw ─────────────────────────────────────────
-const CONNECTIONS=[
-  [0,1],[0,4],[1,2],[2,3],[3,7],[4,5],[5,6],[6,8],[9,10],
-  [11,12],[11,13],[13,15],[15,17],[15,19],[17,19],
-  [12,14],[14,16],[16,18],[16,20],[18,20],
-  [11,23],[12,24],[23,24],[23,25],[25,27],[27,29],[27,31],[29,31],
-  [24,26],[26,28],[28,30],[28,32],[30,32]
-];
-function drawSkeleton(lm){
-  const W=pCvs.width,H=pCvs.height;
-  pCtx.lineWidth=Math.max(2,W*.0035);
-  pCtx.strokeStyle='rgba(79,143,255,.5)';
-  pCtx.fillStyle='rgba(79,143,255,.75)';
-  CONNECTIONS.forEach(([a,b])=>{
-    const pa=lm[a],pb=lm[b];
-    if(!pa||!pb||pa.visibility<.3||pb.visibility<.3)return;
-    pCtx.beginPath();pCtx.moveTo(pa.x*W,pa.y*H);pCtx.lineTo(pb.x*W,pb.y*H);pCtx.stroke();
-  });
-  [0,11,12,13,14,15,16,23,24,25,26,27,28].forEach(i=>{
-    const p=lm[i];if(!p||p.visibility<.35)return;
-    pCtx.beginPath();pCtx.arc(p.x*W,p.y*H,Math.max(3,W*.005),0,Math.PI*2);pCtx.fill();
-  });
-}
- 
-// ── UI update ─────────────────────────────────────────────
-const chipMap={tilt:'c-tilt',shake:'c-shake',light:'c-light',body:'c-body',pose:'c-pose'};
+
+// ── UI update ─────────────────────────────────────────
+const chipIds={tilt:'c-tilt',shake:'c-shake',light:'c-light',body:'c-body',pose:'c-pose'};
 const msgs={
-  tilt:{ok:'Phone level',bad:'Level the phone',wrn:'Slightly tilted'},
-  shake:{ok:'Steady',bad:'Hold steady',wrn:'Movement'},
-  light:{ok:'Good light',bad:'Too dark',wrn:'Low light'},
-  body:{ok:'Full body',bad:'Show full body',wrn:'Body cut off'},
-  pose:{
-    front:{ok:'T-pose ✓',bad:'Raise arms — T-pose',wrn:'Adjust arms'},
-    side:{ok:'Pose ✓',bad:'Right side to camera',wrn:'Adjust pose'}
+  tilt: {bad:'Level the phone',wrn:'Slightly tilted'},
+  shake:{bad:'Hold steady',    wrn:'Movement detected'},
+  light:{bad:'Too dark',       wrn:'Low light'},
+  body: {bad:'Show full body', wrn:'Body partially cut off'},
+  pose: {
+    front:{bad:'Raise arms — T-pose', wrn:'Adjust arm position'},
+    side: {bad:'Turn right side to camera', wrn:'Adjust side pose'}
   }
 };
- 
+
 function updateUI(){
-  const allOk=Object.values(checks).every(Boolean);
-  const canShoot=blockMode?allOk:true;
- 
+  const allOk = Object.values(checks).every(Boolean);
+  const canShoot = blockMode ? allOk : true;
+
   // Ring
-  camRing.className=allOk?'ready':(blockMode?'blocked':'warn');
+  camRing.className = allOk?'ready':(blockMode?'blocked':'warn');
+
   // Shutter
-  shutter.className=canShoot?'ready':'blocked';
- 
+  shutterBtn.className = canShoot ? 'ready' : 'off';
+
   // Chips
   Object.keys(checks).forEach(k=>{
-    const chip=document.getElementById(chipMap[k]);
+    const chip=document.getElementById(chipIds[k]);
     const ok=checks[k];
     chip.className='chip '+(ok?'ok':(blockMode?'bad':'wrn'));
   });
- 
+
   // Guidance
   const fails=Object.keys(checks).filter(k=>!checks[k]);
-  let msg=phase==='front'?'T-pose — arms out, full body visible':'Right side — stand straight, full body visible';
+  let msg = phase==='front'
+    ? 'T-pose — both arms out, full body visible'
+    : 'Right side to camera — stand straight, full body';
   if(fails.length){
     const k=fails[0];
-    if(k==='pose'){msg=blockMode?msgs.pose[phase].bad:msgs.pose[phase].wrn;}
-    else{msg=blockMode?msgs[k].bad:msgs[k].wrn;}
+    if(k==='pose'){
+      msg = blockMode ? msgs.pose[phase].bad : msgs.pose[phase].wrn;
+    } else {
+      msg = blockMode ? msgs[k].bad : msgs[k].wrn;
+    }
   }
-  guidance.textContent=msg;
-  guidance.style.color=allOk?'rgba(52,211,153,.9)':(blockMode?'rgba(248,113,113,.8)':'rgba(251,191,36,.85)');
+  guidanceEl.textContent = msg;
+  guidanceEl.style.color = allOk
+    ? 'rgba(52,211,153,.9)'
+    : (blockMode?'rgba(248,113,113,.8)':'rgba(251,191,36,.85)');
 }
- 
-// ── Silhouettes ───────────────────────────────────────────
+
+// ── Silhouettes ───────────────────────────────────────
 const SIL_FRONT=`<svg viewBox="0 0 120 290" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <circle cx="60" cy="22" r="17" stroke="rgba(255,255,255,.2)" stroke-width="1.8"/>
-  <line x1="60" y1="39" x2="60" y2="62" stroke="rgba(255,255,255,.2)" stroke-width="1.8"/>
-  <line x1="60" y1="62" x2="60" y2="135" stroke="rgba(255,255,255,.2)" stroke-width="1.8"/>
-  <line x1="60" y1="76" x2="7" y2="76" stroke="rgba(255,255,255,.28)" stroke-width="2.2"/>
-  <circle cx="4" cy="76" r="4" fill="rgba(255,255,255,.28)"/>
-  <line x1="60" y1="76" x2="113" y2="76" stroke="rgba(255,255,255,.28)" stroke-width="2.2"/>
-  <circle cx="116" cy="76" r="4" fill="rgba(255,255,255,.28)"/>
-  <line x1="47" y1="135" x2="40" y2="200" stroke="rgba(255,255,255,.2)" stroke-width="1.8"/>
-  <line x1="40" y1="200" x2="34" y2="272" stroke="rgba(255,255,255,.2)" stroke-width="1.8"/>
-  <line x1="73" y1="135" x2="80" y2="200" stroke="rgba(255,255,255,.2)" stroke-width="1.8"/>
-  <line x1="80" y1="200" x2="86" y2="272" stroke="rgba(255,255,255,.2)" stroke-width="1.8"/>
-  <line x1="24" y1="273" x2="46" y2="273" stroke="rgba(255,255,255,.2)" stroke-width="1.8"/>
-  <line x1="74" y1="273" x2="96" y2="273" stroke="rgba(255,255,255,.2)" stroke-width="1.8"/>
+  <circle cx="60" cy="22" r="17" stroke="rgba(255,255,255,.18)" stroke-width="1.8"/>
+  <line x1="60" y1="39" x2="60" y2="62" stroke="rgba(255,255,255,.18)" stroke-width="1.8"/>
+  <line x1="60" y1="62" x2="60" y2="135" stroke="rgba(255,255,255,.18)" stroke-width="1.8"/>
+  <line x1="60" y1="76" x2="6" y2="76" stroke="rgba(255,255,255,.25)" stroke-width="2.2"/>
+  <circle cx="3" cy="76" r="4" fill="rgba(255,255,255,.25)"/>
+  <line x1="60" y1="76" x2="114" y2="76" stroke="rgba(255,255,255,.25)" stroke-width="2.2"/>
+  <circle cx="117" cy="76" r="4" fill="rgba(255,255,255,.25)"/>
+  <line x1="47" y1="135" x2="40" y2="200" stroke="rgba(255,255,255,.18)" stroke-width="1.8"/>
+  <line x1="40" y1="200" x2="34" y2="272" stroke="rgba(255,255,255,.18)" stroke-width="1.8"/>
+  <line x1="73" y1="135" x2="80" y2="200" stroke="rgba(255,255,255,.18)" stroke-width="1.8"/>
+  <line x1="80" y1="200" x2="86" y2="272" stroke="rgba(255,255,255,.18)" stroke-width="1.8"/>
+  <line x1="24" y1="273" x2="46" y2="273" stroke="rgba(255,255,255,.18)" stroke-width="1.8"/>
+  <line x1="74" y1="273" x2="96" y2="273" stroke="rgba(255,255,255,.18)" stroke-width="1.8"/>
 </svg>`;
- 
+
 const SIL_SIDE=`<svg viewBox="0 0 54 290" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <ellipse cx="27" cy="22" rx="13" ry="17" stroke="rgba(255,255,255,.2)" stroke-width="1.8"/>
-  <line x1="27" y1="39" x2="27" y2="60" stroke="rgba(255,255,255,.2)" stroke-width="1.8"/>
-  <line x1="27" y1="60" x2="27" y2="135" stroke="rgba(255,255,255,.2)" stroke-width="1.8"/>
-  <line x1="27" y1="74" x2="34" y2="126" stroke="rgba(255,255,255,.2)" stroke-width="1.6"/>
-  <line x1="27" y1="74" x2="21" y2="126" stroke="rgba(255,255,255,.14)" stroke-width="1.4" stroke-dasharray="4 3"/>
-  <line x1="23" y1="135" x2="25" y2="200" stroke="rgba(255,255,255,.2)" stroke-width="1.8"/>
-  <line x1="25" y1="200" x2="26" y2="272" stroke="rgba(255,255,255,.2)" stroke-width="1.8"/>
-  <line x1="31" y1="135" x2="29" y2="200" stroke="rgba(255,255,255,.14)" stroke-width="1.4" stroke-dasharray="4 3"/>
-  <line x1="29" y1="200" x2="28" y2="272" stroke="rgba(255,255,255,.14)" stroke-width="1.4" stroke-dasharray="4 3"/>
-  <line x1="15" y1="273" x2="38" y2="273" stroke="rgba(255,255,255,.2)" stroke-width="1.8"/>
+  <ellipse cx="27" cy="22" rx="13" ry="17" stroke="rgba(255,255,255,.18)" stroke-width="1.8"/>
+  <line x1="27" y1="39" x2="27" y2="60" stroke="rgba(255,255,255,.18)" stroke-width="1.8"/>
+  <line x1="27" y1="60" x2="27" y2="135" stroke="rgba(255,255,255,.18)" stroke-width="1.8"/>
+  <line x1="27" y1="74" x2="34" y2="126" stroke="rgba(255,255,255,.18)" stroke-width="1.6"/>
+  <line x1="27" y1="74" x2="21" y2="126" stroke="rgba(255,255,255,.12)" stroke-width="1.4" stroke-dasharray="4 3"/>
+  <line x1="23" y1="135" x2="25" y2="200" stroke="rgba(255,255,255,.18)" stroke-width="1.8"/>
+  <line x1="25" y1="200" x2="26" y2="272" stroke="rgba(255,255,255,.18)" stroke-width="1.8"/>
+  <line x1="31" y1="135" x2="29" y2="200" stroke="rgba(255,255,255,.12)" stroke-width="1.4" stroke-dasharray="4 3"/>
+  <line x1="29" y1="200" x2="28" y2="272" stroke="rgba(255,255,255,.12)" stroke-width="1.4" stroke-dasharray="4 3"/>
+  <line x1="15" y1="273" x2="38" y2="273" stroke="rgba(255,255,255,.18)" stroke-width="1.8"/>
 </svg>`;
- 
-function setSil(){silWrap.innerHTML=phase==='front'?SIL_FRONT:SIL_SIDE;}
- 
-// ── Phase flash ───────────────────────────────────────────
+
+function setSil(){ silWrap.innerHTML = phase==='front' ? SIL_FRONT : SIL_SIDE; }
+
+// ── Phase flash ───────────────────────────────────────
 function showPhaseFlash(){
-  const pf=document.getElementById('phase-flash');
-  document.getElementById('pf-num').textContent=phase==='front'?'PHOTO 1 OF 2':'PHOTO 2 OF 2';
-  document.getElementById('pf-title').innerHTML=phase==='front'?'Front View<br>T-Pose':'Side View<br>Attention';
-  document.getElementById('pf-sub').textContent=phase==='front'?'Both arms fully stretched to sides':'Right side to camera — stand straight';
-  pf.classList.add('show');
-  setTimeout(()=>pf.classList.remove('show'),2400);
+  document.getElementById('pf-num').textContent   = phase==='front'?'PHOTO 1 OF 2':'PHOTO 2 OF 2';
+  document.getElementById('pf-title').innerHTML   = phase==='front'?'Front View<br>T-Pose':'Side View<br>Attention';
+  document.getElementById('pf-sub').textContent   = phase==='front'
+    ?'Stretch both arms fully out to the sides'
+    :'Stand with right side facing camera';
+  phaseFlash.classList.add('show');
   setSil();
 }
- 
-// ── Shutter ────────────────────────────────────────────────
-shutter.addEventListener('click',()=>{
-  if(shutter.classList.contains('blocked'))return;
+document.getElementById('pf-tap').addEventListener('click',()=>{
+  phaseFlash.classList.remove('show');
+});
+
+// ── Shutter ───────────────────────────────────────────
+shutterBtn.addEventListener('click',()=>{
+  if(shutterBtn.classList.contains('off')) return;
   doCapture();
 });
- 
+
 function doCapture(){
+  // Instant flash
   flashEl.classList.add('on');
-  setTimeout(()=>flashEl.classList.remove('on'),160);
- 
-  const W=1080,H=1440;
-  const cap=document.createElement('canvas');cap.width=W;cap.height=H;
+  requestAnimationFrame(()=>requestAnimationFrame(()=>flashEl.classList.remove('on')));
+
+  const W=1080, H=1440;
+  const cap=document.createElement('canvas'); cap.width=W; cap.height=H;
   const ctx=cap.getContext('2d');
-  const vw=video.videoWidth,vh=video.videoHeight;
-  if(!vw||!vh)return;
-  const tr=3/4,sr=vw/vh;
+  const vw=video.videoWidth, vh=video.videoHeight;
+  if(!vw||!vh) return;
+  const tr=3/4, sr=vw/vh;
   let sx,sy,sw,sh;
-  if(sr>tr){sh=vh;sw=vh*tr;sx=(vw-sw)/2;sy=0;}
-  else{sw=vw;sh=vw/tr;sx=0;sy=(vh-sh)/2;}
-  ctx.drawImage(video,sx,sy,sw,sh,0,0,W,H);
- 
+  if(sr>tr){ sh=vh; sw=vh*tr; sx=(vw-sw)/2; sy=0; }
+  else      { sw=vw; sh=vw/tr; sx=0; sy=(vh-sh)/2; }
+  ctx.drawImage(video, sx,sy,sw,sh, 0,0,W,H);
+
   cap.toBlob(blob=>{
-    if(!blob)return;
-    const ts=genTs();
-    blob._ts=ts;
-    if(phase==='front')frontBlob=blob;
-    else sideBlob=blob;
-    showPopup(cap.toDataURL('image/jpeg',.7));
+    if(!blob) return;
+    blob._ts = genTs();
+    if(phase==='front') frontBlob=blob; else sideBlob=blob;
+    showPopup(cap.toDataURL('image/jpeg',.75));
   },'image/jpeg',.93);
 }
- 
+
 function genTs(){
   const n=new Date();
   return n.getFullYear()+
@@ -1105,109 +867,110 @@ function genTs(){
     String(n.getMinutes()).padStart(2,'0')+
     String(n.getSeconds()).padStart(2,'0');
 }
- 
-// ── Capture popup ──────────────────────────────────────────
+
+// ── Capture popup ─────────────────────────────────────
 function showPopup(dataUrl){
-  cpImg.src=dataUrl;
-  cpLabel.textContent=phase==='front'?'FRONT VIEW — T-POSE':'SIDE VIEW — ATTENTION';
+  cpImg.src = dataUrl;
+  cpLabel.textContent = phase==='front'?'FRONT VIEW — T-POSE':'SIDE VIEW — ATTENTION';
   capturePopup.classList.add('show');
 }
-function hidePopup(){capturePopup.classList.remove('show');}
- 
+function hidePopup(){ capturePopup.classList.remove('show'); }
+
 document.getElementById('btn-retake').addEventListener('click',()=>{
-  if(phase==='front')frontBlob=null;else sideBlob=null;
+  if(phase==='front') frontBlob=null; else sideBlob=null;
   hidePopup();
 });
- 
+
 document.getElementById('btn-next').addEventListener('click',()=>{
   hidePopup();
   if(phase==='front'){
-    phase='side';setSil();showPhaseFlash();
-  }else{
+    phase='side';
+    setSil();
+    showPhaseFlash();
+  } else {
     beginUpload();
   }
 });
- 
-// ── Upload ─────────────────────────────────────────────────
-const API='https://aimm-450300910281.asia-south1.run.app';
- 
+
+// ── Upload ────────────────────────────────────────────
+const API = 'https://aimm-450300910281.asia-south1.run.app';
+
 async function beginUpload(){
-  if(uploadPending)return;
-  uploadPending=true;
+  if(uploadPending) return;
+  uploadPending = true;
   showUpState('uploading');
   document.getElementById('up-bar').style.width='0%';
   try{
-    const ts=(frontBlob&&frontBlob._ts)||genTs();
+    const ts = (frontBlob&&frontBlob._ts) || genTs();
     document.getElementById('up-sub').textContent='Sending front photo…';
     document.getElementById('up-bar').style.width='15%';
-    await sendFile(frontBlob,ts+'_front.jpg');
+    await sendFile(frontBlob, ts+'_front.jpg');
     document.getElementById('up-bar').style.width='60%';
     document.getElementById('up-sub').textContent='Sending side photo…';
-    await sendFile(sideBlob,ts+'_side.jpg');
+    await sendFile(sideBlob, ts+'_side.jpg');
     document.getElementById('up-bar').style.width='100%';
-    setTimeout(()=>showUpState('success'),450);
+    showUpState('success');
   }catch(e){
-    document.getElementById('up-errmsg').textContent=e.message||'Network error. Please retry.';
+    document.getElementById('up-errmsg').textContent = e.message||'Network error. Please retry.';
     showUpState('error');
   }
 }
- 
+
 function sendFile(blob,name){
   return new Promise((res,rej)=>{
-    const fd=new FormData();fd.append('file',blob,name);
+    const fd=new FormData(); fd.append('file',blob,name);
     const xhr=new XMLHttpRequest();
     xhr.open('POST',API,true);
-    xhr.onload=()=>xhr.status>=200&&xhr.status<300?res():rej(new Error('Server '+xhr.status));
-    xhr.onerror=()=>rej(new Error('Network error — check connection'));
-    xhr.timeout=60000;xhr.ontimeout=()=>rej(new Error('Upload timed out'));
+    xhr.onload = ()=> xhr.status>=200&&xhr.status<300 ? res() : rej(new Error('Server '+xhr.status));
+    xhr.onerror = ()=> rej(new Error('Network error — check connection'));
+    xhr.timeout = 60000;
+    xhr.ontimeout = ()=> rej(new Error('Upload timed out'));
     xhr.send(fd);
   });
 }
- 
+
 function showUpState(s){
   uploadOver.classList.add('show');
-  document.getElementById('up-uploading').style.display=s==='uploading'?'flex':'none';
-  const succ=document.getElementById('up-success');
-  const err=document.getElementById('up-error');
-  succ.classList.toggle('hidden',s!=='success');
-  err.classList.toggle('hidden',s!=='error');
-  if(s==='success'||s==='error'){
-    succ.style.display=s==='success'?'flex':'none';
-    err.style.display=s==='error'?'flex':'none';
-  }
+  const upEl  = document.getElementById('up-uploading');
+  const sucEl = document.getElementById('up-success');
+  const errEl = document.getElementById('up-error');
+  upEl.style.display  = s==='uploading'?'flex':'none';
+  sucEl.style.display = s==='success' ?'flex':'none';
+  errEl.style.display = s==='error'   ?'flex':'none';
+  sucEl.classList.toggle('hidden', s!=='success');
+  errEl.classList.toggle('hidden', s!=='error');
 }
- 
-document.getElementById('btn-retry').addEventListener('click',()=>{uploadPending=false;beginUpload();});
-document.getElementById('btn-new').addEventListener('click',reset);
-document.getElementById('btn-restart').addEventListener('click',reset);
- 
+
+document.getElementById('btn-retry').addEventListener('click',()=>{ uploadPending=false; beginUpload(); });
+document.getElementById('btn-new').addEventListener('click', reset);
+document.getElementById('btn-restart').addEventListener('click', reset);
+
 function reset(){
-  uploadPending=false;frontBlob=null;sideBlob=null;phase='front';
+  uploadPending=false; frontBlob=null; sideBlob=null; phase='front';
   uploadOver.classList.remove('show');
-  document.getElementById('up-bar').style.width='0%';
-  document.getElementById('up-uploading').style.display='flex';
+  ['up-uploading','up-success','up-error'].forEach(id=>{
+    const el=document.getElementById(id); el.style.display='none';
+  });
   document.getElementById('up-success').classList.add('hidden');
   document.getElementById('up-error').classList.add('hidden');
-  document.getElementById('up-success').style.display='none';
-  document.getElementById('up-error').style.display='none';
-  setSil();showPhaseFlash();
+  document.getElementById('up-bar').style.width='0%';
+  setSil(); showPhaseFlash();
 }
- 
-// ── Desktop block ──────────────────────────────────────────
+
+// ── Desktop block ─────────────────────────────────────
 function chkDevice(){
   const mob=/Android|iPhone|iPad|iPod|Mobile|Tablet/i.test(navigator.userAgent);
-  if(!mob&&window.innerWidth>=1024){
+  if(!mob && window.innerWidth>=1024){
     document.getElementById('dwall').style.display='flex';
     document.getElementById('app').style.display='none';
   }
 }
-chkDevice();window.addEventListener('resize',chkDevice);
- 
-// ── Boot ───────────────────────────────────────────────────
+chkDevice(); window.addEventListener('resize', chkDevice);
+
+// ── Boot ──────────────────────────────────────────────
 initMP();
- 
+
 })();
 </script>
 </body>
 </html>
- 

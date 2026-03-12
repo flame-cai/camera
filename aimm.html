@@ -10,8 +10,16 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
 
-<!-- MediaPipe Tasks Vision — loaded as plain script tag, no version pin so jsDelivr resolves latest -->
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision/vision_bundle.js" crossorigin="anonymous"></script>
+<!-- MediaPipe Tasks Vision — must be type="module" (vision_bundle.mjs uses ES export syntax).
+     We bridge the named exports onto window.__mpVision so the IIFE app can access them. -->
+<script type="module">
+  try {
+    const mp = await import('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision/vision_bundle.mjs');
+    window.__mpVision = mp;
+  } catch(e) {
+    window.__mpVisionError = e.message || String(e);
+  }
+</script>
 
 <style>
 :root{
@@ -539,7 +547,7 @@ const topbar       = document.getElementById('topbar');
 
 // ── Model URL (CDN) ────────────────────────────────────
 // Using @mediapipe/tasks-vision without a pinned version — jsDelivr resolves latest.
-// WASM base must match the same version that the already-loaded script tag uses.
+// WASM base — no version pin, matches the imported vision_bundle.mjs.
 const WASM_BASE  = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision/wasm';
 const MODEL_URL  = 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task';
 
@@ -643,23 +651,18 @@ function enterNoPoseMode(){
 }
 
 // ══════════════════════════════════════════════════════
-//  STEP 0 — Verify MediaPipe script loaded
+//  STEP 0 — Verify MediaPipe module loaded
 // ══════════════════════════════════════════════════════
+// The <script type="module"> in <head> imports vision_bundle.mjs and stores
+// the named exports on window.__mpVision. We simply read from there.
+// If the module import threw, window.__mpVisionError is set instead.
 function checkMPLoaded(){
-  // The <script> tag at the top of <head> should have loaded vision_bundle.js
-  // It exposes globals: window.PoseLandmarker, window.FilesetResolver, window.DrawingUtils
-  // OR sometimes under window.mediapipeTasks or similar — probe all known patterns.
-  const candidates = [
-    ()=>({ PL: window.PoseLandmarker,   DU: window.DrawingUtils,   FR: window.FilesetResolver }),
-    ()=>{ const v=window.mpTasksVision||window['@mediapipe/tasks-vision']||window.TasksVision; return v?{PL:v.PoseLandmarker,DU:v.DrawingUtils,FR:v.FilesetResolver}:null; },
-    ()=>{ const keys=Object.keys(window); const vk=keys.find(k=>/vision|tasks/i.test(k)&&window[k]&&window[k].PoseLandmarker); return vk?{PL:window[vk].PoseLandmarker,DU:window[vk].DrawingUtils,FR:window[vk].FilesetResolver}:null; },
-  ];
-  for(const fn of candidates){
-    try{
-      const r = fn();
-      if(r && r.PL && r.DU && r.FR) return r;
-    }catch(e){}
-  }
+  const mp = window.__mpVision;
+  if(!mp) return null;
+  const PL = mp.PoseLandmarker;
+  const DU = mp.DrawingUtils;
+  const FR = mp.FilesetResolver;
+  if(PL && DU && FR) return {PL, DU, FR};
   return null;
 }
 
@@ -768,26 +771,35 @@ async function startCam(){
 // ══════════════════════════════════════════════════════
 async function initAll(){
   // ── Step 0: Check that the <script> tag loaded the library ──
-  stepState(0,'active','Checking library…');
-  setGlobal(5,'Checking MediaPipe…');
+  stepState(0,'active','Importing module…');
+  setGlobal(5,'Importing MediaPipe…');
 
-  // Give the script tag up to 8s to fully execute (it's in <head> so should be done)
+  // The <script type="module"> import is async — poll until it resolves (or errors out).
+  // Timeout after 12s to account for slow CDN on mobile.
   let mp = null;
-  const deadline = Date.now() + 8000;
+  const deadline = Date.now() + 12000;
   while(Date.now() < deadline){
+    if(window.__mpVisionError){
+      // Module threw during import — surface the real error immediately
+      stepState(0,'err','Import failed: '+window.__mpVisionError.slice(0,60));
+      showFatalError(
+        'MediaPipe Import Failed',
+        'Error loading vision_bundle.mjs:\n'+window.__mpVisionError+'\n\n'+
+        'Check your network connection and try again, or continue without pose detection.'
+      );
+      return;
+    }
     mp = checkMPLoaded();
     if(mp) break;
-    await new Promise(r=>setTimeout(r,200));
+    await new Promise(r=>setTimeout(r,250));
   }
 
   if(!mp){
-    stepState(0,'err','Library did not load — check network');
-    const allKeys = Object.keys(window).filter(k=>/pose|vision|mediapipe|tasks/i.test(k)).slice(0,10);
+    stepState(0,'err','Timed out waiting for MediaPipe');
     showFatalError(
       'MediaPipe Not Loaded',
-      'The vision_bundle.js script failed to expose expected globals.\n\n'+
-      'Relevant window keys found: '+(allKeys.length?allKeys.join(', '):'none')+'\n\n'+
-      'This usually means the CDN request failed or was blocked.\n'+
+      'The vision_bundle.mjs module did not finish loading within 12 seconds.\n\n'+
+      'This usually means the CDN request is blocked or very slow.\n'+
       'Check your network connection and try again, or continue without pose detection.'
     );
     return;

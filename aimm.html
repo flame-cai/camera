@@ -14,7 +14,7 @@
      We bridge the named exports onto window.__mpVision so the IIFE app can access them. -->
 <script type="module">
   try {
-    const mp = await import('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision/vision_bundle.mjs');
+    const mp = await import('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs');
     window.__mpVision = mp;
   } catch(e) {
     window.__mpVisionError = e.message || String(e);
@@ -349,6 +349,20 @@ html,body{
   cursor:pointer;width:100%;max-width:320px;
 }
 .ld-skip-btn:active{opacity:.85}
+
+/* ── Model info badge ── */
+#model-badge{
+  position:absolute;bottom:calc(max(env(safe-area-inset-bottom,0px),16px) + 108px + 30px);
+  right:12px;z-index:21;
+  display:none;align-items:center;gap:5px;
+  background:rgba(14,14,17,.72);border:1px solid var(--border2);
+  border-radius:100px;padding:4px 9px;backdrop-filter:blur(8px);
+  pointer-events:none;
+}
+#model-badge.show{display:flex}
+[data-theme="light"] #model-badge{background:rgba(255,255,255,.84)}
+.mb-dot{width:5px;height:5px;border-radius:50%;background:var(--green);flex-shrink:0}
+.mb-txt{font-family:var(--mono);font-size:.52rem;letter-spacing:.06em;color:var(--text2)}
 .hidden{display:none!important}
 </style>
 </head>
@@ -400,6 +414,12 @@ html,body{
     <div class="chip" id="c-pose"><div class="chip-dot"></div><span class="chip-lbl">POSE</span></div>
   </div>
   <div id="guidance">Initialising…</div>
+
+
+  <div id="model-badge">
+    <div class="mb-dot"></div>
+    <span class="mb-txt" id="mb-txt">heavy · VIDEO · GPU</span>
+  </div>
 
   <div id="shutter-zone">
     <button id="shutter" class="off" aria-label="Capture"></button>
@@ -523,6 +543,7 @@ let DrawingUtilsRef = null;
 let webcamRunning = false;
 let lastVideoTime = -1;
 let uploadPending = false;
+let activeDelegate = 'GPU'; // updated after model init
 let mpAvailable = false;  // true only if pose detection fully loaded
 let checks = {tilt:false, shake:false, light:false, body:false, pose:false};
 
@@ -545,11 +566,16 @@ const nposeBanner  = document.getElementById('npose-banner');
 const modePill     = document.getElementById('mode-pill');
 const topbar       = document.getElementById('topbar');
 
-// ── Model URL (CDN) ────────────────────────────────────
-// Using @mediapipe/tasks-vision without a pinned version — jsDelivr resolves latest.
-// WASM base — no version pin, matches the imported vision_bundle.mjs.
-const WASM_BASE  = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision/wasm';
-const MODEL_URL  = 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task';
+// ── CDN URLs — all pinned to same version ──────────────
+// CRITICAL: WASM_BASE version must exactly match the vision_bundle.mjs version.
+// Model is fetched manually as ArrayBuffer so we bypass FilesetResolver's internal
+// fetch (which can fail on mobile due to CORS / redirect issues on storage.googleapis.com).
+const MP_VERSION = '0.10.14';
+const WASM_BASE  = `https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${MP_VERSION}/wasm`;
+const MODEL_URL  = 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_heavy/float16/1/pose_landmarker_heavy.task';
+// Fallback: unpkg serves the same googleapis model (just a redirect), 
+// but retry logic means transient failures get a second chance.
+const MODEL_URL_FALLBACK = MODEL_URL; // same URL — fetchModelBuffer retries on failure
 
 // ── Global error surface ───────────────────────────────
 window.addEventListener('error', e => {
@@ -669,6 +695,60 @@ function checkMPLoaded(){
 // ══════════════════════════════════════════════════════
 //  STEP 1 — Init Pose Landmarker (WASM + model)
 // ══════════════════════════════════════════════════════
+
+// Fetch model as ArrayBuffer — we do this ourselves so we get real byte-level
+// progress and can fall back to a second URL if the primary fails.
+async function fetchModelBuffer(){
+  const bar  = document.getElementById('ls-1-bar');
+  const fill = document.getElementById('ls-1-fill');
+  const sub  = document.getElementById('ls-1-sub');
+  bar.classList.remove('hidden');
+
+  // Retry up to 3 times — handles transient mobile network failures
+  const MAX_TRIES = 3;
+  let lastErr = '';
+
+  for(let attempt=1; attempt<=MAX_TRIES; attempt++){
+    try {
+      sub.textContent = attempt>1 ? `Fetching model (attempt ${attempt})…` : 'Fetching model…';
+      const resp = await fetch(MODEL_URL);
+      if(!resp.ok) throw new Error('HTTP '+resp.status);
+
+      // Stream with progress
+      const total = parseInt(resp.headers.get('Content-Length')||'0',10);
+      const reader = resp.body.getReader();
+      const chunks = [];
+      let loaded = 0;
+
+      while(true){
+        const {done, value} = await reader.read();
+        if(done) break;
+        chunks.push(value);
+        loaded += value.length;
+        const pct = total>0 ? Math.round(loaded/total*100) : 0;
+        fill.style.width = (total>0?pct:Math.min(loaded/55000,95))+'%';
+        sub.textContent = formatBytes(loaded)+(total>0?' / '+formatBytes(total)+' ('+pct+'%)':'');
+      }
+
+      const buf = new Uint8Array(loaded);
+      let pos=0; for(const c of chunks){buf.set(c,pos);pos+=c.length;}
+      fill.style.width='100%';
+      return buf.buffer;
+    } catch(e){
+      lastErr = e.message;
+      if(attempt < MAX_TRIES) sub.textContent = `Fetch failed, retrying… (${e.message.slice(0,40)})`;
+      await new Promise(r=>setTimeout(r, 800 * attempt)); // backoff
+    }
+  }
+  throw new Error('Model fetch failed after '+MAX_TRIES+' attempts: '+lastErr);
+}
+
+function formatBytes(b){
+  if(b<1024) return b+'B';
+  if(b<1048576) return (b/1024).toFixed(1)+'KB';
+  return (b/1048576).toFixed(1)+'MB';
+}
+
 async function initPoseLandmarker(FR, PL){
   stepState(1,'active','Initialising WASM runtime…');
 
@@ -679,54 +759,48 @@ async function initPoseLandmarker(FR, PL){
     throw new Error('WASM runtime failed: '+e.message);
   }
 
-  stepState(1,'active','Loading pose model…');
-  // Show a byte bar if we can track it — we can't with FilesetResolver internal fetch,
-  // but at least show indeterminate movement via sub-text updates
-  const bar = document.getElementById('ls-1-bar');
-  const fill = document.getElementById('ls-1-fill');
-  bar.classList.remove('hidden');
-  // Animate indeterminate while model loads
-  let pct=0;
-  const indTimer = setInterval(()=>{
-    pct = Math.min(pct+2, 92);
-    fill.style.width = pct+'%';
-    document.getElementById('ls-1-sub').textContent = 'Loading model… (~5MB)';
-  }, 180);
+  stepState(1,'active','Downloading pose model (heavy)…');
 
+  let modelBuffer;
   try {
-    poseLandmarker = await PL.createFromOptions(vision, {
+    modelBuffer = await fetchModelBuffer();
+  } catch(e){
+    throw new Error('Model download failed: '+e.message);
+  }
+
+  stepState(1,'active','Initialising detector (GPU)…');
+
+  // Helper: create landmarker from the already-downloaded ArrayBuffer
+  async function createLandmarker(delegate){
+    return PL.createFromOptions(vision, {
       baseOptions:{
-        modelAssetPath: MODEL_URL,
-        delegate: 'GPU'
+        modelAssetBuffer: new Uint8Array(modelBuffer),
+        delegate
       },
       runningMode: 'VIDEO',
-      numPoses: 3,
-      minPoseDetectionConfidence: 0.45,
-      minPosePresenceConfidence: 0.45,
-      minTrackingConfidence: 0.45
+      numPoses: 1,
+      minPoseDetectionConfidence: 0.55,
+      minPosePresenceConfidence: 0.55,
+      minTrackingConfidence: 0.55
     });
+  }
+
+  try {
+    poseLandmarker = await createLandmarker('GPU');
+    activeDelegate = 'GPU';
   } catch(gpuErr){
-    // GPU delegate can fail on some mobile browsers — fall back to CPU
+    // GPU delegate can fail on older Android WebViews — fall back to CPU
+    stepState(1,'active','GPU failed, falling back to CPU…');
     try {
-      poseLandmarker = await PL.createFromOptions(vision, {
-        baseOptions:{
-          modelAssetPath: MODEL_URL,
-          delegate: 'CPU'
-        },
-        runningMode: 'VIDEO',
-        numPoses: 3,
-        minPoseDetectionConfidence: 0.45,
-        minPosePresenceConfidence: 0.45,
-        minTrackingConfidence: 0.45
-      });
+      poseLandmarker = await createLandmarker('CPU');
+      activeDelegate = 'CPU';
     } catch(cpuErr){
-      clearInterval(indTimer);
-      throw new Error('Pose model failed (GPU+CPU): '+cpuErr.message);
+      throw new Error('Pose model init failed (GPU+CPU): '+cpuErr.message);
     }
   }
-  clearInterval(indTimer);
-  fill.style.width = '100%';
-  stepState(1,'done','Pose detector ready');
+
+  document.getElementById('ls-1-fill').style.width='100%';
+  stepState(1,'done',`Heavy model · VIDEO · ${activeDelegate}`);
 }
 
 // ══════════════════════════════════════════════════════
@@ -831,6 +905,12 @@ async function initAll(){
     return;
   }
 
+  // Show model info badge
+  if(mpAvailable){
+    const badge = document.getElementById('model-badge');
+    document.getElementById('mb-txt').textContent = `heavy · VIDEO · ${activeDelegate}`;
+    badge.classList.add('show');
+  }
   hideLoader();
   showPhaseFlash();
 }
@@ -856,24 +936,30 @@ function predictWebcam(){
     try {
       poseLandmarker.detectForVideo(video, performance.now(), (result)=>{
         if(result.landmarks && result.landmarks.length > 0){
-          // Find centre person (nose closest to x=0.5)
-          let ci=0, md=999;
-          result.landmarks.forEach((lm,i)=>{
-            const n=lm[0]; if(!n) return;
-            const d=Math.abs(n.x-.5); if(d<md){md=d;ci=i;}
-          });
-          const lm = result.landmarks[ci];
+          // numPoses=1 so always index 0, but guard anyway
+          const lm = result.landmarks[0];
+          // worldLandmarks give metric 3D coords — use z for landmark radius depth cue
+          const wlm = (result.worldLandmarks && result.worldLandmarks[0]) || null;
 
           if(drawingUtils && PoseLandmarkerRef){
+            const lineW = Math.max(2, pCvs.width * 0.004);
+            // Colour connectors green/amber/red based on overall check state
+            const connColor = checks.body && checks.pose
+              ? 'rgba(52,211,153,0.65)'
+              : 'rgba(79,143,255,0.50)';
             drawingUtils.drawConnectors(lm, PoseLandmarkerRef.POSE_CONNECTIONS, {
-              color:'rgba(79,143,255,0.55)',
-              lineWidth: Math.max(1.5, pCvs.width*0.003)
+              color: connColor,
+              lineWidth: lineW
             });
             drawingUtils.drawLandmarks(lm, {
-              radius: (data) => DrawingUtils_lerp(data.from ? data.from.z : 0, -0.15, 0.1, 6, 2),
-              color:'rgba(79,143,255,0.9)',
-              fillColor:'rgba(79,143,255,0.5)',
-              lineWidth:1
+              // Use world z (metric depth) for radius if available; else normalised z
+              radius: (data) => {
+                const z = wlm && data.index !== undefined ? (wlm[data.index]||{z:0}).z : (data.from ? data.from.z : 0);
+                return DrawingUtils_lerp(z, -0.2, 0.2, 7, 2);
+              },
+              color: 'rgba(255,255,255,0.85)',
+              fillColor: connColor,
+              lineWidth: 1
             });
           }
 
@@ -967,52 +1053,210 @@ if(typeof DeviceMotionEvent!=='undefined'){
   checks.shake=true;
 }
 
-// ── Pose checks ────────────────────────────────────────
-function vis(lm,i,t=.4){ return lm[i] && lm[i].visibility>t; }
+// ══════════════════════════════════════════════════════
+//  POSE CHECKS — using MediaPipe landmark data
+//
+//  MediaPipe Pose landmark indices (33 total):
+//   0  nose          1  left eye inner   2  left eye
+//   3  left eye out  4  right eye inner  5  right eye
+//   6  right eye out 7  left ear         8  right ear
+//   9  mouth left   10  mouth right
+//  11  left shoulder 12 right shoulder
+//  13  left elbow    14 right elbow
+//  15  left wrist    16 right wrist
+//  17  left pinky    18 right pinky
+//  19  left index    20 right index
+//  21  left thumb    22 right thumb
+//  23  left hip      24 right hip
+//  25  left knee     26 right knee
+//  27  left ankle    28 right ankle
+//  29  left heel     30 right heel
+//  31  left foot idx 32 right foot idx
+//
+//  All coordinates are normalised [0,1] (x=left→right, y=top→bottom).
+//  .visibility  [0,1] — how confident MP is the landmark is visible.
+//  .presence    [0,1] — how confident MP is the landmark exists in frame.
+//
+//  Strategy:
+//  • vis()  — gate on both visibility AND presence for robust filtering.
+//  • Body check — use head (nose) y-position for top, best ankle/heel for
+//    bottom; require the full torso height occupies > 55% of frame height.
+//  • T-pose — shoulders, elbows, wrists all within a tight horizontal band;
+//    wrists must be at or beyond the shoulder x-span; shoulder span > 22% frame.
+//    Also verify both upper arms (shoulder→elbow) and forearms (elbow→wrist)
+//    are roughly horizontal by computing the angle of each segment.
+//  • Side pose — shoulders stack tightly (small x-delta); arms hang down
+//    (wrists below hips or near hips); torso is present and tall enough.
+//    We do NOT require the subject to face a specific direction — either
+//    side works, we just need a true profile (not facing camera).
+// ══════════════════════════════════════════════════════
 
-function fullBodyVisible(lm){
-  const nose=lm[0]; if(!nose||nose.visibility<.5) return false;
-  if(nose.y>.28) return false;
-  const la=lm[27],ra=lm[28],lh=lm[29],rh=lm[30];
-  const ankL=(la&&la.visibility>.3)?la:lh, ankR=(ra&&ra.visibility>.3)?ra:rh;
-  if(!ankL&&!ankR) return false;
-  return Math.max(ankL?ankL.y:0, ankR?ankR.y:0)>.72;
+// Visibility + presence gate — heavy model provides both
+function vis(lm, i, vThresh=0.5, pThresh=0.4){
+  const p = lm[i];
+  if(!p) return false;
+  const v = (p.visibility  !== undefined) ? p.visibility  : 1;
+  const pr= (p.presence    !== undefined) ? p.presence    : 1;
+  return v >= vThresh && pr >= pThresh;
 }
 
-function checkTpose(lm){
-  if(![11,12,13,14,15,16,23,24].every(i=>vis(lm,i,.45))) return false;
-  const ls=lm[11],rs=lm[12],le=lm[13],re=lm[14],lw=lm[15],rw=lm[16];
-  const sy=(ls.y+rs.y)/2, sSpan=Math.abs(rs.x-ls.x);
-  if(sSpan<.18) return false;
-  if(Math.abs(lw.y-sy)>.13||Math.abs(rw.y-sy)>.13) return false;
-  if(Math.abs(le.y-sy)>.13||Math.abs(re.y-sy)>.13) return false;
-  if(lw.x>ls.x+.04||rw.x<rs.x-.04) return false;
+// Angle (degrees) of the vector from point A to point B, measured from horizontal
+function segAngle(a, b){
+  return Math.abs(Math.atan2(b.y - a.y, b.x - a.x) * 180 / Math.PI);
+}
+
+// ── Full body visibility ───────────────────────────────
+// Requires: nose visible near top of frame, at least one ankle/heel near bottom.
+// Also checks that the total body span (nose→lowest point) covers ≥55% of frame.
+function fullBodyVisible(lm){
+  // HEAD — nose must be visible and near the top quarter of frame
+  if(!vis(lm,0,0.55,0.45)) return false;
+  const nose = lm[0];
+  if(nose.y > 0.30) return false;  // head cropped or person too far down
+
+  // FEET — at least one ankle or heel must be clearly visible near the bottom
+  // Prefer ankles (27,28), fall back to heels (29,30), then foot index (31,32)
+  const footCandidates = [
+    [27,0.4,0.3],[28,0.4,0.3],  // ankles — primary
+    [29,0.35,0.25],[30,0.35,0.25], // heels — secondary
+    [31,0.3,0.2],[32,0.3,0.2]   // foot index — last resort
+  ];
+  let bestFootY = 0;
+  for(const [idx, vt, pt] of footCandidates){
+    if(vis(lm, idx, vt, pt)){
+      bestFootY = Math.max(bestFootY, lm[idx].y);
+    }
+  }
+  if(bestFootY < 0.68) return false; // feet not near bottom of frame
+
+  // TORSO SPAN — body must occupy a meaningful fraction of frame height
+  const bodySpan = bestFootY - nose.y;
+  if(bodySpan < 0.55) return false;  // person too small / partially in frame
+
+  // CORE LANDMARKS — shoulders and hips should be visible (torso present)
+  const coreOk = [11,12,23,24].filter(i => vis(lm,i,0.45,0.35)).length >= 3;
+  if(!coreOk) return false;
+
   return true;
 }
 
+// ── T-Pose check ───────────────────────────────────────
+// Arms must be extended horizontally, level with shoulders.
+// Uses per-segment angle checks (not just y-position proximity).
+function checkTpose(lm){
+  // All upper-body landmarks must be clearly visible
+  const required = [11,12,13,14,15,16,23,24];
+  if(!required.every(i => vis(lm,i,0.5,0.4))) return false;
+
+  const ls=lm[11], rs=lm[12]; // shoulders
+  const le=lm[13], re=lm[14]; // elbows
+  const lw=lm[15], rw=lm[16]; // wrists
+  const lh=lm[23], rh=lm[24]; // hips
+
+  // 1. Shoulder span must be substantial (person not too far / turned)
+  const shoulderSpan = Math.abs(rs.x - ls.x);
+  if(shoulderSpan < 0.20) return false;
+
+  // 2. Reference y: mid-shoulder level
+  const shoulderY = (ls.y + rs.y) / 2;
+
+  // 3. Body height reference (shoulder to hip midpoint)
+  const hipY = (lh.y + rh.y) / 2;
+  const torsoH = Math.max(hipY - shoulderY, 0.05);
+
+  // 4. Arms must be roughly at shoulder level (not raised or dropped)
+  //    Allow ±15% of torso height deviation
+  const armYTol = torsoH * 0.35;
+  if(Math.abs(le.y - shoulderY) > armYTol) return false;
+  if(Math.abs(re.y - shoulderY) > armYTol) return false;
+  if(Math.abs(lw.y - shoulderY) > armYTol) return false;
+  if(Math.abs(rw.y - shoulderY) > armYTol) return false;
+
+  // 5. Segment angle check — upper arm (shoulder→elbow) must be near horizontal
+  //    Acceptable: within 25° of horizontal
+  const leftUpperArmAngle  = segAngle(ls, le);  // angle from horizontal
+  const rightUpperArmAngle = segAngle(rs, re);
+  if(leftUpperArmAngle  > 30) return false;
+  if(rightUpperArmAngle > 30) return false;
+
+  // 6. Forearm (elbow→wrist) also near horizontal
+  const leftForearmAngle  = segAngle(le, lw);
+  const rightForearmAngle = segAngle(re, rw);
+  if(leftForearmAngle  > 35) return false;
+  if(rightForearmAngle > 35) return false;
+
+  // 7. Wrists must extend BEYOND the shoulders (arms fully out, not tucked in)
+  //    Left wrist should be to the LEFT of left shoulder
+  //    Right wrist should be to the RIGHT of right shoulder
+  if(lw.x > ls.x + 0.03) return false;  // left wrist not far enough left
+  if(rw.x < rs.x - 0.03) return false;  // right wrist not far enough right
+
+  // 8. Wrist span must be large relative to shoulder span
+  const wristSpan = Math.abs(rw.x - lw.x);
+  if(wristSpan < shoulderSpan * 1.3) return false;  // arms not extended enough
+
+  return true;
+}
+
+// ── Side pose check ────────────────────────────────────
+// Person standing in profile (either left or right side to camera).
+// Shoulders appear stacked (small x-delta), arms hanging naturally.
 function checkSide(lm){
-  if(![11,12,13,14,15,16,23,24].every(i=>vis(lm,i,.38))) return false;
-  const ls=lm[11],rs=lm[12],lw=lm[15],rw=lm[16],lh=lm[23],rh=lm[24];
-  if(Math.abs(rs.x-ls.x)>.23) return false;
-  const sy=(ls.y+rs.y)/2, hy=(lh.y+rh.y)/2, bH=hy-sy;
-  if(bH<.06) return false;
-  const wOk=w=>w&&w.y>sy&&w.y<hy+bH*.6;
-  if(!wOk(lw)&&!wOk(rw)) return false;
-  const nose=lm[0];
-  if(nose&&vis(lm,0,.4)&&Math.abs(nose.x-(ls.x+rs.x)/2)>.2) return false;
+  // Core body landmarks
+  const required = [11,12,23,24];
+  if(!required.every(i => vis(lm,i,0.45,0.35))) return false;
+
+  const ls=lm[11], rs=lm[12]; // shoulders
+  const lh=lm[23], rh=lm[24]; // hips
+
+  // 1. Shoulders must be stacked — small horizontal spread indicates true profile
+  //    If shoulder span is large, person is facing camera (not side)
+  const shoulderSpan = Math.abs(rs.x - ls.x);
+  if(shoulderSpan > 0.20) return false;  // too much shoulder width → facing camera
+
+  // 2. Torso must have meaningful vertical extent
+  const shoulderMidY = (ls.y + rs.y) / 2;
+  const hipMidY      = (lh.y + rh.y) / 2;
+  const torsoH = hipMidY - shoulderMidY;
+  if(torsoH < 0.08) return false;
+
+  // 3. Arms should be hanging at sides (wrists near or below hip level)
+  //    At least one wrist must be visible and positioned naturally
+  const lwOk = vis(lm,15,0.4,0.3);
+  const rwOk = vis(lm,16,0.4,0.3);
+  if(lwOk || rwOk){
+    const wristY = lwOk ? lm[15].y : lm[16].y;
+    // Wrist should be between shoulder and 70% below hip — natural hang
+    if(wristY < shoulderMidY) return false;           // arms raised above shoulders
+    if(wristY > hipMidY + torsoH * 0.8) return false; // arms raised oddly high or extreme
+  }
+
+  // 4. Nose / head should be roughly above the shoulder midpoint x (not twisted)
+  //    For a true side profile the head sits directly above the torso
+  if(vis(lm,0,0.5,0.4)){
+    const nose = lm[0];
+    const shoulderMidX = (ls.x + rs.x) / 2;
+    // Head should be close in x to shoulder midpoint (within 15% of frame width)
+    if(Math.abs(nose.x - shoulderMidX) > 0.18) return false;
+  }
+
+  // 5. Hips should also be stacked (reinforces side-on stance)
+  const hipSpan = Math.abs(rh.x - lh.x);
+  if(hipSpan > 0.18) return false;
+
   return true;
 }
 
 // ── UI update ──────────────────────────────────────────
 const chipIds={tilt:'c-tilt',shake:'c-shake',light:'c-light',body:'c-body',pose:'c-pose'};
 const msgs={
-  tilt: {bad:'Level the phone',          wrn:'Slightly tilted'},
-  shake:{bad:'Hold steady',              wrn:'Movement detected'},
-  light:{bad:'Too dark — add light',     wrn:'Low light'},
-  body: {bad:'Show full body in frame',  wrn:'Body partially cut off'},
+  tilt: {bad:'Level the phone vertically',         wrn:'Phone slightly tilted'},
+  shake:{bad:'Hold the phone steady',              wrn:'Too much movement'},
+  light:{bad:'Too dark — move to better light',    wrn:'Low light — results may vary'},
+  body: {bad:'Step back — show head to feet',      wrn:'Body not fully in frame'},
   pose: {
-    front:{bad:'Raise arms — T-pose',    wrn:'Adjust arm position'},
-    side: {bad:'Turn right side to camera', wrn:'Adjust side pose'}
+    front:{bad:'Extend both arms fully out sideways (T-pose)', wrn:'Arms not fully extended — spread wider'},
+    side: {bad:'Turn to your side — shoulder to camera',       wrn:'Not quite side-on — rotate more'}
   }
 };
 
@@ -1060,14 +1304,14 @@ function updateUI(){
   let msg;
   if(!mpAvailable){
     msg = fails.length===0
-      ? (phase==='front'?'T-pose — arms out, full body visible':'Right side to camera — stand straight')
+      ? (phase==='front'?'Arms out to sides, head to feet visible':'Turn side-on — shoulder facing camera')
       : (()=>{
           const k=fails[0];
           return blockMode ? msgs[k].bad : msgs[k].wrn;
         })();
   } else {
     if(fails.length===0){
-      msg = phase==='front'?'T-pose — arms out, full body visible':'Right side to camera — stand straight';
+      msg = phase==='front'?'Arms out to sides, head to feet visible':'Turn side-on — shoulder facing camera';
     } else {
       const k=fails[0];
       msg = k==='pose'

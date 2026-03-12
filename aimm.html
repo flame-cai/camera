@@ -777,11 +777,11 @@ function checkTpose(lm){
   const sSpan=Math.abs(rs.x-ls.x);
   if(sSpan<0.10) return false;
 
-  // Left elbow must be to the LEFT of left shoulder (any amount)
-  if(le.x>ls.x) return false;
-
-  // Right elbow must be to the RIGHT of right shoulder (any amount)
-  if(re.x<rs.x) return false;
+  // Axis-agnostic elbow extension: each elbow must be further from
+  // frame centre (x=0.5) than its own shoulder. Works regardless of
+  // whether the stream is mirrored or landmark axes are flipped.
+  if(Math.abs(le.x-0.5)<=Math.abs(ls.x-0.5)) return false;
+  if(Math.abs(re.x-0.5)<=Math.abs(rs.x-0.5)) return false;
 
   // Arms must be within ±25° of horizontal
   // sin(25°) ≈ 0.423 → |dy|/vecLen must be < 0.423
@@ -870,39 +870,40 @@ const SIL_FRONT=`<svg viewBox="0 0 180 240" fill="none" xmlns="http://www.w3.org
   <defs>
     <style>.sl{fill:rgba(255,255,255,.11);stroke:rgba(255,255,255,.30);stroke-width:1.2}.sl2{fill:rgba(255,255,255,.08);stroke:rgba(255,255,255,.20);stroke-width:1}</style>
   </defs>
-  <!-- HEAD — sits top ~10% of frame -->
+  <!-- HEAD -->
   <ellipse class="sl" cx="90" cy="19" rx="13" ry="15"/>
-  <!-- ears -->
   <ellipse class="sl2" cx="77" cy="20" rx="3" ry="4.5"/>
   <ellipse class="sl2" cx="103" cy="20" rx="3" ry="4.5"/>
   <!-- NECK -->
   <path class="sl2" d="M85 33 L95 33 L94 40 L86 40 Z"/>
-  <!-- TORSO — shoulders ~42% frame width, waist ~30% -->
+  <!-- TORSO -->
   <path class="sl" d="M52 40 Q90 35 128 40 L124 108 Q90 115 56 108 Z"/>
   <!-- PELVIS -->
   <path class="sl2" d="M56 106 Q90 112 124 106 L120 122 Q90 128 60 122 Z"/>
 
-  <!-- LEFT ARM (person left = image left) — upper arm shoulder→elbow -->
-  <path d="M54 50 L14 62" stroke="rgba(255,255,255,.28)" stroke-width="9" stroke-linecap="round"/>
+  <!-- LEFT ARM: shoulder→elbow going outward, forearm continues outward+slightly up to wrist -->
+  <!-- upper arm: shoulder (54,50) → elbow (16,58) -->
+  <path d="M54 50 L16 58" stroke="rgba(255,255,255,.28)" stroke-width="9" stroke-linecap="round"/>
   <!-- left elbow -->
-  <circle cx="12" cy="63" r="5.5" fill="rgba(255,255,255,.14)" stroke="rgba(255,255,255,.28)" stroke-width="1.1"/>
-  <!-- left forearm elbow→wrist -->
-  <path d="M12 63 L6 84" stroke="rgba(255,255,255,.22)" stroke-width="7" stroke-linecap="round"/>
+  <circle cx="14" cy="58" r="5.5" fill="rgba(255,255,255,.14)" stroke="rgba(255,255,255,.28)" stroke-width="1.1"/>
+  <!-- forearm: elbow (14,58) → wrist (4,52) — continues outward, slightly upward -->
+  <path d="M14 58 L4 52" stroke="rgba(255,255,255,.22)" stroke-width="7" stroke-linecap="round"/>
   <!-- left hand -->
-  <ellipse cx="5" cy="88" rx="6" ry="5" fill="rgba(255,255,255,.16)" stroke="rgba(255,255,255,.26)" stroke-width="1"/>
+  <ellipse cx="1" cy="50" rx="6" ry="5" fill="rgba(255,255,255,.16)" stroke="rgba(255,255,255,.26)" stroke-width="1"/>
 
-  <!-- RIGHT ARM -->
-  <path d="M126 50 L166 62" stroke="rgba(255,255,255,.28)" stroke-width="9" stroke-linecap="round"/>
-  <circle cx="168" cy="63" r="5.5" fill="rgba(255,255,255,.14)" stroke="rgba(255,255,255,.28)" stroke-width="1.1"/>
-  <path d="M168 63 L174 84" stroke="rgba(255,255,255,.22)" stroke-width="7" stroke-linecap="round"/>
-  <ellipse cx="175" cy="88" rx="6" ry="5" fill="rgba(255,255,255,.16)" stroke="rgba(255,255,255,.26)" stroke-width="1"/>
+  <!-- RIGHT ARM: mirror of left -->
+  <!-- upper arm: shoulder (126,50) → elbow (164,58) -->
+  <path d="M126 50 L164 58" stroke="rgba(255,255,255,.28)" stroke-width="9" stroke-linecap="round"/>
+  <circle cx="166" cy="58" r="5.5" fill="rgba(255,255,255,.14)" stroke="rgba(255,255,255,.28)" stroke-width="1.1"/>
+  <!-- forearm: elbow (166,58) → wrist (176,52) -->
+  <path d="M166 58 L176 52" stroke="rgba(255,255,255,.22)" stroke-width="7" stroke-linecap="round"/>
+  <ellipse cx="179" cy="50" rx="6" ry="5" fill="rgba(255,255,255,.16)" stroke="rgba(255,255,255,.26)" stroke-width="1"/>
 
   <!-- LEFT LEG -->
   <path d="M72 120 L68 172" stroke="rgba(255,255,255,.24)" stroke-width="11" stroke-linecap="round"/>
   <ellipse cx="67" cy="175" rx="7.5" ry="6" fill="rgba(255,255,255,.12)" stroke="rgba(255,255,255,.22)" stroke-width="1.1"/>
   <path d="M67 180 L65 225" stroke="rgba(255,255,255,.20)" stroke-width="9" stroke-linecap="round"/>
   <ellipse cx="64" cy="228" rx="5.5" ry="4" fill="rgba(255,255,255,.11)" stroke="rgba(255,255,255,.19)" stroke-width="1"/>
-  <!-- left foot -->
   <path class="sl2" d="M53 228 Q64 222 76 226 L77 234 Q64 238 51 234 Z"/>
 
   <!-- RIGHT LEG -->
@@ -910,7 +911,6 @@ const SIL_FRONT=`<svg viewBox="0 0 180 240" fill="none" xmlns="http://www.w3.org
   <ellipse cx="113" cy="175" rx="7.5" ry="6" fill="rgba(255,255,255,.12)" stroke="rgba(255,255,255,.22)" stroke-width="1.1"/>
   <path d="M113 180 L115 225" stroke="rgba(255,255,255,.20)" stroke-width="9" stroke-linecap="round"/>
   <ellipse cx="116" cy="228" rx="5.5" ry="4" fill="rgba(255,255,255,.11)" stroke="rgba(255,255,255,.19)" stroke-width="1"/>
-  <!-- right foot -->
   <path class="sl2" d="M104 228 Q116 222 128 226 L129 234 Q116 238 102 234 Z"/>
 </svg>`;
 
@@ -918,35 +918,30 @@ const SIL_SIDE=`<svg viewBox="0 0 180 240" fill="none" xmlns="http://www.w3.org/
   <defs>
     <style>.sl{fill:rgba(255,255,255,.11);stroke:rgba(255,255,255,.30);stroke-width:1.2}.sl2{fill:rgba(255,255,255,.08);stroke:rgba(255,255,255,.20);stroke-width:1}.far{stroke:rgba(255,255,255,.13);stroke-dasharray:6 4;fill:rgba(255,255,255,.05)}</style>
   </defs>
-  <!-- HEAD — slightly forward of centre spine -->
+  <!-- HEAD -->
   <ellipse class="sl" cx="96" cy="19" rx="12" ry="15"/>
-  <!-- visible ear -->
   <ellipse class="sl2" cx="84" cy="20" rx="3" ry="4"/>
   <!-- NECK -->
   <path class="sl2" d="M89 33 L101 33 L100 40 L90 40 Z"/>
-  <!-- TORSO — side view: chest protrudes slightly front, back straight -->
+  <!-- TORSO -->
   <path class="sl" d="M82 40 L104 40 L102 108 L80 108 Z"/>
   <!-- PELVIS -->
   <path class="sl2" d="M80 106 L102 106 L100 122 L82 122 Z"/>
 
-  <!-- FAR ARM (behind body, dashed) upper arm -->
+  <!-- FAR ARM (dashed) — upper arm hangs down from back shoulder -->
   <path d="M100 52 L98 92" stroke="rgba(255,255,255,.13)" stroke-width="8" stroke-linecap="round" stroke-dasharray="7 5"/>
-  <!-- far elbow -->
   <ellipse cx="97" cy="95" rx="5" ry="4.5" fill="rgba(255,255,255,.06)" stroke="rgba(255,255,255,.13)" stroke-width="1" stroke-dasharray="4 3"/>
-  <!-- far forearm -->
+  <!-- far forearm goes downward (arm at rest beside body) -->
   <path d="M97 98 L95 128" stroke="rgba(255,255,255,.10)" stroke-width="6" stroke-linecap="round" stroke-dasharray="6 5"/>
-  <!-- far hand -->
   <ellipse cx="94" cy="132" rx="5" ry="4" fill="rgba(255,255,255,.06)" stroke="rgba(255,255,255,.12)" stroke-width="1" stroke-dasharray="3 3"/>
 
-  <!-- NEAR ARM (front, solid) upper arm -->
-  <path d="M84 52 L80 92" stroke="rgba(255,255,255,.28)" stroke-width="9" stroke-linecap="round"/>
-  <!-- near elbow -->
-  <ellipse cx="79" cy="96" rx="6" ry="5.5" fill="rgba(255,255,255,.14)" stroke="rgba(255,255,255,.28)" stroke-width="1.1"/>
-  <!-- near forearm -->
-  <path d="M79 100 L76 130" stroke="rgba(255,255,255,.22)" stroke-width="7" stroke-linecap="round"/>
-  <!-- near wrist + hand -->
-  <ellipse cx="75" cy="134" rx="5" ry="4" fill="rgba(255,255,255,.13)" stroke="rgba(255,255,255,.22)" stroke-width="1"/>
-  <ellipse cx="74" cy="140" rx="6" ry="5" fill="rgba(255,255,255,.15)" stroke="rgba(255,255,255,.24)" stroke-width="1"/>
+  <!-- NEAR ARM (solid) — upper arm hangs from front shoulder -->
+  <path d="M84 52 L82 92" stroke="rgba(255,255,255,.28)" stroke-width="9" stroke-linecap="round"/>
+  <ellipse cx="81" cy="96" rx="6" ry="5.5" fill="rgba(255,255,255,.14)" stroke="rgba(255,255,255,.28)" stroke-width="1.1"/>
+  <!-- near forearm continues downward (natural rest position) -->
+  <path d="M81 100 L79 130" stroke="rgba(255,255,255,.22)" stroke-width="7" stroke-linecap="round"/>
+  <ellipse cx="78" cy="134" rx="5" ry="4" fill="rgba(255,255,255,.13)" stroke="rgba(255,255,255,.22)" stroke-width="1"/>
+  <ellipse cx="77" cy="140" rx="6" ry="5" fill="rgba(255,255,255,.15)" stroke="rgba(255,255,255,.24)" stroke-width="1"/>
 
   <!-- FAR LEG (dashed) -->
   <path d="M92 120 L94 170" stroke="rgba(255,255,255,.13)" stroke-width="10" stroke-linecap="round" stroke-dasharray="8 5"/>
@@ -956,13 +951,9 @@ const SIL_SIDE=`<svg viewBox="0 0 180 240" fill="none" xmlns="http://www.w3.org/
 
   <!-- NEAR LEG (solid) -->
   <path d="M84 120 L82 170" stroke="rgba(255,255,255,.26)" stroke-width="12" stroke-linecap="round"/>
-  <!-- near knee -->
   <ellipse cx="81" cy="174" rx="8" ry="6.5" fill="rgba(255,255,255,.13)" stroke="rgba(255,255,255,.24)" stroke-width="1.2"/>
-  <!-- near shin -->
   <path d="M81 179 L78 222" stroke="rgba(255,255,255,.22)" stroke-width="9" stroke-linecap="round"/>
-  <!-- near ankle -->
   <ellipse cx="77" cy="225" rx="5.5" ry="4" fill="rgba(255,255,255,.12)" stroke="rgba(255,255,255,.20)" stroke-width="1"/>
-  <!-- near foot -->
   <path class="sl2" d="M64 225 Q78 218 92 223 L93 231 Q78 236 62 231 Z"/>
 </svg>`;
 

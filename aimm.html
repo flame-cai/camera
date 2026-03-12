@@ -10,8 +10,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
 
-<!-- MediaPipe Tasks Vision — must be type="module" (vision_bundle.mjs uses ES export syntax).
-     We bridge the named exports onto window.__mpVision so the IIFE app can access them. -->
 <script type="module">
   try {
     const mp = await import('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs');
@@ -51,8 +49,6 @@ html,body{
   touch-action:none;overscroll-behavior:none;
   -webkit-user-select:none;user-select:none;
 }
-
-/* ── Desktop wall ── */
 #dwall{
   display:none;position:fixed;inset:0;z-index:9999;background:#06060a;
   flex-direction:column;align-items:center;justify-content:center;
@@ -61,111 +57,61 @@ html,body{
 #dwall .dw-logo{font-family:var(--mono);font-size:1.8rem;letter-spacing:.25em;color:#4f8fff}
 #dwall p{color:#444;font-size:.88rem;max-width:300px;line-height:1.65}
 @media(min-width:1024px){#dwall{display:flex}#app{display:none!important}}
-
-/* ── App shell — full screen, centred ── */
 #app{position:fixed;inset:0;background:#000;overflow:hidden;display:flex;align-items:center;justify-content:center;}
-
-/* ── Camera viewport — strictly 3:4 portrait ── */
 #cam-wrap{
   position:relative;
-  /* Fill height first; if too wide, constrain by width */
   width:min(100vw, calc(100vh * 3/4));
   height:min(100vh, calc(100vw * 4/3));
   overflow:hidden;background:#000;flex-shrink:0;
 }
-#video{
-  position:absolute;top:50%;left:50%;
-  transform:translate(-50%,-50%);
-  /* Fill the 3:4 box, crop if needed */
-  width:100%;height:100%;object-fit:cover;
-}
+#video{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:100%;height:100%;object-fit:cover;}
+#mask-canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1}
 #pose-canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2}
-
-/* ── Border ring ── */
 #cam-ring{position:absolute;inset:0;pointer-events:none;z-index:6}
-#cam-ring::after{
-  content:'';position:absolute;inset:0;
-  border:3px solid transparent;
-  transition:border-color .25s var(--ease),box-shadow .25s var(--ease);
-}
+#cam-ring::after{content:'';position:absolute;inset:0;border:3px solid transparent;transition:border-color .25s var(--ease),box-shadow .25s var(--ease);}
 #cam-ring.ready::after{border-color:var(--green);box-shadow:inset 0 0 28px rgba(52,211,153,.09)}
 #cam-ring.blocked::after{border-color:var(--red);box-shadow:inset 0 0 28px rgba(248,113,113,.08)}
 #cam-ring.warn::after{border-color:var(--amber);box-shadow:inset 0 0 28px rgba(251,191,36,.07)}
-
-/* ── Silhouette ── */
 #sil-wrap{position:absolute;inset:0;z-index:3;display:flex;align-items:center;justify-content:center;pointer-events:none}
 #sil-wrap svg{height:88%;width:auto}
-
-/* ── No-pose banner ── */
 #npose-banner{
   position:absolute;top:0;left:0;right:0;z-index:35;
   background:rgba(251,191,36,.13);border-bottom:1px solid rgba(251,191,36,.3);
-  backdrop-filter:blur(8px);
-  display:flex;align-items:center;justify-content:center;gap:7px;
-  padding:0 16px;
-  height:0;overflow:hidden;
-  transition:height .3s var(--ease);
-  pointer-events:none;
+  backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;gap:7px;
+  padding:0 16px;height:0;overflow:hidden;transition:height .3s var(--ease);pointer-events:none;
 }
 #npose-banner.show{height:36px}
 .nb-dot{width:6px;height:6px;border-radius:50%;background:var(--amber);flex-shrink:0}
 .nb-txt{font-family:var(--mono);font-size:.6rem;letter-spacing:.07em;color:var(--amber)}
-
-/* ── Topbar ── */
 .topbar{
   position:absolute;left:0;right:0;z-index:30;
   display:flex;align-items:center;justify-content:space-between;
   padding-left:16px;padding-right:16px;padding-bottom:10px;
   background:linear-gradient(to bottom,rgba(9,9,11,.82) 0%,transparent 100%);
-  transition:top .3s var(--ease);
-  top:max(env(safe-area-inset-top,0px),12px);
+  transition:top .3s var(--ease);top:max(env(safe-area-inset-top,0px),12px);
 }
 [data-theme="light"] .topbar{background:linear-gradient(to bottom,rgba(241,241,238,.88) 0%,transparent 100%)}
 .topbar.banner-offset{top:calc(max(env(safe-area-inset-top,0px),12px) + 36px)}
 .tb-logo{font-family:var(--mono);font-size:.85rem;font-weight:500;letter-spacing:.24em;color:var(--text2)}
 .tb-right{display:flex;gap:8px;align-items:center}
-.icon-btn{
-  width:36px;height:36px;border-radius:50%;
-  border:1px solid var(--border2);background:rgba(14,14,17,.72);backdrop-filter:blur(10px);
-  color:var(--text2);font-size:.95rem;
-  display:flex;align-items:center;justify-content:center;
-  cursor:pointer;transition:all .15s var(--ease);
-}
+.icon-btn{width:36px;height:36px;border-radius:50%;border:1px solid var(--border2);background:rgba(14,14,17,.72);backdrop-filter:blur(10px);color:var(--text2);font-size:.95rem;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s var(--ease);}
 [data-theme="light"] .icon-btn{background:rgba(255,255,255,.82)}
 .icon-btn:active{transform:scale(.88)}
-.mode-pill{
-  display:flex;align-items:center;
-  background:rgba(14,14,17,.75);border:1px solid var(--border2);
-  border-radius:100px;padding:3px;backdrop-filter:blur(10px);gap:2px;
-  transition:opacity .2s var(--ease);
-}
+.mode-pill{display:flex;align-items:center;background:rgba(14,14,17,.75);border:1px solid var(--border2);border-radius:100px;padding:3px;backdrop-filter:blur(10px);gap:2px;transition:opacity .2s var(--ease);}
 [data-theme="light"] .mode-pill{background:rgba(255,255,255,.85)}
 .mode-pill.hidden-pill{opacity:0;pointer-events:none}
-.mpb{
-  padding:4px 11px;border-radius:100px;
-  font-family:var(--mono);font-size:.6rem;font-weight:500;letter-spacing:.06em;
-  cursor:pointer;border:none;background:transparent;color:var(--text3);
-  transition:all .15s var(--ease);
-}
+.mpb{padding:4px 11px;border-radius:100px;font-family:var(--mono);font-size:.6rem;font-weight:500;letter-spacing:.06em;cursor:pointer;border:none;background:transparent;color:var(--text3);transition:all .15s var(--ease);}
 .mpb.on{background:var(--accent);color:#fff}
-
-/* ── Chips ── */
 #chips-row{
   position:absolute;left:0;right:0;z-index:20;
   display:flex;gap:4px;align-items:center;justify-content:center;
   flex-wrap:nowrap;overflow:hidden;pointer-events:none;
-  bottom:calc(max(env(safe-area-inset-bottom,0px),16px) + 108px);
-  padding:0 8px;
+  bottom:calc(max(env(safe-area-inset-bottom,0px),16px) + 108px);padding:0 6px;
 }
-.chip{
-  display:flex;align-items:center;gap:4px;
-  background:rgba(14,14,17,.78);border:1px solid var(--border2);
-  border-radius:100px;padding:5px 8px;backdrop-filter:blur(8px);
-  transition:all .18s var(--ease);flex-shrink:0;
-}
+.chip{display:flex;align-items:center;gap:4px;background:rgba(14,14,17,.78);border:1px solid var(--border2);border-radius:100px;padding:5px 7px;backdrop-filter:blur(8px);transition:all .18s var(--ease);flex-shrink:0;}
 [data-theme="light"] .chip{background:rgba(255,255,255,.84)}
 .chip-dot{width:5px;height:5px;border-radius:50%;background:var(--text3);transition:background .18s;flex-shrink:0}
-.chip-lbl{font-family:var(--mono);font-size:.52rem;font-weight:500;letter-spacing:.05em;color:var(--text3);transition:color .18s}
+.chip-lbl{font-family:var(--mono);font-size:.5rem;font-weight:500;letter-spacing:.05em;color:var(--text3);transition:color .18s}
 .chip.ok{border-color:rgba(52,211,153,.28);background:rgba(52,211,153,.07)}
 .chip.ok .chip-dot{background:var(--green)}.chip.ok .chip-lbl{color:var(--green)}
 .chip.bad{border-color:rgba(248,113,113,.28);background:rgba(248,113,113,.07)}
@@ -174,8 +120,6 @@ html,body{
 .chip.wrn .chip-dot{background:var(--amber)}.chip.wrn .chip-lbl{color:var(--amber)}
 .chip.dis{border-color:var(--border);background:transparent;opacity:.4}
 .chip.dis .chip-dot{background:var(--text3)}.chip.dis .chip-lbl{color:var(--text3)}
-
-/* ── Guidance ── */
 #guidance{
   position:absolute;left:0;right:0;z-index:20;
   bottom:calc(max(env(safe-area-inset-bottom,0px),16px) + 88px);
@@ -184,82 +128,35 @@ html,body{
   transition:color .2s var(--ease);padding:0 16px;
 }
 [data-theme="light"] #guidance{color:var(--text2)}
-
-/* ── Shutter ── */
 #shutter-zone{
   position:absolute;bottom:0;left:0;right:0;z-index:22;
-  display:flex;align-items:center;justify-content:center;
-  padding-top:12px;
+  display:flex;align-items:center;justify-content:center;padding-top:12px;
   padding-bottom:calc(max(env(safe-area-inset-bottom,0px),16px) + 10px);
-  background:linear-gradient(to top,rgba(9,9,11,.9) 0%,transparent 100%);
-  pointer-events:none;
+  background:linear-gradient(to top,rgba(9,9,11,.9) 0%,transparent 100%);pointer-events:none;
 }
 [data-theme="light"] #shutter-zone{background:linear-gradient(to top,rgba(241,241,238,.94) 0%,transparent 100%)}
-#shutter{
-  width:78px;height:78px;border-radius:50%;
-  background:transparent;border:3px solid rgba(255,255,255,.2);
-  display:flex;align-items:center;justify-content:center;
-  cursor:pointer;pointer-events:all;position:relative;
-  transition:border-color .22s var(--ease),opacity .22s;
-}
-#shutter::after{
-  content:'';width:60px;height:60px;border-radius:50%;
-  background:rgba(255,255,255,.17);
-  transition:background .22s var(--ease),transform .1s;
-}
+#shutter{width:78px;height:78px;border-radius:50%;background:transparent;border:3px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;cursor:pointer;pointer-events:all;position:relative;transition:border-color .22s var(--ease),opacity .22s;}
+#shutter::after{content:'';width:60px;height:60px;border-radius:50%;background:rgba(255,255,255,.17);transition:background .22s var(--ease),transform .1s;}
 #shutter:active::after{transform:scale(.88)}
 #shutter.ready{border-color:var(--green)}
 #shutter.ready::after{background:var(--green)}
 #shutter.warn-ready{border-color:var(--amber)}
 #shutter.warn-ready::after{background:rgba(251,191,36,.55)}
 #shutter.off{opacity:.35;pointer-events:none}
-
-/* ── Flash ── */
 #flash{position:absolute;inset:0;z-index:60;background:#fff;opacity:0;pointer-events:none;transition:opacity .06s}
 #flash.on{opacity:.88}
-
-/* ── Capture popup ── */
-#capture-popup{
-  position:absolute;inset:0;z-index:70;
-  background:rgba(9,9,11,.94);
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:14px;padding:0;
-  opacity:0;pointer-events:none;transition:opacity .22s var(--ease);
-}
+#capture-popup{position:absolute;inset:0;z-index:70;background:rgba(9,9,11,.94);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:0;opacity:0;pointer-events:none;transition:opacity .22s var(--ease);}
 [data-theme="light"] #capture-popup{background:rgba(241,241,238,.95)}
 #capture-popup.show{opacity:1;pointer-events:all}
 .cp-label{font-family:var(--mono);font-size:.65rem;letter-spacing:.14em;color:var(--text3);flex-shrink:0}
-.cp-img-wrap{
-  width:min(80vw, calc(80vh * .75));
-  height:min(80vh, calc(80vw * 4/3));
-  border-radius:14px;overflow:hidden;
-  border:1px solid var(--border2);background:#000;
-  box-shadow:0 24px 80px rgba(0,0,0,.7);flex-shrink:0;
-}
+.cp-img-wrap{width:min(80vw, calc(80vh * .75));height:min(80vh, calc(80vw * 4/3));border-radius:14px;overflow:hidden;border:1px solid var(--border2);background:#000;box-shadow:0 24px 80px rgba(0,0,0,.7);flex-shrink:0;}
 .cp-img-wrap img{width:100%;height:100%;object-fit:cover;display:block}
-.cp-btns{
-  display:flex;gap:12px;
-  width:min(80vw, calc(80vh * .75));
-  flex-shrink:0;
-}
-.cp-btn{
-  flex:1;padding:14px 0;border-radius:10px;
-  border:1px solid var(--border2);
-  font-family:var(--font);font-size:.9rem;font-weight:600;
-  cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;
-  transition:all .15s var(--ease);
-}
+.cp-btns{display:flex;gap:12px;width:min(80vw, calc(80vh * .75));flex-shrink:0;}
+.cp-btn{flex:1;padding:14px 0;border-radius:10px;border:1px solid var(--border2);font-family:var(--font);font-size:.9rem;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;transition:all .15s var(--ease);}
 .cp-btn:active{transform:scale(.97)}
 .cp-retake{background:var(--surface2);color:var(--text2)}
 .cp-next{background:var(--accent);color:#fff;border-color:var(--accent)}
-
-/* ── Upload overlay ── */
-#upload-over{
-  position:absolute;inset:0;z-index:80;background:var(--bg);
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:22px;text-align:center;padding:32px;
-  opacity:0;pointer-events:none;transition:opacity .25s var(--ease);
-}
+#upload-over{position:absolute;inset:0;z-index:80;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;text-align:center;padding:32px;opacity:0;pointer-events:none;transition:opacity .25s var(--ease);}
 #upload-over.show{opacity:1;pointer-events:all}
 .spin-ring{width:58px;height:58px;border-radius:50%;border:2px solid var(--surface2);border-top-color:var(--accent);animation:spin .75s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -274,45 +171,18 @@ html,body{
 .up-btn:active{opacity:.8}
 .up-btn-p{background:var(--accent);color:#fff}
 .up-btn-s{background:var(--surface2);color:var(--text2);border:1px solid var(--border2)}
-
-/* ── Model info badge ── */
-#model-badge{
-  position:absolute;
-  bottom:calc(max(env(safe-area-inset-bottom,0px),16px) + 108px + 30px);
-  right:12px;z-index:21;
-  display:none;align-items:center;gap:5px;
-  background:rgba(14,14,17,.72);border:1px solid var(--border2);
-  border-radius:100px;padding:4px 9px;backdrop-filter:blur(8px);
-  pointer-events:none;
-}
+#model-badge{position:absolute;bottom:calc(max(env(safe-area-inset-bottom,0px),16px) + 108px + 30px);right:12px;z-index:21;display:none;align-items:center;gap:5px;background:rgba(14,14,17,.72);border:1px solid var(--border2);border-radius:100px;padding:4px 9px;backdrop-filter:blur(8px);pointer-events:none;}
 #model-badge.show{display:flex}
 [data-theme="light"] #model-badge{background:rgba(255,255,255,.84)}
 .mb-dot{width:5px;height:5px;border-radius:50%;background:var(--green);flex-shrink:0}
 .mb-txt{font-family:var(--mono);font-size:.52rem;letter-spacing:.06em;color:var(--text2)}
-
-/* ══ LOADING SCREEN ══ */
-#loading{
-  position:absolute;inset:0;z-index:100;background:var(--bg);
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:0;padding:32px;
-  transition:opacity .4s var(--ease);
-}
+#loading{position:absolute;inset:0;z-index:100;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;padding:32px;transition:opacity .4s var(--ease);}
 #loading.out{opacity:0;pointer-events:none}
 .ld-logo{font-family:var(--mono);font-size:1.5rem;font-weight:500;letter-spacing:.28em;color:var(--accent);margin-bottom:36px}
 .ld-steps{width:100%;max-width:320px;display:flex;flex-direction:column;gap:0;margin-bottom:28px}
-.ld-step{
-  display:flex;align-items:flex-start;gap:12px;
-  padding:11px 0;border-bottom:1px solid var(--border);
-}
+.ld-step{display:flex;align-items:flex-start;gap:12px;padding:11px 0;border-bottom:1px solid var(--border);}
 .ld-step:last-child{border-bottom:none}
-.ld-step-icon{
-  width:28px;height:28px;border-radius:50%;flex-shrink:0;
-  display:flex;align-items:center;justify-content:center;
-  font-size:.75rem;font-family:var(--mono);
-  border:1.5px solid var(--border2);color:var(--text3);
-  background:var(--surface);
-  transition:all .2s var(--ease);margin-top:1px;
-}
+.ld-step-icon{width:28px;height:28px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-family:var(--mono);border:1.5px solid var(--border2);color:var(--text3);background:var(--surface);transition:all .2s var(--ease);margin-top:1px;}
 .ld-step.active .ld-step-icon{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
 .ld-step.done .ld-step-icon{border-color:var(--green);color:var(--green);background:var(--green-dim)}
 .ld-step.err .ld-step-icon{border-color:var(--red);color:var(--red);background:var(--red-dim)}
@@ -332,29 +202,13 @@ html,body{
 .ld-global-bar{width:100%;height:2px;background:var(--surface2);border-radius:1px;overflow:hidden}
 .ld-global-fill{height:100%;background:var(--accent);border-radius:1px;width:0%;transition:width .35s var(--ease)}
 .ld-global-lbl{font-family:var(--mono);font-size:.62rem;color:var(--text3);letter-spacing:.08em;margin-top:8px;text-align:center}
-
-#ld-error-box{
-  display:none;width:100%;max-width:320px;
-  background:var(--red-dim);border:1px solid rgba(248,113,113,.28);
-  border-radius:10px;padding:14px 16px;margin-top:12px;
-}
+#ld-error-box{display:none;width:100%;max-width:320px;background:var(--red-dim);border:1px solid rgba(248,113,113,.28);border-radius:10px;padding:14px 16px;margin-top:12px;}
 #ld-error-box .err-title{font-size:.82rem;font-weight:600;color:var(--red);margin-bottom:6px}
 #ld-error-box .err-detail{font-family:var(--mono);font-size:.62rem;color:var(--red);line-height:1.55;word-break:break-all;white-space:pre-wrap;max-height:120px;overflow-y:auto}
-.ld-retry-btn{
-  margin-top:14px;padding:11px 28px;border-radius:9px;
-  background:var(--accent);color:#fff;border:none;
-  font-family:var(--font);font-size:.88rem;font-weight:600;
-  cursor:pointer;width:100%;max-width:320px;
-}
+.ld-retry-btn{margin-top:14px;padding:11px 28px;border-radius:9px;background:var(--accent);color:#fff;border:none;font-family:var(--font);font-size:.88rem;font-weight:600;cursor:pointer;width:100%;max-width:320px;}
 .ld-retry-btn:active{opacity:.85}
-.ld-skip-btn{
-  margin-top:8px;padding:10px 28px;border-radius:9px;
-  background:var(--surface2);color:var(--text2);border:1px solid var(--border2);
-  font-family:var(--font);font-size:.88rem;font-weight:600;
-  cursor:pointer;width:100%;max-width:320px;
-}
+.ld-skip-btn{margin-top:8px;padding:10px 28px;border-radius:9px;background:var(--surface2);color:var(--text2);border:1px solid var(--border2);font-family:var(--font);font-size:.88rem;font-weight:600;cursor:pointer;width:100%;max-width:320px;}
 .ld-skip-btn:active{opacity:.85}
-
 .hidden{display:none!important}
 </style>
 </head>
@@ -366,14 +220,14 @@ html,body{
 </div>
 
 <div id="app">
-
   <div id="cam-wrap">
     <video id="video" autoplay playsinline muted></video>
+    <canvas id="mask-canvas"></canvas>
+    <canvas id="gl-canvas" style="display:none"></canvas>
     <canvas id="pose-canvas"></canvas>
     <div id="cam-ring" class="blocked"></div>
     <div id="sil-wrap"></div>
 
-    <!-- No-pose banner (inside cam-wrap so it overlays the viewport) -->
     <div id="npose-banner">
       <div class="nb-dot"></div>
       <span class="nb-txt">POSE DETECTION UNAVAILABLE — WARN MODE ONLY</span>
@@ -445,10 +299,9 @@ html,body{
 
   </div><!-- #cam-wrap -->
 
-  <!-- ══ LOADING SCREEN (outside cam-wrap — covers full app) ══ -->
   <div id="loading">
     <div class="ld-logo">AIMM</div>
-    <div class="ld-steps" id="ld-steps">
+    <div class="ld-steps">
       <div class="ld-step" id="ls-0">
         <div class="ld-step-icon" id="ls-0-icon">1</div>
         <div class="ld-step-body">
@@ -472,7 +325,7 @@ html,body{
         </div>
       </div>
     </div>
-    <div class="ld-global" id="ld-global">
+    <div class="ld-global">
       <div class="ld-global-bar"><div class="ld-global-fill" id="ld-gfill"></div></div>
       <div class="ld-global-lbl" id="ld-glbl">Starting…</div>
     </div>
@@ -491,123 +344,83 @@ html,body{
 'use strict';
 
 // ── Theme ─────────────────────────────────────────────
-const savedTh = localStorage.getItem('aimm-theme');
-let dark = savedTh ? savedTh==='dark' : window.matchMedia('(prefers-color-scheme:dark)').matches;
-function applyTh(){
-  document.documentElement.setAttribute('data-theme', dark?'dark':'light');
-  localStorage.setItem('aimm-theme', dark?'dark':'light');
-}
+const savedTh=localStorage.getItem('aimm-theme');
+let dark=savedTh?savedTh==='dark':window.matchMedia('(prefers-color-scheme:dark)').matches;
+function applyTh(){ document.documentElement.setAttribute('data-theme',dark?'dark':'light'); localStorage.setItem('aimm-theme',dark?'dark':'light'); }
 applyTh();
 document.getElementById('btn-theme').addEventListener('click',()=>{dark=!dark;applyTh();});
 
 // ── Block / Warn mode ──────────────────────────────────
-let blockMode = true;
-document.getElementById('btn-block').addEventListener('click',()=>{
-  blockMode=true;
-  document.getElementById('btn-block').classList.add('on');
-  document.getElementById('btn-warn').classList.remove('on');
-});
-document.getElementById('btn-warn').addEventListener('click',()=>{
-  blockMode=false;
-  document.getElementById('btn-warn').classList.add('on');
-  document.getElementById('btn-block').classList.remove('on');
-});
+let blockMode=true;
+document.getElementById('btn-block').addEventListener('click',()=>{ blockMode=true; document.getElementById('btn-block').classList.add('on'); document.getElementById('btn-warn').classList.remove('on'); });
+document.getElementById('btn-warn').addEventListener('click',()=>{ blockMode=false; document.getElementById('btn-warn').classList.add('on'); document.getElementById('btn-block').classList.remove('on'); });
 
-// ── App state ──────────────────────────────────────────
-let phase = 'front';
-let frontBlob = null, sideBlob = null;
-let stream = null;
-let poseLandmarker = null;
-let drawingUtils = null;
-let PoseLandmarkerRef = null;
-let DrawingUtilsRef = null;
-let webcamRunning = false;
-let lastVideoTime = -1;
-let uploadPending = false;
-let activeDelegate = 'GPU';
-let mpAvailable = false;
-// Mask readback canvas — reused every frame
-const maskCvs = document.createElement('canvas');
-const maskCtx = maskCvs.getContext('2d', {willReadFrequently: true});
-// Frame-level: store last mask for span check
-let lastMaskFloat = null;
-let lastMaskW = 0, lastMaskH = 0;
+// ── State ──────────────────────────────────────────────
+let phase='front', frontBlob=null, sideBlob=null, stream=null;
+let poseLandmarker=null;
+let drawingUtilsMask=null;  // bound to WebGL context on gl-canvas
+let drawingUtilsSkel=null;  // bound to 2D context on pose-canvas
+let PoseLandmarkerRef=null, DrawingUtilsRef=null;
+let webcamRunning=false, lastVideoTime=-1, uploadPending=false;
+let activeDelegate='GPU', mpAvailable=false;
+let checks={light:false,shake:false,tilt:false,height:false,dist:false,body:false,pose:false};
+let heightMsg='', distMsg='';
 
-let checks = {light:false, shake:false, tilt:false, height:false, dist:false, body:false, pose:false};
+// ── Canvases ───────────────────────────────────────────
+const video  = document.getElementById('video');
+const mCvs   = document.getElementById('mask-canvas');   // 2D — receives composited mask from glCvs
+const glCvs  = document.getElementById('gl-canvas');     // WebGL — DrawingUtils renders mask here
+const pCvs   = document.getElementById('pose-canvas');   // 2D — skeleton overlay
+const pCtx   = pCvs.getContext('2d');
+const mCtx   = mCvs.getContext('2d');
+// Small 2D offscreen canvas for mask pixel readback — 64×64 is enough resolution
+const rbCvs  = document.createElement('canvas'); rbCvs.width=64; rbCvs.height=64;
+const rbCtx  = rbCvs.getContext('2d',{willReadFrequently:true});
 
 // ── Elements ───────────────────────────────────────────
-const video        = document.getElementById('video');
-const pCvs         = document.getElementById('pose-canvas');
-const pCtx         = pCvs.getContext('2d');
-const camRing      = document.getElementById('cam-ring');
-const shutterBtn   = document.getElementById('shutter');
-const guidanceEl   = document.getElementById('guidance');
-const capturePopup = document.getElementById('capture-popup');
-const cpImg        = document.getElementById('cp-img');
-const cpLabel      = document.getElementById('cp-label');
-const uploadOver   = document.getElementById('upload-over');
-const loadEl       = document.getElementById('loading');
-const flashEl      = document.getElementById('flash');
-const silWrap      = document.getElementById('sil-wrap');
-const nposeBanner  = document.getElementById('npose-banner');
-const modePill     = document.getElementById('mode-pill');
-const topbar       = document.getElementById('topbar');
+const camRing=document.getElementById('cam-ring'), shutterBtn=document.getElementById('shutter');
+const guidanceEl=document.getElementById('guidance'), capturePopup=document.getElementById('capture-popup');
+const cpImg=document.getElementById('cp-img'), cpLabel=document.getElementById('cp-label');
+const uploadOver=document.getElementById('upload-over'), loadEl=document.getElementById('loading');
+const flashEl=document.getElementById('flash'), silWrap=document.getElementById('sil-wrap');
+const nposeBanner=document.getElementById('npose-banner'), modePill=document.getElementById('mode-pill');
+const topbar=document.getElementById('topbar');
 
-// ── CDN URLs ───────────────────────────────────────────
-const MP_VERSION = '0.10.14';
-const WASM_BASE  = `https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${MP_VERSION}/wasm`;
-const MODEL_URL  = 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_heavy/float16/1/pose_landmarker_heavy.task';
-const API        = 'https://aimm-450300910281.asia-south1.run.app';
+// ── Constants ──────────────────────────────────────────
+const MP_VERSION='0.10.14';
+const WASM_BASE=`https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${MP_VERSION}/wasm`;
+const MODEL_URL='https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_heavy/float16/1/pose_landmarker_heavy.task';
+const API='https://aimm-450300910281.asia-south1.run.app';
 
-// ── Global error surface ───────────────────────────────
-window.addEventListener('error', e => {
-  if(!loadEl.classList.contains('out')){
-    showFatalError('Unhandled JS Error', e.message + '\n' + (e.filename||'') + ':' + e.lineno);
-  }
-});
-window.addEventListener('unhandledrejection', e => {
-  if(!loadEl.classList.contains('out')){
-    const msg = e.reason instanceof Error ? e.reason.message + (e.reason.stack ? '\n'+e.reason.stack : '') : String(e.reason);
-    showFatalError('Unhandled Promise Rejection', msg);
-  }
-});
+// ── Error surface ──────────────────────────────────────
+window.addEventListener('error',e=>{ if(!loadEl.classList.contains('out')) showFatalError('Unhandled JS Error',e.message+'\n'+(e.filename||'')+':'+e.lineno); });
+window.addEventListener('unhandledrejection',e=>{ if(!loadEl.classList.contains('out')){ const m=e.reason instanceof Error?e.reason.message+(e.reason.stack?'\n'+e.reason.stack:''):String(e.reason); showFatalError('Unhandled Promise Rejection',m); }});
 
 // ══════════════════════════════════════════════════════
 //  LOADING HELPERS
 // ══════════════════════════════════════════════════════
-let globalPct = 0;
-function setGlobal(pct, lbl){
-  globalPct = pct;
-  document.getElementById('ld-gfill').style.width = pct+'%';
-  document.getElementById('ld-glbl').textContent = lbl;
+let globalPct=0;
+function setGlobal(pct,lbl){ globalPct=pct; document.getElementById('ld-gfill').style.width=pct+'%'; document.getElementById('ld-glbl').textContent=lbl; }
+function stepState(i,state,sub){
+  const step=document.getElementById('ls-'+i), icon=document.getElementById('ls-'+i+'-icon');
+  step.className='ld-step '+state;
+  if(sub!==undefined) document.getElementById('ls-'+i+'-sub').textContent=sub;
+  if(state==='active') icon.innerHTML='<div class="ld-spinner"></div>';
+  else if(state==='done') icon.textContent='✓';
+  else if(state==='err') icon.textContent='✕';
+  else if(state==='skipped') icon.textContent='–';
+  else icon.textContent=i+1;
 }
-
-function stepState(i, state, sub){
-  const step = document.getElementById('ls-'+i);
-  const icon = document.getElementById('ls-'+i+'-icon');
-  step.className = 'ld-step '+state;
-  if(sub !== undefined) document.getElementById('ls-'+i+'-sub').textContent = sub;
-  if(state==='active')       icon.innerHTML = '<div class="ld-spinner"></div>';
-  else if(state==='done')    icon.textContent = '✓';
-  else if(state==='err')     icon.textContent = '✕';
-  else if(state==='skipped') icon.textContent = '–';
-  else icon.textContent = i+1;
-}
-
-function showFatalError(title, detail){
-  document.getElementById('ld-error-box').style.display = 'block';
-  document.getElementById('ld-err-title').textContent = title;
-  document.getElementById('ld-err-detail').textContent = detail;
+function showFatalError(title,detail){
+  document.getElementById('ld-error-box').style.display='block';
+  document.getElementById('ld-err-title').textContent=title;
+  document.getElementById('ld-err-detail').textContent=detail;
   document.getElementById('ld-retry').classList.remove('hidden');
   document.getElementById('ld-skip').classList.remove('hidden');
-  setGlobal(globalPct, 'Failed — see error above');
-  document.getElementById('ld-glbl').style.color = 'var(--red)';
+  setGlobal(globalPct,'Failed — see error above');
+  document.getElementById('ld-glbl').style.color='var(--red)';
 }
-
-function hideLoader(){
-  loadEl.classList.add('out');
-  setTimeout(()=>{ loadEl.style.display='none'; }, 500);
-}
+function hideLoader(){ loadEl.classList.add('out'); setTimeout(()=>{ loadEl.style.display='none'; },500); }
 
 document.getElementById('ld-retry').addEventListener('click',()=>{
   document.getElementById('ld-error-box').style.display='none';
@@ -615,156 +428,75 @@ document.getElementById('ld-retry').addEventListener('click',()=>{
   document.getElementById('ld-skip').classList.add('hidden');
   document.getElementById('ld-glbl').style.color='';
   for(let i=0;i<3;i++) stepState(i,'idle','Waiting…');
-  setGlobal(0,'Starting…');
-  initAll();
+  setGlobal(0,'Starting…'); initAll();
 });
-
 document.getElementById('ld-skip').addEventListener('click',()=>{
   enterNoPoseMode();
-  if(!webcamRunning){
-    startCam().then(()=>{
-      hideLoader();
-      setSil();
-    }).catch(e=>{
-      showFatalError('Camera Failed', e.message);
-    });
-  } else {
-    hideLoader();
-    setSil();
-  }
+  if(!webcamRunning){ startCam().then(()=>{hideLoader();setSil();}).catch(e=>showFatalError('Camera Failed',e.message)); }
+  else { hideLoader(); setSil(); }
 });
 
 function enterNoPoseMode(){
-  mpAvailable = false;
-  checks.height = true; checks.dist = true;
-  checks.body = true; checks.pose = true;
-  blockMode = false;
-  document.getElementById('btn-warn').classList.add('on');
-  document.getElementById('btn-block').classList.remove('on');
-  modePill.classList.add('hidden-pill');
-  nposeBanner.classList.add('show');
-  topbar.classList.add('banner-offset');
-  ['c-height','c-dist','c-body','c-pose'].forEach(id=>{
-    document.getElementById(id).className = 'chip dis';
-  });
+  mpAvailable=false; checks.height=true; checks.dist=true; checks.body=true; checks.pose=true;
+  blockMode=false;
+  document.getElementById('btn-warn').classList.add('on'); document.getElementById('btn-block').classList.remove('on');
+  modePill.classList.add('hidden-pill'); nposeBanner.classList.add('show'); topbar.classList.add('banner-offset');
+  ['c-height','c-dist','c-body','c-pose'].forEach(id=>document.getElementById(id).className='chip dis');
 }
 
 // ══════════════════════════════════════════════════════
-//  STEP 0 — Verify MediaPipe module loaded
+//  STEP 0 — MediaPipe module
 // ══════════════════════════════════════════════════════
 function checkMPLoaded(){
-  const mp = window.__mpVision;
-  if(!mp) return null;
-  const PL = mp.PoseLandmarker;
-  const DU = mp.DrawingUtils;
-  const FR = mp.FilesetResolver;
-  if(PL && DU && FR) return {PL, DU, FR};
-  return null;
+  const mp=window.__mpVision; if(!mp) return null;
+  const PL=mp.PoseLandmarker,DU=mp.DrawingUtils,FR=mp.FilesetResolver;
+  return (PL&&DU&&FR)?{PL,DU,FR}:null;
 }
 
 // ══════════════════════════════════════════════════════
-//  STEP 1 — Init Pose Landmarker
+//  STEP 1 — Model
 // ══════════════════════════════════════════════════════
 async function fetchModelBuffer(){
-  const bar  = document.getElementById('ls-1-bar');
-  const fill = document.getElementById('ls-1-fill');
-  const sub  = document.getElementById('ls-1-sub');
+  const bar=document.getElementById('ls-1-bar'),fill=document.getElementById('ls-1-fill'),sub=document.getElementById('ls-1-sub');
   bar.classList.remove('hidden');
-
-  const MAX_TRIES = 3;
-  let lastErr = '';
-
-  for(let attempt=1; attempt<=MAX_TRIES; attempt++){
-    try {
-      sub.textContent = attempt>1 ? `Fetching model (attempt ${attempt})…` : 'Fetching model…';
-      const resp = await fetch(MODEL_URL);
-      if(!resp.ok) throw new Error('HTTP '+resp.status);
-
-      const total = parseInt(resp.headers.get('Content-Length')||'0',10);
-      const reader = resp.body.getReader();
-      const chunks = [];
-      let loaded = 0;
-
+  let lastErr='';
+  for(let attempt=1;attempt<=3;attempt++){
+    try{
+      sub.textContent=attempt>1?`Fetching model (attempt ${attempt})…`:'Fetching model…';
+      const resp=await fetch(MODEL_URL); if(!resp.ok) throw new Error('HTTP '+resp.status);
+      const total=parseInt(resp.headers.get('Content-Length')||'0',10);
+      const reader=resp.body.getReader(); const chunks=[]; let loaded=0;
       while(true){
-        const {done, value} = await reader.read();
-        if(done) break;
-        chunks.push(value);
-        loaded += value.length;
-        const pct = total>0 ? Math.round(loaded/total*100) : 0;
-        fill.style.width = (total>0?pct:Math.min(loaded/55000,95))+'%';
-        sub.textContent = formatBytes(loaded)+(total>0?' / '+formatBytes(total)+' ('+pct+'%)':'');
+        const {done,value}=await reader.read(); if(done) break;
+        chunks.push(value); loaded+=value.length;
+        const pct=total>0?Math.round(loaded/total*100):0;
+        fill.style.width=(total>0?pct:Math.min(loaded/55000,95))+'%';
+        sub.textContent=fmtB(loaded)+(total>0?' / '+fmtB(total)+' ('+pct+'%)':'');
       }
-
-      const buf = new Uint8Array(loaded);
-      let pos=0; for(const c of chunks){buf.set(c,pos);pos+=c.length;}
-      fill.style.width='100%';
-      return buf.buffer;
-    } catch(e){
-      lastErr = e.message;
-      if(attempt < MAX_TRIES) sub.textContent = `Fetch failed, retrying… (${e.message.slice(0,40)})`;
-      await new Promise(r=>setTimeout(r, 800 * attempt));
-    }
+      const buf=new Uint8Array(loaded); let pos=0; for(const c of chunks){buf.set(c,pos);pos+=c.length;}
+      fill.style.width='100%'; return buf.buffer;
+    }catch(e){ lastErr=e.message; if(attempt<3) sub.textContent=`Retry ${attempt+1}… (${e.message.slice(0,40)})`; await new Promise(r=>setTimeout(r,800*attempt)); }
   }
-  throw new Error('Model fetch failed after '+MAX_TRIES+' attempts: '+lastErr);
+  throw new Error('Model fetch failed: '+lastErr);
 }
+function fmtB(b){ if(b<1024) return b+'B'; if(b<1048576) return (b/1024).toFixed(1)+'KB'; return (b/1048576).toFixed(1)+'MB'; }
 
-function formatBytes(b){
-  if(b<1024) return b+'B';
-  if(b<1048576) return (b/1024).toFixed(1)+'KB';
-  return (b/1048576).toFixed(1)+'MB';
-}
-
-async function initPoseLandmarker(FR, PL){
+async function initPoseLandmarker(FR,PL){
   stepState(1,'active','Initialising WASM runtime…');
-
-  let vision;
-  try {
-    vision = await FR.forVisionTasks(WASM_BASE);
-  } catch(e){
-    throw new Error('WASM runtime failed: '+e.message);
-  }
-
-  stepState(1,'active','Downloading pose model (heavy)…');
-
-  let modelBuffer;
-  try {
-    modelBuffer = await fetchModelBuffer();
-  } catch(e){
-    throw new Error('Model download failed: '+e.message);
-  }
-
-  stepState(1,'active','Initialising detector (GPU)…');
-
-  async function createLandmarker(delegate){
-    return PL.createFromOptions(vision, {
-      baseOptions:{
-        modelAssetBuffer: new Uint8Array(modelBuffer),
-        delegate
-      },
-      runningMode: 'VIDEO',
-      numPoses: 3,                       // up to 3 — we pick best
-      minPoseDetectionConfidence: 0.55,
-      minPosePresenceConfidence: 0.55,
-      minTrackingConfidence: 0.55,
-      outputSegmentationMasks: true      // enables DrawingUtils.drawConfidenceMask + readback
-    });
-  }
-
-  try {
-    poseLandmarker = await createLandmarker('GPU');
-    activeDelegate = 'GPU';
-  } catch(gpuErr){
-    stepState(1,'active','GPU failed, falling back to CPU…');
-    try {
-      poseLandmarker = await createLandmarker('CPU');
-      activeDelegate = 'CPU';
-    } catch(cpuErr){
-      throw new Error('Pose model init failed (GPU+CPU): '+cpuErr.message);
-    }
-  }
-
+  let vision; try{ vision=await FR.forVisionTasks(WASM_BASE); }catch(e){ throw new Error('WASM failed: '+e.message); }
+  stepState(1,'active','Downloading pose model…');
+  let modelBuffer; try{ modelBuffer=await fetchModelBuffer(); }catch(e){ throw new Error('Model download failed: '+e.message); }
+  stepState(1,'active','Creating detector…');
+  const mkLandmarker=delegate=>PL.createFromOptions(vision,{
+    baseOptions:{modelAssetBuffer:new Uint8Array(modelBuffer),delegate},
+    runningMode:'VIDEO',numPoses:3,
+    minPoseDetectionConfidence:0.5,minPosePresenceConfidence:0.5,minTrackingConfidence:0.5,
+    outputSegmentationMasks:true
+  });
+  try{ poseLandmarker=await mkLandmarker('GPU'); activeDelegate='GPU'; }
+  catch(e){ stepState(1,'active','GPU failed, trying CPU…'); try{ poseLandmarker=await mkLandmarker('CPU'); activeDelegate='CPU'; }catch(e2){ throw new Error('Init failed GPU+CPU: '+e2.message); } }
   document.getElementById('ls-1-fill').style.width='100%';
-  stepState(1,'done',`Heavy model · VIDEO · ${activeDelegate} · segmentation on`);
+  stepState(1,'done',`Heavy · VIDEO · ${activeDelegate} · segmentation on`);
 }
 
 // ══════════════════════════════════════════════════════
@@ -773,38 +505,25 @@ async function initPoseLandmarker(FR, PL){
 async function startCam(){
   stepState(2,'active','Requesting camera…');
   if(stream){ stream.getTracks().forEach(t=>t.stop()); stream=null; }
-  webcamRunning = false;
-
-  try {
-    stream = await navigator.mediaDevices.getUserMedia({
-      video:{ facingMode:'environment', width:{ideal:1440}, height:{ideal:1920} },
-      audio:false
-    });
-  } catch(e){
-    throw new Error('Camera permission denied or unavailable: '+e.message);
-  }
-
-  video.srcObject = stream;
-
+  webcamRunning=false;
+  try{ stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment',width:{ideal:1440},height:{ideal:1920}},audio:false}); }
+  catch(e){ throw new Error('Camera unavailable: '+e.message); }
+  video.srcObject=stream;
   await new Promise((res,rej)=>{
-    const onData = ()=>{ video.removeEventListener('error',onErr); res(); };
-    const onErr  = ()=>{ video.removeEventListener('loadeddata',onData); rej(new Error('Video stream error')); };
-    video.addEventListener('loadeddata', onData, {once:true});
-    video.addEventListener('error', onErr, {once:true});
-    setTimeout(()=>{
-      video.removeEventListener('loadeddata',onData);
-      video.removeEventListener('error',onErr);
-      rej(new Error('Camera stream timeout (10s)'));
-    }, 10000);
+    const ok=()=>{ video.removeEventListener('error',err); res(); };
+    const err=()=>{ video.removeEventListener('loadeddata',ok); rej(new Error('Video error')); };
+    video.addEventListener('loadeddata',ok,{once:true}); video.addEventListener('error',err,{once:true});
+    setTimeout(()=>{ video.removeEventListener('loadeddata',ok); video.removeEventListener('error',err); rej(new Error('Camera timeout')); },10000);
   });
-
-  stepState(2,'done','Camera live');
-  webcamRunning = true;
+  stepState(2,'done','Camera live'); webcamRunning=true;
 
   if(mpAvailable && DrawingUtilsRef){
-    drawingUtils = new DrawingUtilsRef(pCtx);
+    // glCvs needs a WebGL context — DrawingUtils.drawConfidenceMask requires WebGL
+    const gl=glCvs.getContext('webgl2')||glCvs.getContext('webgl');
+    if(gl){ drawingUtilsMask=new DrawingUtilsRef(gl); }
+    // pose-canvas uses standard 2D for connectors/landmarks
+    drawingUtilsSkel=new DrawingUtilsRef(pCtx);
   }
-
   predictWebcam();
 }
 
@@ -812,65 +531,23 @@ async function startCam(){
 //  MASTER INIT
 // ══════════════════════════════════════════════════════
 async function initAll(){
-  stepState(0,'active','Importing module…');
-  setGlobal(5,'Importing MediaPipe…');
-
-  let mp = null;
-  const deadline = Date.now() + 12000;
-  while(Date.now() < deadline){
-    if(window.__mpVisionError){
-      stepState(0,'err','Import failed: '+window.__mpVisionError.slice(0,60));
-      showFatalError(
-        'MediaPipe Import Failed',
-        'Error loading vision_bundle.mjs:\n'+window.__mpVisionError+'\n\nCheck your network connection and try again, or continue without pose detection.'
-      );
-      return;
-    }
-    mp = checkMPLoaded();
-    if(mp) break;
+  stepState(0,'active','Importing module…'); setGlobal(5,'Importing MediaPipe…');
+  let mp=null;
+  const deadline=Date.now()+12000;
+  while(Date.now()<deadline){
+    if(window.__mpVisionError){ stepState(0,'err',window.__mpVisionError.slice(0,60)); showFatalError('MediaPipe Import Failed','Error loading vision_bundle.mjs:\n'+window.__mpVisionError+'\n\nCheck network or continue without pose detection.'); return; }
+    mp=checkMPLoaded(); if(mp) break;
     await new Promise(r=>setTimeout(r,250));
   }
-
-  if(!mp){
-    stepState(0,'err','Timed out waiting for MediaPipe');
-    showFatalError(
-      'MediaPipe Not Loaded',
-      'The vision_bundle.mjs module did not finish loading within 12 seconds.\n\nThis usually means the CDN request is blocked or very slow.\nCheck your network connection and try again, or continue without pose detection.'
-    );
-    return;
-  }
-
-  PoseLandmarkerRef = mp.PL;
-  DrawingUtilsRef   = mp.DU;
-  stepState(0,'done','Library ready');
-  setGlobal(30,'Loading pose model…');
-
-  try {
-    await initPoseLandmarker(mp.FR, mp.PL);
-    mpAvailable = true;
-    setGlobal(75,'Starting camera…');
-  } catch(e){
-    stepState(1,'err', e.message.slice(0,80));
-    showFatalError('Pose Model Failed', e.message);
-    return;
-  }
-
-  try {
-    await startCam();
-    setGlobal(100,'Ready');
-  } catch(e){
-    stepState(2,'err', e.message);
-    showFatalError('Camera Failed', e.message);
-    return;
-  }
-
-  if(mpAvailable){
-    const badge = document.getElementById('model-badge');
-    document.getElementById('mb-txt').textContent = `heavy · VIDEO · ${activeDelegate}`;
-    badge.classList.add('show');
-  }
-  hideLoader();
-  setSil();
+  if(!mp){ stepState(0,'err','Timed out'); showFatalError('MediaPipe Not Loaded','The module did not finish loading within 12 seconds.\nCheck network or continue without pose detection.'); return; }
+  PoseLandmarkerRef=mp.PL; DrawingUtilsRef=mp.DU;
+  stepState(0,'done','Library ready'); setGlobal(30,'Loading pose model…');
+  try{ await initPoseLandmarker(mp.FR,mp.PL); mpAvailable=true; setGlobal(75,'Starting camera…'); }
+  catch(e){ stepState(1,'err',e.message.slice(0,80)); showFatalError('Pose Model Failed',e.message); return; }
+  try{ await startCam(); setGlobal(100,'Ready'); }
+  catch(e){ stepState(2,'err',e.message); showFatalError('Camera Failed',e.message); return; }
+  if(mpAvailable){ document.getElementById('mb-txt').textContent=`heavy · VIDEO · ${activeDelegate}`; document.getElementById('model-badge').classList.add('show'); }
+  hideLoader(); setSil();
 }
 
 // ══════════════════════════════════════════════════════
@@ -879,630 +556,495 @@ async function initAll(){
 function predictWebcam(){
   if(!webcamRunning) return;
 
-  // Sync canvas to cam-wrap rendered size
-  const rw = pCvs.parentElement.clientWidth  || video.videoWidth;
-  const rh = pCvs.parentElement.clientHeight || video.videoHeight;
-  if(pCvs.width!==rw || pCvs.height!==rh){ pCvs.width=rw; pCvs.height=rh; }
+  // Resize all canvases to match the cam-wrap display size every frame
+  const rw=mCvs.parentElement.clientWidth||video.videoWidth||1;
+  const rh=mCvs.parentElement.clientHeight||video.videoHeight||1;
+  if(mCvs.width!==rw||mCvs.height!==rh){ mCvs.width=rw; mCvs.height=rh; }
+  if(glCvs.width!==rw||glCvs.height!==rh){ glCvs.width=rw; glCvs.height=rh; }
+  if(pCvs.width!==rw||pCvs.height!==rh){ pCvs.width=rw; pCvs.height=rh; }
 
-  pCtx.save();
-  pCtx.clearRect(0,0,pCvs.width,pCvs.height);
-
+  mCtx.clearRect(0,0,rw,rh);
+  pCtx.save(); pCtx.clearRect(0,0,rw,rh);
   sampleBrightness();
 
-  if(mpAvailable && poseLandmarker && video.currentTime !== lastVideoTime){
-    lastVideoTime = video.currentTime;
-    try {
-      poseLandmarker.detectForVideo(video, performance.now(), (result)=>{
-        const hasLm = result.landmarks && result.landmarks.length > 0;
+  if(mpAvailable&&poseLandmarker&&video.currentTime!==lastVideoTime){
+    lastVideoTime=video.currentTime;
+    try{
+      poseLandmarker.detectForVideo(video,performance.now(),result=>{
+        const hasLm=result.landmarks&&result.landmarks.length>0;
+        const bi=hasLm?bestIdx(result):0;
 
-        // ── Draw segmentation mask (Option D) ──────────────────────────────
-        // drawConfidenceMask stays GPU-side; mask readback for BODY span is separate
-        const maskPassColor  = {r:79,  g:211, b:153, a:60};   // green tint when body+pose ok
-        const maskFailColor  = {r:79,  g:143, b:255, a:50};   // accent blue otherwise
-        const maskBgColor    = {r:0,   g:0,   b:0,   a:0};    // transparent bg
-
-        if(drawingUtils && result.segmentationMasks && result.segmentationMasks.length > 0){
-          const bodyAndPoseOk = checks.body && checks.pose;
-          const fgColor = bodyAndPoseOk ? maskPassColor : maskFailColor;
-          try {
-            // Draw the confidence mask for the best (first) person; we pick best below
-            drawingUtils.drawConfidenceMask(
-              result.segmentationMasks[bestPersonIndex(result)],
-              fgColor,
-              maskBgColor
+        // ── Segmentation mask ──────────────────────────────────────────
+        // Step 1: DrawingUtils renders into glCvs (WebGL context)
+        // Step 2: composite glCvs → mCvs via 2D drawImage
+        // Step 3: readback from mCvs (2D) — reliable, no GPU sync issues
+        if(drawingUtilsMask&&result.segmentationMasks&&result.segmentationMasks[bi]){
+          const ok=checks.body&&checks.pose;
+          try{
+            drawingUtilsMask.drawConfidenceMask(
+              result.segmentationMasks[bi],
+              ok?{r:52,g:211,b:153,a:90}:{r:79,g:143,b:255,a:80},  // fg: green or blue
+              {r:0,g:0,b:0,a:0}   // bg: fully transparent
             );
-          } catch(e){ /* non-fatal */ }
+            // Composite the WebGL result onto the 2D mask canvas
+            mCtx.clearRect(0,0,rw,rh);
+            mCtx.drawImage(glCvs,0,0,rw,rh);
+          }catch(e){}
+        }
+
+        // ── Mask readback for BODY span via mCvs (2D) ─────────────────
+        // mCvs is now a plain 2D canvas (composited from glCvs) — readback is reliable
+        let maskSpan=0;
+        if(mCvs.width>0&&mCvs.height>0){
+          try{
+            rbCtx.clearRect(0,0,64,64);
+            rbCtx.drawImage(mCvs,0,0,64,64);
+            const px=rbCtx.getImageData(0,0,64,64).data;
+            // Scan for rows with visible foreground pixels (alpha > threshold)
+            let topRow=64, botRow=-1;
+            for(let row=0;row<64;row++){
+              for(let col=0;col<64;col++){
+                if(px[(row*64+col)*4+3]>30){  // alpha channel: >30/255 = foreground
+                  if(topRow===64) topRow=row;
+                  botRow=row;
+                  break; // found fg in this row — move to next row
+                }
+              }
+            }
+            maskSpan=(botRow>topRow)?(botRow-topRow)/64:0;
+          }catch(e){ maskSpan=0; }
         }
 
         if(hasLm){
-          // ── Pick best person (largest + most centred) ─────────────────
-          const bi = bestPersonIndex(result);
-          const lm  = result.landmarks[bi];
-          const wlm = (result.worldLandmarks && result.worldLandmarks[bi]) || null;
+          const lm=result.landmarks[bi];
+          const wlm=(result.worldLandmarks&&result.worldLandmarks[bi])||null;
 
-          // Mask readback for BODY span check — use the selected person's mask
-          if(result.segmentationMasks && result.segmentationMasks[bi]){
-            try {
-              const mask = result.segmentationMasks[bi];
-              const mw = mask.width, mh = mask.height;
-              if(mw>0 && mh>0){
-                lastMaskFloat = mask.getAsFloat32Array();
-                lastMaskW = mw; lastMaskH = mh;
-              }
-            } catch(e){ lastMaskFloat = null; }
-          }
-
-          // ── Draw skeleton ─────────────────────────────────────────────
-          if(drawingUtils && PoseLandmarkerRef){
-            const lineW = Math.max(2, pCvs.width * 0.004);
-            const connColor = checks.body && checks.pose
-              ? 'rgba(52,211,153,0.65)'
-              : 'rgba(79,143,255,0.50)';
-            drawingUtils.drawConnectors(lm, PoseLandmarkerRef.POSE_CONNECTIONS, {
-              color: connColor, lineWidth: lineW
-            });
-            drawingUtils.drawLandmarks(lm, {
-              radius: (data) => {
-                const z = wlm && data.index !== undefined ? (wlm[data.index]||{z:0}).z : (data.from ? data.from.z : 0);
-                return duLerp(z, -0.2, 0.2, 7, 2);
-              },
-              color: 'rgba(255,255,255,0.85)',
-              fillColor: connColor,
-              lineWidth: 1
+          // ── Skeleton on 2D pose canvas ─────────────────────────────
+          if(drawingUtilsSkel&&PoseLandmarkerRef){
+            const lw=Math.max(2,rw*0.004);
+            const cc=checks.body&&checks.pose?'rgba(52,211,153,0.7)':'rgba(79,143,255,0.6)';
+            drawingUtilsSkel.drawConnectors(lm,PoseLandmarkerRef.POSE_CONNECTIONS,{color:cc,lineWidth:lw});
+            drawingUtilsSkel.drawLandmarks(lm,{
+              radius:d=>{ const z=wlm&&d.index!==undefined?(wlm[d.index]||{z:0}).z:(d.from?d.from.z:0); return duLerp(z,-0.2,0.2,7,2); },
+              color:'rgba(255,255,255,0.9)',fillColor:cc,lineWidth:1
             });
           }
 
-          // ── Run checks on best person ─────────────────────────────────
-          runPoseChecks(lm);
+          runChecks(lm,maskSpan);
         } else {
-          lastMaskFloat = null;
-          checks.height = false; checks.dist = false;
-          checks.body = false; checks.pose = false;
+          checks.height=false; checks.dist=false; checks.body=false; checks.pose=false;
+          heightMsg=''; distMsg='';
         }
         updateUI();
       });
-    } catch(e){ /* skip frame */ }
-  } else if(!mpAvailable){
-    updateUI();
-  }
+    }catch(e){}
+  } else if(!mpAvailable){ updateUI(); }
 
   pCtx.restore();
   window.requestAnimationFrame(predictWebcam);
 }
 
-// ── Pick best person — largest bounding box × centred score ──────────────
-function bestPersonIndex(result){
-  if(!result.landmarks || result.landmarks.length === 0) return 0;
-  if(result.landmarks.length === 1) return 0;
-  let best = 0, bestScore = -1;
-  for(let i=0; i<result.landmarks.length; i++){
-    const lm = result.landmarks[i];
+function bestIdx(result){
+  if(!result.landmarks||result.landmarks.length===0) return 0;
+  if(result.landmarks.length===1) return 0;
+  let best=0,bestS=-1;
+  for(let i=0;i<result.landmarks.length;i++){
+    const lm=result.landmarks[i];
     let minX=1,maxX=0,minY=1,maxY=0;
-    for(const p of lm){ if(p.x<minX) minX=p.x; if(p.x>maxX) maxX=p.x; if(p.y<minY) minY=p.y; if(p.y>maxY) maxY=p.y; }
-    const area = (maxX-minX) * (maxY-minY);
-    const cx = (minX+maxX)/2, cy = (minY+maxY)/2;
-    const distFromCenter = Math.sqrt((cx-0.5)**2 + (cy-0.5)**2);
-    const score = area * (1 - distFromCenter);
-    if(score > bestScore){ bestScore=score; best=i; }
+    for(const p of lm){ if(p.x<minX)minX=p.x; if(p.x>maxX)maxX=p.x; if(p.y<minY)minY=p.y; if(p.y>maxY)maxY=p.y; }
+    const area=(maxX-minX)*(maxY-minY);
+    const cx=(minX+maxX)/2,cy=(minY+maxY)/2;
+    const s=area*(1-Math.sqrt((cx-0.5)**2+(cy-0.5)**2));
+    if(s>bestS){bestS=s;best=i;}
   }
   return best;
 }
+function duLerp(z,zn,zx,mn,mx){ try{if(DrawingUtilsRef&&typeof DrawingUtilsRef.lerp==='function')return DrawingUtilsRef.lerp(z,zn,zx,mn,mx);}catch(e){} const t=Math.max(0,Math.min(1,(z-zn)/(zx-zn)));return mn+t*(mx-mn); }
 
-// DrawingUtils.lerp — safe wrapper
-function duLerp(z, zMin, zMax, minVal, maxVal){
-  try {
-    if(DrawingUtilsRef && typeof DrawingUtilsRef.lerp === 'function')
-      return DrawingUtilsRef.lerp(z, zMin, zMax, minVal, maxVal);
-  } catch(e){}
-  const t = Math.max(0, Math.min(1, (z - zMin) / (zMax - zMin)));
-  return minVal + t * (maxVal - minVal);
-}
-
-// ── Brightness sample ──────────────────────────────────
-const bCvs=document.createElement('canvas'); bCvs.width=32; bCvs.height=32;
+// ── Brightness ─────────────────────────────────────────
+const bCvs=document.createElement('canvas');bCvs.width=32;bCvs.height=32;
 const bCtx=bCvs.getContext('2d',{willReadFrequently:true});
 function sampleBrightness(){
   if(!video.videoWidth) return;
-  try {
-    bCtx.drawImage(video,0,0,32,32);
-    const d=bCtx.getImageData(0,0,32,32).data;
-    let s=0; for(let i=0;i<d.length;i+=4) s+=d[i]*.299+d[i+1]*.587+d[i+2]*.114;
-    checks.light = (s/(32*32)) > 52;
-  } catch(e){ checks.light=true; }
+  try{ bCtx.drawImage(video,0,0,32,32); const d=bCtx.getImageData(0,0,32,32).data; let s=0; for(let i=0;i<d.length;i+=4) s+=d[i]*.299+d[i+1]*.587+d[i+2]*.114; checks.light=(s/(32*32))>52; }catch(e){checks.light=true;}
 }
 
 // ── Gyroscope ──────────────────────────────────────────
-function handleOri(e){
-  checks.tilt = Math.abs((e.beta||0)-90)<15 && Math.abs(e.gamma||0)<13;
-}
+function handleOri(e){checks.tilt=Math.abs((e.beta||0)-90)<15&&Math.abs(e.gamma||0)<13;}
 if(typeof DeviceOrientationEvent!=='undefined'){
   if(typeof DeviceOrientationEvent.requestPermission==='function'){
-    document.addEventListener('touchstart', async function rp(){
-      try{
-        const r=await DeviceOrientationEvent.requestPermission();
-        if(r==='granted') window.addEventListener('deviceorientation',handleOri);
-      }catch(e){}
-      document.removeEventListener('touchstart',rp);
-    },{once:true});
-  } else {
-    window.addEventListener('deviceorientation',handleOri);
-  }
-} else { checks.tilt=true; }
+    document.addEventListener('touchstart',async function rp(){try{const r=await DeviceOrientationEvent.requestPermission();if(r==='granted')window.addEventListener('deviceorientation',handleOri);}catch(e){}document.removeEventListener('touchstart',rp);},{once:true});
+  } else {window.addEventListener('deviceorientation',handleOri);}
+} else {checks.tilt=true;}
 
 // ── Accelerometer ──────────────────────────────────────
-let lastA={x:0,y:0,z:0}, shakeOk=true, shakeTmr=null;
+let lastA={x:0,y:0,z:0},shakeOk=true,shakeTmr=null;
 function handleMotion(e){
-  const a=e.accelerationIncludingGravity; if(!a){checks.shake=true;return;}
-  const dx=Math.abs((a.x||0)-lastA.x), dy=Math.abs((a.y||0)-lastA.y), dz=Math.abs((a.z||0)-lastA.z);
+  const a=e.accelerationIncludingGravity;if(!a){checks.shake=true;return;}
+  const dx=Math.abs((a.x||0)-lastA.x),dy=Math.abs((a.y||0)-lastA.y),dz=Math.abs((a.z||0)-lastA.z);
   lastA={x:a.x||0,y:a.y||0,z:a.z||0};
   const rms=Math.sqrt(dx*dx+dy*dy+dz*dz);
-  if(rms>2.8){ shakeOk=false; clearTimeout(shakeTmr); shakeTmr=setTimeout(()=>{shakeOk=true;},550); }
+  if(rms>2.8){shakeOk=false;clearTimeout(shakeTmr);shakeTmr=setTimeout(()=>{shakeOk=true;},550);}
   checks.shake=shakeOk;
 }
 if(typeof DeviceMotionEvent!=='undefined'){
   if(typeof DeviceMotionEvent.requestPermission==='function'){
-    document.addEventListener('touchstart', async function rm(){
-      try{
-        const r=await DeviceMotionEvent.requestPermission();
-        if(r==='granted') window.addEventListener('devicemotion',handleMotion);
-      }catch(e){}
-      document.removeEventListener('touchstart',rm);
-    },{once:true});
-  } else {
-    window.addEventListener('devicemotion',handleMotion);
-  }
-} else { checks.shake=true; }
+    document.addEventListener('touchstart',async function rm(){try{const r=await DeviceMotionEvent.requestPermission();if(r==='granted')window.addEventListener('devicemotion',handleMotion);}catch(e){}document.removeEventListener('touchstart',rm);},{once:true});
+  } else {window.addEventListener('devicemotion',handleMotion);}
+} else {checks.shake=true;}
 
 // ══════════════════════════════════════════════════════
 //  POSE CHECKS
 //
-//  MediaPipe Pose landmark indices (33 total):
-//   0  nose          11 L-shoulder   12 R-shoulder
-//  13  L-elbow       14 R-elbow      15 L-wrist    16 R-wrist
-//  23  L-hip         24 R-hip        25 L-knee     26 R-knee
-//  27  L-ankle       28 R-ankle      29 L-heel     30 R-heel
+//  Landmark indices (key ones):
+//   0 nose   11 L-shoulder  12 R-shoulder
+//  13 L-elbow 14 R-elbow
+//  23 L-hip  24 R-hip
+//  25 L-knee 26 R-knee  27 L-ankle  28 R-ankle
 //
-//  All normalised [0,1], x=left→right, y=top→bottom.
-//  .visibility [0,1]  .presence [0,1]
-//
-//  All spatial thresholds expressed as ratios of body proportions
-//  (torsoHeight, bodySpan, shoulderSpan) — scale-invariant.
+//  Coords: x 0→1 left→right, y 0→1 top→bottom
+//  Rear camera: person's anatomical left = image left = smaller x
+//  All thresholds are proportional ratios — scale-invariant
 // ══════════════════════════════════════════════════════
 
-function vis(lm, i, vThresh=0.45, pThresh=0.35){
-  const p = lm[i];
-  if(!p) return false;
-  const v  = (p.visibility !== undefined) ? p.visibility : 1;
-  const pr = (p.presence   !== undefined) ? p.presence   : 1;
-  return v >= vThresh && pr >= pThresh;
+// Visibility gate — relaxed for real-world conditions
+function vis(lm,i,vt=0.30,pt=0.20){
+  const p=lm[i];if(!p)return false;
+  const v=(p.visibility!==undefined)?p.visibility:1;
+  const pr=(p.presence!==undefined)?p.presence:1;
+  return v>=vt&&pr>=pt;
 }
 
-// ── Master runner ──────────────────────────────────────
-function runPoseChecks(lm){
-  // Body span via landmarks (for HEIGHT + DIST + BODY)
-  const nose = vis(lm,0) ? lm[0] : null;
+function runChecks(lm,maskSpan){
+  // Body span from landmarks (nose→best ankle)
+  const nose=vis(lm,0,0.3,0.2)?lm[0]:null;
+  let bestAnkleY=0;
+  [[27,.3,.2],[28,.3,.2],[29,.25,.15],[30,.25,.15]].forEach(([idx,vt,pt])=>{
+    if(vis(lm,idx,vt,pt)) bestAnkleY=Math.max(bestAnkleY,lm[idx].y);
+  });
+  const bodySpan=(nose&&bestAnkleY>0)?bestAnkleY-nose.y:0;
 
-  // Best ankle y
-  const ankles = [[27,0.4,0.3],[28,0.4,0.3],[29,0.35,0.25],[30,0.35,0.25]];
-  let bestAnkleY = 0;
-  for(const [idx,vt,pt] of ankles){
-    if(vis(lm,idx,vt,pt)) bestAnkleY = Math.max(bestAnkleY, lm[idx].y);
-  }
+  // HEIGHT — person should be vertically centred in frame
+  if(bodySpan>0.15){
+    const top=nose.y, bot=1-bestAnkleY;
+    const imb=Math.abs(top-bot)/bodySpan;
+    checks.height=imb<0.45;
+    heightMsg=top>bot+bodySpan*0.2?'Lower the camera':bot>top+bodySpan*0.2?'Raise the camera':'';
+  } else { checks.height=false; heightMsg='Step back so full body is visible'; }
 
-  const bodySpan = (nose && bestAnkleY > 0) ? bestAnkleY - nose.y : 0;
-  const noseY    = nose ? nose.y : 0;
-  const ankleY   = bestAnkleY;
+  // DIST — body span 55–93% of frame height
+  if(bodySpan>0){
+    if(bodySpan<0.55){checks.dist=false;distMsg='Move closer';}
+    else if(bodySpan>0.93){checks.dist=false;distMsg='Step back';}
+    else{checks.dist=true;distMsg='';}
+  } else {checks.dist=false;distMsg='No person detected';}
 
-  // HEIGHT — camera at correct height = person centred vertically
-  // top margin ≈ bottom margin: |noseY - (1-ankleY)| / bodySpan < threshold
-  if(bodySpan > 0.25){
-    const topMargin    = noseY;
-    const bottomMargin = 1 - ankleY;
-    const imbalance    = Math.abs(topMargin - bottomMargin) / bodySpan;
-    checks.height = imbalance < 0.35;  // within 35% of bodySpan asymmetry
-    checks.heightMsg = topMargin > bottomMargin + bodySpan * 0.15
-      ? 'Lower the camera'
-      : (bottomMargin > topMargin + bodySpan * 0.15 ? 'Raise the camera' : '');
-  } else {
-    checks.height = false;
-    checks.heightMsg = 'Cannot determine height';
-  }
+  // BODY
+  checks.body=checkBody(lm,maskSpan,bodySpan);
 
-  // DIST — body span should fill 65–90% of frame height
-  if(bodySpan > 0){
-    if(bodySpan < 0.65)      { checks.dist = false; checks.distMsg = 'Move closer'; }
-    else if(bodySpan > 0.90) { checks.dist = false; checks.distMsg = 'Step back'; }
-    else                     { checks.dist = true;  checks.distMsg = ''; }
-  } else {
-    checks.dist = false; checks.distMsg = 'No person detected';
-  }
-
-  // BODY — landmark visibility list + mask span
-  checks.body = checkBody(lm, bodySpan);
-
-  // POSE — elbows only, ratio-based
-  checks.pose = phase === 'front' ? checkTpose(lm) : checkSide(lm);
+  // POSE
+  checks.pose=phase==='front'?checkTpose(lm):checkSide(lm);
 }
 
-// ── BODY check ─────────────────────────────────────────
-function checkBody(lm, bodySpan){
-  // Mask span ≥ 60% of frame height (readback from lastMaskFloat)
-  if(lastMaskFloat && lastMaskW > 0 && lastMaskH > 0){
-    const mw = lastMaskW, mh = lastMaskH;
-    const THR = 0.3; // confidence threshold for foreground
-    let topRow = mh, botRow = 0;
-    // Scan row by row for foreground pixels
-    for(let row=0; row<mh; row++){
-      const rowStart = row * mw;
-      for(let col=0; col<mw; col++){
-        if(lastMaskFloat[rowStart + col] >= THR){
-          if(row < topRow) topRow = row;
-          if(row > botRow) botRow = row;
-          break; // found fg in this row — enough to update topRow; don't need full scan
-        }
-      }
-      // Also scan from right to update botRow efficiently if top already found
-    }
-    const maskSpan = (botRow - topRow) / mh;
-    if(maskSpan < 0.60) return false;
-  } else if(bodySpan < 0.60) {
-    // Fallback: landmark-based span
-    return false;
-  }
+function checkBody(lm,maskSpan,bodySpan){
+  // Span check — prefer mask, fall back to landmark body span
+  const span=maskSpan>0?maskSpan:bodySpan;
+  if(span<0.50) return false;
 
-  if(phase === 'front'){
-    // All these must be visible: nose, both shoulders, both elbows, both wrists, both hips, both knees, both ankles
-    const required = [0, 11,12, 13,14, 15,16, 23,24, 25,26, 27,28];
-    return required.every(i => vis(lm, i));
+  if(phase==='front'){
+    // Hard required: nose + both shoulders + both hips — must all be visible
+    if(![0,11,12,23,24].every(i=>vis(lm,i,0.35,0.25))) return false;
+    // Soft: elbows, knees, ankles — need at least 4 of 8
+    return [13,14,25,26,27,28].filter(i=>vis(lm,i,0.25,0.15)).length>=3;
   } else {
-    // Side view — camera-facing side = shoulder with higher visibility
-    const lsVis = lm[11] ? (lm[11].visibility||0) : 0;
-    const rsVis = lm[12] ? (lm[12].visibility||0) : 0;
-    const isLeftSide = lsVis >= rsVis; // left shoulder more visible → person faces right → left side to camera
-    const [sh, el, wr, hi, kn, an] = isLeftSide
-      ? [11, 13, 15, 23, 25, 27]  // left side
-      : [12, 14, 16, 24, 26, 28]; // right side
-    const required = [0, sh, el, wr, hi, kn, an];
-    return required.every(i => vis(lm, i));
+    // Side view — camera-facing = more visible shoulder
+    const lsV=(lm[11]?lm[11].visibility:0)||0;
+    const rsV=(lm[12]?lm[12].visibility:0)||0;
+    const [sh,el,hi,kn,an]=lsV>=rsV?[11,13,23,25,27]:[12,14,24,26,28];
+    // Hard: nose + camera-side shoulder + hip
+    if(!vis(lm,0,0.3,0.2)||!vis(lm,sh,0.35,0.25)||!vis(lm,hi,0.35,0.25)) return false;
+    // Soft: elbow + knee + ankle — need ≥2 of 3
+    return [el,kn,an].filter(i=>vis(lm,i,0.25,0.15)).length>=2;
   }
 }
 
-// ── T-Pose check (elbows only, ratio-based) ─────────────────────────────
 function checkTpose(lm){
-  // Need: both shoulders + both elbows visible
-  if(![11,12,13,14].every(i => vis(lm,i,0.45,0.35))) return false;
+  // Need both shoulders + both elbows
+  if(![11,12,13,14].every(i=>vis(lm,i,0.30,0.20))) return false;
+  const ls=lm[11],rs=lm[12],le=lm[13],re=lm[14];
 
-  const ls=lm[11], rs=lm[12];  // shoulders
-  const le=lm[13], re=lm[14];  // elbows
-  const lh=vis(lm,23)?lm[23]:null, rh=vis(lm,24)?lm[24]:null;
+  // Shoulder span — must be reasonable (not facing sideways)
+  const sSpan=Math.abs(rs.x-ls.x);
+  if(sSpan<0.12) return false;
 
-  // Torso height as scale reference
-  const shoulderY = (ls.y + rs.y) / 2;
-  const hipY = (lh && rh) ? (lh.y + rh.y) / 2 : shoulderY + 0.18;
-  const torsoH = Math.max(hipY - shoulderY, 0.06);
+  // Torso height reference
+  const sY=(ls.y+rs.y)/2;
+  const hY=(vis(lm,23,0.25,0.15)&&vis(lm,24,0.25,0.15))?(lm[23].y+lm[24].y)/2:sY+0.18;
+  const torsoH=Math.max(hY-sY,0.05);
 
-  // 1. Left elbow must be to the LEFT of left shoulder
-  if(le.x >= ls.x) return false;
-  // 2. Right elbow must be to the RIGHT of right shoulder
-  if(re.x <= rs.x) return false;
+  // Left elbow must extend to the LEFT of left shoulder
+  // Threshold: elbow x must be less than shoulder x minus a small tolerance (10% of shoulder span)
+  if(le.x>ls.x-sSpan*0.08) return false;
 
-  // 3. Horizontal alignment: |elbow-y - shoulder-y| / vector-length < 0.4
-  const leftVecLen  = Math.sqrt((le.x-ls.x)**2 + (le.y-ls.y)**2);
-  const rightVecLen = Math.sqrt((re.x-rs.x)**2 + (re.y-rs.y)**2);
-  if(leftVecLen  > 0 && Math.abs(le.y - ls.y) / leftVecLen  > 0.4) return false;
-  if(rightVecLen > 0 && Math.abs(re.y - rs.y) / rightVecLen > 0.4) return false;
+  // Right elbow must extend to the RIGHT of right shoulder
+  if(re.x<rs.x+sSpan*0.08) return false;
+
+  // Arms must be roughly horizontal
+  // Allow up to ~40° from horizontal: sin(40°)≈0.64, so |dy|/vecLen < 0.64
+  const lLen=Math.sqrt((le.x-ls.x)**2+(le.y-ls.y)**2);
+  const rLen=Math.sqrt((re.x-rs.x)**2+(re.y-rs.y)**2);
+  if(lLen>0.02&&Math.abs(le.y-ls.y)/lLen>0.64) return false;
+  if(rLen>0.02&&Math.abs(re.y-rs.y)/rLen>0.64) return false;
 
   return true;
 }
 
-// ── Side pose check (ratio-based) ───────────────────────────────────────
 function checkSide(lm){
-  if(![11,12,23,24].every(i => vis(lm,i,0.45,0.35))) return false;
+  if(![11,12,23,24].every(i=>vis(lm,i,0.30,0.20))) return false;
+  const ls=lm[11],rs=lm[12],lh=lm[23],rh=lm[24];
+  const sMidY=(ls.y+rs.y)/2, hMidY=(lh.y+rh.y)/2;
+  const torsoH=Math.max(hMidY-sMidY,0.05);
 
-  const ls=lm[11], rs=lm[12];
-  const lh=lm[23], rh=lm[24];
+  // Shoulders stacked: x-span / torsoH < 0.35
+  if(Math.abs(rs.x-ls.x)/torsoH>0.35) return false;
+  // Hips stacked: x-span / torsoH < 0.32
+  if(Math.abs(rh.x-lh.x)/torsoH>0.32) return false;
 
-  const shoulderMidY = (ls.y + rs.y) / 2;
-  const hipMidY      = (lh.y + rh.y) / 2;
-  const torsoH = Math.max(hipMidY - shoulderMidY, 0.06);
+  // Visible elbow at or below shoulder level
+  const lsV=(lm[11]?lm[11].visibility:0)||0, rsV=(lm[12]?lm[12].visibility:0)||0;
+  const elIdx=lsV>=rsV?13:14;
+  if(vis(lm,elIdx,0.25,0.15)&&lm[elIdx].y<sMidY-torsoH*0.2) return false;
 
-  // 1. Shoulders stacked: shoulder x-span / torsoHeight < 0.25
-  const shoulderSpan = Math.abs(rs.x - ls.x);
-  if(shoulderSpan / torsoH > 0.25) return false;
-
-  // 2. Hips stacked: hip x-span / torsoHeight < 0.22
-  const hipSpan = Math.abs(rh.x - lh.x);
-  if(hipSpan / torsoH > 0.22) return false;
-
-  // 3. Visible-side elbow at or below shoulder level (y-comparison)
-  const lsVis = lm[11] ? (lm[11].visibility||0) : 0;
-  const rsVis = lm[12] ? (lm[12].visibility||0) : 0;
-  const elIdx = lsVis >= rsVis ? 13 : 14;
-  if(vis(lm, elIdx, 0.35, 0.25)){
-    if(lm[elIdx].y < shoulderMidY - torsoH * 0.1) return false; // elbow above shoulder
-  }
-
-  // 4. Nose x close to shoulder midpoint x: |nose-x - shoulderMid-x| / torsoHeight < 0.3
-  if(vis(lm, 0)){
-    const shoulderMidX = (ls.x + rs.x) / 2;
-    if(Math.abs(lm[0].x - shoulderMidX) / torsoH > 0.30) return false;
-  }
+  // Nose above shoulder midpoint in x (not turned): |nose-x - sMidX| / torsoH < 0.40
+  if(vis(lm,0,0.3,0.2)&&Math.abs(lm[0].x-(ls.x+rs.x)/2)/torsoH>0.40) return false;
 
   return true;
 }
 
-// ── UI update ──────────────────────────────────────────
-const chipIds = {
-  light:'c-light', shake:'c-shake', tilt:'c-tilt',
-  height:'c-height', dist:'c-dist', body:'c-body', pose:'c-pose'
-};
-const ALL_KEYS  = ['light','shake','tilt','height','dist','body','pose'];
-const POSE_KEYS = ['height','dist','body','pose']; // disabled in no-pose mode
-
-const msgs = {
-  light:  {bad:'Too dark — move to better light',      wrn:'Low light — results may vary'},
-  shake:  {bad:'Hold the phone steady',                wrn:'Too much movement'},
-  tilt:   {bad:'Level the phone vertically',           wrn:'Phone slightly tilted'},
-  height: {bad:'Adjust camera height',                 wrn:'Camera height off-centre'},
-  dist:   {bad:'Adjust distance to camera',            wrn:'Distance slightly off'},
-  body:   {bad:'Entire body must be visible',          wrn:'Body not fully in frame'},
-  pose: {
-    front:{bad:'Extend both arms out sideways (T-pose)', wrn:'Arms not quite extended — spread wider'},
-    side: {bad:'Turn to your side — shoulder to camera', wrn:'Not quite side-on — rotate more'}
-  }
+// ══════════════════════════════════════════════════════
+//  UI UPDATE
+// ══════════════════════════════════════════════════════
+const chipIds={light:'c-light',shake:'c-shake',tilt:'c-tilt',height:'c-height',dist:'c-dist',body:'c-body',pose:'c-pose'};
+const ALL_KEYS=['light','shake','tilt','height','dist','body','pose'];
+const POSE_KEYS=['height','dist','body','pose'];
+const msgs={
+  light:{bad:'Too dark — move to better light',wrn:'Low light — results may vary'},
+  shake:{bad:'Hold the phone steady',wrn:'Too much movement'},
+  tilt:{bad:'Level the phone vertically',wrn:'Phone slightly tilted'},
+  height:{bad:'Adjust camera height',wrn:'Camera height off-centre'},
+  dist:{bad:'Adjust distance',wrn:'Distance slightly off'},
+  body:{bad:'Entire body must be in frame',wrn:'Body not fully in frame'},
+  pose:{front:{bad:'Extend both arms out sideways — T-pose',wrn:'Arms not quite extended enough'},side:{bad:'Turn to your side — shoulder to camera',wrn:'Not quite side-on — rotate more'}}
 };
 
 function updateUI(){
-  const activeKeys = mpAvailable ? ALL_KEYS : ['light','shake','tilt'];
-  const allOk = activeKeys.every(k=>checks[k]);
-  const canShoot = blockMode ? allOk : true;
-
-  // Ring
-  camRing.className = allOk ? 'ready' : (blockMode ? 'blocked' : 'warn');
-
-  // Shutter
-  if(!webcamRunning){
-    shutterBtn.className='off';
-  } else if(canShoot){
-    shutterBtn.className = allOk ? 'ready' : 'warn-ready';
-  } else {
-    shutterBtn.className='off';
-  }
-
-  // Chips
+  const keys=mpAvailable?ALL_KEYS:['light','shake','tilt'];
+  const allOk=keys.every(k=>checks[k]);
+  const canShoot=blockMode?allOk:true;
+  camRing.className=allOk?'ready':(blockMode?'blocked':'warn');
+  if(!webcamRunning)shutterBtn.className='off';
+  else if(canShoot)shutterBtn.className=allOk?'ready':'warn-ready';
+  else shutterBtn.className='off';
   ALL_KEYS.forEach(k=>{
-    const chip = document.getElementById(chipIds[k]);
-    if(!chip) return;
-    if(!mpAvailable && POSE_KEYS.includes(k)){
-      chip.className='chip dis'; return;
-    }
-    chip.className='chip '+(checks[k]?'ok':(blockMode?'bad':'wrn'));
+    const c=document.getElementById(chipIds[k]);if(!c)return;
+    if(!mpAvailable&&POSE_KEYS.includes(k)){c.className='chip dis';return;}
+    c.className='chip '+(checks[k]?'ok':(blockMode?'bad':'wrn'));
   });
-
-  // Guidance — show first failing check's message
-  const fails = activeKeys.filter(k=>!checks[k]);
+  const fails=keys.filter(k=>!checks[k]);
   let msg;
-  if(fails.length === 0){
-    msg = phase==='front' ? 'T-pose ready — arms out, head to feet visible' : 'Side view ready — shoulder facing camera';
-  } else {
-    const k = fails[0];
-    if(k === 'height' && checks.heightMsg) msg = checks.heightMsg;
-    else if(k === 'dist' && checks.distMsg) msg = checks.distMsg;
-    else if(k === 'pose') msg = blockMode ? msgs.pose[phase].bad : msgs.pose[phase].wrn;
-    else msg = blockMode ? msgs[k].bad : msgs[k].wrn;
+  if(!fails.length){ msg=phase==='front'?'T-pose ready — tap to capture':'Side view ready — tap to capture'; }
+  else{
+    const k=fails[0];
+    if(k==='height'&&heightMsg)msg=heightMsg;
+    else if(k==='dist'&&distMsg)msg=distMsg;
+    else if(k==='pose')msg=blockMode?msgs.pose[phase].bad:msgs.pose[phase].wrn;
+    else msg=blockMode?msgs[k].bad:msgs[k].wrn;
   }
-  guidanceEl.textContent = msg;
-  guidanceEl.style.color = allOk
-    ? 'rgba(52,211,153,.9)'
-    : (blockMode ? 'rgba(248,113,113,.8)' : 'rgba(251,191,36,.85)');
+  guidanceEl.textContent=msg;
+  guidanceEl.style.color=allOk?'rgba(52,211,153,.9)':(blockMode?'rgba(248,113,113,.8)':'rgba(251,191,36,.85)');
 }
 
 // ══════════════════════════════════════════════════════
-//  SILHOUETTES — anatomical SVG shapes
+//  SILHOUETTES — full anatomical filled shapes
+//
+//  Front T-pose: symmetric, arms fully extended horizontally,
+//    both hands, both legs with knees, feet visible
+//  Side profile: both arms shown (near solid, far dashed),
+//    both legs shown (near solid, far dashed), foot shapes
 // ══════════════════════════════════════════════════════
-const SIL_FRONT = `<svg viewBox="0 0 160 380" fill="none" xmlns="http://www.w3.org/2000/svg">
+const SIL_FRONT=`<svg viewBox="0 0 220 430" fill="none" xmlns="http://www.w3.org/2000/svg">
   <!-- Head -->
-  <ellipse cx="80" cy="28" rx="22" ry="26" fill="rgba(255,255,255,.07)" stroke="rgba(255,255,255,.22)" stroke-width="1.5"/>
+  <ellipse cx="110" cy="32" rx="28" ry="30" fill="rgba(255,255,255,.12)" stroke="rgba(255,255,255,.28)" stroke-width="1.5"/>
+  <!-- Ear left -->
+  <ellipse cx="82" cy="34" rx="5" ry="7" fill="rgba(255,255,255,.09)" stroke="rgba(255,255,255,.18)" stroke-width="1"/>
+  <!-- Ear right -->
+  <ellipse cx="138" cy="34" rx="5" ry="7" fill="rgba(255,255,255,.09)" stroke="rgba(255,255,255,.18)" stroke-width="1"/>
   <!-- Neck -->
-  <rect x="72" y="52" width="16" height="14" fill="rgba(255,255,255,.06)" stroke="rgba(255,255,255,.15)" stroke-width="1.2"/>
-  <!-- Torso -->
-  <path d="M44 66 Q80 60 116 66 L112 160 Q80 168 48 160 Z" fill="rgba(255,255,255,.06)" stroke="rgba(255,255,255,.18)" stroke-width="1.4"/>
-  <!-- Left upper arm (extends left) -->
-  <path d="M44 80 L8 80" stroke="rgba(255,255,255,.28)" stroke-width="8" stroke-linecap="round"/>
+  <path d="M98 60 L122 60 L120 76 L100 76 Z" fill="rgba(255,255,255,.10)" stroke="rgba(255,255,255,.20)" stroke-width="1"/>
+  <!-- Torso (trapezoid: wider at shoulders, slightly narrower at waist) -->
+  <path d="M62 76 Q110 68 158 76 L152 175 Q110 184 68 175 Z" fill="rgba(255,255,255,.10)" stroke="rgba(255,255,255,.24)" stroke-width="1.5"/>
+  <!-- LEFT ARM (person's left = image left) -->
+  <!-- Left upper arm -->
+  <path d="M64 92 L10 96" stroke="rgba(255,255,255,.28)" stroke-width="16" stroke-linecap="round"/>
   <!-- Left elbow joint -->
-  <circle cx="8" cy="80" r="6" fill="rgba(255,255,255,.18)" stroke="rgba(255,255,255,.28)" stroke-width="1.2"/>
-  <!-- Left forearm (extends further left) -->
-  <path d="M8 80 L-16 80" stroke="rgba(255,255,255,.22)" stroke-width="6" stroke-linecap="round"/>
-  <!-- Right upper arm (extends right) -->
-  <path d="M116 80 L152 80" stroke="rgba(255,255,255,.28)" stroke-width="8" stroke-linecap="round"/>
+  <circle cx="8" cy="96" r="9" fill="rgba(255,255,255,.15)" stroke="rgba(255,255,255,.28)" stroke-width="1.2"/>
+  <!-- Left forearm -->
+  <path d="M8 96 L-24 97" stroke="rgba(255,255,255,.24)" stroke-width="13" stroke-linecap="round"/>
+  <!-- Left wrist joint -->
+  <circle cx="-26" cy="97" r="6" fill="rgba(255,255,255,.13)" stroke="rgba(255,255,255,.22)" stroke-width="1"/>
+  <!-- Left hand (palm + fingers suggested) -->
+  <ellipse cx="-36" cy="97" rx="12" ry="8" fill="rgba(255,255,255,.16)" stroke="rgba(255,255,255,.26)" stroke-width="1"/>
+  <!-- RIGHT ARM -->
+  <!-- Right upper arm -->
+  <path d="M156 92 L210 96" stroke="rgba(255,255,255,.28)" stroke-width="16" stroke-linecap="round"/>
   <!-- Right elbow joint -->
-  <circle cx="152" cy="80" r="6" fill="rgba(255,255,255,.18)" stroke="rgba(255,255,255,.28)" stroke-width="1.2"/>
-  <!-- Right forearm (extends further right) -->
-  <path d="M152 80 L176 80" stroke="rgba(255,255,255,.22)" stroke-width="6" stroke-linecap="round"/>
-  <!-- Left hand -->
-  <ellipse cx="-20" cy="80" rx="7" ry="5" fill="rgba(255,255,255,.16)" stroke="rgba(255,255,255,.22)" stroke-width="1"/>
+  <circle cx="212" cy="96" r="9" fill="rgba(255,255,255,.15)" stroke="rgba(255,255,255,.28)" stroke-width="1.2"/>
+  <!-- Right forearm -->
+  <path d="M212 96 L244 97" stroke="rgba(255,255,255,.24)" stroke-width="13" stroke-linecap="round"/>
+  <!-- Right wrist joint -->
+  <circle cx="246" cy="97" r="6" fill="rgba(255,255,255,.13)" stroke="rgba(255,255,255,.22)" stroke-width="1"/>
   <!-- Right hand -->
-  <ellipse cx="180" cy="80" rx="7" ry="5" fill="rgba(255,255,255,.16)" stroke="rgba(255,255,255,.22)" stroke-width="1"/>
-  <!-- Hip area -->
-  <path d="M48 158 Q80 166 112 158 L108 178 Q80 184 52 178 Z" fill="rgba(255,255,255,.05)" stroke="rgba(255,255,255,.14)" stroke-width="1.2"/>
+  <ellipse cx="256" cy="97" rx="12" ry="8" fill="rgba(255,255,255,.16)" stroke="rgba(255,255,255,.26)" stroke-width="1"/>
+  <!-- Pelvis/hip -->
+  <path d="M68 173 Q110 182 152 173 L148 198 Q110 208 72 198 Z" fill="rgba(255,255,255,.09)" stroke="rgba(255,255,255,.18)" stroke-width="1.2"/>
+  <!-- LEFT LEG -->
   <!-- Left thigh -->
-  <path d="M62 176 L54 270" stroke="rgba(255,255,255,.18)" stroke-width="10" stroke-linecap="round"/>
+  <path d="M82 196 L74 296" stroke="rgba(255,255,255,.22)" stroke-width="18" stroke-linecap="round"/>
   <!-- Left knee -->
-  <circle cx="52" cy="272" r="7" fill="rgba(255,255,255,.1)" stroke="rgba(255,255,255,.2)" stroke-width="1.2"/>
+  <ellipse cx="72" cy="300" rx="12" ry="10" fill="rgba(255,255,255,.13)" stroke="rgba(255,255,255,.22)" stroke-width="1.2"/>
   <!-- Left shin -->
-  <path d="M52 272 L50 352" stroke="rgba(255,255,255,.16)" stroke-width="8" stroke-linecap="round"/>
+  <path d="M72 308 L70 396" stroke="rgba(255,255,255,.20)" stroke-width="14" stroke-linecap="round"/>
+  <!-- Left ankle -->
+  <ellipse cx="69" cy="398" rx="9" ry="6" fill="rgba(255,255,255,.12)" stroke="rgba(255,255,255,.20)" stroke-width="1"/>
   <!-- Left foot -->
-  <ellipse cx="46" cy="356" rx="12" ry="5" fill="rgba(255,255,255,.12)" stroke="rgba(255,255,255,.2)" stroke-width="1"/>
+  <path d="M54 398 Q70 390 84 396 L86 408 Q70 416 50 410 Z" fill="rgba(255,255,255,.15)" stroke="rgba(255,255,255,.22)" stroke-width="1"/>
+  <!-- RIGHT LEG -->
   <!-- Right thigh -->
-  <path d="M98 176 L106 270" stroke="rgba(255,255,255,.18)" stroke-width="10" stroke-linecap="round"/>
+  <path d="M138 196 L146 296" stroke="rgba(255,255,255,.22)" stroke-width="18" stroke-linecap="round"/>
   <!-- Right knee -->
-  <circle cx="108" cy="272" r="7" fill="rgba(255,255,255,.1)" stroke="rgba(255,255,255,.2)" stroke-width="1.2"/>
+  <ellipse cx="148" cy="300" rx="12" ry="10" fill="rgba(255,255,255,.13)" stroke="rgba(255,255,255,.22)" stroke-width="1.2"/>
   <!-- Right shin -->
-  <path d="M108 272 L110 352" stroke="rgba(255,255,255,.16)" stroke-width="8" stroke-linecap="round"/>
+  <path d="M148 308 L150 396" stroke="rgba(255,255,255,.20)" stroke-width="14" stroke-linecap="round"/>
+  <!-- Right ankle -->
+  <ellipse cx="151" cy="398" rx="9" ry="6" fill="rgba(255,255,255,.12)" stroke="rgba(255,255,255,.20)" stroke-width="1"/>
   <!-- Right foot -->
-  <ellipse cx="114" cy="356" rx="12" ry="5" fill="rgba(255,255,255,.12)" stroke="rgba(255,255,255,.2)" stroke-width="1"/>
+  <path d="M136 398 Q152 390 166 396 L168 408 Q152 416 132 410 Z" fill="rgba(255,255,255,.15)" stroke="rgba(255,255,255,.22)" stroke-width="1"/>
 </svg>`;
 
-const SIL_SIDE = `<svg viewBox="0 0 80 380" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- Head (oval, slightly forward) -->
-  <ellipse cx="38" cy="28" rx="18" ry="24" fill="rgba(255,255,255,.07)" stroke="rgba(255,255,255,.22)" stroke-width="1.5"/>
+const SIL_SIDE=`<svg viewBox="0 0 130 430" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Head -->
+  <ellipse cx="56" cy="30" rx="22" ry="27" fill="rgba(255,255,255,.12)" stroke="rgba(255,255,255,.28)" stroke-width="1.5"/>
+  <!-- Visible ear -->
+  <ellipse cx="34" cy="32" rx="4" ry="6" fill="rgba(255,255,255,.09)" stroke="rgba(255,255,255,.16)" stroke-width="1"/>
   <!-- Neck -->
-  <rect x="32" y="50" width="10" height="14" fill="rgba(255,255,255,.06)" stroke="rgba(255,255,255,.15)" stroke-width="1.2"/>
-  <!-- Torso (rectangle, side profile) -->
-  <path d="M28 64 L52 64 L50 162 L26 162 Z" fill="rgba(255,255,255,.06)" stroke="rgba(255,255,255,.18)" stroke-width="1.4"/>
-  <!-- Visible arm (hanging, slightly in front of torso) -->
-  <path d="M34 76 L30 140" stroke="rgba(255,255,255,.22)" stroke-width="7" stroke-linecap="round"/>
-  <circle cx="30" cy="143" r="5" fill="rgba(255,255,255,.12)" stroke="rgba(255,255,255,.2)" stroke-width="1"/>
-  <path d="M30 143 L28 180" stroke="rgba(255,255,255,.18)" stroke-width="5" stroke-linecap="round"/>
-  <ellipse cx="27" cy="184" rx="5" ry="4" fill="rgba(255,255,255,.12)" stroke="rgba(255,255,255,.18)" stroke-width="1"/>
-  <!-- Far arm (dashed, behind torso) -->
-  <path d="M44 78 L46 138" stroke="rgba(255,255,255,.10)" stroke-width="5" stroke-linecap="round" stroke-dasharray="5 4"/>
-  <!-- Hip -->
-  <path d="M26 160 L50 160 L48 180 L28 180 Z" fill="rgba(255,255,255,.05)" stroke="rgba(255,255,255,.12)" stroke-width="1"/>
-  <!-- Visible leg (front) -->
-  <path d="M32 178 L30 268" stroke="rgba(255,255,255,.18)" stroke-width="9" stroke-linecap="round"/>
-  <circle cx="30" cy="270" r="6" fill="rgba(255,255,255,.1)" stroke="rgba(255,255,255,.18)" stroke-width="1.2"/>
-  <path d="M30 270 L28 350" stroke="rgba(255,255,255,.16)" stroke-width="7" stroke-linecap="round"/>
-  <path d="M22 352 L42 352 L44 358 L20 358 Z" fill="rgba(255,255,255,.12)" stroke="rgba(255,255,255,.18)" stroke-width="1"/>
-  <!-- Far leg (dashed) -->
-  <path d="M40 180 L42 266" stroke="rgba(255,255,255,.10)" stroke-width="7" stroke-linecap="round" stroke-dasharray="5 4"/>
-  <path d="M42 266 L44 346" stroke="rgba(255,255,255,.09)" stroke-width="5" stroke-linecap="round" stroke-dasharray="5 4"/>
+  <path d="M48 55 L64 55 L62 72 L50 72 Z" fill="rgba(255,255,255,.10)" stroke="rgba(255,255,255,.18)" stroke-width="1"/>
+  <!-- Torso -->
+  <path d="M36 72 L76 72 L74 178 L32 178 Z" fill="rgba(255,255,255,.10)" stroke="rgba(255,255,255,.24)" stroke-width="1.5"/>
+  <!-- FAR ARM (behind, dashed) -->
+  <path d="M62 86 L60 150" stroke="rgba(255,255,255,.11)" stroke-width="11" stroke-linecap="round" stroke-dasharray="8 5"/>
+  <ellipse cx="59" cy="154" rx="7" ry="6" fill="rgba(255,255,255,.07)" stroke="rgba(255,255,255,.11)" stroke-width="1" stroke-dasharray="4 3"/>
+  <path d="M59 158 L57 200" stroke="rgba(255,255,255,.09)" stroke-width="9" stroke-linecap="round" stroke-dasharray="6 5"/>
+  <ellipse cx="56" cy="205" rx="8" ry="6" fill="rgba(255,255,255,.07)" stroke="rgba(255,255,255,.11)" stroke-width="1" stroke-dasharray="4 3"/>
+  <!-- NEAR ARM (front, solid) -->
+  <path d="M42 86 L38 152" stroke="rgba(255,255,255,.26)" stroke-width="14" stroke-linecap="round"/>
+  <!-- Near elbow -->
+  <ellipse cx="37" cy="156" rx="9" ry="8" fill="rgba(255,255,255,.15)" stroke="rgba(255,255,255,.26)" stroke-width="1.2"/>
+  <!-- Near forearm -->
+  <path d="M37 162 L34 204" stroke="rgba(255,255,255,.22)" stroke-width="11" stroke-linecap="round"/>
+  <!-- Near wrist -->
+  <ellipse cx="33" cy="207" rx="7" ry="5" fill="rgba(255,255,255,.13)" stroke="rgba(255,255,255,.22)" stroke-width="1"/>
+  <!-- Near hand -->
+  <ellipse cx="31" cy="216" rx="9" ry="7" fill="rgba(255,255,255,.15)" stroke="rgba(255,255,255,.24)" stroke-width="1"/>
+  <!-- Hip/pelvis -->
+  <path d="M32 176 L74 176 L72 200 L34 200 Z" fill="rgba(255,255,255,.09)" stroke="rgba(255,255,255,.18)" stroke-width="1.2"/>
+  <!-- FAR LEG (dashed, behind) -->
+  <path d="M58 198 L62 294" stroke="rgba(255,255,255,.11)" stroke-width="15" stroke-linecap="round" stroke-dasharray="9 5"/>
+  <ellipse cx="62" cy="298" rx="10" ry="8" fill="rgba(255,255,255,.07)" stroke="rgba(255,255,255,.12)" stroke-width="1" stroke-dasharray="4 3"/>
+  <path d="M62 304 L64 390" stroke="rgba(255,255,255,.10)" stroke-width="12" stroke-linecap="round" stroke-dasharray="8 5"/>
+  <path d="M50 392 L76 392 L78 402 L48 402 Z" fill="rgba(255,255,255,.07)" stroke="rgba(255,255,255,.12)" stroke-width="1" stroke-dasharray="4 3"/>
+  <!-- NEAR LEG (solid, front) -->
+  <path d="M44 198 L40 294" stroke="rgba(255,255,255,.24)" stroke-width="18" stroke-linecap="round"/>
+  <!-- Near knee -->
+  <ellipse cx="39" cy="298" rx="12" ry="10" fill="rgba(255,255,255,.14)" stroke="rgba(255,255,255,.24)" stroke-width="1.2"/>
+  <!-- Near shin -->
+  <path d="M39 306 L36 392" stroke="rgba(255,255,255,.22)" stroke-width="14" stroke-linecap="round"/>
+  <!-- Near ankle -->
+  <ellipse cx="35" cy="394" rx="8" ry="6" fill="rgba(255,255,255,.13)" stroke="rgba(255,255,255,.22)" stroke-width="1"/>
+  <!-- Near foot -->
+  <path d="M20 394 Q36 386 52 392 L54 404 Q36 410 18 406 Z" fill="rgba(255,255,255,.16)" stroke="rgba(255,255,255,.24)" stroke-width="1"/>
 </svg>`;
 
-function setSil(){
-  silWrap.innerHTML = phase === 'front' ? SIL_FRONT : SIL_SIDE;
-}
+function setSil(){ silWrap.innerHTML=phase==='front'?SIL_FRONT:SIL_SIDE; }
 
 // ── Shutter ────────────────────────────────────────────
-shutterBtn.addEventListener('click',()=>{
-  if(shutterBtn.classList.contains('off')) return;
-  doCapture();
-});
-
+shutterBtn.addEventListener('click',()=>{ if(shutterBtn.classList.contains('off'))return; doCapture(); });
 function doCapture(){
   flashEl.classList.add('on');
   requestAnimationFrame(()=>requestAnimationFrame(()=>flashEl.classList.remove('on')));
-
-  // Capture exactly 3:4 portrait crop at 1080×1440
-  const W=1080, H=1440;
-  const cap=document.createElement('canvas'); cap.width=W; cap.height=H;
-  const ctx=cap.getContext('2d');
-  const vw=video.videoWidth, vh=video.videoHeight;
-  if(!vw||!vh) return;
-  const TR=3/4;          // target aspect ratio (width/height)
-  const SR=vw/vh;        // source aspect ratio
-  let sx,sy,sw,sh;
-  if(SR > TR){ sh=vh; sw=Math.round(vh*TR); sx=Math.round((vw-sw)/2); sy=0; }
-  else        { sw=vw; sh=Math.round(vw/TR); sx=0; sy=Math.round((vh-sh)/2); }
-  ctx.drawImage(video, sx, sy, sw, sh, 0, 0, W, H);
-
+  const W=1080,H=1440,cap=document.createElement('canvas');cap.width=W;cap.height=H;
+  const ctx=cap.getContext('2d'),vw=video.videoWidth,vh=video.videoHeight;
+  if(!vw||!vh)return;
+  const TR=3/4,SR=vw/vh;let sx,sy,sw,sh;
+  if(SR>TR){sh=vh;sw=Math.round(vh*TR);sx=Math.round((vw-sw)/2);sy=0;}
+  else{sw=vw;sh=Math.round(vw/TR);sx=0;sy=Math.round((vh-sh)/2);}
+  ctx.drawImage(video,sx,sy,sw,sh,0,0,W,H);
   cap.toBlob(blob=>{
-    if(!blob) return;
-    blob._ts = genTs();
-    if(phase==='front') frontBlob=blob; else sideBlob=blob;
+    if(!blob)return; blob._ts=genTs();
+    if(phase==='front')frontBlob=blob;else sideBlob=blob;
     showPopup(cap.toDataURL('image/jpeg',.75));
   },'image/jpeg',.93);
 }
-
-function genTs(){
-  const n=new Date();
-  return n.getFullYear()+String(n.getMonth()+1).padStart(2,'0')+String(n.getDate()).padStart(2,'0')
-    +'_'+String(n.getHours()).padStart(2,'0')+String(n.getMinutes()).padStart(2,'0')+String(n.getSeconds()).padStart(2,'0');
-}
+function genTs(){const n=new Date();return n.getFullYear()+String(n.getMonth()+1).padStart(2,'0')+String(n.getDate()).padStart(2,'0')+'_'+String(n.getHours()).padStart(2,'0')+String(n.getMinutes()).padStart(2,'0')+String(n.getSeconds()).padStart(2,'0');}
 
 // ── Capture popup ──────────────────────────────────────
-function showPopup(dataUrl){
-  cpImg.src = dataUrl;
-  cpLabel.textContent = phase==='front' ? 'FRONT VIEW — T-POSE' : 'SIDE VIEW — ATTENTION';
-  capturePopup.classList.add('show');
-}
-function hidePopup(){ capturePopup.classList.remove('show'); }
-
-document.getElementById('btn-retake').addEventListener('click',()=>{
-  if(phase==='front') frontBlob=null; else sideBlob=null;
-  hidePopup();
-});
-document.getElementById('btn-next').addEventListener('click',()=>{
-  hidePopup();
-  if(phase==='front'){
-    phase='side'; setSil();
-  } else {
-    beginUpload();
-  }
-});
+function showPopup(dataUrl){cpImg.src=dataUrl;cpLabel.textContent=phase==='front'?'FRONT VIEW — T-POSE':'SIDE VIEW — ATTENTION';capturePopup.classList.add('show');}
+function hidePopup(){capturePopup.classList.remove('show');}
+document.getElementById('btn-retake').addEventListener('click',()=>{if(phase==='front')frontBlob=null;else sideBlob=null;hidePopup();});
+document.getElementById('btn-next').addEventListener('click',()=>{hidePopup();if(phase==='front'){phase='side';setSil();}else{beginUpload();}});
 
 // ── Upload ─────────────────────────────────────────────
 async function beginUpload(){
-  if(uploadPending) return;
-  uploadPending = true;
-  showUpState('uploading');
-  document.getElementById('up-bar').style.width='0%';
+  if(uploadPending)return; uploadPending=true; showUpState('uploading'); document.getElementById('up-bar').style.width='0%';
   try{
-    const ts = (frontBlob&&frontBlob._ts) || genTs();
-    document.getElementById('up-sub').textContent = 'Sending front photo…';
-    document.getElementById('up-bar').style.width = '15%';
-    await sendFile(frontBlob, ts+'_front.jpg');
-    document.getElementById('up-bar').style.width = '60%';
-    document.getElementById('up-sub').textContent = 'Sending side photo…';
-    await sendFile(sideBlob, ts+'_side.jpg');
-    document.getElementById('up-bar').style.width = '100%';
-    showUpState('success');
-  }catch(e){
-    document.getElementById('up-errmsg').textContent = e.message||'Network error.';
-    showUpState('error');
-  }
+    const ts=(frontBlob&&frontBlob._ts)||genTs();
+    document.getElementById('up-sub').textContent='Sending front photo…'; document.getElementById('up-bar').style.width='15%';
+    await sendFile(frontBlob,ts+'_front.jpg');
+    document.getElementById('up-bar').style.width='60%'; document.getElementById('up-sub').textContent='Sending side photo…';
+    await sendFile(sideBlob,ts+'_side.jpg');
+    document.getElementById('up-bar').style.width='100%'; showUpState('success');
+  }catch(e){document.getElementById('up-errmsg').textContent=e.message||'Network error.';showUpState('error');}
 }
-
-function sendFile(blob, name){
+function sendFile(blob,name){
   return new Promise((res,rej)=>{
-    const fd = new FormData(); fd.append('file', blob, name);
-    const xhr = new XMLHttpRequest();
-    xhr.open('POST', API, true);
-    xhr.onload = ()=>xhr.status>=200&&xhr.status<300?res():rej(new Error('Server '+xhr.status));
-    xhr.onerror = ()=>rej(new Error('Network error'));
-    xhr.timeout = 60000; xhr.ontimeout = ()=>rej(new Error('Timed out'));
+    const fd=new FormData();fd.append('file',blob,name);
+    const xhr=new XMLHttpRequest();xhr.open('POST',API,true);
+    xhr.onload=()=>xhr.status>=200&&xhr.status<300?res():rej(new Error('Server '+xhr.status));
+    xhr.onerror=()=>rej(new Error('Network error'));
+    xhr.timeout=60000;xhr.ontimeout=()=>rej(new Error('Timed out'));
     xhr.send(fd);
   });
 }
-
 function showUpState(s){
   uploadOver.classList.add('show');
-  const uploading = document.getElementById('up-uploading');
-  const success   = document.getElementById('up-success');
-  const error     = document.getElementById('up-error');
-  uploading.style.display = s==='uploading' ? 'flex' : 'none';
-  if(s==='success'){ success.classList.remove('hidden'); success.style.display='flex'; error.classList.add('hidden'); error.style.display='none'; }
-  if(s==='error')  { error.classList.remove('hidden');   error.style.display='flex';  success.classList.add('hidden'); success.style.display='none'; }
-  if(s==='uploading'){ success.classList.add('hidden'); error.classList.add('hidden'); }
+  const U=document.getElementById('up-uploading'),S=document.getElementById('up-success'),E=document.getElementById('up-error');
+  U.style.display=s==='uploading'?'flex':'none';
+  if(s==='success'){S.classList.remove('hidden');S.style.display='flex';E.classList.add('hidden');E.style.display='none';}
+  if(s==='error'){E.classList.remove('hidden');E.style.display='flex';S.classList.add('hidden');S.style.display='none';}
+  if(s==='uploading'){S.classList.add('hidden');E.classList.add('hidden');}
 }
-
 document.getElementById('btn-retry').addEventListener('click',()=>{uploadPending=false;beginUpload();});
 document.getElementById('btn-new').addEventListener('click',reset);
 document.getElementById('btn-restart').addEventListener('click',reset);
-
 function reset(){
-  uploadPending=false; frontBlob=null; sideBlob=null; phase='front';
-  lastMaskFloat=null;
+  uploadPending=false;frontBlob=null;sideBlob=null;phase='front';
   uploadOver.classList.remove('show');
-  document.getElementById('up-uploading').style.display='none';
-  document.getElementById('up-success').style.display='none';
-  document.getElementById('up-error').style.display='none';
-  document.getElementById('up-success').classList.add('hidden');
-  document.getElementById('up-error').classList.add('hidden');
-  document.getElementById('up-bar').style.width='0%';
-  setSil();
+  ['up-uploading','up-success','up-error'].forEach(id=>{const el=document.getElementById(id);el.style.display='none';el.classList.add('hidden');});
+  document.getElementById('up-bar').style.width='0%'; setSil();
 }
 
 // ── Desktop block ──────────────────────────────────────
-function chkDevice(){
-  const mob=/Android|iPhone|iPad|iPod|Mobile|Tablet/i.test(navigator.userAgent);
-  if(!mob && window.innerWidth>=1024){
-    document.getElementById('dwall').style.display='flex';
-    document.getElementById('app').style.display='none';
-  }
-}
-chkDevice();
-window.addEventListener('resize', chkDevice);
+function chkDevice(){const mob=/Android|iPhone|iPad|iPod|Mobile|Tablet/i.test(navigator.userAgent);if(!mob&&window.innerWidth>=1024){document.getElementById('dwall').style.display='flex';document.getElementById('app').style.display='none';}}
+chkDevice(); window.addEventListener('resize',chkDevice);
 
 // ── Boot ───────────────────────────────────────────────
 initAll();

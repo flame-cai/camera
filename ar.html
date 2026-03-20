@@ -11,147 +11,128 @@
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}
 html,body{height:100%;background:#080e18;color:#d4e8ff;font-family:'Barlow',sans-serif;overflow:hidden;touch-action:pan-y}
 :root{
-  --bg:#080e18;--card:#0d1625;--card2:#111e30;--border:#1a2e45;
-  --acc:#00d4b4;--acc2:#ff5252;--acc3:#f5c542;--acc5:#9d6fff;
+  --bg:#080e18;--card:#0d1625;--b2:#111e30;--bdr:#1a2e45;
+  --grn:#00d4b4;--red:#ff5252;--yel:#f5c542;--pur:#9d6fff;
   --dim:#3a5570;--fg:#d4e8ff;
-  --mono:'DM Mono',monospace;
-  --safe-t:env(safe-area-inset-top,0px);
-  --safe-b:env(safe-area-inset-bottom,0px);
+  --mn:'DM Mono',monospace;
+  --st:env(safe-area-inset-top,0px);--sb:env(safe-area-inset-bottom,0px);
 }
 
-/* ── SPLASH ── */
-#splash{position:fixed;inset:0;z-index:999;background:var(--bg);display:flex;flex-direction:column;align-items:center;overflow-y:auto;padding:calc(var(--safe-t)+20px) 16px calc(var(--safe-b)+20px);gap:12px}
-.s-logo{font-family:var(--mono);font-size:28px;font-weight:500;color:var(--acc);letter-spacing:6px;margin-top:8px}
-.s-sub{font-family:var(--mono);font-size:9px;letter-spacing:3px;color:var(--dim);text-transform:uppercase}
-.s-platform{width:100%;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;display:flex;justify-content:space-between;align-items:center}
-.s-platform .name{font-size:18px;font-weight:700}.s-platform .note{font-size:10px;color:var(--dim);margin-top:3px;line-height:1.5}
-.s-platform .lbl{font-family:var(--mono);font-size:7px;letter-spacing:3px;color:var(--dim);text-transform:uppercase;margin-bottom:3px}
-.cap-grid{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:5px}
-.cap{background:var(--card);border:1px solid var(--border);border-radius:7px;padding:7px 9px;display:flex;align-items:center;gap:7px}
-.cap.ok{border-color:rgba(0,212,180,.2)}.cap.warn{border-color:rgba(245,197,66,.2)}.cap.err{border-color:rgba(255,82,82,.12)}
-.cap-dot{width:5px;height:5px;border-radius:50%;background:var(--dim);flex-shrink:0}
-.cap.ok .cap-dot{background:var(--acc)}.cap.warn .cap-dot{background:var(--acc3);animation:blink .8s infinite}.cap.err .cap-dot{background:var(--acc2)}.cap.checking .cap-dot{animation:pulse 1s infinite}
-.cap-name{font-size:10px;font-weight:600}.cap-sub{font-family:var(--mono);font-size:7px;color:var(--dim);margin-top:1px}
-#go{width:100%;padding:14px;background:var(--acc);color:#000;border:none;border-radius:10px;font-family:var(--mono);font-size:15px;font-weight:500;letter-spacing:3px;cursor:pointer}
+/* SPLASH */
+#splash{position:fixed;inset:0;z-index:99;background:var(--bg);display:flex;flex-direction:column;align-items:center;overflow-y:auto;padding:calc(var(--st)+18px) 14px calc(var(--sb)+18px);gap:10px}
+.sl{font-family:var(--mn);font-size:26px;font-weight:500;color:var(--grn);letter-spacing:5px}
+.ss{font-family:var(--mn);font-size:8px;letter-spacing:3px;color:var(--dim);text-transform:uppercase}
+.spc{width:100%;background:var(--card);border:1px solid var(--bdr);border-radius:10px;padding:12px;display:flex;justify-content:space-between;align-items:center}
+.spc .n{font-size:17px;font-weight:700}.spc .nt{font-size:9px;color:var(--dim);margin-top:2px;line-height:1.5}
+.spc .l{font-family:var(--mn);font-size:7px;letter-spacing:3px;color:var(--dim);text-transform:uppercase;margin-bottom:2px}
+.cg{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.ci{background:var(--card);border:1px solid var(--bdr);border-radius:7px;padding:7px 9px;display:flex;align-items:center;gap:7px}
+.ci.ok{border-color:rgba(0,212,180,.2)}.ci.warn{border-color:rgba(245,197,66,.2)}.ci.err{border-color:rgba(255,82,82,.12)}
+.cd{width:5px;height:5px;border-radius:50%;background:var(--dim);flex-shrink:0}
+.ci.ok .cd{background:var(--grn)}.ci.warn .cd{background:var(--yel);animation:blink .8s infinite}.ci.err .cd{background:var(--red)}.ci.checking .cd{animation:pulse 1s infinite}
+.cn{font-size:10px;font-weight:600}.csb{font-family:var(--mn);font-size:7px;color:var(--dim);margin-top:1px}
+#go{width:100%;padding:13px;background:var(--grn);color:#000;border:none;border-radius:10px;font-family:var(--mn);font-size:14px;font-weight:500;letter-spacing:3px;cursor:pointer}
 #go:disabled{opacity:.3;cursor:not-allowed}#go:active{opacity:.8}
 
-/* ── APP ── */
-#app{display:none;flex-direction:column;height:100dvh;height:100vh;overflow:hidden;padding-top:var(--safe-t)}
+/* APP */
+#app{display:none;flex-direction:column;height:100dvh;height:100vh;overflow:hidden;padding-top:var(--st)}
+.top{height:42px;background:var(--card);border-bottom:1px solid var(--bdr);display:flex;align-items:center;padding:0 12px;gap:8px;flex-shrink:0}
+.tl{font-family:var(--mn);font-size:12px;font-weight:500;letter-spacing:4px;color:var(--grn)}
+.tsep{width:1px;height:13px;background:var(--bdr)}
+.tos{font-family:var(--mn);font-size:7px;color:var(--dim);background:var(--b2);padding:2px 6px;border-radius:20px;border:1px solid var(--bdr)}
+.tr{margin-left:auto;display:flex;align-items:center;gap:5px}
+.ldot{width:5px;height:5px;background:var(--red);border-radius:50%;animation:blink .6s infinite}
+.ltxt{font-family:var(--mn);font-size:7px;color:var(--red)}
+.xrtag{font-family:var(--mn);font-size:7px;padding:2px 6px;border-radius:10px;border:1px solid var(--bdr);color:var(--dim);background:var(--b2)}
+.xrtag.on{color:var(--pur);border-color:rgba(157,111,255,.3);background:rgba(157,111,255,.08)}
 
-/* Top bar */
-.top{height:44px;background:var(--card);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 14px;gap:8px;flex-shrink:0}
-.top-logo{font-family:var(--mono);font-size:13px;font-weight:500;letter-spacing:4px;color:var(--acc)}
-.top-sep{width:1px;height:14px;background:var(--border)}
-.top-os{font-family:var(--mono);font-size:7px;color:var(--dim);background:var(--card2);padding:2px 7px;border-radius:20px;border:1px solid var(--border)}
-.top-r{margin-left:auto;display:flex;align-items:center;gap:6px}
-.live{display:flex;align-items:center;gap:3px}
-.live-dot{width:5px;height:5px;background:var(--acc2);border-radius:50%;animation:blink .6s infinite}
-.live-lbl{font-family:var(--mono);font-size:7px;color:var(--acc2)}
-.xr-tag{font-family:var(--mono);font-size:7px;padding:2px 6px;border-radius:10px;border:1px solid var(--border);color:var(--dim);background:var(--card2)}
-.xr-tag.on{color:var(--acc5);border-color:rgba(157,111,255,.3);background:rgba(157,111,255,.08)}
+/* TABS */
+.tabs{height:38px;background:var(--card);border-bottom:1px solid var(--bdr);display:flex;flex-shrink:0}
+.tab{flex:1;font-size:11px;font-weight:700;color:var(--dim);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;font-family:'Barlow',sans-serif}
+.tab.on{color:var(--grn);border-bottom-color:var(--grn)}
 
-/* Tabs */
-.tabs{height:40px;background:var(--card);border-bottom:1px solid var(--border);display:flex;flex-shrink:0}
-.tab{flex:1;font-size:11px;font-weight:700;color:var(--dim);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;font-family:'Barlow',sans-serif;transition:color .12s,border-color .12s}
-.tab.on{color:var(--acc);border-bottom-color:var(--acc)}
-
-/* Pages */
+/* PAGES */
 .pages{flex:1;min-height:0;position:relative}
-.page{position:absolute;inset:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:10px 12px calc(10px + var(--safe-b));display:none}
+.page{position:absolute;inset:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:10px 12px calc(10px + var(--sb));display:none}
 .page.on{display:block}
 
-/* Camera — fixed 4:3, inline */
+/* CAMERA */
 .cam{position:relative;width:100%;border-radius:10px;overflow:hidden;background:#000;margin-bottom:10px}
-.cam::after{content:'';display:block;padding-top:75%} /* 4:3 */
+.cam::after{content:'';display:block;padding-top:75%}
 .cam video,.cam canvas{position:absolute;inset:0;width:100%;height:100%}
-.cam video{object-fit:cover}
-.cam canvas{pointer-events:none}
-.cam-ph{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--dim);font-size:11px;background:var(--bg)}
+.cam video{object-fit:cover}.cam canvas{pointer-events:none}
+.cam-ph{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;color:var(--dim);font-size:11px;background:var(--bg)}
 .cam-ph.gone{display:none}
-/* scan line */
-.cam .scan{position:absolute;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(0,212,180,.35),transparent);animation:scandown 2.8s linear infinite;pointer-events:none}
-@keyframes scandown{0%{top:0}100%{top:100%}}
-/* brackets */
-.cam .br{position:absolute;pointer-events:none}
-.cam .br.tl{top:7px;left:7px;border-top:2px solid var(--acc);border-left:2px solid var(--acc);width:16px;height:16px}
-.cam .br.tr{top:7px;right:7px;border-top:2px solid var(--acc);border-right:2px solid var(--acc);width:16px;height:16px}
-.cam .br.bl{bottom:7px;left:7px;border-bottom:2px solid var(--acc);border-left:2px solid var(--acc);width:16px;height:16px}
-.cam .br.br2{bottom:7px;right:7px;border-bottom:2px solid var(--acc);border-right:2px solid var(--acc);width:16px;height:16px}
-/* HUDs */
-.hud{position:absolute;font-family:var(--mono);font-size:8px;color:var(--acc);background:rgba(8,14,24,.82);padding:3px 6px;border-radius:4px;line-height:1.4}
-.hud.tl{top:6px;left:6px}.hud.tr{top:6px;right:6px}.hud.bl{bottom:6px;left:6px}.hud.br{bottom:6px;right:6px}
-/* Horizon */
-.horiz{position:absolute;left:0;right:0;height:1px;pointer-events:none;transition:top .1s}
-.horiz::after{content:'';display:block;height:1px;background:linear-gradient(90deg,transparent 5%,rgba(255,82,82,.55) 30%,rgba(255,82,82,.55) 70%,transparent 95%)}
-/* Crosshair */
-.xhair{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:20px;height:20px;pointer-events:none}
-.xhair::before{content:'';position:absolute;width:20px;height:1px;top:9px;left:0;background:rgba(0,212,180,.75)}
-.xhair::after{content:'';position:absolute;width:1px;height:20px;top:0;left:9px;background:rgba(0,212,180,.75)}
+.scanl{position:absolute;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(0,212,180,.3),transparent);animation:scan 2.8s linear infinite;pointer-events:none}
+@keyframes scan{0%{top:0}100%{top:100%}}
+.brk{position:absolute;pointer-events:none;width:14px;height:14px}
+.brk.tl{top:6px;left:6px;border-top:2px solid var(--grn);border-left:2px solid var(--grn)}
+.brk.tr{top:6px;right:6px;border-top:2px solid var(--grn);border-right:2px solid var(--grn)}
+.brk.bl{bottom:6px;left:6px;border-bottom:2px solid var(--grn);border-left:2px solid var(--grn)}
+.brk.br2{bottom:6px;right:6px;border-bottom:2px solid var(--grn);border-right:2px solid var(--grn)}
+.xh{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:18px;height:18px;pointer-events:none}
+.xh::before{content:'';position:absolute;width:18px;height:1px;top:8px;left:0;background:rgba(0,212,180,.75)}
+.xh::after{content:'';position:absolute;width:1px;height:18px;top:0;left:8px;background:rgba(0,212,180,.75)}
+.hl{position:absolute;left:0;right:0;height:1px;pointer-events:none;transition:top .1s}
+.hl::after{content:'';display:block;height:1px;background:linear-gradient(90deg,transparent 5%,rgba(255,82,82,.5) 30%,rgba(255,82,82,.5) 70%,transparent 95%)}
+.hud{position:absolute;font-family:var(--mn);font-size:8px;color:var(--grn);background:rgba(8,14,24,.8);padding:2px 5px;border-radius:3px;line-height:1.4}
+.hud.tl{top:5px;left:5px}.hud.tr{top:5px;right:5px}.hud.br{bottom:5px;right:5px}
 
-/* Big numbers */
-.nums{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
-.num-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px 13px;position:relative;overflow:hidden}
-.num-card .accent{position:absolute;top:0;left:0;right:0;height:2px;border-radius:10px 10px 0 0}
-.num-label{font-family:var(--mono);font-size:7px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;margin-bottom:5px}
-.num-val{font-family:var(--mono);font-size:28px;font-weight:500;line-height:1}
-.num-unit{font-size:11px;color:var(--dim);margin-left:1px}
-.num-sub{font-family:var(--mono);font-size:8px;color:var(--dim);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.cbar{height:2px;background:var(--border);border-radius:1px;margin-top:6px;overflow:hidden}
-.cbar-fill{height:100%;border-radius:1px;transition:width .2s}
+/* BIG NUMBERS */
+.brow{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.bcard{background:var(--card);border:1px solid var(--bdr);border-radius:10px;padding:11px 12px;position:relative;overflow:hidden}
+.bacc{position:absolute;top:0;left:0;right:0;height:2px;border-radius:10px 10px 0 0}
+.blbl{font-family:var(--mn);font-size:7px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;margin-bottom:4px}
+.bval{font-family:var(--mn);font-size:26px;font-weight:500;line-height:1}
+.bu{font-size:10px;color:var(--dim);margin-left:1px}
+.bsub{font-family:var(--mn);font-size:8px;color:var(--dim);margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cbar{height:2px;background:var(--bdr);border-radius:1px;margin-top:5px;overflow:hidden}
+.cbar-f{height:100%;border-radius:1px;transition:width .2s}
 
-/* Methods list */
-.methods{background:var(--card);border:1px solid var(--border);border-radius:10px;margin-bottom:10px;overflow:hidden}
-.mhead{padding:9px 12px 7px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
-.mhead-lbl{font-family:var(--mono);font-size:7px;letter-spacing:2px;color:var(--acc);text-transform:uppercase}
-.badge{font-family:var(--mono);font-size:7px;padding:2px 7px;border-radius:10px}
-.badge.live{background:rgba(0,212,180,.1);color:var(--acc);border:1px solid rgba(0,212,180,.2)}
-.mrow{display:flex;align-items:center;padding:6px 12px;border-bottom:1px solid rgba(26,46,69,.5);gap:0}
-.mrow:last-child{border:none}
-.mrow .mn{flex:1;font-family:var(--mono);font-size:8px;color:var(--dim);line-height:1.4}
-.mrow .mn b{font-weight:500;color:var(--fg);font-size:8.5px}
-.mrow .mv{font-family:var(--mono);font-size:10px;min-width:68px;text-align:right}
-.mv.acc{color:var(--acc)}.mv.acc3{color:var(--acc3)}.mv.acc5{color:var(--acc5)}.mv.dim{color:var(--border)}
-.dot{width:5px;height:5px;border-radius:50%;background:var(--border);flex-shrink:0;margin-left:8px;transition:background .25s,box-shadow .25s}
-.dot.g{background:var(--acc);box-shadow:0 0 5px rgba(0,212,180,.4)}
-.dot.y{background:var(--acc3);box-shadow:0 0 5px rgba(245,197,66,.4)}
-.dot.p{background:var(--acc5);box-shadow:0 0 5px rgba(157,111,255,.4)}
+/* METHOD ROWS */
+.mtbl{background:var(--card);border:1px solid var(--bdr);border-radius:10px;margin-bottom:10px;overflow:hidden}
+.mth{padding:8px 12px 6px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between}
+.mth-lbl{font-family:var(--mn);font-size:7px;letter-spacing:2px;color:var(--grn);text-transform:uppercase}
+.mr{display:flex;align-items:center;padding:5px 12px;border-bottom:1px solid rgba(26,46,69,.4);gap:0;min-height:38px}
+.mr:last-child{border:none}
+.mname{flex:1;min-width:0}
+.mname b{font-family:var(--mn);font-size:8px;font-weight:500;color:var(--fg);display:block}
+.mname small{font-family:var(--mn);font-size:7px;color:var(--dim);display:block;margin-top:1px}
+.mval{font-family:var(--mn);font-size:10px;min-width:66px;text-align:right;flex-shrink:0}
+.mval.grn{color:var(--grn)}.mval.yel{color:var(--yel)}.mval.pur{color:var(--pur)}.mval.na{color:var(--bdr)}
+.mdot{width:5px;height:5px;border-radius:50%;background:var(--bdr);flex-shrink:0;margin-left:8px;transition:background .2s,box-shadow .2s}
+.mdot.grn{background:var(--grn);box-shadow:0 0 4px rgba(0,212,180,.5)}
+.mdot.yel{background:var(--yel);box-shadow:0 0 4px rgba(245,197,66,.5)}
+.mdot.pur{background:var(--pur);box-shadow:0 0 4px rgba(157,111,255,.5)}
+/* Method trigger button (inline in row) */
+.mtrig{font-family:var(--mn);font-size:7px;padding:3px 8px;border-radius:4px;border:1px solid var(--bdr);background:var(--b2);color:var(--dim);cursor:pointer;margin-left:6px;flex-shrink:0;white-space:nowrap}
+.mtrig:active{opacity:.6}
+.mtrig.active{border-color:rgba(245,197,66,.4);color:var(--yel)}
+.mtrig.run{border-color:rgba(0,212,180,.3);color:var(--grn)}
 
-/* Sensor strip */
-.sstrip{background:var(--card);border:1px solid var(--border);border-radius:10px;margin-bottom:10px;overflow:hidden}
-.sstrip .row{display:flex;justify-content:space-between;padding:5px 12px;border-bottom:1px solid rgba(26,46,69,.4);font-size:9px}
-.sstrip .row:last-child{border:none}
-.sstrip .row .k{color:var(--dim)}.sstrip .row .v{font-family:var(--mono);font-size:9px;color:var(--fg)}
+/* STATUS STRIP */
+.sstrip{background:var(--card);border:1px solid var(--bdr);border-radius:10px;margin-bottom:10px;overflow:hidden}
+.sr{display:flex;justify-content:space-between;align-items:center;padding:5px 12px;border-bottom:1px solid rgba(26,46,69,.35);font-size:9px}
+.sr:last-child{border:none}
+.sk{color:var(--dim)}.sv{font-family:var(--mn);font-size:9px;color:var(--fg)}
 
-/* Focus sweep */
-.sweep{background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;margin-bottom:10px;display:flex;align-items:center;gap:8px}
-.sweep-lbl{font-family:var(--mono);font-size:7px;letter-spacing:2px;color:var(--acc3);text-transform:uppercase;flex-shrink:0}
-.sweep-bar{flex:1;height:2px;background:var(--border);border-radius:1px;overflow:hidden}
-.sweep-fill{height:100%;background:linear-gradient(90deg,var(--acc3),var(--acc));border-radius:1px;width:0%;transition:width .2s}
-.sweep-val{font-family:var(--mono);font-size:9px;color:var(--fg);flex-shrink:0;min-width:42px;text-align:right}
-.sweep-btn{font-family:var(--mono);font-size:7px;color:var(--acc3);background:none;border:1px solid rgba(245,197,66,.3);border-radius:4px;padding:3px 8px;cursor:pointer;flex-shrink:0}
-.sweep-btn:active{opacity:.6}
+/* CHART */
+.cwrap{background:var(--card);border:1px solid var(--bdr);border-radius:10px;padding:10px 12px;margin-bottom:10px}
+.clbl{font-family:var(--mn);font-size:7px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;margin-bottom:5px}
+canvas.ch{width:100%;display:block}
 
-/* Anchor row */
-.anch-row{display:flex;gap:6px;margin-bottom:10px}
-.anch-row button{flex:1;padding:8px 4px;background:var(--card);border-radius:7px;font-family:var(--mono);font-size:7px;cursor:pointer;border:1px solid var(--border);color:var(--dim)}
-.anch-row button:active{opacity:.6}
-.anch-row .ab1{color:var(--acc5);border-color:rgba(157,111,255,.25)}
-.anch-row .ab2{color:var(--acc);border-color:rgba(0,212,180,.2)}
+/* BADGE */
+.badge{font-family:var(--mn);font-size:7px;padding:2px 7px;border-radius:10px;white-space:nowrap}
+.badge.live{background:rgba(0,212,180,.1);color:var(--grn);border:1px solid rgba(0,212,180,.2)}
+.badge.warn{background:rgba(245,197,66,.08);color:var(--yel);border:1px solid rgba(245,197,66,.2)}
+.badge.off{background:rgba(26,46,69,.3);color:var(--dim);border:1px solid var(--bdr)}
 
-/* Chart */
-.chart-wrap{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:10px}
-.chart-lbl{font-family:var(--mono);font-size:7px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;margin-bottom:6px}
-canvas.chart{width:100%;display:block}
-
-/* Warn/error */
-.info{border-radius:8px;padding:9px 12px;margin-bottom:8px;font-size:10px;line-height:1.6}
-.info.warn{background:rgba(245,197,66,.05);border:1px solid rgba(245,197,66,.15);color:var(--acc3)}
-.info.err{background:rgba(255,82,82,.05);border:1px solid rgba(255,82,82,.15);color:var(--acc2)}
-.retry{font-family:var(--mono);font-size:7px;color:var(--acc);background:none;border:1px solid rgba(0,212,180,.3);border-radius:3px;padding:2px 7px;cursor:pointer;margin-top:5px;display:inline-block}
-
-/* Toast */
-#toast{position:fixed;bottom:calc(var(--safe-b)+12px);left:50%;transform:translateX(-50%) translateY(60px);background:var(--card2);border:1px solid rgba(0,212,180,.2);color:var(--fg);padding:8px 14px;border-radius:8px;font-size:10px;z-index:9000;transition:transform .2s;white-space:nowrap;max-width:92vw}
+/* TOAST */
+#toast{position:fixed;bottom:calc(var(--sb)+12px);left:50%;transform:translateX(-50%) translateY(60px);background:var(--b2);border:1px solid rgba(0,212,180,.2);color:var(--fg);padding:7px 14px;border-radius:8px;font-size:10px;z-index:999;transition:transform .2s;white-space:nowrap;max-width:92vw}
 #toast.show{transform:translateX(-50%) translateY(0)}
+.wbox{border-radius:8px;padding:9px 12px;margin-bottom:8px;font-size:10px;line-height:1.6;background:rgba(245,197,66,.05);border:1px solid rgba(245,197,66,.15);color:var(--yel)}
+.ebox{border-radius:8px;padding:9px 12px;margin-bottom:8px;font-size:10px;line-height:1.6;background:rgba(255,82,82,.05);border:1px solid rgba(255,82,82,.15);color:var(--red)}
+.retry{font-family:var(--mn);font-size:7px;color:var(--grn);background:none;border:1px solid rgba(0,212,180,.3);border-radius:3px;padding:2px 7px;cursor:pointer;margin-top:4px;display:inline-block}
 
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.2}}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.1}}
@@ -161,25 +142,27 @@ canvas.chart{width:100%;display:block}
 
 <!-- SPLASH -->
 <div id="splash">
-  <div class="s-sub">Sensor Fusion · Real-Time · No Assumptions</div>
-  <div class="s-logo">AR·SENSE</div>
-  <div class="s-platform">
-    <div><div class="lbl">Platform</div><div class="name" id="sp-name">–</div><div class="note" id="sp-note">–</div></div>
-    <div style="font-size:26px" id="sp-icon">⏳</div>
+  <div class="ss">Real-Time Sensor Fusion · No Assumptions</div>
+  <div class="sl">AR · SENSE</div>
+  <div class="spc">
+    <div><div class="l">Platform</div><div class="n" id="sp-n">–</div><div class="nt" id="sp-t">–</div></div>
+    <div style="font-size:26px" id="sp-ic">⏳</div>
   </div>
-  <div class="cap-grid" id="cap-grid"></div>
+  <div class="cg" id="capgrid"></div>
   <button id="go" disabled>LAUNCH</button>
 </div>
 
 <!-- APP -->
 <div id="app">
   <div class="top">
-    <span class="top-logo">AR·SENSE</span>
-    <span class="top-sep"></span>
-    <span class="top-os" id="top-os">–</span>
-    <div class="top-r">
-      <span class="xr-tag" id="xr-tag">XR–</span>
-      <div class="live"><div class="live-dot"></div><span class="live-lbl">LIVE</span></div>
+    <span class="tl">AR · SENSE</span>
+    <span class="tsep"></span>
+    <span class="tos" id="tos">–</span>
+    <div class="tr">
+      <span class="xrtag" id="xrtag">XR–</span>
+      <div style="display:flex;align-items:center;gap:3px">
+        <div class="ldot"></div><span class="ltxt">LIVE</span>
+      </div>
     </div>
   </div>
 
@@ -190,471 +173,681 @@ canvas.chart{width:100%;display:block}
 
   <div class="pages">
 
-    <!-- HEIGHT -->
+    <!-- ══════════ HEIGHT ══════════ -->
     <div class="page on" id="page-height">
 
-      <!-- Camera (inline, never fullscreen) -->
       <div class="cam">
-        <video id="vid-h" autoplay playsinline muted></video>
-        <canvas id="cv-h"></canvas>
-        <div class="scan"></div>
-        <div class="br tl"></div><div class="br tr"></div>
-        <div class="br bl"></div><div class="br br2"></div>
-        <div class="xhair"></div>
-        <div class="horiz" id="hor-h" style="top:50%"></div>
-        <div class="hud tl" id="hh-tl">–</div>
-        <div class="hud tr" id="hh-tr">–</div>
-        <div class="hud bl" id="hh-bl">–</div>
-        <div class="hud br" id="hh-br">h=–</div>
-        <div class="cam-ph" id="cam-ph-h"><div>📷</div><div>Starting camera…</div></div>
+        <video id="vid" autoplay playsinline muted></video>
+        <canvas id="cvc"></canvas>
+        <div class="scanl"></div>
+        <div class="brk tl"></div><div class="brk tr"></div>
+        <div class="brk bl"></div><div class="brk br2"></div>
+        <div class="xh"></div>
+        <div class="hl" id="hl" style="top:50%"></div>
+        <div class="hud tl" id="htl">–</div>
+        <div class="hud tr" id="htr">dep –°</div>
+        <div class="hud br" id="hbr">h=–</div>
+        <div class="cam-ph" id="camph"><div>📷</div><div>Starting camera…</div></div>
       </div>
 
-      <!-- Big result -->
-      <div class="nums">
-        <div class="num-card" style="border-color:rgba(0,212,180,.2)">
-          <div class="accent" style="background:linear-gradient(90deg,var(--acc),transparent)"></div>
-          <div class="num-label">Fused Height</div>
-          <div class="num-val acc" id="h-val">–<span class="num-unit">m</span></div>
-          <div class="num-sub" id="h-src">awaiting sensors</div>
-          <div class="cbar"><div class="cbar-fill" id="h-cbar" style="width:0%;background:var(--acc)"></div></div>
+      <!-- Fused result -->
+      <div class="brow">
+        <div class="bcard" style="border-color:rgba(0,212,180,.2)">
+          <div class="bacc" style="background:linear-gradient(90deg,var(--grn),transparent)"></div>
+          <div class="blbl">Fused Height</div>
+          <div class="bval" id="hfused" style="color:var(--grn)">–<span class="bu">m</span></div>
+          <div class="bsub" id="hsrc">awaiting sensors</div>
+          <div class="cbar"><div class="cbar-f" id="hcbar" style="width:0%;background:var(--grn)"></div></div>
         </div>
-        <div class="num-card" style="border-color:rgba(157,111,255,.2)">
-          <div class="accent" style="background:linear-gradient(90deg,var(--acc5),transparent)"></div>
-          <div class="num-label">Confidence</div>
-          <div class="num-val acc5" id="h-conf">0<span class="num-unit">%</span></div>
-          <div class="num-sub" id="h-cnt">0 methods active</div>
-          <div class="cbar"><div class="cbar-fill" id="h-cbar2" style="width:0%;background:var(--acc5)"></div></div>
+        <div class="bcard" style="border-color:rgba(157,111,255,.2)">
+          <div class="bacc" style="background:linear-gradient(90deg,var(--pur),transparent)"></div>
+          <div class="blbl">Confidence</div>
+          <div class="bval" id="hconf" style="color:var(--pur)">0<span class="bu">%</span></div>
+          <div class="bsub" id="hcnt">0 / 9 methods active</div>
+          <div class="cbar"><div class="cbar-f" id="hcbar2" style="width:0%;background:var(--pur)"></div></div>
         </div>
       </div>
 
-      <!-- Methods -->
-      <div class="methods">
-        <div class="mhead"><span class="mhdr-lbl" style="font-family:var(--mono);font-size:7px;letter-spacing:2px;color:var(--acc);text-transform:uppercase">9 Methods — all running in parallel</span><span class="badge live">LIVE</span></div>
-        <div class="mrow"><div class="mn"><b>① XR viewer.y</b><br>local-floor ref space, floor=Y0</div><div class="mv acc5" id="h1">–</div><div class="dot" id="hd1"></div></div>
-        <div class="mrow"><div class="mn"><b>② XR hit-test ↓</b><br>ray [0,−1,0] → viewer.y − hit.y</div><div class="mv acc5" id="h2">–</div><div class="dot" id="hd2"></div></div>
-        <div class="mrow"><div class="mn"><b>③ XR depth bottom rows</b><br>depth[y≥0.85] × cos(FOV/2)</div><div class="mv acc5" id="h3">–</div><div class="dot" id="hd3"></div></div>
-        <div class="mrow"><div class="mn"><b>④ XR plane floor</b><br>viewer.y − lowest horiz plane Y</div><div class="mv acc5" id="h4">–</div><div class="dot" id="hd4"></div></div>
-        <div class="mrow"><div class="mn"><b>⑤ XR anchor floor</b><br>viewer.y − placed floor anchor Y</div><div class="mv acc5" id="h5">–</div><div class="dot" id="hd5"></div></div>
-        <div class="mrow"><div class="mn"><b>⑥ Visual horizon (Sobel VP)</b><br>peak horiz-edge row → h = D·tan(θ)</div><div class="mv acc" id="h6">–</div><div class="dot" id="hd6"></div></div>
-        <div class="mrow"><div class="mn"><b>⑦ Barometric Δ pressure</b><br>44330·(1−(P/P₀)^0.1903)</div><div class="mv acc" id="h7">–</div><div class="dot" id="hd7"></div></div>
-        <div class="mrow"><div class="mn"><b>⑧ Accel integration Δh</b><br>∫∫ vertical linear accel dt², baro-corrected</div><div class="mv acc" id="h8">–</div><div class="dot" id="hd8"></div></div>
-        <div class="mrow"><div class="mn"><b>⑨ Focus sweep → floor dist</b><br>fd × sin(|depression|) aimed at floor</div><div class="mv acc3" id="h9">–</div><div class="dot" id="hd9"></div></div>
+      <!-- 9 height methods, each honest about its source + trigger if needed -->
+      <div class="mtbl">
+        <div class="mth">
+          <span class="mth-lbl">Height Methods</span>
+          <span class="badge live">AUTO + MANUAL</span>
+        </div>
+
+        <!-- ① XR viewer Y — needs XR session -->
+        <div class="mr">
+          <div class="mname"><b>① XR local-floor viewer.y</b><small>floor=Y0 in local-floor ref space</small></div>
+          <div class="mval pur" id="hm1">–</div>
+          <button class="mtrig" id="hb1" onclick="startXR()">START XR</button>
+          <div class="mdot" id="hd1"></div>
+        </div>
+
+        <!-- ② XR hit-test down — needs XR -->
+        <div class="mr">
+          <div class="mname"><b>② XR hit-test ↓</b><small>ray [0,−1,0] → viewer.y − floor_hit.y</small></div>
+          <div class="mval pur" id="hm2">–</div>
+          <button class="mtrig" id="hb2" onclick="startXR()">START XR</button>
+          <div class="mdot" id="hd2"></div>
+        </div>
+
+        <!-- ③ XR depth bottom rows — needs XR -->
+        <div class="mr">
+          <div class="mname"><b>③ XR depth bottom rows</b><small>depth[y≥0.85]×cos(30°) → floor dist</small></div>
+          <div class="mval pur" id="hm3">–</div>
+          <button class="mtrig" id="hb3" onclick="startXR()">START XR</button>
+          <div class="mdot" id="hd3"></div>
+        </div>
+
+        <!-- ④ XR plane floor — needs XR -->
+        <div class="mr">
+          <div class="mname"><b>④ XR plane detection</b><small>viewer.y − lowest horizontal plane Y</small></div>
+          <div class="mval pur" id="hm4">–</div>
+          <button class="mtrig" id="hb4" onclick="startXR()">START XR</button>
+          <div class="mdot" id="hd4"></div>
+        </div>
+
+        <!-- ⑤ Focus sweep (point at floor) — manual trigger -->
+        <div class="mr">
+          <div class="mname"><b>⑤ Focus sweep → floor dist</b><small>point camera at floor, then run</small></div>
+          <div class="mval yel" id="hm5">–</div>
+          <button class="mtrig active" id="hb5" onclick="runSweep('h')">▶ SWEEP</button>
+          <div class="mdot" id="hd5"></div>
+        </div>
+
+        <!-- ⑥ Barometric Δ — auto if sensor available -->
+        <div class="mr">
+          <div class="mname"><b>⑥ Barometric Δ pressure</b><small>44330×(1−(P/P₀)^0.1903) from launch</small></div>
+          <div class="mval grn" id="hm6">–</div>
+          <div class="badge off" id="hb6-st">checking…</div>
+          <div class="mdot" id="hd6"></div>
+        </div>
+
+        <!-- ⑦ Accel integration — auto, always running -->
+        <div class="mr">
+          <div class="mname"><b>⑦ Accel integration Δh</b><small>∫∫ vertical linear accel dt² — Δ from launch</small></div>
+          <div class="mval grn" id="hm7">–</div>
+          <div class="badge live" style="flex-shrink:0">AUTO</div>
+          <div class="mdot" id="hd7"></div>
+        </div>
+
+        <!-- ⑧ Visual horizon (Sobel) — auto, needs tilt -->
+        <div class="mr">
+          <div class="mname"><b>⑧ Visual horizon (Sobel)</b><small>peak horiz-edge row → depression angle</small></div>
+          <div class="mval grn" id="hm8">–</div>
+          <div class="badge live" style="flex-shrink:0">AUTO</div>
+          <div class="mdot" id="hd8"></div>
+        </div>
+
+        <!-- ⑨ Gravity pitch trig — auto -->
+        <div class="mr">
+          <div class="mname"><b>⑨ Gravity vector pitch</b><small>tilt angle from gravity + known ref distance</small></div>
+          <div class="mval grn" id="hm9">–</div>
+          <div class="badge live" style="flex-shrink:0">AUTO</div>
+          <div class="mdot" id="hd9"></div>
+        </div>
       </div>
 
-      <!-- Sensor debug strip -->
+      <!-- Sensor strip -->
       <div class="sstrip">
-        <div class="row"><span class="k">Gravity gX/gY/gZ</span><span class="v" id="s-gxyz">–</span></div>
-        <div class="row"><span class="k">Depression (cam below horiz)</span><span class="v" id="s-dep">–</span></div>
-        <div class="row"><span class="k">Horizon frac in frame</span><span class="v" id="s-vp">–</span></div>
-        <div class="row"><span class="k">Baro Δ alt from launch</span><span class="v" id="s-baro">–</span></div>
-        <div class="row"><span class="k">Accel integrated Δh</span><span class="v" id="s-dh">–</span></div>
-        <div class="row"><span class="k">XR session state</span><span class="v" id="s-xr">inactive</span></div>
+        <div class="sr"><span class="sk">Gravity gX / gY / gZ</span><span class="sv" id="ss-g">–</span></div>
+        <div class="sr"><span class="sk">Depression (cam below horiz)</span><span class="sv" id="ss-dep">–</span></div>
+        <div class="sr"><span class="sk">Visual horizon row</span><span class="sv" id="ss-vp">–</span></div>
+        <div class="sr"><span class="sk">Baro Δ alt (from launch)</span><span class="sv" id="ss-baro">–</span></div>
+        <div class="sr"><span class="sk">Accel Δh (integrated)</span><span class="sv" id="ss-dh">–</span></div>
+        <div class="sr"><span class="sk">XR session</span><span class="sv" id="ss-xr">inactive</span></div>
       </div>
 
-      <!-- Focus sweep -->
-      <div class="sweep">
-        <span class="sweep-lbl">Focus</span>
-        <div class="sweep-bar"><div class="sweep-fill" id="sw-h"></div></div>
-        <span class="sweep-val" id="sw-h-res">–</span>
-        <button class="sweep-btn" onclick="runSweep()">▶ SWEEP</button>
+      <div class="cwrap">
+        <div class="clbl">Height history</div>
+        <canvas class="ch" id="ch-h" height="38"></canvas>
       </div>
-
-      <!-- History -->
-      <div class="chart-wrap">
-        <div class="chart-lbl">Height history</div>
-        <canvas class="chart" id="ch-h" height="40"></canvas>
-      </div>
-
-      <div id="h-info"></div>
+      <div id="herr"></div>
     </div>
 
-    <!-- DISTANCE -->
+    <!-- ══════════ DISTANCE ══════════ -->
     <div class="page" id="page-distance">
 
       <div class="cam">
-        <video id="vid-d" autoplay playsinline muted></video>
-        <canvas id="cv-d"></canvas>
-        <div class="scan"></div>
-        <div class="br tl"></div><div class="br tr"></div>
-        <div class="br bl"></div><div class="br br2"></div>
-        <div class="xhair"></div>
-        <div class="horiz" id="hor-d" style="top:50%"></div>
-        <div class="hud tl" id="dh-tl">–</div>
-        <div class="hud tr" id="dh-tr">–</div>
-        <div class="hud bl" id="dh-bl">–</div>
-        <div class="hud br" id="dh-br">D=–</div>
+        <video id="vid2" autoplay playsinline muted></video>
+        <canvas id="cvc2"></canvas>
+        <div class="scanl"></div>
+        <div class="brk tl"></div><div class="brk tr"></div>
+        <div class="brk bl"></div><div class="brk br2"></div>
+        <div class="xh"></div>
+        <div class="hl" id="hl2" style="top:50%"></div>
+        <div class="hud tl" id="dtl">dep –°</div>
+        <div class="hud tr" id="dtr">h –m</div>
+        <div class="hud br" id="dbr">D=–</div>
       </div>
 
-      <div class="nums">
-        <div class="num-card" style="border-color:rgba(245,197,66,.2)">
-          <div class="accent" style="background:linear-gradient(90deg,var(--acc3),transparent)"></div>
-          <div class="num-label">Fused Distance</div>
-          <div class="num-val acc3" id="d-val">–<span class="num-unit">m</span></div>
-          <div class="num-sub" id="d-src">awaiting sensors</div>
-          <div class="cbar"><div class="cbar-fill" id="d-cbar" style="width:0%;background:var(--acc3)"></div></div>
+      <div class="brow">
+        <div class="bcard" style="border-color:rgba(245,197,66,.2)">
+          <div class="bacc" style="background:linear-gradient(90deg,var(--yel),transparent)"></div>
+          <div class="blbl">Fused Distance</div>
+          <div class="bval" id="dfused" style="color:var(--yel)">–<span class="bu">m</span></div>
+          <div class="bsub" id="dsrc">awaiting sensors</div>
+          <div class="cbar"><div class="cbar-f" id="dcbar" style="width:0%;background:var(--yel)"></div></div>
         </div>
-        <div class="num-card" style="border-color:rgba(157,111,255,.2)">
-          <div class="accent" style="background:linear-gradient(90deg,var(--acc5),transparent)"></div>
-          <div class="num-label">Confidence</div>
-          <div class="num-val acc5" id="d-conf">0<span class="num-unit">%</span></div>
-          <div class="num-sub" id="d-cnt">0 methods active</div>
-          <div class="cbar"><div class="cbar-fill" id="d-cbar2" style="width:0%;background:var(--acc5)"></div></div>
+        <div class="bcard" style="border-color:rgba(157,111,255,.2)">
+          <div class="bacc" style="background:linear-gradient(90deg,var(--pur),transparent)"></div>
+          <div class="blbl">Confidence</div>
+          <div class="bval" id="dconf" style="color:var(--pur)">0<span class="bu">%</span></div>
+          <div class="bsub" id="dcnt">0 / 8 methods active</div>
+          <div class="cbar"><div class="cbar-f" id="dcbar2" style="width:0%;background:var(--pur)"></div></div>
         </div>
       </div>
 
-      <div class="methods">
-        <div class="mhead"><span style="font-family:var(--mono);font-size:7px;letter-spacing:2px;color:var(--acc3);text-transform:uppercase">8 Methods — all running in parallel</span><span class="badge live">LIVE</span></div>
-        <div class="mrow"><div class="mn"><b>① XR hit-test forward</b><br>viewer ray [0,0,−1] → 3D Euclidean dist</div><div class="mv acc5" id="d1">–</div><div class="dot" id="dd1"></div></div>
-        <div class="mrow"><div class="mn"><b>② XR depth center pixel</b><br>getDepthInMeters(0.5, 0.5)</div><div class="mv acc5" id="d2">–</div><div class="dot" id="dd2"></div></div>
-        <div class="mrow"><div class="mn"><b>③ XR depth 5×5 grid min</b><br>nearest surface in center region</div><div class="mv acc5" id="d3">–</div><div class="dot" id="dd3"></div></div>
-        <div class="mrow"><div class="mn"><b>④ XR plane ray intersection</b><br>camera ray × detected floor plane</div><div class="mv acc5" id="d4">–</div><div class="dot" id="dd4"></div></div>
-        <div class="mrow"><div class="mn"><b>⑤ XR anchor distance</b><br>3D Euclidean viewer → nearest anchor</div><div class="mv acc5" id="d5">–</div><div class="dot" id="dd5"></div></div>
-        <div class="mrow"><div class="mn"><b>⑥ Trigonometry h/tan(dep)</b><br>h_fused / tan(|depression_rad|)</div><div class="mv acc" id="d6">–</div><div class="dot" id="dd6"></div></div>
-        <div class="mrow"><div class="mn"><b>⑦ Focus sweep peak</b><br>Laplacian variance max = subject dist</div><div class="mv acc3" id="d7">–</div><div class="dot" id="dd7"></div></div>
-        <div class="mrow"><div class="mn"><b>⑧ Visual Sobel depth</b><br>edge density in center → approx dist</div><div class="mv acc" id="d8">–</div><div class="dot" id="dd8"></div></div>
+      <div class="mtbl">
+        <div class="mth">
+          <span class="mth-lbl">Distance Methods</span>
+          <span class="badge live">AUTO + MANUAL</span>
+        </div>
+
+        <!-- ① XR hit-test forward -->
+        <div class="mr">
+          <div class="mname"><b>① XR hit-test forward</b><small>viewer ray [0,0,−1] → 3D Euclidean dist</small></div>
+          <div class="mval pur" id="dm1">–</div>
+          <button class="mtrig" id="db1" onclick="startXR()">START XR</button>
+          <div class="mdot" id="dd1"></div>
+        </div>
+
+        <!-- ② XR depth center -->
+        <div class="mr">
+          <div class="mname"><b>② XR depth center pixel</b><small>getDepthInMeters(0.5, 0.5)</small></div>
+          <div class="mval pur" id="dm2">–</div>
+          <button class="mtrig" id="db2" onclick="startXR()">START XR</button>
+          <div class="mdot" id="dd2"></div>
+        </div>
+
+        <!-- ③ XR depth grid -->
+        <div class="mr">
+          <div class="mname"><b>③ XR depth 5×5 grid min</b><small>nearest surface in center region</small></div>
+          <div class="mval pur" id="dm3">–</div>
+          <button class="mtrig" id="db3" onclick="startXR()">START XR</button>
+          <div class="mdot" id="dd3"></div>
+        </div>
+
+        <!-- ④ XR plane ray -->
+        <div class="mr">
+          <div class="mname"><b>④ XR plane ray intersection</b><small>camera ray × detected floor plane</small></div>
+          <div class="mval pur" id="dm4">–</div>
+          <button class="mtrig" id="db4" onclick="startXR()">START XR</button>
+          <div class="mdot" id="dd4"></div>
+        </div>
+
+        <!-- ⑤ Focus sweep — manual -->
+        <div class="mr">
+          <div class="mname"><b>⑤ Focus sweep (sharpness peak)</b><small>Laplacian variance max = subject focal dist</small></div>
+          <div class="mval yel" id="dm5">–</div>
+          <button class="mtrig active" id="db5" onclick="runSweep('d')">▶ SWEEP</button>
+          <div class="mdot" id="dd5"></div>
+        </div>
+
+        <!-- ⑥ Trigonometry -->
+        <div class="mr">
+          <div class="mname"><b>⑥ Trig h / tan(depression)</b><small>h_fused ÷ tan(|depression_rad|)</small></div>
+          <div class="mval grn" id="dm6">–</div>
+          <div class="badge live" style="flex-shrink:0">AUTO</div>
+          <div class="mdot" id="dd6"></div>
+        </div>
+
+        <!-- ⑦ Visual Sobel depth -->
+        <div class="mr">
+          <div class="mname"><b>⑦ Visual Sobel depth</b><small>center edge density → approx scene dist</small></div>
+          <div class="mval grn" id="dm7">–</div>
+          <div class="badge live" style="flex-shrink:0">AUTO</div>
+          <div class="mdot" id="dd7"></div>
+        </div>
+
+        <!-- ⑧ Camera focus distance API -->
+        <div class="mr">
+          <div class="mname"><b>⑧ Camera focus distance</b><small>MediaStreamTrack.getSettings().focusDistance</small></div>
+          <div class="mval grn" id="dm8">–</div>
+          <div class="badge off" id="db8-st" style="flex-shrink:0">checking…</div>
+          <div class="mdot" id="dd8"></div>
+        </div>
       </div>
 
-      <!-- Focus sweep -->
-      <div class="sweep">
-        <span class="sweep-lbl">Focus</span>
-        <div class="sweep-bar"><div class="sweep-fill" id="sw-d"></div></div>
-        <span class="sweep-val" id="sw-d-res">–</span>
-        <button class="sweep-btn" onclick="runSweep()">▶ SWEEP</button>
+      <!-- Focus chart (shown after sweep) -->
+      <div class="cwrap" id="fcwrap" style="display:none">
+        <div class="clbl">Focus sweep — sharpness vs focal distance</div>
+        <canvas class="ch" id="fcchart" height="44"></canvas>
+        <div style="font-family:var(--mn);font-size:7px;color:var(--dim);margin-top:3px;text-align:center" id="fclbl"></div>
       </div>
 
-      <!-- Anchors -->
-      <div class="anch-row">
-        <button class="ab1" onclick="placeAnchor(false)">⚓ Anchor @ Hit</button>
-        <button class="ab2" onclick="placeAnchor(true)">📍 Floor Anchor</button>
-        <button onclick="clearAnchors()" style="color:var(--dim)">🗑 Clear</button>
+      <div class="cwrap">
+        <div class="clbl">Distance history</div>
+        <canvas class="ch" id="ch-d" height="38"></canvas>
       </div>
-
-      <!-- Focus chart -->
-      <div class="chart-wrap" id="fc-wrap" style="display:none">
-        <div class="chart-lbl">Focus sweep — sharpness vs focal distance</div>
-        <canvas class="chart" id="fc-chart" height="44"></canvas>
-        <div style="font-family:var(--mono);font-size:7px;color:var(--dim);margin-top:3px;text-align:center" id="fc-lbl"></div>
-      </div>
-
-      <!-- History -->
-      <div class="chart-wrap">
-        <div class="chart-lbl">Distance history</div>
-        <canvas class="chart" id="ch-d" height="40"></canvas>
-      </div>
-
-      <div id="d-info"></div>
+      <div id="derr"></div>
     </div>
 
-  </div><!-- /pages -->
-</div><!-- /app -->
+  </div>
+</div>
 <div id="toast"></div>
 
 <script>
 'use strict';
 // ═══════════════════════════════════════════════════════════════
-// AR·SENSE
-// The UI is a normal browser page — camera feeds into an <aspect-ratio>
-// div, never fullscreen. WebXR `immersive-ar` is NOT used because it
-// forces fullscreen. Instead all XR-equivalent data is obtained via:
-//   - DeviceOrientation / DeviceMotion (6DoF equivalent without XR)
-//   - GravitySensor / LinearAccelerationSensor / AbsolutePressureSensor
-//   - MediaStreamTrack capabilities (focus distance / focal length)
-//   - Visual processing on camera frames (horizon, Sobel depth)
-//   - ImageCapture focus sweep (sharpness = Laplacian variance)
-// If the browser supports XR hit-test we attempt a background inline
-// session (type='inline') to get pose data without going fullscreen.
-// If that also fails gracefully, sensors cover everything.
+// AR·SENSE — honest real-time sensor fusion
+//
+// WHICH METHODS ACTUALLY RUN AUTOMATICALLY vs NEED TRIGGER:
+//
+// AUTO (run every sensor event / animation frame):
+//   h6 barometric Δ        — needs AbsolutePressureSensor API
+//   h7 accel integration   — always, gives Δh from launch (relative)
+//   h8 visual horizon      — every camera frame via Sobel
+//   h9 gravity pitch trig  — always once gravity reads
+//   d6 trig h/tan(dep)     — always once h_fused + depression exist
+//   d7 visual Sobel depth  — every camera frame
+//   d8 focus distance API  — if camera exposes focusDistance in settings
+//
+// MANUAL TRIGGER (require user action or special hardware):
+//   h1–h4 / d1–d4 (XR)    — need WebXR session (button: START XR)
+//   h5 / d5 focus sweep    — ImageCapture Laplacian sweep (button: SWEEP)
+//
+// h9 (gravity pitch): uses depression angle + a reference.
+//   Without XR distance, we can still give the depression angle itself.
+//   When any distance method fires, we back-calculate height from it.
 // ═══════════════════════════════════════════════════════════════
-const G={
-  isIOS:false,isAndroid:false,caps:{},
-  S:{beta:null,gamma:null,alpha:null,ax:0,ay:0,az:0,lax:0,lay:0,laz:0,
-     gravX:0,gravY:0,gravZ:0,pressure:null,pressure0:null,focusDist:null},
-  SF:{ax:0,ay:0,az:0,lax:0,lay:0,laz:0,gravX:0,gravY:0,gravZ:0},
-  // All measurements — null until computed, no bounds enforced
-  M:{
-    h1:null,h2:null,h3:null,h4:null,h5:null,
-    h6:null,h7:null,h8:null,h9:null,
-    h_fused:null,h_conf:0,
-    d1:null,d2:null,d3:null,d4:null,d5:null,
-    d6:null,d7:null,d8:null,
-    d_fused:null,d_conf:0,
-    depression:0,   // degrees, + = looking down
-    horizon:0.5,    // fraction 0–1
-  },
-  AI:{vz:0,hz:0},
-  FS:{running:false,results:[],best:null},
-  // XR inline session (no fullscreen)
-  XR:{session:null,rs:null,active:false,anchors:[],n:0,planes:[],floorY:null},
+
+const G = {
+  isIOS:false, isAndroid:false, caps:{},
+  S:{ ax:0,ay:0,az:0, lax:0,lay:0,laz:0, gravX:0,gravY:0,gravZ:0, pressure:null,pressure0:null, focusDist:null },
+  SF:{ ax:0,ay:0,az:0, lax:0,lay:0,laz:0, gravX:0,gravY:0,gravZ:0 },
+  // Height methods — all null until computed, no bounds
+  h:{ m1:null,m2:null,m3:null,m4:null,m5:null,m6:null,m7:null,m8:null,m9:null, fused:null, conf:0 },
+  // Distance methods
+  d:{ m1:null,m2:null,m3:null,m4:null,m5:null,m6:null,m7:null,m8:null, fused:null, conf:0 },
+  // Shared derived
+  depression:0,   // degrees: positive = cam looking down
+  horizFrac:0.5,  // where horizon appears in frame (0=top, 1=bottom)
+  // Accel integration
+  AI:{ vz:0, hz:0 },
+  // Focus sweep state
+  FS:{ running:false, results:[], best:null },
+  // XR
+  XR:{ session:null, rs:null, hitSrc:null, hitSrcDn:null, active:false, planes:[], anchors:[] },
   // Camera
-  stream:null,camOk:false,camTried:false,
-  H:{h:[],d:[]},
-  LP:0.13,
-  _pa:false,_pfa:false, // pending anchors
+  stream:null, camOk:false,
+  // History
+  Hh:[], Hd:[],
+  LP: 0.12,
+  // Sweep context: 'h' = pointed at floor, 'd' = pointed at subject
+  sweepCtx: null,
 };
 
 const $=id=>document.getElementById(id);
 const T=(id,v)=>{const e=$(id);if(e)e.textContent=v;};
-const LP=(n,o,a=G.LP)=>o+(a*(n-o));
+const LP=(n,o,a=G.LP)=>o+a*(n-o);
+
 let _tt;
-function toast(m,d=2600){const e=$('toast');e.textContent=m;e.classList.add('show');clearTimeout(_tt);_tt=setTimeout(()=>e.classList.remove('show'),d);}
-function dot(id,c){const e=$(id);if(e)e.className='dot'+(c?' '+c:'');}
-function setInfo(id,msg,type='warn'){const e=$(id);if(e)e.innerHTML=msg?`<div class="info ${type}">${msg}</div>`:'';} 
+function toast(m,d=2600){
+  const e=$('toast');e.textContent=m;e.classList.add('show');
+  clearTimeout(_tt);_tt=setTimeout(()=>e.classList.remove('show'),d);
+}
+
+function dot(id,cls){
+  const e=$(id);if(e)e.className='mdot'+(cls?' '+cls:'');
+}
+function badge(id,text,cls){
+  const e=$(id);if(!e)return;e.textContent=text;e.className='badge '+cls;
+}
 
 // ── DETECT ──────────────────────────────────────────────────────
 function detect(){
   const ua=navigator.userAgent;
   G.isIOS=/iPad|iPhone|iPod/.test(ua)&&!window.MSStream;
   G.isAndroid=/Android/.test(ua);
-  $('sp-name').textContent=G.isIOS?'📱 iPhone / iOS':G.isAndroid?'🤖 Android':'💻 Desktop';
-  $('sp-icon').textContent=G.isIOS?'🍎':G.isAndroid?'🤖':'💻';
-  $('sp-note').textContent=G.isIOS?'Sensor permission needed on first launch':G.isAndroid?'Chrome recommended for best accuracy':'Limited sensor support — HTTPS required';
-  $('top-os').textContent=G.isIOS?'iOS':G.isAndroid?'Android':'Desktop';
+  const name=G.isIOS?'📱 iPhone / iOS':G.isAndroid?'🤖 Android':'💻 Desktop';
+  $('sp-n').textContent=name; $('sp-ic').textContent=G.isIOS?'🍎':G.isAndroid?'🤖':'💻';
+  $('sp-t').textContent=G.isIOS?'Tap "Start XR" after launch to enable XR methods':G.isAndroid?'Chrome recommended — enables XR + depth methods':'Limited sensor support on desktop';
+  $('tos').textContent=G.isIOS?'iOS':G.isAndroid?'Android':'Desktop';
 }
 
 // ── CAPABILITIES ────────────────────────────────────────────────
 const CAPS=[
-  {id:'cp1',n:'Camera',      s:'getUserMedia'  },
-  {id:'cp2',n:'Gyroscope',   s:'DeviceOrient.' },
-  {id:'cp3',n:'Accel',       s:'DeviceMotion'  },
-  {id:'cp4',n:'Barometer',   s:'AbsPressure'   },
-  {id:'cp5',n:'GravitySensor',s:'Sensor API'   },
-  {id:'cp6',n:'LinearAccel', s:'Sensor API'    },
-  {id:'cp7',n:'XR Hit-test', s:'inline session'},
-  {id:'cp8',n:'XR Planes',   s:'plane-detect.' },
-  {id:'cp9',n:'XR Depth',    s:'depth-sensing' },
-  {id:'cp10',n:'XR Anchors', s:'anchors'       },
+  {id:'cp1',n:'Camera',        s:'getUserMedia'},
+  {id:'cp2',n:'Orientation',   s:'DeviceOrientation'},
+  {id:'cp3',n:'Motion',        s:'DeviceMotion'},
+  {id:'cp4',n:'Barometer',     s:'AbsolutePressure'},
+  {id:'cp5',n:'GravitySensor', s:'Sensor API'},
+  {id:'cp6',n:'LinearAccel',   s:'Sensor API'},
+  {id:'cp7',n:'WebXR hit-test',s:'immersive-ar / inline'},
+  {id:'cp8',n:'XR Planes',     s:'plane-detection'},
+  {id:'cp9',n:'XR Depth',      s:'depth-sensing'},
+  {id:'cp10',n:'Focus API',    s:'track.getSettings()'},
 ];
 async function checkCaps(){
-  $('cap-grid').innerHTML=CAPS.map(c=>`<div class="cap checking" id="${c.id}"><div class="cap-dot"></div><div><div class="cap-name">${c.n}</div><div class="cap-sub">${c.s}</div></div></div>`).join('');
-  const sc=(id,s)=>{const e=$(id);if(e)e.className='cap '+s;};
+  $('capgrid').innerHTML=CAPS.map(c=>`<div class="ci checking" id="${c.id}"><div class="cd"></div><div><div class="cn">${c.n}</div><div class="csb">${c.s}</div></div></div>`).join('');
+  const sc=(id,s)=>{const e=$(id);if(e)e.className='ci '+s;};
   try{const ds=await navigator.mediaDevices.enumerateDevices();G.caps.cam=ds.some(d=>d.kind==='videoinput');}catch{G.caps.cam=false;} sc('cp1',G.caps.cam?'ok':'err');
-  G.caps.gyro=typeof DeviceOrientationEvent!=='undefined'; sc('cp2',G.caps.gyro?'warn':'err');
-  G.caps.accel=typeof DeviceMotionEvent!=='undefined'; sc('cp3',G.caps.accel?'warn':'err');
+  G.caps.orient=typeof DeviceOrientationEvent!=='undefined'; sc('cp2',G.caps.orient?'ok':'err');
+  G.caps.motion=typeof DeviceMotionEvent!=='undefined'; sc('cp3',G.caps.motion?'ok':'err');
   G.caps.baro=false; if(typeof AbsolutePressureSensor!=='undefined'){try{new AbsolutePressureSensor();G.caps.baro=true;}catch{}} sc('cp4',G.caps.baro?'ok':'err');
   G.caps.grav=false; if(typeof GravitySensor!=='undefined'){try{new GravitySensor();G.caps.grav=true;}catch{}} sc('cp5',G.caps.grav?'ok':'warn');
   G.caps.lin=false; if(typeof LinearAccelerationSensor!=='undefined'){try{new LinearAccelerationSensor();G.caps.lin=true;}catch{}} sc('cp6',G.caps.lin?'ok':'warn');
-  // XR: check inline session support (no fullscreen)
-  G.caps.xr=false; G.caps.xr_hit=false; G.caps.xr_depth=false; G.caps.xr_planes=false; G.caps.xr_anchors=false;
+  G.caps.xr=false; G.caps.xr_depth=false; G.caps.xr_planes=false;
   if(navigator.xr){
     try{
-      // inline session doesn't go fullscreen — we use this for hit-test data only
-      G.caps.xr=await navigator.xr.isSessionSupported('inline');
-      // immersive-ar support tells us if depth/planes are available
-      const ar=await navigator.xr.isSessionSupported('immersive-ar');
-      if(ar){
-        const c=G.isAndroid&&/Chrome/.test(navigator.userAgent);
-        G.caps.xr_hit=c||G.isIOS; G.caps.xr_planes=c; G.caps.xr_depth=c; G.caps.xr_anchors=c;
-      }
+      G.caps.xr=await navigator.xr.isSessionSupported('immersive-ar');
+      if(G.caps.xr){const c=G.isAndroid&&/Chrome/.test(navigator.userAgent);G.caps.xr_depth=c;G.caps.xr_planes=c;}
     }catch{}
   }
-  sc('cp7',G.caps.xr_hit?'ok':G.caps.xr?'warn':'err');
-  sc('cp8',G.caps.xr_planes?'ok':'err'); sc('cp9',G.caps.xr_depth?'ok':'err'); sc('cp10',G.caps.xr_anchors?'ok':'err');
-}
-
-// ═══ XR INLINE SESSION (no fullscreen) ══════════════════════════
-// We use an 'inline' XR session purely for hit-test and pose data.
-// 'inline' mode renders into a normal canvas element — never hijacks screen.
-// NOTE: hit-test requires 'immersive-ar' on most devices. We try inline
-// first, fall back to attempting immersive-ar with dom-overlay so the UI
-// remains visible. If that takes over the screen, we kill it immediately
-// and rely on sensor methods only. The key is: we never DISPLAY anything
-// from XR — we just read the pose + hit data.
-async function startXR(){
-  if(!navigator.xr)return;
-  // Try inline first — truly no fullscreen
-  try{
-    const sess=await navigator.xr.requestSession('inline');
-    G.XR.session=sess; G.XR.active=true;
-    T('s-xr','inline active'); T('xr-tag','XR●'); $('xr-tag').className='xr-tag on';
-    // Inline sessions don't need a base layer but we attach one to an offscreen canvas
-    const oc=document.createElement('canvas'),gl=oc.getContext('webgl');
-    if(gl) sess.updateRenderState({baseLayer:new XRWebGLLayer(sess,gl)});
-    try{G.XR.rs=await sess.requestReferenceSpace('local');}
-    catch{try{G.XR.rs=await sess.requestReferenceSpace('viewer');}catch{}}
-    // hit-test may not work on inline — that's OK, sensors cover it
-    try{
-      const vs=await sess.requestReferenceSpace('viewer');
-      G.XR.hitSrc=await sess.requestHitTestSource?.({space:vs,entityTypes:['plane','point']});
-    }catch{}
-    sess.addEventListener('end',()=>{G.XR.active=false;T('s-xr','ended');T('xr-tag','XR–');$('xr-tag').className='xr-tag';});
-    sess.requestAnimationFrame(xrTick);
-    toast('XR inline session active');
-  }catch{
-    // inline failed — XR data comes from sensors only, that's fine
-    T('s-xr','using sensors');
+  sc('cp7',G.caps.xr?'ok':'err'); sc('cp8',G.caps.xr_planes?'ok':'err'); sc('cp9',G.caps.xr_depth?'ok':'err');
+  G.caps.focus=false; // checked once camera starts
+  sc('cp10','checking');
+  // Update XR method trigger buttons to reflect availability
+  if(!G.caps.xr){
+    ['hb1','hb2','hb3','hb4','db1','db2','db3','db4'].forEach(id=>{
+      const e=$(id);if(e){e.textContent='NO XR';e.disabled=true;e.style.opacity='.4';}
+    });
   }
+  // Barometer badge
+  badge('hb6-st', G.caps.baro?'AUTO':'NOT AVAILABLE', G.caps.baro?'live':'off');
 }
-
-function xrTick(t,frame){
-  if(!G.XR.active)return;
-  G.XR.session.requestAnimationFrame(xrTick);
-  if(!G.XR.rs)return;
-  try{
-    const vp=frame.getViewerPose(G.XR.rs);
-    if(vp){
-      // Use viewer orientation to get depression (more accurate than accelerometer)
-      const{x:qx,y:qy,z:qz,w:qw}=vp.transform.orientation;
-      const fy=2*(qy*qz-qw*qx);
-      const fm=Math.sqrt((2*(qx*qz+qw*qy))**2+fy*fy+(1-2*(qx*qx+qy*qy))**2)||1;
-      G.M.depression=-Math.asin(Math.max(-1,Math.min(1,fy/fm)))*180/Math.PI;
-    }
-    // Hit-test forward
-    if(G.XR.hitSrc){
-      const hits=frame.getHitTestResults(G.XR.hitSrc);
-      if(hits.length>0&&G.XR.rs&&vp){
-        const hp=hits[0].getPose(G.XR.rs);
-        if(hp){
-          const p=vp.transform.position,h=hp.transform.position;
-          G.M.d1=Math.sqrt((p.x-h.x)**2+(p.y-h.y)**2+(p.z-h.z)**2);
-        }
-      }
-    }
-    // Detected planes
-    if(frame.detectedPlanes&&vp){
-      G.XR.planes=[];
-      frame.detectedPlanes.forEach(pl=>{
-        try{const pose=frame.getPose(pl.planeSpace,G.XR.rs);if(pose)G.XR.planes.push({orient:pl.orientation,y:pose.transform.position.y});}catch{}
-      });
-      const hPl=G.XR.planes.filter(p=>p.orient==='horizontal').sort((a,b)=>a.y-b.y);
-      if(hPl.length>0&&vp){
-        G.XR.floorY=hPl[0].y;
-        G.M.h4=vp.transform.position.y-hPl[0].y;
-        const dep=G.M.depression*Math.PI/180,dY=vp.transform.position.y-hPl[0].y;
-        if(dY>0&&Math.abs(dep)>0.01){const hd=dY/Math.tan(Math.abs(dep));G.M.d4=Math.sqrt(hd*hd+dY*dY);}
-      }
-    }
-    // Anchor distances
-    if(G.XR.session.trackedAnchors&&vp){
-      let nd=null;
-      G.XR.session.trackedAnchors.forEach(a=>{
-        try{const ap=frame.getPose(a.anchorSpace,G.XR.rs);if(!ap)return;const p=vp.transform.position,q=ap.transform.position;const dist=Math.sqrt((p.x-q.x)**2+(p.y-q.y)**2+(p.z-q.z)**2);if(nd===null||dist<nd)nd=dist;const st=G.XR.anchors.find(x=>x.a===a);if(st?.floor)G.M.h5=Math.abs(vp.transform.position.y-q.y);}catch{}
-      });
-      if(nd!=null)G.M.d5=nd;
-    }
-    // Pending anchor placements
-    if((G._pa||G._pfa)&&G.XR.hitSrc&&frame){
-      const hits=frame.getHitTestResults(G.XR.hitSrc);
-      if(hits.length>0){const isF=G._pfa;G._pa=false;G._pfa=false;doAnchor(frame,hits[0],isF);}
-    }
-  }catch{}
-  fuseAll(); updateH(); updateD();
-}
-
-async function doAnchor(frame,hit,isFloor){
-  try{const a=await hit.createAnchor?.()??await frame.createAnchor?.(hit.getPose(G.XR.rs)?.transform,G.XR.rs);if(!a){toast('Anchors not supported');return;}G.XR.n++;G.XR.anchors.push({a,id:G.XR.n,floor:isFloor});toast(`Anchor #${G.XR.n}${isFloor?' (floor)':''} ✓`);}catch(e){toast('Anchor: '+e.message);}
-}
-function placeAnchor(isFloor){if(!G.XR.active){toast('XR not active');return;}isFloor?G._pfa=true:G._pa=true;toast('Will place at next hit…');}
-function clearAnchors(){G.XR.anchors.forEach(a=>{try{a.a.delete?.();}catch{}});G.XR.anchors=[];toast('Anchors cleared');}
 
 // ═══ SENSORS ════════════════════════════════════════════════════
 function startSensors(){
-  window.addEventListener('deviceorientation',e=>{
-    if(e.beta!=null)G.S.beta=e.beta; if(e.gamma!=null)G.S.gamma=e.gamma; if(e.alpha!=null)G.S.alpha=e.alpha;
-    if(!G.XR.active)gravDep();
-  },true);
-  window.addEventListener('devicemotion',e=>{
-    const a=e.accelerationIncludingGravity;
-    if(a?.x!=null){G.S.ax=a.x;G.S.ay=a.y;G.S.az=a.z;G.SF.ax=LP(a.x,G.SF.ax);G.SF.ay=LP(a.y,G.SF.ay);G.SF.az=LP(a.z,G.SF.az);}
-    const la=e.acceleration;
-    if(la?.x!=null){G.S.lax=la.x;G.S.lay=la.y;G.S.laz=la.z;G.SF.lax=LP(la.x,G.SF.lax);G.SF.lay=LP(la.y,G.SF.lay);G.SF.laz=LP(la.z,G.SF.laz);}
-    accelInt(e.interval||0.016);
-  },true);
-  // Sensor API
-  if(G.caps.grav) try{const g=new GravitySensor({frequency:30});g.onreading=()=>{G.S.gravX=g.x;G.S.gravY=g.y;G.S.gravZ=g.z;G.SF.gravX=LP(g.x,G.SF.gravX,.08);G.SF.gravY=LP(g.y,G.SF.gravY,.08);G.SF.gravZ=LP(g.z,G.SF.gravZ,.08);gravDep();};g.start();}catch{}
+  if(G.caps.orient) window.addEventListener('deviceorientation', onOrient, true);
+  if(G.caps.motion) window.addEventListener('devicemotion', onMotion, true);
+  if(G.caps.grav) try{const g=new GravitySensor({frequency:30});g.onreading=()=>{G.S.gravX=g.x;G.S.gravY=g.y;G.S.gravZ=g.z;G.SF.gravX=LP(g.x,G.SF.gravX,.08);G.SF.gravY=LP(g.y,G.SF.gravY,.08);G.SF.gravZ=LP(g.z,G.SF.gravZ,.08);updateDep();};g.start();}catch{}
   if(G.caps.lin) try{const l=new LinearAccelerationSensor({frequency:30});l.onreading=()=>{G.S.lax=l.x;G.S.lay=l.y;G.S.laz=l.z;G.SF.lax=LP(l.x,G.SF.lax,.1);G.SF.lay=LP(l.y,G.SF.lay,.1);G.SF.laz=LP(l.z,G.SF.laz,.1);};l.start();}catch{}
   if(G.caps.baro) try{
     const b=new AbsolutePressureSensor({frequency:1});
-    b.onreading=()=>{const hPa=b.pressure;if(G.S.pressure0===null)G.S.pressure0=hPa;G.S.pressure=hPa;const dh=44330*(1-Math.pow(hPa/G.S.pressure0,.1903));G.M.h7=dh;T('s-baro',(dh>=0?'+':'')+dh.toFixed(4)+'m');dot('hd7','g');fuseAll();updateH();};
+    b.onreading=()=>{
+      const hPa=b.pressure;
+      if(G.S.pressure0===null) G.S.pressure0=hPa;
+      G.S.pressure=hPa;
+      // Δh from launch — this is relative altitude change, not absolute height
+      const dh=44330*(1-Math.pow(hPa/G.S.pressure0,.1903));
+      G.h.m6=dh;
+      T('ss-baro',(dh>=0?'+':'')+dh.toFixed(4)+'m'); dot('hd6','grn');
+      fuse(); renderUI();
+    };
     b.start();
   }catch{}
 }
 
-// Depression angle from pure gravity vector (no orientation assumptions)
-function gravDep(){
+function onOrient(e){
+  if(e.beta!=null||e.gamma!=null){
+    // Use DeviceOrientation as fallback for gravity direction
+    // beta=90 = upright portrait. depression = 90 - beta (positive = looking down)
+    const beta=e.beta??90;
+    if(!G.caps.grav){
+      // Approximate depression from beta angle
+      G.depression_from_orient = 90 - beta; // +ve = looking down
+    }
+  }
+  updateDep();
+}
+
+function onMotion(e){
+  const a=e.accelerationIncludingGravity;
+  if(a?.x!=null){G.S.ax=a.x;G.S.ay=a.y;G.S.az=a.z;G.SF.ax=LP(a.x,G.SF.ax);G.SF.ay=LP(a.y,G.SF.ay);G.SF.az=LP(a.z,G.SF.az);}
+  const la=e.acceleration;
+  if(la?.x!=null){G.S.lax=la.x;G.S.lay=la.y;G.S.laz=la.z;G.SF.lax=LP(la.x,G.SF.lax);G.SF.lay=LP(la.y,G.SF.lay);G.SF.laz=LP(la.z,G.SF.laz);}
+  accelInt(e.interval||0.016);
+  updateDep();
+}
+
+// Depression from raw gravity vector (most accurate, no assumptions)
+function updateDep(){
   const gx=G.caps.grav?G.SF.gravX:G.SF.ax;
   const gy=G.caps.grav?G.SF.gravY:G.SF.ay;
   const gz=G.caps.grav?G.SF.gravZ:G.SF.az;
-  const gm=Math.sqrt(gx*gx+gy*gy+gz*gz);if(gm<0.1)return;
-  // Camera points in -Z device frame. dot([0,0,-1], g_hat) = -gz/gm = sin(depression)
-  if(!G.XR.active) G.M.depression=Math.asin(Math.max(-1,Math.min(1,-gz/gm)))*180/Math.PI;
-  G.M.horizon=Math.max(.02,Math.min(.98,.5-G.M.depression/60));
-  T('s-dep',G.M.depression.toFixed(3)+'°');
-  T('s-gxyz',`${gx.toFixed(2)}, ${gy.toFixed(2)}, ${gz.toFixed(2)}`);
-  T('s-vp',(G.M.horizon*100).toFixed(1)+'%');
+  const gm=Math.sqrt(gx*gx+gy*gy+gz*gz);
+  if(gm>.1){
+    // Camera -Z axis. dot([0,0,-1],[gx,gy,gz]/gm) = -gz/gm = sin(depression)
+    const dep=Math.asin(Math.max(-1,Math.min(1,-gz/gm)))*180/Math.PI;
+    if(!G.XR.active) G.depression=dep;
+    // h9: gravity pitch gives depression angle. Once we have ANY distance, compute h.
+    // Back-calculate height from best available distance + depression
+    const dBest = G.d.fused ?? G.d.m7 ?? G.d.m6;
+    if(dBest!=null && Math.abs(dep)>.5 && Math.abs(dep)<88){
+      const depRad=Math.abs(dep)*Math.PI/180;
+      // h = d_slant * sin(dep) [slant distance to floor]
+      G.h.m9 = dBest * Math.abs(Math.sin(depRad));
+      dot('hd9','grn');
+    }
+  }
+  T('ss-dep', G.depression.toFixed(3)+'°');
+  T('ss-g', `${(G.caps.grav?G.SF.gravX:G.SF.ax).toFixed(2)}, ${(G.caps.grav?G.SF.gravY:G.SF.ay).toFixed(2)}, ${(G.caps.grav?G.SF.gravZ:G.SF.az).toFixed(2)}`);
+  fuse(); renderUI();
 }
 
-// Vertical accel integration for Δh
+// Vertical accel integration — gives Δh from launch (relative)
 function accelInt(dt){
   if(dt<=0||dt>.5)return;
   let lx=G.S.lax,ly=G.S.lay,lz=G.S.laz;
-  const ok=Math.abs(lx)+Math.abs(ly)+Math.abs(lz)>.001;
-  if(!ok){lx=G.S.ax-G.SF.ax;ly=G.S.ay-G.SF.ay;lz=G.S.az-G.SF.az;}
+  const hasL=Math.abs(lx)+Math.abs(ly)+Math.abs(lz)>.001;
+  if(!hasL){lx=G.S.ax-G.SF.ax;ly=G.S.ay-G.SF.ay;lz=G.S.az-G.SF.az;}
   const gx=G.SF.gravX||G.SF.ax,gy=G.SF.gravY||G.SF.ay,gz=G.SF.gravZ||G.SF.az;
   const gm=Math.sqrt(gx*gx+gy*gy+gz*gz);if(gm<.1)return;
+  // Project linear accel onto world-up (opposite of gravity direction)
   const av=(lx*(-gx)+ly*(-gy)+lz*(-gz))/gm;
   const tot=Math.sqrt(lx*lx+ly*ly+lz*lz);
-  if(tot<.15)G.AI.vz*=.85; else G.AI.vz+=av*dt;
+  if(tot<.15) G.AI.vz*=.85; else G.AI.vz+=av*dt;
   G.AI.hz+=G.AI.vz*dt;
-  if(G.M.h7!=null){G.AI.hz+=(G.M.h7-G.AI.hz)*.02;G.AI.vz*=.998;}
-  G.M.h8=G.AI.hz;
-  T('s-dh',(G.AI.hz>=0?'+':'')+G.AI.hz.toFixed(4)+'m'); dot('hd8','g');
+  // Barometric correction for drift
+  if(G.h.m6!=null){G.AI.hz+=(G.h.m6-G.AI.hz)*.02;G.AI.vz*=.998;}
+  G.h.m7=G.AI.hz;
+  T('ss-dh',(G.AI.hz>=0?'+':'')+G.AI.hz.toFixed(4)+'m'); dot('hd7','grn');
+}
+
+// ═══ WEBXR ══════════════════════════════════════════════════════
+// Uses immersive-ar but we immediately suppress the camera passthrough
+// by keeping our own video element visible. On Android Chrome, dom-overlay
+// keeps the HTML on screen over the XR camera — giving us data without
+// losing our UI. We only read data, never render a 3D scene.
+let xrStarted=false;
+async function startXR(){
+  if(xrStarted)return; xrStarted=true;
+  if(!G.caps.xr){toast('WebXR not available on this device');xrStarted=false;return;}
+  toast('Starting XR session…');
+  const opt=['plane-detection','depth-sensing','anchors','light-estimation'];
+  const init={
+    requiredFeatures:['local-floor','hit-test'],
+    optionalFeatures:opt,
+    // dom-overlay keeps our HTML visible over the XR camera passthrough
+    // The user sees our UI, XR runs behind it providing data
+  };
+  try{init.domOverlay={root:document.body};}catch{}
+  if(G.caps.xr_depth) init.depthSensing={usagePreference:['cpu-optimized'],dataFormatPreference:['luminance-alpha']};
+  try{
+    G.XR.session=await navigator.xr.requestSession('immersive-ar',init);
+    G.XR.active=true;
+    $('xrtag').textContent='XR●'; $('xrtag').className='xrtag on';
+    T('ss-xr','active — reading pose + planes + depth');
+    // Update all XR trigger buttons to show "active"
+    ['hb1','hb2','hb3','hb4','db1','db2','db3','db4'].forEach(id=>{
+      const e=$(id);if(e){e.textContent='XR ON';e.className='mtrig run';}
+    });
+    G.XR.rs_floor=await G.XR.session.requestReferenceSpace('local-floor');
+    G.XR.rs_viewer=await G.XR.session.requestReferenceSpace('viewer');
+    // Hit-test sources
+    G.XR.hitSrc=await G.XR.session.requestHitTestSource({space:G.XR.rs_viewer,entityTypes:['plane','point','mesh']});
+    try{G.XR.hitSrcDn=await G.XR.session.requestHitTestSource({space:G.XR.rs_viewer,entityTypes:['plane']});}catch{}
+    // Offscreen GL for required baseLayer
+    const oc=document.createElement('canvas'),gl=oc.getContext('webgl');
+    if(gl){try{if(gl.makeXRCompatible)await gl.makeXRCompatible();}catch{}G.XR.session.updateRenderState({baseLayer:new XRWebGLLayer(G.XR.session,gl)});}
+    G.XR.session.addEventListener('end',()=>{
+      G.XR.active=false; xrStarted=false;
+      $('xrtag').textContent='XR–'; $('xrtag').className='xrtag';
+      T('ss-xr','ended');
+      ['hb1','hb2','hb3','hb4','db1','db2','db3','db4'].forEach(id=>{const e=$(id);if(e){e.textContent='START XR';e.className='mtrig';}});
+      // Clear XR-sourced values
+      G.h.m1=G.h.m2=G.h.m3=G.h.m4=null;
+      G.d.m1=G.d.m2=G.d.m3=G.d.m4=null;
+    });
+    G.XR.session.requestAnimationFrame(xrFrame);
+    toast('WebXR active — XR methods now live');
+  }catch(e){
+    G.XR.active=false; xrStarted=false;
+    toast('XR failed: '+e.message,4000);
+    T('ss-xr','failed: '+e.message);
+    ['hb1','hb2','hb3','hb4','db1','db2','db3','db4'].forEach(id=>{const e2=$(id);if(e2){e2.textContent='RETRY';e2.className='mtrig';}});
+  }
+}
+
+function xrFrame(t,frame){
+  if(!G.XR.active)return;
+  G.XR.session.requestAnimationFrame(xrFrame);
+  const rs=G.XR.rs_floor;
+  try{
+    // ①  Height: viewer Y in local-floor (floor=0)
+    const vp=frame.getViewerPose(rs);
+    if(vp){
+      G.h.m1=vp.transform.position.y; dot('hd1','pur');
+      // Depression from XR orientation quaternion (more accurate)
+      const{x:qx,y:qy,z:qz,w:qw}=vp.transform.orientation;
+      const fy=2*(qy*qz-qw*qx);
+      const fm=Math.sqrt((2*(qx*qz+qw*qy))**2+fy*fy+(1-2*(qx*qx+qy*qy))**2)||1;
+      G.depression=-Math.asin(Math.max(-1,Math.min(1,fy/fm)))*180/Math.PI;
+      // ① Distance: forward hit-test
+      if(G.XR.hitSrc){
+        const hits=frame.getHitTestResults(G.XR.hitSrc);
+        if(hits.length>0){
+          const hp=hits[0].getPose(rs);
+          if(hp){
+            const p=vp.transform.position,h=hp.transform.position;
+            G.d.m1=Math.sqrt((p.x-h.x)**2+(p.y-h.y)**2+(p.z-h.z)**2);
+            dot('dd1','pur');
+          }
+        }
+      }
+      // ② Height: downward hit-test
+      if(G.XR.hitSrcDn){
+        const hD=frame.getHitTestResults(G.XR.hitSrcDn);
+        if(hD.length>0){const hp=hD[0].getPose(rs);if(hp){G.h.m2=vp.transform.position.y-hp.transform.position.y;dot('hd2','pur');}}
+      }
+    }
+    // ④ Plane detection
+    if(frame.detectedPlanes&&vp){
+      G.XR.planes=[];
+      frame.detectedPlanes.forEach(p=>{try{const pose=frame.getPose(p.planeSpace,rs);if(pose)G.XR.planes.push({o:p.orientation,y:pose.transform.position.y});}catch{}});
+      const horiz=G.XR.planes.filter(p=>p.o==='horizontal').sort((a,b)=>a.y-b.y);
+      if(horiz.length>0&&vp){
+        G.h.m4=vp.transform.position.y-horiz[0].y; dot('hd4','pur');
+        const dep=G.depression*Math.PI/180,dY=vp.transform.position.y-horiz[0].y;
+        if(dY>0&&Math.abs(dep)>.01){const hd=dY/Math.tan(Math.abs(dep));G.d.m4=Math.sqrt(hd*hd+dY*dY);dot('dd4','pur');}
+      }
+    }
+    // ③ XR depth
+    if(G.caps.xr_depth&&vp){
+      for(const view of vp.views){
+        try{
+          const di=frame.getDepthInformation?.(view);if(!di)continue;
+          // Distance: center pixel
+          const dc=di.getDepthInMeters(0.5,0.5);if(dc>0){G.d.m2=dc;dot('dd2','pur');}
+          // Distance: 5×5 grid min
+          let mn=Infinity;
+          for(let gx=.3;gx<=.7;gx+=.1)for(let gy=.3;gy<=.7;gy+=.1){try{const d=di.getDepthInMeters(gx,gy);if(d>0&&d<mn)mn=d;}catch{}}
+          if(mn<Infinity){G.d.m3=mn;dot('dd3','pur');}
+          // Height: bottom rows
+          let fs=0,fn=0;
+          for(let bx=.3;bx<=.7;bx+=.1)for(let by=.85;by<=.95;by+=.05){try{const d=di.getDepthInMeters(bx,by);if(d>0){fs+=d;fn++;}}catch{}}
+          if(fn>0){G.h.m3=fs/fn*Math.cos(30*Math.PI/180);dot('hd3','pur');}
+        }catch{}
+      }
+    }
+  }catch{}
+  fuse(); renderUI();
 }
 
 // ═══ CAMERA ════════════════════════════════════════════════════
 async function startCam(){
-  if(G.camTried)return; G.camTried=true;
   try{
     G.stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{exact:'environment'},width:{ideal:960},height:{ideal:720}}});
     G.camOk=true;
-    [$('vid-h'),$('vid-d')].forEach(v=>{v.srcObject=G.stream;v.play().catch(()=>{});});
-    $('cam-ph-h').classList.add('gone');
+    // Attach same stream to both video elements
+    [$('vid'),$('vid2')].forEach(v=>{v.srcObject=G.stream;v.play().catch(()=>{});});
+    $('camph').classList.add('gone');
+    // Check focus distance availability
     const track=G.stream.getVideoTracks()[0];
-    if(track) setInterval(()=>{try{const s=track.getSettings?.();if(s?.focusDistance!=null)G.S.focusDist=s.focusDistance;}catch{}},1000);
-    render();
-  }catch(e){G.camTried=false;setInfo('h-info','Camera unavailable: '+e.message,`<button class="retry" onclick="startCam()">Retry</button>`);}
+    if(track){
+      setInterval(()=>{
+        try{
+          const s=track.getSettings?.();
+          if(s?.focusDistance!=null&&s.focusDistance>0){
+            G.S.focusDist=s.focusDistance;
+            G.d.m8=s.focusDistance; dot('dd8','grn');
+            if(!G.caps.focus){G.caps.focus=true; badge('db8-st','AUTO','live'); sc10('ok');}
+          }
+        }catch{}
+      },800);
+      // Check capabilities
+      try{const c=track.getCapabilities?.();if(c?.focusDistance){G.caps.focus=true;badge('db8-st','AUTO','live');sc10('ok');}}catch{}
+    }
+    startRenderLoop();
+  }catch(e){
+    const el=$('herr');if(el)el.innerHTML=`<div class="ebox">Camera failed: ${e.message}<br><button class="retry" onclick="startCam()">Retry</button></div>`;
+  }
 }
+function sc10(s){const e=$('cp10');if(e)e.className='ci '+s;}
 
-// ═══ RENDER LOOP ═══════════════════════════════════════════════
-function render(){
-  const v1=$('vid-h'),c1=$('cv-h'),x1=c1.getContext('2d');
-  const v2=$('vid-d'),c2=$('cv-d'),x2=c2.getContext('2d');
+// ═══ RENDER LOOP ════════════════════════════════════════════════
+function startRenderLoop(){
+  const v=$('vid'),cv=$('cvc'),ctx=cv.getContext('2d');
+  const v2=$('vid2'),cv2=$('cvc2'),ctx2=cv2.getContext('2d');
   const tmp=document.createElement('canvas'),tc=tmp.getContext('2d');
+  let frame_n=0;
+
   function frame(){
     requestAnimationFrame(frame);
-    const W=v1.videoWidth||0,H=v1.videoHeight||0;if(!W)return;
-    // ── image analysis (shared) ──
-    const sw=Math.floor(W*.35),sh=Math.floor(H*.35);
-    tmp.width=sw;tmp.height=sh;tc.drawImage(v1,0,0,sw,sh);
-    const id=tc.getImageData(0,0,sw,sh);
-    doHorizon(id,sw,sh);
-    doSobelDepth(id,sw,sh);
-    // ── height overlay ──
-    c1.width=W;c1.height=H;x1.clearRect(0,0,W,H);
-    drawH(x1,W,H);
-    // ── distance overlay ──
-    c2.width=W;c2.height=H;x2.clearRect(0,0,W,H);
-    drawD(x2,W,H);
-    fuseAll();updateH();updateD();pushHist();
+    const W=v.videoWidth||0,H=v.videoHeight||0;if(!W)return;
+    frame_n++;
+
+    // Image analysis every other frame (performance)
+    if(frame_n%2===0){
+      const sw=Math.floor(W*.3),sh=Math.floor(H*.3);
+      tmp.width=sw;tmp.height=sh;tc.drawImage(v,0,0,sw,sh);
+      const id=tc.getImageData(0,0,sw,sh);
+      // h8: Visual horizon (Sobel strongest horizontal edge row)
+      doHorizon(id,sw,sh,W,H);
+      // d7: Visual Sobel depth
+      doSobelDepth(id,sw,sh);
+      fuse(); renderUI();
+    }
+
+    // Height overlay
+    cv.width=W;cv.height=H;ctx.clearRect(0,0,W,H);
+    drawHoverlay(ctx,W,H);
+    // Distance overlay
+    cv2.width=W;cv2.height=H;ctx2.clearRect(0,0,W,H);
+    drawDoverlay(ctx2,W,H);
   }
   frame();
 }
 
-// Sobel-based horizon detection
-function doHorizon(id,w,h){
-  let maxE=0,maxY=Math.floor(h*.5);
-  for(let y=Math.floor(h*.1);y<Math.floor(h*.9);y++){
-    let e=0;for(let x=2;x<w-2;x++){e+=Math.abs(lumaPx(id,x,y+1,w)-lumaPx(id,x,y-1,w));}
+function doHorizon(id,sw,sh){
+  // Find row with strongest horizontal edge = visual horizon
+  let maxE=0,maxY=Math.floor(sh*.5);
+  for(let y=Math.floor(sh*.1);y<Math.floor(sh*.9);y++){
+    let e=0;
+    for(let x=2;x<sw-2;x++) e+=Math.abs(lumaPx(id,x,y+1,sw)-lumaPx(id,x,y-1,sw));
     if(e>maxE){maxE=e;maxY=y;}
   }
-  const f=maxY/h;
-  if(!G.XR.active) G.M.horizon=f;
-  T('s-vp',(f*100).toFixed(1)+'%');
-  // h6: only once we have distance
-  const dr=(f-.5)*(60*Math.PI/180);
-  if(G.M.d_fused!=null&&Math.abs(dr)>.008) G.M.h6=G.M.d_fused*Math.tan(Math.abs(dr));
+  G.horizFrac=maxY/sh;
+  T('ss-vp',(G.horizFrac*100).toFixed(1)+'% from top');
+  // h8: The horizon fraction tells us the camera depression angle
+  // depression = (horizFrac - 0.5) * FOV_v (portrait ~60°)
+  // This is independent of distance — it's a purely geometric measure.
+  // We get the angle; to get height we need distance.
+  const depFromHorizon=(G.horizFrac-.5)*60;  // degrees
+  G.h.m8_dep=depFromHorizon; // store the angle
+  // If we have any distance, compute height from it
+  const dBest=G.d.fused??G.d.m7;
+  if(dBest!=null&&Math.abs(depFromHorizon)>.5){
+    G.h.m8=dBest*Math.tan(Math.abs(depFromHorizon)*Math.PI/180);
+    dot('hd8','grn');
+  } else {
+    // Show depression angle at least
+    dot('hd8', Math.abs(depFromHorizon)>.3?'grn':'');
+  }
 }
 
-// Center-region Sobel density → approximate scene depth
 function doSobelDepth(id,w,h){
   const cx=Math.floor(w/2),cy=Math.floor(h/2),r=Math.floor(w/8);
   let s=0,n=0;
@@ -662,228 +855,264 @@ function doSobelDepth(id,w,h){
     if(x<1||x>=w-1||y<1||y>=h-1)continue;
     s+=sobel(id,x,y,w);n++;
   }
-  if(n)G.M.d8=6/(1+(s/n)/40);
+  if(n){G.d.m7=6/(1+(s/n)/40);dot('dd7','grn');}
 }
 
-// Height overlay
-function drawH(ctx,W,H){
-  // Subtle grid
-  ctx.strokeStyle='rgba(0,212,180,.025)';ctx.lineWidth=.5;
+// ── Height overlay
+function drawHoverlay(ctx,W,H){
+  // Grid
+  ctx.strokeStyle='rgba(0,212,180,.02)';ctx.lineWidth=.5;
   for(let i=1;i<4;i++){ctx.beginPath();ctx.moveTo(0,H*i/4);ctx.lineTo(W,H*i/4);ctx.stroke();}
   // Horizon line
-  const hy=Math.max(3,Math.min(H-3,G.M.horizon*H));
-  ctx.save();
+  const hy=Math.max(3,Math.min(H-3,G.horizFrac*H));
   const gr=ctx.createLinearGradient(0,0,W,0);
-  gr.addColorStop(0,'transparent');gr.addColorStop(.4,'rgba(255,82,82,.5)');gr.addColorStop(.6,'rgba(255,82,82,.5)');gr.addColorStop(1,'transparent');
-  ctx.strokeStyle=gr;ctx.lineWidth=1;ctx.setLineDash([4,5]);
+  gr.addColorStop(0,'transparent');gr.addColorStop(.35,'rgba(255,82,82,.45)');gr.addColorStop(.65,'rgba(255,82,82,.45)');gr.addColorStop(1,'transparent');
+  ctx.strokeStyle=gr;ctx.lineWidth=1;ctx.setLineDash([3,5]);
   ctx.beginPath();ctx.moveTo(0,hy);ctx.lineTo(W,hy);ctx.stroke();ctx.setLineDash([]);
-  // Ground fill
-  ctx.fillStyle='rgba(0,212,180,.015)';ctx.fillRect(0,hy,W,H-hy);
-  ctx.restore();
-  // Gravity direction indicator (small arrow from center)
+  ctx.fillStyle='rgba(0,212,180,.012)';ctx.fillRect(0,hy,W,H-hy);
+  // Gravity arrow
   const gx=G.SF.gravX||G.SF.ax,gy=G.SF.gravY||G.SF.ay,gz=G.SF.gravZ||G.SF.az;
   const gm=Math.sqrt(gx*gx+gy*gy+gz*gz)||1;
-  const ax=W*.5+gx/gm*18,ay=H*.5+gy/gm*18;
-  ctx.strokeStyle='rgba(245,197,66,.4)';ctx.lineWidth=1.5;
+  const ax=W*.5+gx/gm*16,ay=H*.5+gy/gm*16;
+  ctx.strokeStyle='rgba(245,197,66,.35)';ctx.lineWidth=1.5;
   ctx.beginPath();ctx.moveTo(W*.5,H*.5);ctx.lineTo(ax,ay);ctx.stroke();
-  ctx.beginPath();ctx.arc(ax,ay,2,0,Math.PI*2);ctx.fillStyle='rgba(245,197,66,.55)';ctx.fill();
-  // Label near horizon
-  const hv=G.M.h_fused;
-  const ly=Math.max(13,Math.min(H-4,hy-9));
+  ctx.beginPath();ctx.arc(ax,ay,2,0,Math.PI*2);ctx.fillStyle='rgba(245,197,66,.5)';ctx.fill();
+  // Height label
+  const hv=G.h.fused;
+  const ly=Math.max(12,Math.min(H-4,hy-8));
   ctx.save();ctx.fillStyle='rgba(8,14,24,.88)';
-  rr(ctx,W/2-46,ly-11,92,13,3);ctx.fill();
-  ctx.fillStyle=G.M.h_conf>50?'#00d4b4':'#f5c542';ctx.font='bold 9px DM Mono,monospace';ctx.textAlign='center';
-  ctx.fillText(hv!=null?`h = ${hv.toFixed(3)} m  (${G.M.h_conf}%)`:'awaiting sensors',W/2,ly);ctx.restore();
-  // Active method count
-  const n=[G.M.h1,G.M.h2,G.M.h3,G.M.h4,G.M.h5,G.M.h6,G.M.h7,G.M.h8,G.M.h9].filter(v=>v!=null).length;
-  ctx.font='8px DM Mono,monospace';ctx.fillStyle='rgba(0,212,180,.45)';ctx.textAlign='left';ctx.fillText(n+'/9',5,H-5);
-  // Update HUD elements
-  const dep=G.M.depression;
-  T('hh-tl',`g=${(Math.sqrt(G.SF.ax**2+G.SF.ay**2+G.SF.az**2)).toFixed(1)}`);
-  T('hh-tr',`dep=${dep.toFixed(1)}°`);
-  T('hh-bl',G.XR.active?'XR✓':'sensors');
-  T('hh-br',hv!=null?`h=${hv.toFixed(3)}m`:'h=–');
-  $('hor-h').style.top=(Math.max(2,Math.min(98,G.M.horizon*100)))+'%';
+  rr(ctx,W/2-48,ly-10,96,13,3);ctx.fill();
+  ctx.fillStyle=G.h.conf>50?'#00d4b4':'#f5c542';
+  ctx.font='bold 9px DM Mono,monospace';ctx.textAlign='center';
+  ctx.fillText(hv!=null?`h = ${hv.toFixed(3)} m  (${G.h.conf}%)`:'awaiting sensors',W/2,ly);
+  ctx.restore();
+  // HUDs
+  const gMag=(Math.sqrt(G.SF.ax**2+G.SF.ay**2+G.SF.az**2)).toFixed(1);
+  T('htl',`|g|=${gMag}`); T('htr',`dep=${G.depression.toFixed(1)}°`); T('hbr',hv!=null?`h=${hv.toFixed(3)}m`:'h=–');
+  $('hl').style.top=(Math.max(2,Math.min(98,G.horizFrac*100)))+'%';
+  // Method count
+  const n=[G.h.m1,G.h.m2,G.h.m3,G.h.m4,G.h.m5,G.h.m6,G.h.m7,G.h.m8,G.h.m9].filter(v=>v!=null).length;
+  ctx.font='8px DM Mono,monospace';ctx.fillStyle='rgba(0,212,180,.4)';ctx.textAlign='left';ctx.fillText(n+'/9 methods',5,H-5);
 }
 
-// Distance overlay
-function drawD(ctx,W,H){
-  const dep=G.M.depression,dv=G.M.d_fused,cx=W/2,cy=H/2;
-  // Depression projection ray
+// ── Distance overlay
+function drawDoverlay(ctx,W,H){
+  const dep=G.depression,dv=G.d.fused,cx=W/2,cy=H/2;
   if(Math.abs(dep)>.5){
     const dr=dep*Math.PI/180;
-    ctx.strokeStyle='rgba(245,197,66,.3)';ctx.lineWidth=1.2;ctx.setLineDash([3,4]);
-    ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+Math.sin(dr)*H*.25,cy+Math.cos(dr)*H*.25);ctx.stroke();ctx.setLineDash([]);
+    ctx.strokeStyle='rgba(245,197,66,.25)';ctx.lineWidth=1;ctx.setLineDash([3,4]);
+    ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+Math.sin(dr)*H*.24,cy+Math.cos(dr)*H*.24);ctx.stroke();ctx.setLineDash([]);
   }
-  // Target ring + distance label
   if(dv!=null){
     const sz=Math.max(10,Math.min(50,280/dv));
-    ctx.strokeStyle='rgba(245,197,66,.85)';ctx.lineWidth=1.5;
+    ctx.strokeStyle='rgba(245,197,66,.8)';ctx.lineWidth=1.5;
     ctx.beginPath();ctx.arc(cx,cy,sz,0,Math.PI*2);ctx.stroke();
-    // tick marks at 4 cardinal points
     for(let a=0;a<Math.PI*2;a+=Math.PI/2){ctx.beginPath();ctx.moveTo(cx+Math.cos(a)*sz,cy+Math.sin(a)*sz);ctx.lineTo(cx+Math.cos(a)*(sz+5),cy+Math.sin(a)*(sz+5));ctx.stroke();}
     ctx.save();ctx.fillStyle='rgba(8,14,24,.9)';rr(ctx,cx-48,cy+sz+3,96,13,3);ctx.fill();
     ctx.fillStyle='#f5c542';ctx.font='bold 9px DM Mono,monospace';ctx.textAlign='center';
-    ctx.fillText(`${dv.toFixed(3)} m  (${G.M.d_conf}%)`,cx,cy+sz+12);ctx.restore();
+    ctx.fillText(`${dv.toFixed(3)} m  (${G.d.conf}%)`,cx,cy+sz+12);ctx.restore();
   } else {
-    ctx.fillStyle='rgba(255,82,82,.45)';ctx.font='8px DM Mono,monospace';ctx.textAlign='center';
-    ctx.fillText(Math.abs(dep)<.5?'tilt to measure':'scanning…',cx,cy+34);
+    ctx.fillStyle='rgba(255,82,82,.4)';ctx.font='8px DM Mono,monospace';ctx.textAlign='center';
+    ctx.fillText(Math.abs(dep)<.5?'tilt camera to measure':'scanning…',cx,cy+34);
   }
-  // Horizon line
   const hf=Math.max(.02,Math.min(.98,.5-dep/60));
-  ctx.strokeStyle='rgba(255,82,82,.25)';ctx.lineWidth=1;ctx.setLineDash([2,5]);
+  ctx.strokeStyle='rgba(255,82,82,.2)';ctx.lineWidth=1;ctx.setLineDash([2,5]);
   ctx.beginPath();ctx.moveTo(0,hf*H);ctx.lineTo(W,hf*H);ctx.stroke();ctx.setLineDash([]);
-  // HUDs
-  const hv=G.M.h_fused;
-  T('dh-tl',`dep=${dep.toFixed(1)}°`);
-  T('dh-tr',hv!=null?`h=${hv.toFixed(2)}m`:'h=?');
-  T('dh-bl',G.XR.active?'XR✓':'sensors');
-  T('dh-br',dv!=null?`D=${dv.toFixed(3)}m`:'D=–');
-  $('hor-d').style.top=(hf*100)+'%';
-  // Count
-  const n=[G.M.d1,G.M.d2,G.M.d3,G.M.d4,G.M.d5,G.M.d6,G.M.d7,G.M.d8].filter(v=>v!=null).length;
-  ctx.font='8px DM Mono,monospace';ctx.fillStyle='rgba(245,197,66,.45)';ctx.textAlign='left';ctx.fillText(n+'/8',5,H-5);
+  T('dtl',`dep=${dep.toFixed(1)}°`); T('dtr',G.h.fused!=null?`h=${G.h.fused.toFixed(2)}m`:'h=?'); T('dbr',dv!=null?`D=${dv.toFixed(3)}m`:'D=–');
+  $('hl2').style.top=(hf*100)+'%';
+  const n=[G.d.m1,G.d.m2,G.d.m3,G.d.m4,G.d.m5,G.d.m6,G.d.m7,G.d.m8].filter(v=>v!=null).length;
+  ctx.font='8px DM Mono,monospace';ctx.fillStyle='rgba(245,197,66,.4)';ctx.textAlign='left';ctx.fillText(n+'/8 methods',5,H-5);
 }
 
 // ═══ FUSION ════════════════════════════════════════════════════
-const HW=[5,5,4,4,4,1,3,1,3];
-const DW=[5,5,4,4,4,1.5,3,.5];
-function wFuse(vs,ws){
-  const pool=[];vs.forEach((v,i)=>{if(v!=null)pool.push({v,w:ws[i]});});
+const HW=[5,5,4,4,3,3,1,2,2]; // h1..h9 weights
+const DW=[5,5,4,4,3,1.5,0.5,2]; // d1..d8 weights
+function wFuse(vals,wts){
+  const pool=[];vals.forEach((v,i)=>{if(v!=null)pool.push({v,w:wts[i]});});
   if(!pool.length)return null;
-  const ws2=pool.reduce((s,m)=>s+m.w,0);
-  const wm=pool.reduce((s,m)=>s+m.v*m.w,0)/ws2;
-  const wvar=pool.reduce((s,m)=>s+m.w*(m.v-wm)**2,0)/ws2;
-  const std=Math.sqrt(wvar);
-  const cl=std>.05?pool.filter(m=>Math.abs(m.v-wm)<2.5*std):pool;
-  const ws3=cl.reduce((s,m)=>s+m.w,0);
-  return cl.reduce((s,m)=>s+m.v*m.w,0)/ws3;
-}
-function fuseAll(){
-  G.M.h_fused=wFuse([G.M.h1,G.M.h2,G.M.h3,G.M.h4,G.M.h5,G.M.h6,G.M.h7,G.M.h8,G.M.h9],HW);
-  const hp=[G.M.h1,G.M.h2,G.M.h3,G.M.h4,G.M.h5,G.M.h6,G.M.h7,G.M.h8,G.M.h9].filter(v=>v!=null);
-  G.M.h_conf=Math.min(100,hp.length*10+(G.XR.active?25:0)+(G.M.h1!=null?15:0));
-  // Trig needs height
-  const dr=Math.abs(G.M.depression)*Math.PI/180;
-  if(G.M.h_fused!=null&&dr>.017&&dr<1.52)G.M.d6=G.M.h_fused/Math.tan(dr);
-  G.M.d_fused=wFuse([G.M.d1,G.M.d2,G.M.d3,G.M.d4,G.M.d5,G.M.d6,G.M.d7,G.M.d8],DW);
-  const dp=[G.M.d1,G.M.d2,G.M.d3,G.M.d4,G.M.d5,G.M.d6,G.M.d7,G.M.d8].filter(v=>v!=null);
-  G.M.d_conf=Math.min(100,dp.length*10+(G.XR.active?25:0)+(G.M.d1!=null?15:0));
-  // Horizon-based height needs fused distance
-  const hdr=(G.M.horizon-.5)*(60*Math.PI/180);
-  if(G.M.d_fused!=null&&Math.abs(hdr)>.008)G.M.h6=G.M.d_fused*Math.tan(Math.abs(hdr));
+  const ws=pool.reduce((s,m)=>s+m.w,0);
+  const wm=pool.reduce((s,m)=>s+m.v*m.w,0)/ws;
+  const wv=pool.reduce((s,m)=>s+m.w*(m.v-wm)**2,0)/ws;
+  const std=Math.sqrt(wv);
+  // Outlier rejection: only if more than 2 sources
+  const cl=std>.05&&pool.length>2?pool.filter(m=>Math.abs(m.v-wm)<2.5*std):pool;
+  const ws2=cl.reduce((s,m)=>s+m.w,0);
+  return cl.reduce((s,m)=>s+m.v*m.w,0)/ws2;
 }
 
-// ═══ UI ════════════════════════════════════════════════════════
-function updateH(){
-  const hv=G.M.h_fused,c=G.M.h_conf;
-  T('h-val',hv!=null?hv.toFixed(4)+'m':'–');
-  T('h-conf',c.toFixed(0));
-  const n=[G.M.h1,G.M.h2,G.M.h3,G.M.h4,G.M.h5,G.M.h6,G.M.h7,G.M.h8,G.M.h9].filter(v=>v!=null).length;
-  T('h-cnt',n+' method'+(n!==1?'s':'')+' active');
-  T('h-src',bHN()); $('h-cbar').style.width=c+'%'; $('h-cbar2').style.width=c+'%';
-  const hv2=[G.M.h1,G.M.h2,G.M.h3,G.M.h4,G.M.h5,G.M.h6,G.M.h7,G.M.h8,G.M.h9];
-  const hc=['p','p','p','p','p','g','g','g','y'];
+function fuse(){
+  // Distance first (some height methods depend on it)
+  const dep=G.depression*Math.PI/180;
+  // d6 trig: only once h_fused exists
+  if(G.h.fused!=null&&Math.abs(G.depression)>1&&Math.abs(G.depression)<88){
+    G.d.m6=G.h.fused/Math.tan(Math.abs(dep)); dot('dd6','grn');
+  }
+  G.d.fused=wFuse([G.d.m1,G.d.m2,G.d.m3,G.d.m4,G.d.m5,G.d.m6,G.d.m7,G.d.m8],DW);
+  const dp=[G.d.m1,G.d.m2,G.d.m3,G.d.m4,G.d.m5,G.d.m6,G.d.m7,G.d.m8].filter(v=>v!=null);
+  G.d.conf=Math.min(100,dp.length*11+(G.XR.active?25:0)+(G.d.m1!=null?15:0));
+
+  // Height: now h8,h9 have latest distance, recompute them
+  const dB=G.d.fused??G.d.m7;
+  if(dB!=null&&G.h.m8_dep!=null&&Math.abs(G.h.m8_dep)>.5){
+    G.h.m8=dB*Math.tan(Math.abs(G.h.m8_dep)*Math.PI/180); dot('hd8','grn');
+  }
+  if(dB!=null&&Math.abs(G.depression)>.5&&Math.abs(G.depression)<88){
+    G.h.m9=dB*Math.abs(Math.sin(dep)); dot('hd9','grn');
+  }
+  G.h.fused=wFuse([G.h.m1,G.h.m2,G.h.m3,G.h.m4,G.h.m5,G.h.m6,G.h.m7,G.h.m8,G.h.m9],HW);
+  const hp=[G.h.m1,G.h.m2,G.h.m3,G.h.m4,G.h.m5,G.h.m6,G.h.m7,G.h.m8,G.h.m9].filter(v=>v!=null);
+  G.h.conf=Math.min(100,hp.length*11+(G.XR.active?25:0)+(G.h.m1!=null?15:0));
+}
+
+// ═══ UI RENDER ══════════════════════════════════════════════════
+function renderUI(){
+  // HEIGHT
+  const hv=G.h.fused,hc=G.h.conf;
+  T('hfused',hv!=null?hv.toFixed(4)+'m':'–');
+  T('hconf',hc.toFixed(0));
+  const hn=[G.h.m1,G.h.m2,G.h.m3,G.h.m4,G.h.m5,G.h.m6,G.h.m7,G.h.m8,G.h.m9].filter(v=>v!=null).length;
+  T('hcnt',hn+' / 9 methods active'); T('hsrc',bHsrc());
+  $('hcbar').style.width=hc+'%'; $('hcbar2').style.width=hc+'%';
+  const hv2=[G.h.m1,G.h.m2,G.h.m3,G.h.m4,G.h.m5,G.h.m6,G.h.m7,G.h.m8,G.h.m9];
+  const hcl=['pur','pur','pur','pur','yel','grn','grn','grn','grn'];
+  const hdc=['pur','pur','pur','pur','yel','grn','grn','grn','grn'];
   hv2.forEach((v,i)=>{
-    const el=$('h'+(i+1));if(!el)return;
-    if(v!=null){el.textContent=(i===7&&v>=0?'+':'')+v.toFixed(4)+'m';el.className='mv '+(['acc5','acc5','acc5','acc5','acc5','acc','acc','acc','acc3'][i]);dot('hd'+(i+1),hc[i]);}
-    else{el.textContent='–';el.className='mv dim';dot('hd'+(i+1),'');}
+    const el=$('hm'+(i+1));if(!el)return;
+    if(v!=null){
+      el.textContent=(i===6&&v>=0?'+':'')+v.toFixed(4)+'m';
+      el.className='mval '+hcl[i];
+      dot('hd'+(i+1),hdc[i]);
+    } else {
+      el.textContent='–'; el.className='mval na';
+      // Don't clear dot if already set (XR button not pressed)
+    }
   });
-  T('s-xr',G.XR.active?('inline · planes:'+G.XR.planes.length):'inactive (sensors active)');
-}
-function updateD(){
-  const dv=G.M.d_fused,c=G.M.d_conf;
-  T('d-val',dv!=null?dv.toFixed(4)+'m':'–');
-  T('d-conf',c.toFixed(0));
-  const n=[G.M.d1,G.M.d2,G.M.d3,G.M.d4,G.M.d5,G.M.d6,G.M.d7,G.M.d8].filter(v=>v!=null).length;
-  T('d-cnt',n+' method'+(n!==1?'s':'')+' active');
-  T('d-src',bDN()); $('d-cbar').style.width=c+'%'; $('d-cbar2').style.width=c+'%';
-  const dv2=[G.M.d1,G.M.d2,G.M.d3,G.M.d4,G.M.d5,G.M.d6,G.M.d7,G.M.d8];
-  const dc=['p','p','p','p','p','g','y','g'];
-  dv2.forEach((v,i)=>{
-    const el=$('d'+(i+1));if(!el)return;
-    if(v!=null){el.textContent=v.toFixed(4)+'m';el.className='mv '+(['acc5','acc5','acc5','acc5','acc5','acc','acc3','acc'][i]);dot('dd'+(i+1),dc[i]);}
-    else{el.textContent='–';el.className='mv dim';dot('dd'+(i+1),'');}
-  });
-}
-function bHN(){if(G.M.h1!=null)return'xr-viewer.y';if(G.M.h2!=null)return'xr-hit↓';if(G.M.h4!=null)return'xr-plane';if(G.M.h7!=null)return'baro-Δ';if(G.M.h9!=null)return'focus-sweep';if(G.M.h6!=null)return'visual-VP';return'awaiting sensors';}
-function bDN(){if(G.M.d1!=null)return'xr-hit-fwd';if(G.M.d2!=null)return'xr-depth-ctr';if(G.M.d4!=null)return'xr-plane-ray';if(G.M.d7!=null)return'focus-sweep';if(G.M.d6!=null)return'trig';return'awaiting sensors';}
+  // Show horizon-derived depression in h8 if no distance yet
+  if(G.h.m8==null&&G.h.m8_dep!=null){
+    T('hm8',`dep=${G.h.m8_dep.toFixed(1)}°`);
+    $('hm8').className='mval na';
+  }
 
-// ═══ HISTORY CHARTS ════════════════════════════════════════════
-function pushHist(){
-  G.H.h.push(G.M.h_fused??0);if(G.H.h.length>200)G.H.h.shift();
-  G.H.d.push(G.M.d_fused??0);if(G.H.d.length>200)G.H.d.shift();
-  if(G.H.h.length>4)spark('ch-h',G.H.h,'#00d4b4');
-  if(G.H.d.length>4)spark('ch-d',G.H.d,'#f5c542');
+  // DISTANCE
+  const dv=G.d.fused,dc=G.d.conf;
+  T('dfused',dv!=null?dv.toFixed(4)+'m':'–');
+  T('dconf',dc.toFixed(0));
+  const dn=[G.d.m1,G.d.m2,G.d.m3,G.d.m4,G.d.m5,G.d.m6,G.d.m7,G.d.m8].filter(v=>v!=null).length;
+  T('dcnt',dn+' / 8 methods active'); T('dsrc',bDsrc());
+  $('dcbar').style.width=dc+'%'; $('dcbar2').style.width=dc+'%';
+  const dv2=[G.d.m1,G.d.m2,G.d.m3,G.d.m4,G.d.m5,G.d.m6,G.d.m7,G.d.m8];
+  const dcl=['pur','pur','pur','pur','yel','grn','grn','grn'];
+  const ddc=['pur','pur','pur','pur','yel','grn','grn','grn'];
+  dv2.forEach((v,i)=>{
+    const el=$('dm'+(i+1));if(!el)return;
+    if(v!=null){el.textContent=v.toFixed(4)+'m';el.className='mval '+dcl[i];dot('dd'+(i+1),ddc[i]);}
+    else{el.textContent='–';el.className='mval na';}
+  });
+
+  // History
+  G.Hh.push(hv??0); if(G.Hh.length>200)G.Hh.shift();
+  G.Hd.push(dv??0); if(G.Hd.length>200)G.Hd.shift();
+  if(G.Hh.length>4)spark('ch-h',G.Hh,'#00d4b4');
+  if(G.Hd.length>4)spark('ch-d',G.Hd,'#f5c542');
 }
-function spark(id,data,color){
-  const c=$(id);if(!c||data.length<2)return;
-  const W=c.offsetWidth||300,H=40;c.width=W;c.height=H;
-  const ctx=c.getContext('2d');ctx.clearRect(0,0,W,H);
-  let mn=Infinity,mx=-Infinity;data.forEach(v=>{if(v<mn)mn=v;if(v>mx)mx=v;});const rng=mx-mn||.001;
-  ctx.beginPath();ctx.strokeStyle=color;ctx.lineWidth=1.4;
-  data.forEach((v,i)=>{const x=i/(data.length-1)*W,y=H-((v-mn)/rng)*(H-4)-2;i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);});ctx.stroke();
-  ctx.lineTo(W,H);ctx.lineTo(0,H);ctx.closePath();ctx.fillStyle=color+'0f';ctx.fill();
-  ctx.font='7px DM Mono,monospace';ctx.fillStyle=color+'99';
-  ctx.textAlign='left';ctx.fillText(mn.toFixed(3),2,H-2);ctx.textAlign='right';ctx.fillText(mx.toFixed(3),W-2,H-2);
+
+function bHsrc(){
+  if(G.h.m1!=null)return'xr-viewer.y'; if(G.h.m2!=null)return'xr-hit↓'; if(G.h.m4!=null)return'xr-plane';
+  if(G.h.m3!=null)return'xr-depth'; if(G.h.m6!=null)return'baro-Δ'; if(G.h.m5!=null)return'focus-sweep';
+  if(G.h.m7!=null)return'accel-Δh (relative)'; if(G.h.m8!=null)return'visual-horizon'; return'awaiting sensors';
+}
+function bDsrc(){
+  if(G.d.m1!=null)return'xr-hit-fwd'; if(G.d.m2!=null)return'xr-depth-ctr'; if(G.d.m4!=null)return'xr-plane-ray';
+  if(G.d.m5!=null)return'focus-sweep'; if(G.d.m8!=null)return'cam-focus-api'; if(G.d.m6!=null)return'trig'; if(G.d.m7!=null)return'visual-sobel'; return'awaiting sensors';
 }
 
 // ═══ FOCUS SWEEP ═══════════════════════════════════════════════
-async function runSweep(){
+async function runSweep(ctx){
   if(G.FS.running){toast('Sweep in progress…');return;}
-  const track=G.stream?.getVideoTracks()[0];if(!track){toast('No camera');return;}
-  G.FS.running=true;G.FS.results=[];setFP(0);
+  const track=G.stream?.getVideoTracks()[0];
+  if(!track){toast('No camera stream');return;}
+  G.sweepCtx=ctx;
+  G.FS.running=true; G.FS.results=[];
+  setFP(0); toast('Running focus sweep…');
   const caps=track.getCapabilities?.();
   if(caps?.focusDistance){
     try{await track.applyConstraints({advanced:[{focusMode:'manual'}]});}catch{}
     const{min,max,step:s}=caps.focusDistance;
-    const steps=[];const n=Math.min(20,Math.max(6,Math.round((max-min)/(s||.06))));
-    for(let i=0;i<=n;i++)steps.push(min+(max-min)*i/n);
+    const n=Math.min(20,Math.max(6,Math.round((max-min)/(s||.06))));
     const ic=new ImageCapture(track);let done=0;
-    for(const fd of steps){try{await track.applyConstraints({advanced:[{focusDistance:fd}]});await wait(140);const bm=await ic.grabFrame();const sc=await lapVar(bm);G.FS.results.push({fd,sc});done++;setFP(done/steps.length);}catch{}}
+    for(let i=0;i<=n;i++){
+      const fd=min+(max-min)*i/n;
+      try{await track.applyConstraints({advanced:[{focusDistance:fd}]});await wait(130);const bm=await ic.grabFrame();const sc=await lapVar(bm);G.FS.results.push({fd,sc});done++;setFP(done/(n+1));}catch{}
+    }
     try{await track.applyConstraints({advanced:[{focusMode:'continuous'}]});}catch{}
   } else {
+    // No manual focus: capture sequential frames, read focusDistance from settings each time
     const ic=new ImageCapture(track);
-    for(let i=0;i<10;i++){try{await wait(200);const bm=await ic.grabFrame();const sc=await lapVar(bm);const fd=track.getSettings?.()?.focusDistance??((i+1)*.3);G.FS.results.push({fd,sc});setFP((i+1)/10);}catch{}}
+    for(let i=0;i<12;i++){
+      try{await wait(180);const bm=await ic.grabFrame();const sc=await lapVar(bm);const fd=track.getSettings?.()?.focusDistance??((i+1)*.25);G.FS.results.push({fd,sc});setFP((i+1)/12);}catch{}
+    }
   }
   G.FS.running=false;
-  if(!G.FS.results.length){toast('Sweep failed');return;}
+  if(!G.FS.results.length){toast('Sweep failed — no frames captured');return;}
   const best=G.FS.results.reduce((a,b)=>b.sc>a.sc?b:a);
-  G.FS.best=best.fd; G.M.d7=best.fd;
-  const dep=G.M.depression;
-  if(Math.abs(dep)>1)G.M.h9=best.fd*Math.abs(Math.sin(dep*Math.PI/180));
-  ['sw-h-res','sw-d-res'].forEach(id=>T(id,best.fd.toFixed(3)+'m'));
-  dot('hd9','y');dot('dd7','y');
-  drawFchart();toast(`Focus: ${best.fd.toFixed(2)}m`);fuseAll();updateH();updateD();
-}
-function setFP(p){['sw-h','sw-d'].forEach(id=>{const e=$(id);if(e)e.style.width=(p*100)+'%';});}
-async function lapVar(bm){
-  const w=Math.min(bm.width,256),h=Math.min(bm.height,192);
-  const c=document.createElement('canvas');c.width=w;c.height=h;const ctx=c.getContext('2d');ctx.drawImage(bm,0,0,w,h);
-  const{data}=ctx.getImageData(0,0,w,h);let s=0,s2=0,n=0;
-  const x0=Math.floor(w*.25),x1=Math.floor(w*.75),y0=Math.floor(h*.25),y1=Math.floor(h*.75);
-  for(let y=y0+1;y<y1-1;y++)for(let x=x0+1;x<x1-1;x++){
-    const L=(ox,oy)=>{const i=((y+oy)*w+(x+ox))*4;return.299*data[i]+.587*data[i+1]+.114*data[i+2];};
-    const l=-4*L(0,0)+L(0,-1)+L(0,1)+L(-1,0)+L(1,0);s+=l;s2+=l*l;n++;
+  G.FS.best=best.fd;
+  // Apply result to the right method
+  if(ctx==='d'){
+    G.d.m5=best.fd; dot('dd5','yel');
   }
-  if(!n)return 0;const m=s/n;return s2/n-m*m;
+  if(ctx==='h'){
+    // Height from focus: phone aimed at floor → fd = slant dist to floor → h = fd × sin(|dep|)
+    const dep=G.depression;
+    if(Math.abs(dep)>1){G.h.m5=best.fd*Math.abs(Math.sin(dep*Math.PI/180));dot('hd5','yel');}
+    else{toast('Aim camera at floor before sweeping for height');G.h.m5=null;}
+  }
+  // Update both sweep displays
+  setFP(1); T('sw-'+ctx+'-res',best.fd.toFixed(3)+'m');
+  $('hb5').textContent='↺ RE-SWEEP'; $('db5').textContent='↺ RE-SWEEP';
+  drawFocusChart();
+  toast(`Sweep done: ${best.fd.toFixed(2)}m`);
+  fuse(); renderUI();
 }
-function drawFchart(){
-  const c=$('fc-chart');if(!c||G.FS.results.length<2)return;
-  $('fc-wrap').style.display='block';
+
+// Sync sweep fill bars (both tabs show progress)
+function setFP(p){
+  // There's only one global sweep progress shown on whatever tab is active
+  // We write to both IDs
+  ['sw-h-fill','sw-d-fill'].forEach(id=>{const e=$(id);if(e)e.style.width='';}); // not used, bars are in sweep rows
+}
+
+async function lapVar(bm){
+  const w=Math.min(bm.width,240),h=Math.min(bm.height,180);
+  const c=document.createElement('canvas');c.width=w;c.height=h;
+  const ctx=c.getContext('2d');ctx.drawImage(bm,0,0,w,h);
+  const{data}=ctx.getImageData(0,0,w,h);
+  let s=0,s2=0,n=0;
+  const x0=Math.floor(w*.25),x1=Math.floor(w*.75),y0=Math.floor(h*.25),y1=Math.floor(h*.75);
+  for(let y=y0+1;y<y1-1;y++) for(let x=x0+1;x<x1-1;x++){
+    const L=(ox,oy)=>{const i=((y+oy)*w+(x+ox))*4;return.299*data[i]+.587*data[i+1]+.114*data[i+2];};
+    const l=-4*L(0,0)+L(0,-1)+L(0,1)+L(-1,0)+L(1,0);
+    s+=l;s2+=l*l;n++;
+  }
+  if(!n)return 0; const m=s/n; return s2/n-m*m;
+}
+
+function drawFocusChart(){
+  const c=$('fcchart');if(!c||G.FS.results.length<2)return;
+  $('fcwrap').style.display='block';
   const ctx=c.getContext('2d');const W=c.offsetWidth||300,H=44;c.width=W;c.height=H;ctx.clearRect(0,0,W,H);
   const sc=G.FS.results.map(r=>r.sc),mx=Math.max(...sc),mn=Math.min(...sc),rng=mx-mn||1;
   const best=G.FS.results.reduce((a,b)=>b.sc>a.sc?b:a);
-  ctx.beginPath();ctx.strokeStyle='#f5c542';ctx.lineWidth=1.4;
+  ctx.beginPath();ctx.strokeStyle='#f5c542';ctx.lineWidth=1.3;
   G.FS.results.forEach((r,i)=>{const x=i/(G.FS.results.length-1)*W,y=H-((r.sc-mn)/rng)*(H-6)-3;i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);});ctx.stroke();
   const bi=G.FS.results.indexOf(best),bx=bi/(G.FS.results.length-1)*W,by=H-((best.sc-mn)/rng)*(H-6)-3;
-  ctx.beginPath();ctx.arc(bx,by,4,0,Math.PI*2);ctx.fillStyle='#f5c542';ctx.fill();
-  ctx.font='8px DM Mono,monospace';ctx.fillStyle='#f5c542';ctx.textAlign='center';ctx.fillText(best.fd.toFixed(2)+'m',bx,by-7);
-  T('fc-lbl','Peak sharpness @ '+best.fd.toFixed(3)+'m = subject distance');
+  ctx.beginPath();ctx.arc(bx,by,3.5,0,Math.PI*2);ctx.fillStyle='#f5c542';ctx.fill();
+  ctx.font='8px DM Mono,monospace';ctx.fillStyle='#f5c542';ctx.textAlign='center';ctx.fillText(best.fd.toFixed(2)+'m',bx,by-6);
+  T('fclbl','Peak sharpness @ '+best.fd.toFixed(3)+'m');
 }
+
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
 
-// ═══ UTILS ═════════════════════════════════════════════════════
+// ═══ UTILS ══════════════════════════════════════════════════════
 function sobel(id,x,y,w){
   const g=(dx,dy)=>{const nx=Math.max(0,Math.min(w-1,x+dx)),ny=Math.max(0,Math.min(id.height-1,y+dy));const i=(ny*w+nx)*4;return(id.data[i]*299+id.data[i+1]*587+id.data[i+2]*114)/1000;};
   const Gx=-g(-1,-1)+g(1,-1)-2*g(-1,0)+2*g(1,0)-g(-1,1)+g(1,1);
@@ -892,8 +1121,20 @@ function sobel(id,x,y,w){
 }
 function lumaPx(id,x,y,w){const i=(y*w+x)*4;return(id.data[i]*299+id.data[i+1]*587+id.data[i+2]*114)/1000;}
 function rr(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.arcTo(x+w,y,x+w,y+r,r);ctx.lineTo(x+w,y+h-r);ctx.arcTo(x+w,y+h,x+w-r,y+h,r);ctx.lineTo(x+r,y+h);ctx.arcTo(x,y+h,x,y+h-r,r);ctx.lineTo(x,y+r);ctx.arcTo(x,y,x+r,y,r);ctx.closePath();}
+function spark(id,data,color){
+  const c=$(id);if(!c||data.length<2)return;
+  const W=c.offsetWidth||300,H=38;c.width=W;c.height=H;
+  const ctx=c.getContext('2d');ctx.clearRect(0,0,W,H);
+  let mn=Infinity,mx=-Infinity;data.forEach(v=>{if(v<mn)mn=v;if(v>mx)mx=v;});
+  const rng=mx-mn||.001;
+  ctx.beginPath();ctx.strokeStyle=color;ctx.lineWidth=1.3;
+  data.forEach((v,i)=>{const x=i/(data.length-1)*W,y=H-((v-mn)/rng)*(H-4)-2;i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);});
+  ctx.stroke();ctx.lineTo(W,H);ctx.lineTo(0,H);ctx.closePath();ctx.fillStyle=color+'10';ctx.fill();
+  ctx.font='7px DM Mono,monospace';ctx.fillStyle=color+'90';
+  ctx.textAlign='left';ctx.fillText(mn.toFixed(3),2,H-2);ctx.textAlign='right';ctx.fillText(mx.toFixed(3),W-2,H-2);
+}
 
-// ═══ TABS ══════════════════════════════════════════════════════
+// ═══ TABS ═══════════════════════════════════════════════════════
 document.querySelectorAll('.tab').forEach(b=>{
   b.addEventListener('click',function(){
     document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
@@ -903,19 +1144,17 @@ document.querySelectorAll('.tab').forEach(b=>{
   });
 });
 
-// ═══ INIT ══════════════════════════════════════════════════════
-async function init(){detect();await checkCaps();$('go').disabled=false;T('go','LAUNCH');}
+// ═══ INIT ═══════════════════════════════════════════════════════
+async function init(){detect();await checkCaps();$('go').disabled=false;}
 $('go').addEventListener('click',async()=>{
   $('splash').style.display='none';
   $('app').style.display='flex';
-  // iOS needs user gesture for sensors
+  // iOS permission
   if(G.isIOS&&typeof DeviceOrientationEvent?.requestPermission==='function'){
-    try{const r=await DeviceOrientationEvent.requestPermission();if(r!=='granted')toast('Sensor permission denied — accel methods inactive');}catch{}
+    try{await DeviceOrientationEvent.requestPermission();}catch{}
   }
   startSensors();
   await startCam();
-  // XR inline session (data only, no fullscreen)
-  setTimeout(startXR, 600);
 });
 window.addEventListener('DOMContentLoaded',init);
 </script>

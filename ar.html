@@ -2,2170 +2,2860 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>AR Sensor Toolkit</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>AR·SENSE</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Rajdhani:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Barlow:wght@300;400;500;600;700;900&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none}
+html,body{height:100%;overflow:hidden;background:#060810}
+:root{
+  --bg:#060810;--s1:#0b1120;--s2:#111b2e;--s3:#172338;
+  --acc:#00f5d4;--acc2:#ff6b6b;--acc3:#ffd166;--acc4:#a8dadc;
+  --fg:#e8f4f8;--dim:#4a6580;--border:rgba(0,245,212,0.12);
+  --gborder:rgba(255,255,255,0.06);
+  --glow:0 0 24px rgba(0,245,212,0.25);
+  --glow2:0 0 24px rgba(255,107,107,0.25);
+  --r:12px;--r2:8px;
+  --mono:'DM Mono',monospace;
+  --sans:'Barlow',sans-serif;
+  --display:'Bebas Neue',sans-serif;
+  --safe-top:env(safe-area-inset-top,0px);
+  --safe-bot:env(safe-area-inset-bottom,0px);
+}
 
-  :root {
-    --bg: #050a0f;
-    --surface: #0a1520;
-    --surface2: #0f1e2e;
-    --accent: #00d4ff;
-    --accent2: #ff6b35;
-    --accent3: #39ff14;
-    --warn: #ffd600;
-    --danger: #ff1744;
-    --text: #e0f0ff;
-    --text-dim: #6a8fa8;
-    --border: #1a3a5c;
-    --glow: 0 0 20px rgba(0,212,255,0.3);
-    --glow2: 0 0 20px rgba(255,107,53,0.3);
-  }
+/* ══ SPLASH ══════════════════════════════ */
+#splash{
+  position:fixed;inset:0;z-index:9999;
+  background:var(--bg);
+  display:flex;flex-direction:column;align-items:center;
+  overflow-y:auto;padding:calc(var(--safe-top) + 24px) 20px calc(var(--safe-bot) + 24px);
+  gap:14px;
+}
+.splash-eyebrow{
+  font-family:var(--mono);font-size:10px;letter-spacing:4px;
+  color:var(--acc);text-transform:uppercase;
+  display:flex;align-items:center;gap:8px;
+}
+.splash-eyebrow::before,.splash-eyebrow::after{content:'';height:1px;width:24px;background:var(--acc);opacity:.4}
+.splash-title{
+  font-family:var(--display);font-size:clamp(52px,14vw,80px);
+  color:var(--fg);letter-spacing:4px;line-height:.9;text-align:center;
+}
+.splash-title em{color:var(--acc);font-style:normal}
+.splash-sub{font-family:var(--sans);font-size:13px;color:var(--dim);text-align:center;line-height:1.5}
 
-  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+.device-card{
+  width:100%;background:var(--s1);border:1px solid var(--border);
+  border-radius:var(--r);padding:16px;
+}
+.dc-row{display:flex;align-items:center;justify-content:space-between}
+.dc-label{font-family:var(--mono);font-size:9px;letter-spacing:3px;color:var(--dim);text-transform:uppercase}
+.dc-val{font-family:var(--sans);font-size:22px;font-weight:700;color:var(--fg);margin-top:2px}
+.dc-note{font-size:12px;color:var(--dim);margin-top:4px;font-family:var(--sans)}
+.os-icon{font-size:32px}
 
-  body {
-    font-family: 'Rajdhani', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    overflow-x: hidden;
-    user-select: none;
-  }
+.cap-grid{
+  width:100%;display:grid;grid-template-columns:1fr 1fr;gap:8px;
+}
+.cap-item{
+  background:var(--s1);border:1px solid var(--gborder);
+  border-radius:var(--r2);padding:10px 12px;
+  display:flex;align-items:center;gap:8px;
+  transition:border-color .3s;
+}
+.cap-item.ok{border-color:rgba(0,245,212,.3)}
+.cap-item.warn{border-color:rgba(255,209,102,.3)}
+.cap-item.err{border-color:rgba(255,107,107,.3)}
+.cap-dot{
+  width:7px;height:7px;border-radius:50%;flex-shrink:0;
+  background:var(--dim);transition:background .3s;
+}
+.cap-item.ok .cap-dot{background:var(--acc)}
+.cap-item.warn .cap-dot{background:var(--acc3);animation:blink .8s infinite}
+.cap-item.err .cap-dot{background:var(--acc2)}
+.cap-item.checking .cap-dot{background:var(--dim);animation:pulse 1s infinite}
+.cap-text{font-family:var(--sans);font-size:12px;color:var(--fg);font-weight:500}
+.cap-sub{font-family:var(--mono);font-size:9px;color:var(--dim);margin-top:1px}
 
-  /* ── SPLASH ── */
-  #splash {
-    position: fixed; inset: 0; z-index: 9999;
-    background: var(--bg);
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    gap: 16px; padding: 32px;
-  }
-  .splash-logo {
-    font-family: 'Space Mono', monospace;
-    font-size: 13px; letter-spacing: 6px;
-    color: var(--accent); text-transform: uppercase;
-    animation: pulse 2s ease-in-out infinite;
-  }
-  .splash-title {
-    font-size: 38px; font-weight: 700;
-    color: var(--text); line-height: 1;
-    text-align: center;
-  }
-  .splash-title span { color: var(--accent); }
-  .splash-badge {
-    font-family: 'Space Mono', monospace;
-    font-size: 11px; padding: 4px 12px;
-    border: 1px solid var(--border);
-    color: var(--text-dim); border-radius: 20px;
-  }
-  .device-banner {
-    margin-top: 8px;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 12px; padding: 12px 20px;
-    text-align: center; width: 100%;
-  }
-  .device-banner .os-label {
-    font-family: 'Space Mono', monospace;
-    font-size: 10px; letter-spacing: 4px;
-    color: var(--text-dim); text-transform: uppercase;
-  }
-  .device-banner .os-name {
-    font-size: 26px; font-weight: 700;
-    margin-top: 4px;
-  }
-  .device-banner .os-note {
-    font-size: 13px; color: var(--text-dim);
-    margin-top: 4px;
-  }
-  .capability-grid {
-    width: 100%; display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px; margin-top: 8px;
-  }
-  .cap-item {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px; padding: 10px 12px;
-    display: flex; align-items: center; gap: 8px;
-    font-size: 13px;
-  }
-  .cap-item .dot {
-    width: 8px; height: 8px; border-radius: 50%;
-    flex-shrink: 0;
-  }
-  .dot-checking { background: var(--warn); animation: blink 1s infinite; }
-  .dot-yes { background: var(--accent3); }
-  .dot-no { background: var(--danger); }
-  .dot-partial { background: var(--warn); }
+#launch-btn{
+  width:100%;padding:18px;background:var(--acc);color:#000;
+  border:none;border-radius:var(--r);cursor:pointer;
+  font-family:var(--display);font-size:22px;letter-spacing:3px;
+  box-shadow:var(--glow);transition:all .2s;margin-top:4px;
+}
+#launch-btn:active{transform:scale(.97)}
+#launch-btn:disabled{opacity:.4;cursor:not-allowed;box-shadow:none}
 
-  #splash-btn {
-    margin-top: 16px;
-    background: var(--accent); color: #000;
-    border: none; border-radius: 12px;
-    padding: 16px 40px; font-size: 18px; font-weight: 700;
-    font-family: 'Rajdhani', sans-serif;
-    cursor: pointer; width: 100%;
-    letter-spacing: 2px; text-transform: uppercase;
-    box-shadow: var(--glow);
-    transition: all 0.2s;
-  }
-  #splash-btn:active { transform: scale(0.97); }
-  #splash-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+/* ══ APP SHELL ════════════════════════════ */
+#app{
+  display:none;flex-direction:column;
+  height:100vh;height:100dvh;
+  padding-top:var(--safe-top);
+  padding-bottom:var(--safe-bot);
+  overflow:hidden;
+}
 
-  /* ── MAIN APP ── */
-  #app { display: none; flex-direction: column; height: 100vh; overflow: hidden; }
+/* top bar */
+.topbar{
+  height:48px;background:var(--s1);border-bottom:1px solid var(--gborder);
+  display:flex;align-items:center;padding:0 16px;gap:10px;flex-shrink:0;
+  position:relative;z-index:10;
+}
+.topbar-logo{font-family:var(--display);font-size:20px;letter-spacing:3px;color:var(--acc)}
+.topbar-sep{width:1px;height:20px;background:var(--gborder)}
+.topbar-os{
+  font-family:var(--mono);font-size:10px;color:var(--dim);
+  background:var(--s2);padding:3px 8px;border-radius:20px;
+  border:1px solid var(--gborder);
+}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:6px}
+.live-dot{
+  width:7px;height:7px;background:var(--acc2);border-radius:50%;
+  animation:blink .6s infinite;
+}
+.live-txt{font-family:var(--mono);font-size:9px;color:var(--acc2)}
 
-  /* top nav */
-  .top-bar {
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    padding: 10px 16px;
-    display: flex; align-items: center;
-    justify-content: space-between;
-    flex-shrink: 0;
-  }
-  .top-bar-title {
-    font-family: 'Space Mono', monospace;
-    font-size: 11px; letter-spacing: 3px;
-    color: var(--accent); text-transform: uppercase;
-  }
-  .top-bar-os {
-    font-size: 12px; color: var(--text-dim);
-    background: var(--surface2); border: 1px solid var(--border);
-    padding: 3px 10px; border-radius: 20px;
-  }
+/* tab bar */
+.tabbar{
+  background:var(--s1);border-bottom:1px solid var(--gborder);
+  display:flex;overflow-x:auto;flex-shrink:0;
+  scrollbar-width:none;-webkit-overflow-scrolling:touch;
+}
+.tabbar::-webkit-scrollbar{display:none}
+.tab-btn{
+  flex-shrink:0;padding:0 14px;height:42px;
+  font-family:var(--sans);font-size:12px;font-weight:600;
+  color:var(--dim);background:none;border:none;
+  border-bottom:2px solid transparent;cursor:pointer;
+  white-space:nowrap;letter-spacing:.3px;
+  display:flex;align-items:center;gap:5px;
+  transition:color .2s,border-color .2s;
+}
+.tab-btn.active{color:var(--acc);border-bottom-color:var(--acc)}
+.tab-btn .ti{font-size:13px}
 
-  /* tab bar */
-  .tab-bar {
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    display: flex; overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    flex-shrink: 0;
-    scrollbar-width: none;
-  }
-  .tab-bar::-webkit-scrollbar { display: none; }
-  .tab-btn {
-    flex-shrink: 0;
-    padding: 10px 14px;
-    font-family: 'Rajdhani', sans-serif;
-    font-size: 13px; font-weight: 600;
-    color: var(--text-dim);
-    background: none; border: none;
-    border-bottom: 2px solid transparent;
-    cursor: pointer; white-space: nowrap;
-    letter-spacing: 0.5px;
-    transition: all 0.2s;
-  }
-  .tab-btn.active {
-    color: var(--accent);
-    border-bottom-color: var(--accent);
-  }
-  .tab-icon { margin-right: 4px; }
+/* pages */
+.pages{flex:1;overflow:hidden;position:relative}
+.page{
+  position:absolute;inset:0;
+  overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding:14px 14px calc(14px + var(--safe-bot));
+  display:none;
+}
+.page.active{display:block}
 
-  /* pages */
-  .pages { flex: 1; overflow: hidden; position: relative; }
-  .page {
-    position: absolute; inset: 0;
-    overflow-y: auto; padding: 16px;
-    display: none;
-    -webkit-overflow-scrolling: touch;
-  }
-  .page.active { display: block; }
+/* ══ COMPONENTS ══════════════════════════ */
+.card{
+  background:var(--s1);border:1px solid var(--gborder);
+  border-radius:var(--r);padding:14px;margin-bottom:10px;
+  position:relative;overflow:hidden;
+}
+.card.accent-top::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--acc),transparent);
+}
+.card.warn-top::before{background:linear-gradient(90deg,var(--acc3),transparent)}
+.card.err-top::before{background:linear-gradient(90deg,var(--acc2),transparent)}
 
-  /* cards */
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 14px; padding: 16px;
-    margin-bottom: 12px;
-  }
-  .card-title {
-    font-family: 'Space Mono', monospace;
-    font-size: 10px; letter-spacing: 3px;
-    color: var(--accent); text-transform: uppercase;
-    margin-bottom: 12px;
-  }
+.card-hd{
+  font-family:var(--mono);font-size:9px;letter-spacing:3px;
+  color:var(--acc);text-transform:uppercase;margin-bottom:12px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.card-hd-right{display:flex;align-items:center;gap:6px}
 
-  /* camera view */
-  .camera-container {
-    position: relative; width: 100%;
-    border-radius: 14px; overflow: hidden;
-    background: #000; aspect-ratio: 9/16;
-    margin-bottom: 12px;
-  }
-  #cam-video {
-    width: 100%; height: 100%;
-    object-fit: cover; display: block;
-  }
-  #cam-canvas {
-    position: absolute; inset: 0;
-    width: 100%; height: 100%;
-    pointer-events: none;
-  }
-  .cam-overlay {
-    position: absolute; inset: 0;
-    display: flex; align-items: center; justify-content: center;
-    background: rgba(0,0,0,0.7);
-    flex-direction: column; gap: 12px;
-    font-size: 15px; color: var(--text-dim);
-    text-align: center; padding: 20px;
-  }
+/* camera view */
+.cam-wrap{
+  position:relative;width:100%;
+  background:#000;border-radius:var(--r);overflow:hidden;
+  margin-bottom:10px;
+}
+.cam-wrap video,.cam-wrap canvas.cam-overlay{
+  position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;
+}
+.cam-wrap .cam-ui{
+  position:absolute;inset:0;pointer-events:none;
+}
+.cam-placeholder{
+  aspect-ratio:3/4;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:10px;
+  color:var(--dim);font-size:13px;font-family:var(--sans);
+}
+.cam-active .cam-placeholder{display:none}
 
-  /* hud labels */
-  .hud-label {
-    position: absolute; font-family: 'Space Mono', monospace;
-    font-size: 11px; background: rgba(0,0,0,0.7);
-    padding: 3px 8px; border-radius: 4px;
-    border: 1px solid var(--accent);
-    color: var(--accent);
-  }
+/* scanlines */
+.scanlines::after{
+  content:'';position:absolute;inset:0;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.05) 2px,rgba(0,0,0,.05) 4px);
+  pointer-events:none;
+}
+.scan-bar{
+  position:absolute;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,transparent,rgba(0,245,212,.15),transparent);
+  animation:scandown 4s linear infinite;pointer-events:none;
+}
+@keyframes scandown{from{top:-4px}to{top:100%}}
 
-  /* metric boxes */
-  .metric-row {
-    display: grid; grid-template-columns: 1fr 1fr;
-    gap: 10px; margin-bottom: 10px;
-  }
-  .metric-box {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 10px; padding: 12px;
-    text-align: center;
-  }
-  .metric-box.accent-box { border-color: var(--accent); }
-  .metric-label {
-    font-family: 'Space Mono', monospace;
-    font-size: 9px; letter-spacing: 2px;
-    color: var(--text-dim); text-transform: uppercase;
-    margin-bottom: 6px;
-  }
-  .metric-value {
-    font-family: 'Space Mono', monospace;
-    font-size: 22px; font-weight: 700;
-    color: var(--text);
-  }
-  .metric-value.big { font-size: 28px; color: var(--accent); }
-  .metric-unit {
-    font-size: 11px; color: var(--text-dim);
-    margin-left: 3px;
-  }
+/* metric widgets */
+.metrics-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+.metrics-row.three{grid-template-columns:1fr 1fr 1fr}
+.metrics-row.one{grid-template-columns:1fr}
+.metric{
+  background:var(--s2);border:1px solid var(--gborder);
+  border-radius:var(--r2);padding:11px 13px;
+}
+.metric.hi{border-color:var(--border);background:linear-gradient(135deg,var(--s2),rgba(0,245,212,.05))}
+.m-lbl{font-family:var(--mono);font-size:8px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;margin-bottom:5px}
+.m-val{font-family:var(--mono);font-size:20px;font-weight:500;color:var(--fg);line-height:1}
+.m-val.big{font-size:28px;color:var(--acc)}
+.m-val.warn{color:var(--acc3)}
+.m-val.err{color:var(--acc2)}
+.m-unit{font-size:11px;color:var(--dim);margin-left:2px}
+.m-sub{font-size:10px;color:var(--dim);margin-top:3px;font-family:var(--sans)}
 
-  /* buttons */
-  .btn {
-    width: 100%; padding: 14px;
-    border: none; border-radius: 12px;
-    font-family: 'Rajdhani', sans-serif;
-    font-size: 16px; font-weight: 700;
-    cursor: pointer; letter-spacing: 1px;
-    text-transform: uppercase; transition: all 0.2s;
-    margin-bottom: 8px;
-  }
-  .btn:active { transform: scale(0.97); }
-  .btn-primary { background: var(--accent); color: #000; box-shadow: var(--glow); }
-  .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
-  .btn-danger { background: var(--danger); color: #fff; }
-  .btn-orange { background: var(--accent2); color: #000; box-shadow: var(--glow2); }
+/* button */
+.btn{
+  display:block;width:100%;padding:13px;border:none;
+  border-radius:var(--r2);cursor:pointer;
+  font-family:var(--sans);font-size:14px;font-weight:700;
+  letter-spacing:.5px;text-transform:uppercase;
+  transition:all .15s;margin-bottom:8px;
+}
+.btn:active{transform:scale(.97)}
+.btn:last-child{margin-bottom:0}
+.btn-acc{background:var(--acc);color:#000;box-shadow:var(--glow)}
+.btn-ghost{background:var(--s2);color:var(--fg);border:1px solid var(--gborder)}
+.btn-warn{background:var(--acc3);color:#000}
+.btn-err{background:var(--acc2);color:#000}
+.btn-small{padding:8px 14px;font-size:12px;margin-bottom:0;width:auto;display:inline-block}
 
-  /* sensor bar */
-  .sensor-bar-wrap { margin-bottom: 8px; }
-  .sensor-bar-label {
-    display: flex; justify-content: space-between;
-    font-size: 13px; margin-bottom: 4px;
-  }
-  .sensor-bar-track {
-    height: 6px; background: var(--border);
-    border-radius: 3px; overflow: hidden;
-  }
-  .sensor-bar-fill {
-    height: 100%; border-radius: 3px;
-    background: var(--accent);
-    transition: width 0.15s;
-  }
+/* status badge */
+.badge{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:3px 8px;border-radius:20px;
+  font-family:var(--mono);font-size:9px;letter-spacing:1px;
+}
+.badge.ok{background:rgba(0,245,212,.1);color:var(--acc);border:1px solid rgba(0,245,212,.2)}
+.badge.warn{background:rgba(255,209,102,.1);color:var(--acc3);border:1px solid rgba(255,209,102,.2)}
+.badge.err{background:rgba(255,107,107,.1);color:var(--acc2);border:1px solid rgba(255,107,107,.2)}
+.badge.off{background:rgba(74,101,128,.1);color:var(--dim);border:1px solid rgba(74,101,128,.2)}
 
-  /* depth canvas */
-  #depth-canvas {
-    width: 100%; border-radius: 10px;
-    display: block; aspect-ratio: 3/4;
-    background: #000;
-  }
-  #edge-canvas {
-    width: 100%; border-radius: 10px;
-    display: block; background: #000;
-  }
+/* info rows */
+.irow{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:8px 0;border-bottom:1px solid var(--gborder);
+  font-size:13px;
+}
+.irow:last-child{border:none;padding-bottom:0}
+.irow-lbl{color:var(--dim);font-family:var(--sans);font-size:12px}
+.irow-val{font-family:var(--mono);font-size:12px;color:var(--fg)}
 
-  /* crosshair */
-  .crosshair {
-    position: absolute;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    pointer-events: none;
-  }
-  .crosshair::before, .crosshair::after {
-    content: ''; position: absolute;
-    background: rgba(0,212,255,0.8);
-  }
-  .crosshair::before { width: 30px; height: 1px; top: 0; left: -15px; }
-  .crosshair::after { width: 1px; height: 30px; left: 0; top: -15px; }
+/* sub-tabs */
+.subtabs{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.stab{
+  padding:6px 12px;border-radius:var(--r2);
+  border:1px solid var(--gborder);background:var(--s2);
+  color:var(--dim);font-family:var(--sans);font-size:12px;font-weight:600;
+  cursor:pointer;transition:all .15s;
+}
+.stab.active{background:rgba(0,245,212,.1);border-color:var(--border);color:var(--acc)}
 
-  /* horizon line */
-  .horizon-indicator {
-    position: absolute; left: 0; right: 0;
-    height: 1px; background: rgba(255,107,53,0.6);
-    pointer-events: none; transition: top 0.1s;
-  }
+/* range slider */
+.range-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.range-row label{font-family:var(--mono);font-size:10px;color:var(--dim);flex-shrink:0;letter-spacing:1px}
+input[type=range]{
+  flex:1;height:4px;-webkit-appearance:none;
+  background:var(--gborder);border-radius:2px;
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:18px;height:18px;
+  border-radius:50%;background:var(--acc);cursor:pointer;
+}
+.range-val{font-family:var(--mono);font-size:11px;color:var(--acc);flex-shrink:0;min-width:30px}
 
-  /* slider */
-  input[type=range] {
-    width: 100%; height: 6px;
-    -webkit-appearance: none;
-    background: var(--border); border-radius: 3px;
-    margin: 8px 0;
-  }
-  input[type=range]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 20px; height: 20px;
-    border-radius: 50%;
-    background: var(--accent);
-    cursor: pointer;
-  }
+/* bar graph */
+.bar-group{margin-bottom:6px}
+.bar-label{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;color:var(--dim);margin-bottom:3px}
+.bar-track{height:5px;background:var(--s2);border-radius:3px;overflow:hidden}
+.bar-fill{height:100%;border-radius:3px;transition:width .1s}
 
-  /* info row */
-  .info-row {
-    display: flex; justify-content: space-between;
-    align-items: center; padding: 8px 0;
-    border-bottom: 1px solid var(--border);
-    font-size: 14px;
-  }
-  .info-row:last-child { border-bottom: none; }
-  .info-row-label { color: var(--text-dim); }
-  .info-row-val { font-family: 'Space Mono', monospace; font-size: 13px; }
+/* waveform canvas */
+.wave-canvas{width:100%;height:60px;display:block;border-radius:var(--r2);background:var(--s2)}
 
-  /* status badge */
-  .status-badge {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 4px 10px; border-radius: 20px;
-    font-size: 12px; font-weight: 600;
-  }
-  .badge-ok { background: rgba(57,255,20,0.15); color: var(--accent3); border: 1px solid rgba(57,255,20,0.3); }
-  .badge-warn { background: rgba(255,214,0,0.15); color: var(--warn); border: 1px solid rgba(255,214,0,0.3); }
-  .badge-err { background: rgba(255,23,68,0.15); color: var(--danger); border: 1px solid rgba(255,23,68,0.3); }
-  .badge-info { background: rgba(0,212,255,0.15); color: var(--accent); border: 1px solid rgba(0,212,255,0.3); }
+/* compass */
+.compass-wrap{display:flex;justify-content:center;padding:8px 0}
+.compass{
+  width:110px;height:110px;border-radius:50%;
+  border:1px solid var(--border);position:relative;
+  background:radial-gradient(circle,var(--s2),var(--bg));
+}
+.compass-ring{
+  position:absolute;inset:8px;border-radius:50%;
+  border:1px dashed rgba(0,245,212,.15);
+}
+.compass-n{
+  position:absolute;top:4px;left:50%;transform:translateX(-50%);
+  font-family:var(--mono);font-size:9px;color:var(--acc2);font-weight:700;
+}
+.compass-needle{
+  position:absolute;width:3px;border-radius:2px;
+  left:50%;transform-origin:bottom center;
+  transform:translateX(-50%) rotate(0deg);
+  transition:transform .15s ease-out;
+}
+.compass-needle.north{height:42px;bottom:50%;background:var(--acc2)}
+.compass-needle.south{height:38px;top:50%;background:var(--dim)}
+.compass-center{
+  position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  width:8px;height:8px;background:var(--fg);border-radius:50%;
+}
 
-  /* compass */
-  .compass-wrap {
-    display: flex; justify-content: center; margin: 12px 0;
-  }
-  .compass-ring {
-    width: 120px; height: 120px;
-    border: 2px solid var(--border);
-    border-radius: 50%; position: relative;
-    display: flex; align-items: center; justify-content: center;
-  }
-  .compass-needle {
-    width: 4px; height: 50px;
-    position: absolute; top: 10px; left: 50%;
-    transform-origin: bottom center;
-    transform: translateX(-50%) rotate(0deg);
-    background: linear-gradient(to bottom, var(--danger) 50%, var(--text-dim) 50%);
-    border-radius: 2px;
-    transition: transform 0.2s;
-  }
-  .compass-center {
-    width: 10px; height: 10px;
-    background: var(--accent); border-radius: 50%;
-    position: absolute;
-  }
+/* 3D phone viz */
+.phone3d-wrap{
+  perspective:400px;display:flex;
+  justify-content:center;padding:10px 0;
+}
+.phone3d{
+  width:52px;height:96px;
+  background:linear-gradient(135deg,var(--s2),var(--s3));
+  border:1.5px solid var(--border);border-radius:10px;
+  position:relative;transform-style:preserve-3d;
+  transition:transform .08s ease-out;box-shadow:var(--glow);
+}
+.phone3d::before{
+  content:'';position:absolute;top:7px;left:50%;
+  transform:translateX(-50%);width:18px;height:2.5px;
+  background:var(--s1);border-radius:2px;
+}
+.phone3d::after{
+  content:'▣';position:absolute;inset:0;
+  display:flex;align-items:center;justify-content:center;
+  color:rgba(0,245,212,.2);font-size:20px;
+}
 
-  /* 3d tilt viz */
-  .tilt-viz {
-    perspective: 300px;
-    display: flex; justify-content: center;
-    margin: 12px 0;
-  }
-  .tilt-phone {
-    width: 60px; height: 110px;
-    background: var(--surface2);
-    border: 2px solid var(--accent);
-    border-radius: 10px;
-    transform-style: preserve-3d;
-    transition: transform 0.1s;
-    position: relative;
-  }
-  .tilt-phone::before {
-    content: '';
-    position: absolute; top: 8px; left: 50%;
-    transform: translateX(-50%);
-    width: 20px; height: 3px;
-    background: var(--border); border-radius: 2px;
-  }
+/* horizon line */
+.horizon-line{
+  position:absolute;left:0;right:0;height:1px;
+  pointer-events:none;transition:top .1s;
+}
+.horizon-line::before{
+  content:'';display:block;height:100%;
+  background:linear-gradient(90deg,transparent,var(--acc2),transparent);
+  opacity:.7;
+}
+.horizon-line::after{
+  content:attr(data-label);
+  position:absolute;right:8px;top:-14px;
+  font-family:var(--mono);font-size:9px;color:var(--acc2);
+  background:rgba(6,8,16,.8);padding:2px 5px;border-radius:3px;
+}
 
-  /* notification */
-  .toast {
-    position: fixed; bottom: 80px; left: 50%;
-    transform: translateX(-50%) translateY(100px);
-    background: var(--surface2); border: 1px solid var(--accent);
-    color: var(--text); padding: 10px 20px;
-    border-radius: 10px; font-size: 14px;
-    z-index: 1000; transition: transform 0.3s;
-    white-space: nowrap;
-  }
-  .toast.show { transform: translateX(-50%) translateY(0); }
+/* crosshair */
+.xhair{
+  position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%);pointer-events:none;
+}
+.xhair-h{
+  position:absolute;width:40px;height:1px;top:0;left:-20px;
+  background:rgba(0,245,212,.6);
+}
+.xhair-v{
+  position:absolute;width:1px;height:40px;left:0;top:-20px;
+  background:rgba(0,245,212,.6);
+}
+.xhair-dot{
+  position:absolute;width:4px;height:4px;
+  background:var(--acc);border-radius:50%;
+  top:-2px;left:-2px;
+}
+.xhair-ring{
+  position:absolute;width:20px;height:20px;
+  border:1px solid rgba(0,245,212,.3);border-radius:50%;
+  top:-10px;left:-10px;
+}
 
-  /* light meter */
-  .light-meter {
-    height: 30px; border-radius: 8px; overflow: hidden;
-    background: var(--border); position: relative;
-    margin: 8px 0;
-  }
-  .light-fill {
-    height: 100%; transition: width 0.2s;
-    background: linear-gradient(to right, #1a1a2e, #ffd600, #fff);
-  }
+/* depth heatmap legend */
+.depth-legend{
+  display:flex;align-items:center;gap:8px;margin-top:6px;
+}
+.depth-grad{
+  flex:1;height:10px;border-radius:5px;
+  background:linear-gradient(90deg,#ff1744,#ffd600,#00d4ff,#0d47a1);
+}
+.depth-legend span{font-family:var(--mono);font-size:9px;color:var(--dim)}
 
-  /* plane indicator */
-  .plane-card {
-    background: var(--surface2); border: 1px solid var(--border);
-    border-radius: 8px; padding: 10px 14px;
-    margin-bottom: 8px; display: flex;
-    align-items: center; justify-content: space-between;
-  }
+/* waveform history */
+.sparkline{
+  width:100%;height:40px;display:block;
+  border-radius:4px;background:transparent;
+}
 
-  /* xr canvas */
-  #xr-canvas {
-    width: 100%; border-radius: 10px;
-    display: block; background: #000;
-    aspect-ratio: 3/4;
-  }
+/* error/warn box */
+.err-box{
+  background:rgba(255,107,107,.08);border:1px solid rgba(255,107,107,.2);
+  border-radius:var(--r2);padding:12px;margin-bottom:8px;
+  display:flex;align-items:flex-start;gap:10px;
+}
+.warn-box{
+  background:rgba(255,209,102,.08);border:1px solid rgba(255,209,102,.2);
+  border-radius:var(--r2);padding:12px;margin-bottom:8px;
+  display:flex;align-items:flex-start;gap:10px;
+}
+.err-box .icon,.warn-box .icon{font-size:16px;flex-shrink:0;margin-top:1px}
+.err-box .msg,.warn-box .msg{font-size:12px;font-family:var(--sans);color:var(--fg);flex:1}
+.err-box .retry-btn,.warn-box .retry-btn{
+  font-family:var(--mono);font-size:9px;color:var(--acc);
+  background:none;border:1px solid var(--border);
+  border-radius:4px;padding:4px 8px;cursor:pointer;
+  margin-top:6px;white-space:nowrap;
+}
 
-  /* animations */
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
-  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
-  @keyframes scanline {
-    0% { transform: translateY(-100%); }
-    100% { transform: translateY(200%); }
-  }
-  .scanline {
-    position: absolute; left: 0; right: 0;
-    height: 2px; background: rgba(0,212,255,0.15);
-    animation: scanline 3s linear infinite;
-    pointer-events: none;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .spinner {
-    width: 32px; height: 32px; border-radius: 50%;
-    border: 3px solid var(--border);
-    border-top-color: var(--accent);
-    animation: spin 1s linear infinite;
-  }
+/* canvas overlays */
+canvas.fullcam{position:absolute;inset:0;width:100%;height:100%;display:block}
 
-  .input-row {
-    display: flex; align-items: center; gap: 10px;
-    margin-bottom: 10px;
-  }
-  .input-row label { font-size: 13px; color: var(--text-dim); flex-shrink: 0; }
-  .input-row input[type=number] {
-    flex: 1; background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 8px; padding: 8px 12px;
-    color: var(--text); font-family: 'Space Mono', monospace;
-    font-size: 14px;
-  }
+/* 2-col compare */
+.compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+.compare-cell{background:var(--s2);border:1px solid var(--gborder);border-radius:var(--r2);padding:10px;text-align:center}
+.compare-cell.winner{border-color:var(--border);background:rgba(0,245,212,.05)}
+.cc-label{font-family:var(--mono);font-size:9px;color:var(--dim);letter-spacing:2px;margin-bottom:4px}
+.cc-val{font-family:var(--mono);font-size:16px;color:var(--fg)}
+.cc-conf{font-size:10px;color:var(--dim);margin-top:2px;font-family:var(--sans)}
 
-  .formula-box {
-    background: rgba(0,212,255,0.05);
-    border: 1px solid rgba(0,212,255,0.2);
-    border-radius: 8px; padding: 10px 14px;
-    font-family: 'Space Mono', monospace;
-    font-size: 11px; color: var(--accent);
-    margin: 8px 0;
-  }
+/* light meter */
+.lux-meter{height:24px;border-radius:6px;overflow:hidden;background:var(--s2);position:relative;margin:6px 0}
+.lux-fill{height:100%;transition:width .2s;border-radius:6px}
+.lux-tick{position:absolute;top:0;bottom:0;width:1px;background:rgba(255,255,255,.15)}
 
-  .method-tabs {
-    display: flex; gap: 6px; margin-bottom: 12px;
-  }
-  .method-tab {
-    flex: 1; padding: 8px 6px; border-radius: 8px;
-    border: 1px solid var(--border);
-    background: var(--surface2); color: var(--text-dim);
-    font-size: 12px; cursor: pointer; text-align: center;
-    transition: all 0.2s; font-family: 'Rajdhani', sans-serif;
-    font-weight: 600;
-  }
-  .method-tab.active {
-    background: rgba(0,212,255,0.15);
-    border-color: var(--accent);
-    color: var(--accent);
-  }
+/* plane card */
+.plane-card{
+  background:var(--s2);border:1px solid var(--gborder);
+  border-radius:var(--r2);padding:10px 12px;margin-bottom:6px;
+  display:flex;justify-content:space-between;align-items:center;
+}
 
-  .edge-controls {
-    display: flex; gap: 8px; margin-bottom: 10px;
-    align-items: center;
-  }
-  .edge-controls label { font-size: 12px; color: var(--text-dim); }
+/* toast */
+#toast{
+  position:fixed;bottom:calc(var(--safe-bot) + 16px);left:50%;
+  transform:translateX(-50%) translateY(80px);
+  background:var(--s2);border:1px solid var(--border);
+  color:var(--fg);padding:10px 18px;border-radius:10px;
+  font-family:var(--sans);font-size:13px;z-index:9000;
+  transition:transform .25s;white-space:nowrap;max-width:90vw;
+  overflow:hidden;text-overflow:ellipsis;box-shadow:var(--glow);
+}
+#toast.show{transform:translateX(-50%) translateY(0)}
 
-  #ambient-bar-container {
-    display: flex; flex-direction: column; gap: 6px;
-  }
+/* HUD overlays on camera */
+.hud-tl,.hud-tr,.hud-bl,.hud-br{
+  position:absolute;font-family:var(--mono);font-size:10px;
+  color:var(--acc);padding:4px 7px;
+  background:rgba(6,8,16,.7);border-radius:4px;
+}
+.hud-tl{top:8px;left:8px}
+.hud-tr{top:8px;right:8px}
+.hud-bl{bottom:8px;left:8px}
+.hud-br{bottom:8px;right:8px}
+
+/* corner brackets */
+.corner{position:absolute;width:16px;height:16px;pointer-events:none}
+.corner.tl{top:6px;left:6px;border-top:2px solid var(--acc);border-left:2px solid var(--acc)}
+.corner.tr{top:6px;right:6px;border-top:2px solid var(--acc);border-right:2px solid var(--acc)}
+.corner.bl{bottom:6px;left:6px;border-bottom:2px solid var(--acc);border-left:2px solid var(--acc)}
+.corner.br{bottom:6px;right:6px;border-bottom:2px solid var(--acc);border-right:2px solid var(--acc)}
+
+/* animations */
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+@keyframes fadein{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.fadein{animation:fadein .3s ease-out}
+
+/* method comparison row */
+.method-compare{
+  display:flex;gap:6px;margin-bottom:10px;overflow-x:auto;
+  scrollbar-width:none;
+}
+.method-compare::-webkit-scrollbar{display:none}
+.mc-btn{
+  flex-shrink:0;padding:7px 12px;border-radius:var(--r2);
+  border:1px solid var(--gborder);background:var(--s2);
+  color:var(--dim);font-family:var(--mono);font-size:10px;
+  cursor:pointer;transition:all .15s;letter-spacing:.5px;
+}
+.mc-btn.active{background:rgba(0,245,212,.1);border-color:var(--border);color:var(--acc)}
+
+/* accel/gyro ring */
+.ring-viz{
+  display:flex;justify-content:center;align-items:center;
+  padding:10px 0;
+}
+.ring-svg{width:140px;height:140px}
+
+/* scrollable canvas with fixed aspect */
+.scroll-cam{width:100%;aspect-ratio:3/4;position:relative}
 </style>
 </head>
 <body>
 
-<!-- SPLASH -->
+<!-- ══════════ SPLASH ══════════ -->
 <div id="splash">
-  <div class="splash-logo">◈ AR Toolkit v2.0</div>
-  <div class="splash-title">Sensor<span>&amp;</span>AR<br>Detective</div>
-  <div class="splash-badge">Portrait · Rear Camera · Real-time</div>
+  <div class="splash-eyebrow">Sensor · AR · Toolkit</div>
+  <div class="splash-title">AR<em>·</em>SENSE</div>
+  <div class="splash-sub">All sensors. All AR features. Real-time visualization.<br>Portrait mode · Rear camera · Auto-detect everything.</div>
 
-  <div class="device-banner">
-    <div class="os-label">Detected Device</div>
-    <div class="os-name" id="splash-os">Detecting…</div>
-    <div class="os-note" id="splash-os-note">Checking capabilities…</div>
+  <div class="device-card">
+    <div class="dc-row">
+      <div>
+        <div class="dc-label">Detected Device</div>
+        <div class="dc-val" id="sp-os">Analyzing…</div>
+        <div class="dc-note" id="sp-note">Please wait…</div>
+      </div>
+      <div class="os-icon" id="sp-icon">⏳</div>
+    </div>
   </div>
 
-  <div class="capability-grid" id="cap-grid">
-    <div class="cap-item"><span class="dot dot-checking" id="d-cam"></span> Rear Camera</div>
-    <div class="cap-item"><span class="dot dot-checking" id="d-gyro"></span> Gyroscope</div>
-    <div class="cap-item"><span class="dot dot-checking" id="d-accel"></span> Accelerometer</div>
-    <div class="cap-item"><span class="dot dot-checking" id="d-mag"></span> Magnetometer</div>
-    <div class="cap-item"><span class="dot dot-checking" id="d-baro"></span> Barometer</div>
-    <div class="cap-item"><span class="dot dot-checking" id="d-ambient"></span> Ambient Light</div>
-    <div class="cap-item"><span class="dot dot-checking" id="d-prox"></span> Proximity</div>
-    <div class="cap-item"><span class="dot dot-checking" id="d-webxr"></span> WebXR/ARCore</div>
-    <div class="cap-item"><span class="dot dot-checking" id="d-depth"></span> Depth Sensing</div>
-    <div class="cap-item"><span class="dot dot-checking" id="d-hittest"></span> Hit Test</div>
+  <div class="cap-grid" id="cap-grid">
+    <!-- filled by JS -->
   </div>
 
-  <button id="splash-btn" disabled>Checking…</button>
+  <button id="launch-btn" disabled>Scanning capabilities…</button>
 </div>
 
-<!-- MAIN APP -->
+<!-- ══════════ APP ══════════ -->
 <div id="app">
-  <div class="top-bar">
-    <div class="top-bar-title">◈ AR Toolkit</div>
-    <div class="top-bar-os" id="app-os-badge">–</div>
+  <div class="topbar">
+    <div class="topbar-logo">AR·SENSE</div>
+    <div class="topbar-sep"></div>
+    <div class="topbar-os" id="tb-os">–</div>
+    <div class="topbar-right">
+      <div class="live-dot"></div>
+      <div class="live-txt">LIVE</div>
+    </div>
   </div>
 
-  <div class="tab-bar">
-    <button class="tab-btn active" onclick="switchTab('height')">📏 Height</button>
-    <button class="tab-btn" onclick="switchTab('distance')">📐 Distance</button>
-    <button class="tab-btn" onclick="switchTab('depth')">🌊 Depth</button>
-    <button class="tab-btn" onclick="switchTab('edges')">🔲 Objects</button>
-    <button class="tab-btn" onclick="switchTab('sensors')">📡 Sensors</button>
-    <button class="tab-btn" onclick="switchTab('light')">💡 Light</button>
-    <button class="tab-btn" onclick="switchTab('planes')">🟦 Planes</button>
+  <div class="tabbar" id="tabbar">
+    <button class="tab-btn active" data-tab="height"><span class="ti">📏</span>Height</button>
+    <button class="tab-btn" data-tab="distance"><span class="ti">📐</span>Distance</button>
+    <button class="tab-btn" data-tab="depth"><span class="ti">🌊</span>Depth</button>
+    <button class="tab-btn" data-tab="edges"><span class="ti">🔲</span>Objects</button>
+    <button class="tab-btn" data-tab="sensors"><span class="ti">📡</span>Sensors</button>
+    <button class="tab-btn" data-tab="light"><span class="ti">💡</span>Light</button>
+    <button class="tab-btn" data-tab="planes"><span class="ti">🟦</span>Planes</button>
+    <button class="tab-btn" data-tab="compare"><span class="ti">⚖️</span>Compare</button>
   </div>
 
-  <div class="pages">
+  <div class="pages" id="pages">
 
-    <!-- ── HEIGHT PAGE ── -->
+    <!-- ══ HEIGHT ══ -->
     <div class="page active" id="page-height">
+      <div class="card accent-top">
+        <div class="card-hd">
+          Camera Height from Ground
+          <div class="card-hd-right">
+            <span class="badge ok" id="h-status-badge">ACTIVE</span>
+          </div>
+        </div>
+        <div class="method-compare">
+          <button class="mc-btn active" onclick="setHeightTab('sensor')" id="ht-sensor">SENSOR TILT</button>
+          <button class="mc-btn" onclick="setHeightTab('visual')" id="ht-visual">VISUAL AIM</button>
+          <button class="mc-btn" onclick="setHeightTab('both')" id="ht-both">SIDE BY SIDE</button>
+        </div>
+        <div id="h-formula" class="irow" style="border:none;padding:0 0 10px">
+          <span style="font-family:var(--mono);font-size:10px;color:var(--dim)" id="h-formula-txt">h = (user_height − hold_offset) × cos(tilt_from_vertical)</span>
+        </div>
+      </div>
+
+      <!-- Camera + overlay -->
+      <div class="cam-wrap scroll-cam" id="h-cam-wrap">
+        <video id="h-vid" autoplay playsinline muted style="width:100%;height:100%;object-fit:cover"></video>
+        <canvas id="h-ov" class="fullcam"></canvas>
+        <div class="scan-bar"></div>
+        <div class="corner tl"></div><div class="corner tr"></div>
+        <div class="corner bl"></div><div class="corner br"></div>
+        <div class="xhair"><div class="xhair-h"></div><div class="xhair-v"></div><div class="xhair-dot"></div><div class="xhair-ring"></div></div>
+        <div class="horizon-line" id="h-horizon" data-label="HORIZON" style="top:50%"></div>
+        <div class="hud-tl" id="h-hud-tl">β–</div>
+        <div class="hud-tr" id="h-hud-tr">γ–</div>
+        <div class="hud-br" id="h-hud-br">–m</div>
+        <div class="cam-placeholder" id="h-placeholder">
+          <div style="font-size:32px">📷</div>
+          <div>Tap Start Camera</div>
+        </div>
+      </div>
+
+      <!-- Side-by-side compare -->
+      <div id="h-compare-section">
+        <div class="compare-grid" id="h-compare-grid">
+          <div class="compare-cell" id="h-cc-sensor">
+            <div class="cc-label">SENSOR METHOD</div>
+            <div class="cc-val" id="hc-sensor-val">–</div>
+            <div class="cc-conf" id="hc-sensor-conf">tilt-based</div>
+          </div>
+          <div class="compare-cell" id="h-cc-visual">
+            <div class="cc-label">VISUAL METHOD</div>
+            <div class="cc-val" id="hc-visual-val">–</div>
+            <div class="cc-conf" id="hc-visual-conf">horizon-based</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="metrics-row">
+        <div class="metric hi">
+          <div class="m-lbl">Camera Height</div>
+          <div class="m-val big" id="h-height-val">–<span class="m-unit">m</span></div>
+          <div class="m-sub" id="h-height-sub">awaiting sensors</div>
+        </div>
+        <div class="metric">
+          <div class="m-lbl">Tilt from Vertical</div>
+          <div class="m-val" id="h-tilt-val">–<span class="m-unit">°</span></div>
+        </div>
+      </div>
+      <div class="metrics-row three">
+        <div class="metric">
+          <div class="m-lbl">Beta (X)</div>
+          <div class="m-val" id="h-beta">–</div>
+        </div>
+        <div class="metric">
+          <div class="m-lbl">Gamma (Y)</div>
+          <div class="m-val" id="h-gamma">–</div>
+        </div>
+        <div class="metric">
+          <div class="m-lbl">Perpendicular</div>
+          <div class="m-val" id="h-perp">–</div>
+        </div>
+      </div>
+
+      <!-- History sparkline -->
       <div class="card">
-        <div class="card-title">📏 Camera Height From Ground</div>
-        <div class="method-tabs">
-          <div class="method-tab active" id="htab-sensor" onclick="setHeightMethod('sensor')">Sensor Tilt</div>
-          <div class="method-tab" id="htab-visual" onclick="setHeightMethod('visual')">Visual Aim</div>
-        </div>
-
-        <!-- Sensor method -->
-        <div id="h-sensor-method">
-          <div class="formula-box">h = sin(|tilt_from_vertical|) × arm_reach<br>OR: h ≈ holding_height (direct from pose)</div>
-          <div class="input-row">
-            <label>Your height (cm)</label>
-            <input type="number" id="user-height" value="170" min="100" max="220">
-          </div>
-          <div class="input-row">
-            <label>Hold offset (cm)</label>
-            <input type="number" id="hold-offset" value="30" min="0" max="80">
-          </div>
-          <p style="font-size:12px;color:var(--text-dim);margin-bottom:10px;">
-            Hold phone perpendicular to ground. Tilt sensor calculates camera height.
-          </p>
-        </div>
-
-        <!-- Visual method -->
-        <div id="h-visual-method" style="display:none">
-          <div class="formula-box">h = tan(elevation_angle) × D<br>Aim at ground → tilt = angle to horizon</div>
-          <p style="font-size:12px;color:var(--text-dim);margin-bottom:10px;">
-            Point phone camera at the ground intersection point. Orange line shows computed horizon.
-          </p>
-        </div>
+        <div class="card-hd">Height History (last 60s)</div>
+        <canvas id="h-spark" class="sparkline" height="50"></canvas>
       </div>
 
-      <div class="camera-container" id="h-cam-container">
-        <video id="h-video" autoplay playsinline muted></video>
-        <canvas id="h-canvas"></canvas>
-        <div class="scanline"></div>
-        <div class="crosshair"></div>
-        <div class="horizon-indicator" id="h-horizon" style="top:50%"></div>
-        <div class="cam-overlay" id="h-cam-overlay">
-          <div class="spinner"></div>
-          <div>Tap "Start Camera" below</div>
-        </div>
+      <div class="card">
+        <div class="card-hd">Method Info</div>
+        <div class="irow"><span class="irow-lbl">Active Method</span><span class="irow-val" id="h-method-name">–</span></div>
+        <div class="irow"><span class="irow-lbl">Confidence</span><span class="irow-val" id="h-conf">–</span></div>
+        <div class="irow"><span class="irow-lbl">Sensor Permission</span><span class="irow-val" id="h-perm">–</span></div>
+        <div class="irow"><span class="irow-lbl">Update Rate</span><span class="irow-val" id="h-rate">–</span></div>
       </div>
 
-      <div class="metric-row">
-        <div class="metric-box accent-box">
-          <div class="metric-label">Camera Height</div>
-          <div class="metric-value big" id="h-height">–<span class="metric-unit">m</span></div>
-        </div>
-        <div class="metric-box">
-          <div class="metric-label">Tilt Angle</div>
-          <div class="metric-value" id="h-tilt">–<span class="metric-unit">°</span></div>
-        </div>
-      </div>
-      <div class="metric-row">
-        <div class="metric-box">
-          <div class="metric-label">Beta (X-tilt)</div>
-          <div class="metric-value" id="h-beta">–<span class="metric-unit">°</span></div>
-        </div>
-        <div class="metric-box">
-          <div class="metric-label">Gamma (Y-tilt)</div>
-          <div class="metric-value" id="h-gamma">–<span class="metric-unit">°</span></div>
-        </div>
-      </div>
-
-      <button class="btn btn-primary" id="h-cam-btn" onclick="toggleHeightCam()">▶ Start Camera</button>
-      <button class="btn btn-secondary" onclick="requestMotionPermission()">🔒 Request Sensor Permission (iOS)</button>
-
-      <div class="card" style="margin-top:4px">
-        <div class="card-title">Method Explanation</div>
-        <div class="info-row">
-          <span class="info-row-label">Phone perpendicular to ground?</span>
-          <span class="info-row-val" id="h-perp-check">–</span>
-        </div>
-        <div class="info-row">
-          <span class="info-row-label">Confidence</span>
-          <span class="info-row-val" id="h-confidence">–</span>
-        </div>
-        <div class="info-row">
-          <span class="info-row-label">Method Active</span>
-          <span class="info-row-val" id="h-method-active">–</span>
-        </div>
-      </div>
+      <div id="h-err-zone"></div>
+      <button class="btn btn-acc" id="h-cam-btn" onclick="toggleCam('h')">▶ START CAMERA</button>
+      <button class="btn btn-ghost" onclick="reqMotionPerm()">🔒 REQUEST iOS SENSOR PERMISSION</button>
     </div>
 
-    <!-- ── DISTANCE PAGE ── -->
+    <!-- ══ DISTANCE ══ -->
     <div class="page" id="page-distance">
+      <div class="card accent-top">
+        <div class="card-hd">
+          Distance to Object / Surface
+          <span class="badge ok" id="d-status-badge">AUTO</span>
+        </div>
+        <div class="method-compare">
+          <button class="mc-btn active" onclick="setDistTab('trig')" id="dt-trig">TRIG</button>
+          <button class="mc-btn" onclick="setDistTab('xr-hit')" id="dt-xr-hit">XR HIT-TEST</button>
+          <button class="mc-btn" onclick="setDistTab('xr-depth')" id="dt-xr-depth">XR DEPTH</button>
+          <button class="mc-btn" onclick="setDistTab('all')" id="dt-all">ALL METHODS</button>
+        </div>
+        <div id="d-formula-row">
+          <div style="font-family:var(--mono);font-size:10px;color:var(--dim)" id="d-formula">D = h ÷ tan(depression_angle)</div>
+        </div>
+      </div>
+
+      <div class="cam-wrap scroll-cam" id="d-cam-wrap">
+        <video id="d-vid" autoplay playsinline muted style="width:100%;height:100%;object-fit:cover"></video>
+        <canvas id="d-ov" class="fullcam"></canvas>
+        <div class="scan-bar"></div>
+        <div class="corner tl"></div><div class="corner tr"></div>
+        <div class="corner bl"></div><div class="corner br"></div>
+        <div class="xhair"><div class="xhair-h"></div><div class="xhair-v"></div><div class="xhair-dot"></div><div class="xhair-ring"></div></div>
+        <div class="horizon-line" id="d-horizon" data-label="HORIZONTAL" style="top:50%"></div>
+        <div class="hud-tl" id="d-hud-tl">DEP –°</div>
+        <div class="hud-br" id="d-hud-br">–m</div>
+        <div class="hud-tr" id="d-hud-tr">h –m</div>
+        <div class="cam-placeholder" id="d-placeholder"><div style="font-size:32px">📷</div><div>Tap Start Camera</div></div>
+      </div>
+
+      <!-- All methods compare -->
+      <div id="d-all-compare" style="display:none">
+        <div class="compare-grid">
+          <div class="compare-cell" id="d-cc-trig"><div class="cc-label">TRIG</div><div class="cc-val" id="dc-trig">–</div><div class="cc-conf">sensor angle</div></div>
+          <div class="compare-cell" id="d-cc-hit"><div class="cc-label">XR HIT-TEST</div><div class="cc-val" id="dc-hit">–</div><div class="cc-conf">ARCore raycast</div></div>
+        </div>
+        <div class="compare-grid">
+          <div class="compare-cell" id="d-cc-dep"><div class="cc-label">XR DEPTH</div><div class="cc-val" id="dc-dep">–</div><div class="cc-conf">depth buffer</div></div>
+          <div class="compare-cell" id="d-cc-avg"><div class="cc-label">AVERAGE</div><div class="cc-val warn" id="dc-avg">–</div><div class="cc-conf">fusion estimate</div></div>
+        </div>
+      </div>
+
+      <div class="metrics-row">
+        <div class="metric hi">
+          <div class="m-lbl">Distance</div>
+          <div class="m-val big" id="d-dist-val">–<span class="m-unit">m</span></div>
+        </div>
+        <div class="metric">
+          <div class="m-lbl">Depression°</div>
+          <div class="m-val" id="d-depr-val">–<span class="m-unit">°</span></div>
+        </div>
+      </div>
+      <div class="metrics-row three">
+        <div class="metric"><div class="m-lbl">Camera H</div><div class="m-val" id="d-camh">–<span class="m-unit">m</span></div></div>
+        <div class="metric"><div class="m-lbl">XR Hit</div><div class="m-val" id="d-xrhit">–</div></div>
+        <div class="metric"><div class="m-lbl">Depth Ctr</div><div class="m-val" id="d-depth-ctr">–</div></div>
+      </div>
+
       <div class="card">
-        <div class="card-title">📐 Distance to Objects</div>
-        <div class="method-tabs">
-          <div class="method-tab active" id="dtab-trig" onclick="setDistMethod('trig')">Trig</div>
-          <div class="method-tab" id="dtab-ref" onclick="setDistMethod('ref')">Ref Object</div>
-          <div class="method-tab" id="dtab-xr" onclick="setDistMethod('xr')">WebXR</div>
-        </div>
-
-        <!-- trig method -->
-        <div id="dist-trig">
-          <div class="formula-box">D = h / tan(depression_angle)<br>h = camera height, angle from horizontal</div>
-          <p style="font-size:12px;color:var(--text-dim);margin-bottom:10px;">
-            Hold phone level, point at base of object. Uses camera height + downward tilt angle.
-          </p>
-          <div class="input-row">
-            <label>Camera height (cm)</label>
-            <input type="number" id="d-cam-height" value="150" min="50" max="250">
-          </div>
-        </div>
-
-        <!-- ref object method -->
-        <div id="dist-ref" style="display:none">
-          <div class="formula-box">D = (f × H_real) / H_pixels<br>f = focal_length, H = object height</div>
-          <div class="input-row">
-            <label>Known object height (cm)</label>
-            <input type="number" id="d-ref-size" value="30" min="1" max="500">
-          </div>
-          <p style="font-size:12px;color:var(--text-dim);margin-bottom:4px;">
-            Tap the top and bottom of the object on screen to measure.
-          </p>
-          <div id="d-tap-status" style="font-size:13px;color:var(--warn);margin-bottom:8px;">Tap points: 0/2</div>
-        </div>
-
-        <!-- WebXR method -->
-        <div id="dist-xr" style="display:none">
-          <p style="font-size:12px;color:var(--text-dim);margin-bottom:8px;">
-            Uses WebXR hit-test to raycast against real surfaces (requires ARCore on Android Chrome).
-          </p>
-          <div class="info-row">
-            <span class="info-row-label">WebXR Status</span>
-            <span id="dist-xr-status">Checking…</span>
-          </div>
-        </div>
+        <div class="card-hd">Distance History</div>
+        <canvas id="d-spark" class="sparkline" height="50"></canvas>
       </div>
 
-      <div class="camera-container" id="d-cam-container">
-        <video id="d-video" autoplay playsinline muted></video>
-        <canvas id="d-canvas"></canvas>
-        <div class="scanline"></div>
-        <div class="crosshair"></div>
-        <div class="horizon-indicator" id="d-horizon" style="top:50%"></div>
-        <div class="cam-overlay" id="d-cam-overlay">
-          <div class="spinner"></div>
-          <div>Tap "Start Camera" below</div>
-        </div>
-      </div>
-
-      <div class="metric-row">
-        <div class="metric-box accent-box">
-          <div class="metric-label">Distance</div>
-          <div class="metric-value big" id="dist-value">–<span class="metric-unit">m</span></div>
-        </div>
-        <div class="metric-box">
-          <div class="metric-label">Depression°</div>
-          <div class="metric-value" id="dist-angle">–<span class="metric-unit">°</span></div>
-        </div>
-      </div>
-      <div class="metric-row">
-        <div class="metric-box">
-          <div class="metric-label">Tap Point 1</div>
-          <div class="metric-value" id="d-tap1" style="font-size:13px">–</div>
-        </div>
-        <div class="metric-box">
-          <div class="metric-label">Tap Point 2</div>
-          <div class="metric-value" id="d-tap2" style="font-size:13px">–</div>
-        </div>
-      </div>
-
-      <button class="btn btn-primary" id="d-cam-btn" onclick="toggleDistCam()">▶ Start Camera</button>
-      <button class="btn btn-secondary" onclick="clearTapPoints()">✕ Clear Tap Points</button>
+      <div id="d-err-zone"></div>
+      <button class="btn btn-acc" id="d-cam-btn" onclick="toggleCam('d')">▶ START CAMERA</button>
+      <button class="btn btn-ghost" onclick="startXRSession('distance')">🔮 INIT WebXR HIT-TEST</button>
     </div>
 
-    <!-- ── DEPTH PAGE ── -->
+    <!-- ══ DEPTH ══ -->
     <div class="page" id="page-depth">
+      <div class="card accent-top">
+        <div class="card-hd">
+          Depth Map Visualization
+          <span class="badge warn" id="dep-api-badge">CHECKING</span>
+        </div>
+        <div class="method-compare">
+          <button class="mc-btn active" onclick="setDepthMode('heatmap')" id="dm-heatmap">HEATMAP</button>
+          <button class="mc-btn" onclick="setDepthMode('rainbow')" id="dm-rainbow">RAINBOW</button>
+          <button class="mc-btn" onclick="setDepthMode('grayscale')" id="dm-grayscale">GRAYSCALE</button>
+          <button class="mc-btn" onclick="setDepthMode('contour')" id="dm-contour">CONTOUR</button>
+        </div>
+      </div>
+
+      <div class="cam-wrap scroll-cam" id="dep-cam-wrap">
+        <video id="dep-vid" autoplay playsinline muted style="width:100%;height:100%;object-fit:cover;display:none"></video>
+        <canvas id="dep-canvas" class="fullcam"></canvas>
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <div class="xhair"><div class="xhair-h"></div><div class="xhair-v"></div><div class="xhair-dot"></div></div>
+        <div class="hud-tl" id="dep-hud-mode">VISUAL DEPTH</div>
+        <div class="hud-br" id="dep-hud-center">CENTER: –</div>
+        <div class="cam-placeholder" id="dep-placeholder"><div style="font-size:32px">🌊</div><div>Tap Start Depth</div></div>
+      </div>
+
+      <div class="depth-legend">
+        <span>Near</span>
+        <div class="depth-grad"></div>
+        <span>Far</span>
+      </div>
+
+      <div class="metrics-row">
+        <div class="metric hi"><div class="m-lbl">Center Depth</div><div class="m-val big" id="dep-center">–<span class="m-unit">m</span></div></div>
+        <div class="metric"><div class="m-lbl">Min Depth</div><div class="m-val" id="dep-min">–</div></div>
+      </div>
+      <div class="metrics-row">
+        <div class="metric"><div class="m-lbl">Max Depth</div><div class="m-val" id="dep-max">–</div></div>
+        <div class="metric"><div class="m-lbl">Method</div><div class="m-val" id="dep-method" style="font-size:12px">–</div></div>
+      </div>
+
       <div class="card">
-        <div class="card-title">🌊 Depth Estimation</div>
-        <div id="depth-xr-status">
-          <div class="info-row">
-            <span class="info-row-label">WebXR Depth Sensing</span>
-            <span id="depth-api-status" class="status-badge badge-warn">Checking…</span>
-          </div>
-          <div class="info-row">
-            <span class="info-row-label">ARCore Support</span>
-            <span id="depth-arcore-status" class="status-badge badge-warn">Checking…</span>
-          </div>
-        </div>
-        <p style="font-size:12px;color:var(--text-dim);margin-top:8px;">
-          WebXR Depth requires Chrome on ARCore-compatible Android. Falls back to edge/blur depth estimation on unsupported devices.
-        </p>
+        <div class="card-hd">Depth Profile (horizontal slice)</div>
+        <canvas id="dep-profile" style="width:100%;height:50px;display:block;background:var(--s2);border-radius:var(--r2)"></canvas>
       </div>
 
-      <canvas id="depth-canvas"></canvas>
-
-      <div class="metric-row" style="margin-top:10px">
-        <div class="metric-box accent-box">
-          <div class="metric-label">Center Depth</div>
-          <div class="metric-value big" id="depth-center">–<span class="metric-unit">m</span></div>
-        </div>
-        <div class="metric-box">
-          <div class="metric-label">Min Depth</div>
-          <div class="metric-value" id="depth-min">–<span class="metric-unit">m</span></div>
-        </div>
-      </div>
-      <div class="metric-row">
-        <div class="metric-box">
-          <div class="metric-label">Max Depth</div>
-          <div class="metric-value" id="depth-max">–</div>
-        </div>
-        <div class="metric-box">
-          <div class="metric-label">Mode</div>
-          <div class="metric-value" id="depth-mode" style="font-size:13px">–</div>
-        </div>
-      </div>
-
-      <button class="btn btn-primary" id="depth-btn" onclick="startDepth()">▶ Start Depth Sensing</button>
-      <button class="btn btn-secondary" onclick="stopDepth()">■ Stop</button>
-
-      <div class="card" style="margin-top:4px">
-        <div class="card-title">Depth Legend</div>
-        <div style="height:16px;border-radius:8px;background:linear-gradient(to right,#ff1744,#ffd600,#00d4ff,#1a237e);margin:8px 0;"></div>
-        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-dim);font-family:'Space Mono',monospace">
-          <span>Near (0m)</span><span>Mid</span><span>Far (&gt;5m)</span>
-        </div>
-      </div>
+      <div id="dep-err-zone"></div>
+      <button class="btn btn-acc" id="dep-btn" onclick="startDepth()">▶ START DEPTH SENSING</button>
+      <button class="btn btn-ghost" onclick="stopDepth()">■ STOP</button>
     </div>
 
-    <!-- ── EDGES/OBJECTS PAGE ── -->
+    <!-- ══ EDGES / OBJECTS ══ -->
     <div class="page" id="page-edges">
+      <div class="card accent-top">
+        <div class="card-hd">Object & Edge Detection</div>
+        <div class="method-compare">
+          <button class="mc-btn active" onclick="setEdgeMode('edge')" id="em-edge">EDGES</button>
+          <button class="mc-btn" onclick="setEdgeMode('motion')" id="em-motion">MOTION</button>
+          <button class="mc-btn" onclick="setEdgeMode('luma')" id="em-luma">LUMA</button>
+          <button class="mc-btn" onclick="setEdgeMode('color')" id="em-color">COLOR SEG</button>
+          <button class="mc-btn" onclick="setEdgeMode('thermal')" id="em-thermal">THERMAL SIM</button>
+        </div>
+        <div class="range-row">
+          <label>THRESH</label>
+          <input type="range" id="edge-thresh-sl" min="10" max="180" value="60" oninput="edgeThresh=+this.value;document.getElementById('edge-thresh-v').textContent=this.value">
+          <span class="range-val" id="edge-thresh-v">60</span>
+        </div>
+      </div>
+
+      <div class="cam-wrap scroll-cam" id="e-cam-wrap">
+        <video id="e-vid" autoplay playsinline muted style="display:none"></video>
+        <canvas id="e-canvas" class="fullcam" style="position:relative;width:100%;height:100%;display:block"></canvas>
+        <div class="hud-tl" id="e-hud-mode">EDGES</div>
+        <div class="hud-br" id="e-hud-info">–</div>
+        <div class="cam-placeholder" id="e-placeholder"><div style="font-size:32px">🔲</div><div>Tap Start Camera</div></div>
+      </div>
+
+      <div class="metrics-row">
+        <div class="metric hi"><div class="m-lbl">Edge Pixels</div><div class="m-val big" id="e-edges">–</div></div>
+        <div class="metric"><div class="m-lbl">Motion Δ</div><div class="m-val" id="e-motion">–</div></div>
+      </div>
+      <div class="metrics-row three">
+        <div class="metric"><div class="m-lbl">Brightness</div><div class="m-val" id="e-bright">–</div></div>
+        <div class="metric"><div class="m-lbl">Contrast</div><div class="m-val" id="e-contrast">–</div></div>
+        <div class="metric"><div class="m-lbl">Dom Hue</div><div class="m-val" id="e-hue">–</div></div>
+      </div>
+
       <div class="card">
-        <div class="card-title">🔲 Object &amp; Edge Detection</div>
-        <div class="edge-controls">
-          <label>Threshold:</label>
-          <input type="range" id="edge-threshold" min="20" max="150" value="50" style="flex:1">
-          <span id="edge-thresh-val" style="font-family:'Space Mono',monospace;font-size:12px;color:var(--accent)">50</span>
-        </div>
-        <div class="method-tabs">
-          <div class="method-tab active" id="etab-edge" onclick="setEdgeMode('edge')">Edges</div>
-          <div class="method-tab" id="etab-diff" onclick="setEdgeMode('diff')">Motion</div>
-          <div class="method-tab" id="etab-luma" onclick="setEdgeMode('luma')">Luminance</div>
-          <div class="method-tab" id="etab-hsv" onclick="setEdgeMode('hsv')">Color Seg</div>
-        </div>
+        <div class="card-hd">Motion History</div>
+        <canvas id="e-motion-spark" class="sparkline" height="40"></canvas>
       </div>
 
-      <div class="camera-container" id="e-cam-container">
-        <video id="e-video" autoplay playsinline muted style="display:none"></video>
-        <canvas id="edge-canvas"></canvas>
-        <div class="cam-overlay" id="e-cam-overlay">
-          <div class="spinner"></div>
-          <div>Tap "Start Camera" below</div>
-        </div>
-      </div>
-
-      <div class="metric-row">
-        <div class="metric-box accent-box">
-          <div class="metric-label">Edge Pixels</div>
-          <div class="metric-value" id="edge-pixels">–</div>
-        </div>
-        <div class="metric-box">
-          <div class="metric-label">Motion Δ</div>
-          <div class="metric-value" id="edge-motion">–</div>
-        </div>
-      </div>
-      <div class="metric-row">
-        <div class="metric-box">
-          <div class="metric-label">Avg Brightness</div>
-          <div class="metric-value" id="edge-bright">–</div>
-        </div>
-        <div class="metric-box">
-          <div class="metric-label">Dominant Hue</div>
-          <div class="metric-value" id="edge-hue">–</div>
-        </div>
-      </div>
-
-      <button class="btn btn-primary" id="e-cam-btn" onclick="toggleEdgeCam()">▶ Start Camera</button>
+      <div id="e-err-zone"></div>
+      <button class="btn btn-acc" id="e-cam-btn" onclick="toggleCam('e')">▶ START CAMERA</button>
     </div>
 
-    <!-- ── SENSORS PAGE ── -->
+    <!-- ══ SENSORS ══ -->
     <div class="page" id="page-sensors">
-      <div class="card">
-        <div class="card-title">📡 All Sensors Live</div>
-
-        <div class="tilt-viz">
-          <div class="tilt-phone" id="tilt-phone-viz"></div>
-        </div>
-
-        <div class="compass-wrap">
-          <div class="compass-ring">
-            <div class="compass-needle" id="compass-needle"></div>
-            <div class="compass-center"></div>
+      <div class="card accent-top">
+        <div class="card-hd">All Sensors Dashboard</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div>
+            <div class="phone3d-wrap">
+              <div class="phone3d" id="phone3d"></div>
+            </div>
+          </div>
+          <div>
+            <div class="compass-wrap">
+              <div class="compass">
+                <div class="compass-ring"></div>
+                <div class="compass-n">N</div>
+                <div class="compass-needle north" id="compass-n"></div>
+                <div class="compass-needle south" id="compass-s" style="transform:translateX(-50%) rotate(180deg)"></div>
+                <div class="compass-center"></div>
+              </div>
+            </div>
+            <div style="text-align:center;font-family:var(--mono);font-size:11px;color:var(--acc)">
+              <span id="compass-deg">–</span>° <span id="compass-dir">–</span>
+            </div>
           </div>
         </div>
-        <div style="text-align:center;font-family:'Space Mono',monospace;font-size:11px;color:var(--text-dim);margin-bottom:12px">
-          Heading: <span id="compass-heading">–</span>°
-        </div>
       </div>
 
+      <!-- Orientation -->
       <div class="card">
-        <div class="card-title">Accelerometer (m/s²)</div>
-        <div class="sensor-bar-wrap">
-          <div class="sensor-bar-label"><span>X</span><span id="accel-x">–</span></div>
-          <div class="sensor-bar-track"><div class="sensor-bar-fill" id="bar-ax" style="width:50%;background:var(--danger)"></div></div>
+        <div class="card-hd">Device Orientation</div>
+        <div id="s-orient-bars">
+          <div class="bar-group">
+            <div class="bar-label"><span>Alpha (compass Z)</span><span id="s-alpha">–°</span></div>
+            <div class="bar-track"><div class="bar-fill" id="bar-alpha" style="width:50%;background:var(--acc2)"></div></div>
+          </div>
+          <div class="bar-group">
+            <div class="bar-label"><span>Beta (front-back X)</span><span id="s-beta">–°</span></div>
+            <div class="bar-track"><div class="bar-fill" id="bar-beta" style="width:50%;background:var(--acc)"></div></div>
+          </div>
+          <div class="bar-group">
+            <div class="bar-label"><span>Gamma (left-right Y)</span><span id="s-gamma">–°</span></div>
+            <div class="bar-track"><div class="bar-fill" id="bar-gamma" style="width:50%;background:var(--acc3)"></div></div>
+          </div>
         </div>
-        <div class="sensor-bar-wrap">
-          <div class="sensor-bar-label"><span>Y</span><span id="accel-y">–</span></div>
-          <div class="sensor-bar-track"><div class="sensor-bar-fill" id="bar-ay" style="width:50%;background:var(--accent3)"></div></div>
-        </div>
-        <div class="sensor-bar-wrap">
-          <div class="sensor-bar-label"><span>Z</span><span id="accel-z">–</span></div>
-          <div class="sensor-bar-track"><div class="sensor-bar-fill" id="bar-az" style="width:50%;background:var(--accent)"></div></div>
-        </div>
+        <canvas id="s-orient-wave" class="wave-canvas" style="margin-top:10px"></canvas>
       </div>
 
+      <!-- Accelerometer -->
       <div class="card">
-        <div class="card-title">Gyroscope (°/s)</div>
-        <div class="sensor-bar-wrap">
-          <div class="sensor-bar-label"><span>Alpha (Z)</span><span id="gyro-a">–</span></div>
-          <div class="sensor-bar-track"><div class="sensor-bar-fill" id="bar-ga" style="width:50%;background:var(--danger)"></div></div>
+        <div class="card-hd">Accelerometer (m/s²) <span class="badge ok" id="accel-badge">ACTIVE</span></div>
+        <div class="bar-group">
+          <div class="bar-label"><span>X (lateral)</span><span id="s-ax">–</span></div>
+          <div class="bar-track"><div class="bar-fill" id="bar-ax" style="width:50%;background:var(--acc2)"></div></div>
         </div>
-        <div class="sensor-bar-wrap">
-          <div class="sensor-bar-label"><span>Beta (X)</span><span id="gyro-b">–</span></div>
-          <div class="sensor-bar-track"><div class="sensor-bar-fill" id="bar-gb" style="width:50%;background:var(--accent3)"></div></div>
+        <div class="bar-group">
+          <div class="bar-label"><span>Y (vertical)</span><span id="s-ay">–</span></div>
+          <div class="bar-track"><div class="bar-fill" id="bar-ay" style="width:50%;background:var(--acc3)"></div></div>
         </div>
-        <div class="sensor-bar-wrap">
-          <div class="sensor-bar-label"><span>Gamma (Y)</span><span id="gyro-g">–</span></div>
-          <div class="sensor-bar-track"><div class="sensor-bar-fill" id="bar-gg" style="width:50%;background:var(--accent)"></div></div>
+        <div class="bar-group">
+          <div class="bar-label"><span>Z (depth)</span><span id="s-az">–</span></div>
+          <div class="bar-track"><div class="bar-fill" id="bar-az" style="width:50%;background:var(--acc)"></div></div>
         </div>
+        <div class="metrics-row" style="margin-top:8px">
+          <div class="metric"><div class="m-lbl">Total G</div><div class="m-val" id="s-g-total">–</div></div>
+          <div class="metric"><div class="m-lbl">Jerk</div><div class="m-val" id="s-jerk">–</div></div>
+        </div>
+        <canvas id="s-accel-wave" class="wave-canvas"></canvas>
       </div>
 
+      <!-- Gyroscope -->
       <div class="card">
-        <div class="card-title">Device Orientation</div>
-        <div class="info-row">
-          <span class="info-row-label">Alpha (compass)</span>
-          <span class="info-row-val" id="s-alpha">–</span>
+        <div class="card-hd">Rotation Rate (°/s) <span class="badge ok" id="gyro-badge">ACTIVE</span></div>
+        <div class="bar-group">
+          <div class="bar-label"><span>Alpha rate</span><span id="s-ra">–</span></div>
+          <div class="bar-track"><div class="bar-fill" id="bar-ra" style="width:50%;background:var(--acc2)"></div></div>
         </div>
-        <div class="info-row">
-          <span class="info-row-label">Beta (front-back tilt)</span>
-          <span class="info-row-val" id="s-beta">–</span>
+        <div class="bar-group">
+          <div class="bar-label"><span>Beta rate</span><span id="s-rb">–</span></div>
+          <div class="bar-track"><div class="bar-fill" id="bar-rb" style="width:50%;background:var(--acc3)"></div></div>
         </div>
-        <div class="info-row">
-          <span class="info-row-label">Gamma (left-right tilt)</span>
-          <span class="info-row-val" id="s-gamma">–</span>
+        <div class="bar-group">
+          <div class="bar-label"><span>Gamma rate</span><span id="s-rg">–</span></div>
+          <div class="bar-track"><div class="bar-fill" id="bar-rg" style="width:50%;background:var(--acc)"></div></div>
         </div>
-        <div class="info-row">
-          <span class="info-row-label">Absolute</span>
-          <span class="info-row-val" id="s-absolute">–</span>
-        </div>
+        <canvas id="s-gyro-wave" class="wave-canvas"></canvas>
       </div>
 
+      <!-- Other sensors -->
       <div class="card">
-        <div class="card-title">Other Sensors</div>
-        <div class="info-row">
-          <span class="info-row-label">Barometer / Altitude</span>
-          <span class="info-row-val" id="s-baro">Not available</span>
-        </div>
-        <div class="info-row">
-          <span class="info-row-label">Ambient Light</span>
-          <span class="info-row-val" id="s-ambient">Not available</span>
-        </div>
-        <div class="info-row">
-          <span class="info-row-label">Proximity</span>
-          <span class="info-row-val" id="s-proximity">Not available</span>
-        </div>
-        <div class="info-row">
-          <span class="info-row-label">Magnetometer X</span>
-          <span class="info-row-val" id="s-mag">Not available</span>
+        <div class="card-hd">Environmental Sensors</div>
+        <div class="irow"><span class="irow-lbl">Barometer / Pressure</span><span class="irow-val" id="s-baro">–</span></div>
+        <div class="irow"><span class="irow-lbl">Estimated Altitude</span><span class="irow-val" id="s-alt">–</span></div>
+        <div class="irow"><span class="irow-lbl">Ambient Light</span><span class="irow-val" id="s-als">–</span></div>
+        <div class="irow"><span class="irow-lbl">Proximity</span><span class="irow-val" id="s-prox">–</span></div>
+        <div class="irow"><span class="irow-lbl">Magnetometer X/Y/Z</span><span class="irow-val" id="s-mag">–</span></div>
+        <div class="irow"><span class="irow-lbl">Gravity Vector</span><span class="irow-val" id="s-grav">–</span></div>
+        <div class="irow"><span class="irow-lbl">Orientation Absolute</span><span class="irow-val" id="s-abs">–</span></div>
+      </div>
+
+      <!-- 3D orientation ring viz -->
+      <div class="card">
+        <div class="card-hd">3D Orientation Ring</div>
+        <div class="ring-viz">
+          <canvas id="ring-canvas" width="160" height="160"></canvas>
         </div>
       </div>
 
-      <button class="btn btn-secondary" onclick="requestMotionPermission()">🔒 Request iOS Permission</button>
+      <button class="btn btn-ghost" onclick="reqMotionPerm()">🔒 REQUEST iOS SENSOR PERMISSION</button>
     </div>
 
-    <!-- ── LIGHT PAGE ── -->
+    <!-- ══ LIGHT ══ -->
     <div class="page" id="page-light">
-      <div class="card">
-        <div class="card-title">💡 Light &amp; Environment Estimation</div>
-        <p style="font-size:12px;color:var(--text-dim);margin-bottom:10px;">
-          Estimates ambient light from camera feed + device sensors.
-        </p>
+      <div class="card accent-top">
+        <div class="card-hd">
+          Light & Environment Estimation
+          <span class="badge ok" id="light-status">LIVE</span>
+        </div>
+        <div class="method-compare">
+          <button class="mc-btn active" onclick="setLightMode('lux')" id="lm-lux">LUX</button>
+          <button class="mc-btn" onclick="setLightMode('rgb')" id="lm-rgb">RGB</button>
+          <button class="mc-btn" onclick="setLightMode('spectrum')" id="lm-spectrum">SPECTRUM</button>
+          <button class="mc-btn" onclick="setLightMode('xr-light')" id="lm-xr">XR LIGHT</button>
+        </div>
       </div>
 
-      <div class="camera-container" style="aspect-ratio:3/4">
-        <video id="l-video" autoplay playsinline muted></video>
-        <canvas id="l-canvas" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none"></canvas>
-        <div class="cam-overlay" id="l-cam-overlay">
-          <div class="spinner"></div>
-          <div>Tap "Start Camera" below</div>
-        </div>
+      <div class="cam-wrap" style="aspect-ratio:3/4;position:relative">
+        <video id="l-vid" autoplay playsinline muted style="width:100%;height:100%;object-fit:cover"></video>
+        <canvas id="l-canvas" class="fullcam"></canvas>
+        <div class="scan-bar"></div>
+        <div class="hud-tl" id="l-hud-lux">– lux</div>
+        <div class="hud-tr" id="l-hud-temp">–K</div>
+        <div class="cam-placeholder" id="l-placeholder"><div style="font-size:32px">💡</div><div>Tap Start Camera</div></div>
       </div>
 
       <div class="card" style="margin-top:10px">
-        <div class="card-title">Luminance</div>
-        <div class="light-meter">
-          <div class="light-fill" id="light-fill-bar" style="width:0%"></div>
+        <div class="card-hd">Luminance Meter</div>
+        <div class="lux-meter">
+          <div class="lux-fill" id="lux-fill" style="width:0%;background:linear-gradient(90deg,#1a1a2e,#ffd600,#fff)"></div>
+          <div class="lux-tick" style="left:25%"></div>
+          <div class="lux-tick" style="left:50%"></div>
+          <div class="lux-tick" style="left:75%"></div>
         </div>
-        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-dim)">
-          <span>Dark</span><span>Medium</span><span>Bright</span>
-        </div>
-      </div>
-
-      <div class="metric-row">
-        <div class="metric-box accent-box">
-          <div class="metric-label">Lux (estimated)</div>
-          <div class="metric-value big" id="lux-val">–</div>
-        </div>
-        <div class="metric-box">
-          <div class="metric-label">Color Temp</div>
-          <div class="metric-value" id="color-temp">–<span class="metric-unit">K</span></div>
-        </div>
-      </div>
-      <div class="metric-row">
-        <div class="metric-box">
-          <div class="metric-label">Avg R</div>
-          <div class="metric-value" id="avg-r" style="color:#ff5252">–</div>
-        </div>
-        <div class="metric-box">
-          <div class="metric-label">Avg G</div>
-          <div class="metric-value" id="avg-g" style="color:#69f0ae">–</div>
-        </div>
-      </div>
-      <div class="metric-row">
-        <div class="metric-box">
-          <div class="metric-label">Avg B</div>
-          <div class="metric-value" id="avg-b" style="color:#40c4ff">–</div>
-        </div>
-        <div class="metric-box">
-          <div class="metric-label">Condition</div>
-          <div class="metric-value" id="light-cond" style="font-size:13px">–</div>
+        <div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:9px;color:var(--dim)">
+          <span>Dark</span><span>Indoor</span><span>Office</span><span>Outdoor</span>
         </div>
       </div>
 
-      <button class="btn btn-primary" id="l-cam-btn" onclick="toggleLightCam()">▶ Start Camera</button>
+      <div class="metrics-row">
+        <div class="metric hi"><div class="m-lbl">Estimated Lux</div><div class="m-val big" id="l-lux">–</div></div>
+        <div class="metric"><div class="m-lbl">Color Temp</div><div class="m-val" id="l-cct">–<span class="m-unit">K</span></div></div>
+      </div>
+      <div class="metrics-row three">
+        <div class="metric"><div class="m-lbl">Avg R</div><div class="m-val" id="l-r" style="color:#ff6b6b">–</div></div>
+        <div class="metric"><div class="m-lbl">Avg G</div><div class="m-val" id="l-g" style="color:#00f5d4">–</div></div>
+        <div class="metric"><div class="m-lbl">Avg B</div><div class="m-val" id="l-b" style="color:#a8dadc">–</div></div>
+      </div>
+      <div class="metrics-row">
+        <div class="metric"><div class="m-lbl">Condition</div><div class="m-val" id="l-cond" style="font-size:13px">–</div></div>
+        <div class="metric"><div class="m-lbl">XR Light Est.</div><div class="m-val" id="l-xr" style="font-size:12px">–</div></div>
+      </div>
 
       <div class="card">
-        <div class="card-title">Device Sensor Light</div>
-        <div id="ambient-bar-container">
-          <div class="info-row">
-            <span class="info-row-label">Ambient Light Sensor</span>
-            <span class="info-row-val" id="ambient-sensor-val">Not available</span>
-          </div>
-          <div class="info-row">
-            <span class="info-row-label">Sensor API</span>
-            <span id="ambient-api-status" class="status-badge badge-warn">Checking…</span>
-          </div>
-        </div>
+        <div class="card-hd">RGB Histogram</div>
+        <canvas id="l-hist" style="width:100%;height:60px;display:block;background:var(--s2);border-radius:var(--r2)"></canvas>
       </div>
+
+      <div class="card">
+        <div class="card-hd">Lux History</div>
+        <canvas id="l-spark" class="sparkline" height="50"></canvas>
+      </div>
+
+      <div class="card">
+        <div class="card-hd">Device Ambient Light Sensor</div>
+        <div class="irow"><span class="irow-lbl">ALS Reading</span><span class="irow-val" id="l-als">Not available</span></div>
+        <div class="irow"><span class="irow-lbl">API Status</span><span class="irow-val" id="l-als-status">–</span></div>
+      </div>
+
+      <div id="l-err-zone"></div>
+      <button class="btn btn-acc" id="l-cam-btn" onclick="toggleCam('l')">▶ START CAMERA</button>
     </div>
 
-    <!-- ── PLANES PAGE ── -->
+    <!-- ══ PLANES ══ -->
     <div class="page" id="page-planes">
+      <div class="card accent-top">
+        <div class="card-hd">
+          Plane & Surface Detection
+          <span class="badge warn" id="planes-xr-badge">CHECKING</span>
+        </div>
+        <div class="irow"><span class="irow-lbl">WebXR AR</span><span class="irow-val" id="pl-ar-status">–</span></div>
+        <div class="irow"><span class="irow-lbl">Plane Detection</span><span class="irow-val" id="pl-pd-status">–</span></div>
+        <div class="irow"><span class="irow-lbl">Local Floor</span><span class="irow-val" id="pl-floor-status">–</span></div>
+      </div>
+
+      <div class="cam-wrap scroll-cam" id="pl-cam-wrap">
+        <video id="pl-vid" autoplay playsinline muted style="width:100%;height:100%;object-fit:cover"></video>
+        <canvas id="pl-canvas" class="fullcam"></canvas>
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <div class="hud-tl" id="pl-hud-count">PLANES: –</div>
+        <div class="hud-br" id="pl-hud-floor">FLOOR: –m</div>
+        <div class="cam-placeholder" id="pl-placeholder"><div style="font-size:32px">🟦</div><div>Tap Start Plane Detection</div></div>
+      </div>
+
+      <div class="metrics-row">
+        <div class="metric hi"><div class="m-lbl">Camera Height</div><div class="m-val big" id="pl-camh">–<span class="m-unit">m</span></div></div>
+        <div class="metric"><div class="m-lbl">Planes Found</div><div class="m-val" id="pl-count">0</div></div>
+      </div>
+      <div class="metrics-row">
+        <div class="metric"><div class="m-lbl">Floor Y</div><div class="m-val" id="pl-floory">–</div></div>
+        <div class="metric"><div class="m-lbl">Confidence</div><div class="m-val" id="pl-conf">–</div></div>
+      </div>
+
       <div class="card">
-        <div class="card-title">🟦 Plane &amp; Surface Detection</div>
-        <div class="info-row">
-          <span class="info-row-label">WebXR AR Mode</span>
-          <span id="planes-xr-status" class="status-badge badge-warn">Checking…</span>
-        </div>
-        <div class="info-row">
-          <span class="info-row-label">Plane Detection Feature</span>
-          <span id="planes-pd-status" class="status-badge badge-warn">Checking…</span>
-        </div>
-        <p style="font-size:12px;color:var(--text-dim);margin-top:8px;">
-          Requires ARCore on Android Chrome. On iOS Safari, WebXR AR is not fully supported. Falls back to visual floor line detection.
-        </p>
+        <div class="card-hd">Detected Planes</div>
+        <div id="planes-list"><div style="color:var(--dim);font-size:13px;padding:8px 0">No planes yet. Start WebXR session.</div></div>
       </div>
 
-      <canvas id="xr-canvas"></canvas>
-
-      <div class="card" style="margin-top:10px">
-        <div class="card-title">Detected Planes</div>
-        <div id="planes-list">
-          <div style="color:var(--text-dim);font-size:13px;padding:8px 0">No planes detected yet. Start WebXR session below.</div>
-        </div>
+      <!-- Visual fallback floor detection -->
+      <div class="card">
+        <div class="card-hd">Visual Floor Line Detection (Fallback)</div>
+        <canvas id="floor-detect-canvas" style="width:100%;height:100px;display:block;background:var(--s2);border-radius:var(--r2)"></canvas>
+        <div class="irow"><span class="irow-lbl">Detected Floor Line</span><span class="irow-val" id="floor-line-y">–</span></div>
       </div>
 
-      <div class="metric-row">
-        <div class="metric-box accent-box">
-          <div class="metric-label">Planes Found</div>
-          <div class="metric-value big" id="plane-count">0</div>
-        </div>
-        <div class="metric-box">
-          <div class="metric-label">Floor Y</div>
-          <div class="metric-value" id="plane-floor-y">–<span class="metric-unit">m</span></div>
+      <div id="pl-err-zone"></div>
+      <button class="btn btn-acc" id="pl-xr-btn" onclick="startPlanesXR()">▶ START WebXR PLANE DETECTION</button>
+      <button class="btn btn-ghost" id="pl-vis-btn" onclick="startVisualFloor()">📷 VISUAL FLOOR DETECTION</button>
+      <button class="btn btn-err" onclick="stopPlanesXR()">■ STOP ALL</button>
+    </div>
+
+    <!-- ══ COMPARE ══ -->
+    <div class="page" id="page-compare">
+      <div class="card accent-top">
+        <div class="card-hd">All Methods Comparison Dashboard</div>
+        <div style="font-size:12px;color:var(--dim);font-family:var(--sans);line-height:1.5">
+          Real-time fusion of all available measurement methods. Winner highlighted in green.
         </div>
       </div>
 
-      <button class="btn btn-primary" id="planes-start-btn" onclick="startPlanesXR()">▶ Start WebXR Plane Detection</button>
-      <button class="btn btn-secondary" onclick="startVisualFloor()">🎥 Visual Floor Detection (Fallback)</button>
-      <button class="btn btn-danger" onclick="stopPlanesXR()">■ Stop</button>
+      <!-- Height comparison -->
+      <div class="card">
+        <div class="card-hd">📏 HEIGHT FROM GROUND — All Methods</div>
+        <div class="compare-grid">
+          <div class="compare-cell" id="cmp-h-sensor"><div class="cc-label">SENSOR TILT</div><div class="cc-val" id="cmp-h-sensor-v">–</div><div class="cc-conf">cos(tilt) model</div></div>
+          <div class="compare-cell" id="cmp-h-visual"><div class="cc-label">VISUAL HORIZON</div><div class="cc-val" id="cmp-h-visual-v">–</div><div class="cc-conf">horizon angle</div></div>
+        </div>
+        <div class="compare-grid">
+          <div class="compare-cell" id="cmp-h-plane"><div class="cc-label">PLANE DETECT</div><div class="cc-val" id="cmp-h-plane-v">–</div><div class="cc-conf">WebXR floor Y</div></div>
+          <div class="compare-cell winner" id="cmp-h-fused"><div class="cc-label">FUSED BEST</div><div class="cc-val warn" id="cmp-h-fused-v">–</div><div class="cc-conf">weighted average</div></div>
+        </div>
+      </div>
 
-      <div class="card" style="margin-top:4px">
-        <div class="card-title">Floor Height Estimation</div>
-        <div class="info-row">
-          <span class="info-row-label">Estimated camera height (from planes)</span>
-          <span class="info-row-val" id="plane-cam-height">–</span>
+      <!-- Distance comparison -->
+      <div class="card">
+        <div class="card-hd">📐 DISTANCE TO OBJECT — All Methods</div>
+        <div class="compare-grid">
+          <div class="compare-cell" id="cmp-d-trig"><div class="cc-label">TRIG</div><div class="cc-val" id="cmp-d-trig-v">–</div></div>
+          <div class="compare-cell" id="cmp-d-xr-hit"><div class="cc-label">XR HIT-TEST</div><div class="cc-val" id="cmp-d-xr-v">–</div></div>
         </div>
-        <div class="info-row">
-          <span class="info-row-label">Ground plane confidence</span>
-          <span class="info-row-val" id="plane-confidence">–</span>
+        <div class="compare-grid">
+          <div class="compare-cell" id="cmp-d-depth"><div class="cc-label">DEPTH BUFFER</div><div class="cc-val" id="cmp-d-depth-v">–</div></div>
+          <div class="compare-cell winner"><div class="cc-label">FUSED BEST</div><div class="cc-val warn" id="cmp-d-fused-v">–</div></div>
         </div>
+      </div>
+
+      <!-- Sensor fusion card -->
+      <div class="card">
+        <div class="card-hd">🧠 Sensor Fusion Summary</div>
+        <div class="metrics-row">
+          <div class="metric hi"><div class="m-lbl">Best Height</div><div class="m-val big" id="cmp-best-h">–<span class="m-unit">m</span></div></div>
+          <div class="metric hi"><div class="m-lbl">Best Distance</div><div class="m-val big" id="cmp-best-d">–<span class="m-unit">m</span></div></div>
+        </div>
+        <div class="metrics-row three">
+          <div class="metric"><div class="m-lbl">Light (lux)</div><div class="m-val" id="cmp-lux">–</div></div>
+          <div class="metric"><div class="m-lbl">Heading</div><div class="m-val" id="cmp-heading">–<span class="m-unit">°</span></div></div>
+          <div class="metric"><div class="m-lbl">Tilt</div><div class="m-val" id="cmp-tilt">–<span class="m-unit">°</span></div></div>
+        </div>
+      </div>
+
+      <!-- All-in-one timeline -->
+      <div class="card">
+        <div class="card-hd">All Measurements Timeline</div>
+        <canvas id="cmp-timeline" style="width:100%;height:120px;display:block;background:var(--s2);border-radius:var(--r2)"></canvas>
+        <div style="display:flex;gap:12px;margin-top:8px;flex-wrap:wrap">
+          <span style="font-family:var(--mono);font-size:9px;color:var(--acc)">━ Height</span>
+          <span style="font-family:var(--mono);font-size:9px;color:var(--acc3)">━ Distance</span>
+          <span style="font-family:var(--mono);font-size:9px;color:var(--acc2)">━ Lux/100</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-hd">Active Features Status</div>
+        <div id="cmp-status-list"><!-- filled by JS --></div>
+      </div>
+
+      <div class="card">
+        <div class="card-hd">WebXR Features</div>
+        <div class="irow"><span class="irow-lbl">AR Session</span><span class="irow-val" id="cmp-ar">–</span></div>
+        <div class="irow"><span class="irow-lbl">Hit Test</span><span class="irow-val" id="cmp-hit">–</span></div>
+        <div class="irow"><span class="irow-lbl">Depth Sensing</span><span class="irow-val" id="cmp-dep">–</span></div>
+        <div class="irow"><span class="irow-lbl">Plane Detection</span><span class="irow-val" id="cmp-planes">–</span></div>
+        <div class="irow"><span class="irow-lbl">Lighting Estimation</span><span class="irow-val" id="cmp-light-est">–</span></div>
+        <div class="irow"><span class="irow-lbl">Anchors</span><span class="irow-val" id="cmp-anchors">–</span></div>
+        <div class="irow"><span class="irow-lbl">Camera Access</span><span class="irow-val" id="cmp-cam">–</span></div>
+        <div class="irow"><span class="irow-lbl">DOM Overlay</span><span class="irow-val" id="cmp-domov">–</span></div>
       </div>
     </div>
 
   </div><!-- /pages -->
 </div><!-- /app -->
 
-<div class="toast" id="toast"></div>
-
+<div id="toast"></div>
+</body>
+</html>
 <script>
-// ═══════════════════════════════════════════
-// GLOBAL STATE
-// ═══════════════════════════════════════════
-const state = {
-  os: 'unknown',
-  isAndroid: false,
-  isIOS: false,
-  caps: {},
-  sensors: {
-    alpha: 0, beta: 0, gamma: 0,
-    ax: 0, ay: 0, az: 0,
-    rr: 0, rb: 0, rg: 0
-  },
-  heightMethod: 'sensor',
-  distMethod: 'trig',
-  edgeMode: 'edge',
-  hCamActive: false,
-  dCamActive: false,
-  eCamActive: false,
-  lCamActive: false,
-  motionGranted: false,
-  tapPoints: [],
-  edgeThreshold: 50,
-  prevFrame: null,
-  xrSession: null,
-  xrRefSpace: null,
+// ══════════════════════════════════════════════════════
+// AR·SENSE — Full JS Engine
+// ══════════════════════════════════════════════════════
+
+// ── GLOBAL STATE ─────────────────────────────────────
+const G = {
+  os:'unknown', isAndroid:false, isIOS:false,
+  caps:{},
+  sensors:{ alpha:0, beta:90, gamma:0, ax:0, ay:0, az:9.8, rr:0, rb:0, rg:0 },
+  prevSensors:{ ax:0, ay:0, az:9.8 },
+  streams:{ h:null, d:null, e:null, l:null, pl:null, dep:null },
+  active:{ h:false, d:false, e:false, l:false, pl:false, dep:false },
+  xr:{ session:null, refSpace:null, hitTestSrc:null, depthSession:null, planeSession:null, lightSession:null },
+  measure:{ height_sensor:null, height_visual:null, height_plane:null,
+            dist_trig:null, dist_xr:null, dist_depth:null,
+            lux:null, planeFloorY:null, planeCount:0, centerDepth:null },
+  heightHistory:[], distHistory:[], luxHistory:[], motionHistory:[],
+  cmpTimeline:{ h:[], d:[], l:[] },
+  heightTab:'both', distTab:'all', depthMode:'heatmap',
+  edgeMode:'edge', lightMode:'lux',
+  edgeThresh:60,
+  prevFrame:null,
+  animFrames:{},
+  sensorRate:0, sensorLastTime:0, sensorCount:0,
+  planeData:[],
+  xrFeatures:{},
 };
+let edgeThresh = 60; // global for slider
 
-// ═══════════════════════════════════════════
-// DEVICE DETECTION
-// ═══════════════════════════════════════════
-function detectDevice() {
-  const ua = navigator.userAgent;
-  state.isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
-  state.isAndroid = /Android/.test(ua);
-  state.os = state.isIOS ? 'iOS' : state.isAndroid ? 'Android' : 'Unknown';
+// ── CAPABILITIES MAP ─────────────────────────────────
+const CAPS_CONFIG = [
+  { id:'cap-cam',    label:'Rear Camera',      sub:'getUserMedia',         key:'camera' },
+  { id:'cap-gyro',   label:'Gyroscope',         sub:'DeviceOrientation',    key:'gyro' },
+  { id:'cap-accel',  label:'Accelerometer',     sub:'DeviceMotion',         key:'accel' },
+  { id:'cap-mag',    label:'Magnetometer',      sub:'Sensor API / Orient',  key:'mag' },
+  { id:'cap-baro',   label:'Barometer',         sub:'AbsolutePressure',     key:'baro' },
+  { id:'cap-als',    label:'Ambient Light',     sub:'AmbientLightSensor',   key:'als' },
+  { id:'cap-prox',   label:'Proximity',         sub:'DeviceProximity',      key:'prox' },
+  { id:'cap-webxr',  label:'WebXR',             sub:'immersive-ar',         key:'webxr' },
+  { id:'cap-ar',     label:'AR Mode',           sub:'ARCore / ARKit',       key:'ar' },
+  { id:'cap-depth',  label:'Depth Sensing',     sub:'XR depth-sensing',     key:'depth' },
+  { id:'cap-hit',    label:'Hit Test',          sub:'XR hit-test',          key:'hit' },
+  { id:'cap-planes', label:'Plane Detection',   sub:'XR plane-detection',   key:'planes' },
+  { id:'cap-light',  label:'Light Estimation',  sub:'XR light-estimation',  key:'light_est' },
+  { id:'cap-anchor', label:'Anchors',           sub:'XR anchors',           key:'anchors' },
+  { id:'cap-raw',    label:'Raw Camera XR',     sub:'XR camera-access',     key:'raw_cam' },
+  { id:'cap-gpu',    label:'GPU / WebGL',       sub:'WebGL2 context',       key:'gpu' },
+];
 
-  const osEl = document.getElementById('splash-os');
-  const noteEl = document.getElementById('splash-os-note');
-  if (state.isIOS) {
-    osEl.textContent = '📱 iPhone / iOS';
-    osEl.style.color = 'var(--accent)';
-    noteEl.textContent = 'Safari · Motion requires permission · WebXR limited';
-  } else if (state.isAndroid) {
-    osEl.textContent = '🤖 Android';
-    osEl.style.color = 'var(--accent3)';
-    noteEl.textContent = 'Chrome recommended · ARCore supported · Full WebXR';
-  } else {
-    osEl.textContent = '💻 Desktop / Other';
-    osEl.style.color = 'var(--warn)';
-    noteEl.textContent = 'Limited sensor support · Camera may work';
-  }
-  document.getElementById('app-os-badge').textContent = state.os;
+// ── UTILS ────────────────────────────────────────────
+const $  = id => document.getElementById(id);
+const $$ = sel => document.querySelectorAll(sel);
+function setText(id, v){ const e=$( id); if(e) e.textContent=v; }
+function setHTML(id,v){ const e=$(id); if(e) e.innerHTML=v; }
+
+let _toastT;
+function toast(msg, dur=3000){
+  const el=$('toast');
+  el.textContent=msg; el.classList.add('show');
+  clearTimeout(_toastT);
+  _toastT=setTimeout(()=>el.classList.remove('show'), dur);
 }
 
-// ═══════════════════════════════════════════
-// CAPABILITY DETECTION
-// ═══════════════════════════════════════════
-async function detectCapabilities() {
-  const set = (id, status) => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    el.className = 'dot dot-' + (status === true ? 'yes' : status === false ? 'no' : 'partial');
+function badge(id, st, txt){
+  const e=$(id); if(!e) return;
+  e.className='badge '+st;
+  e.textContent=txt;
+}
+
+function showErr(zoneId, msg, retryFn){
+  const z=$(zoneId); if(!z) return;
+  z.innerHTML=`<div class="err-box">
+    <div class="icon">⚠</div>
+    <div class="msg">${msg}<br>
+    ${retryFn?`<button class="retry-btn" onclick="(${retryFn.toString()})()">↺ Retry</button>`:''}
+    </div></div>`;
+}
+function clearErr(zoneId){ const z=$(zoneId); if(z) z.innerHTML=''; }
+
+function showWarn(zoneId, msg){
+  const z=$(zoneId); if(!z) return;
+  z.innerHTML=`<div class="warn-box"><div class="icon">ℹ</div><div class="msg">${msg}</div></div>`;
+}
+
+function capClass(status){
+  if(status===true) return 'ok';
+  if(status===false) return 'err';
+  if(status==='partial') return 'warn';
+  return 'checking';
+}
+
+// ── SPARKLINE HELPER ─────────────────────────────────
+function drawSparkline(canvasId, data, color='#00f5d4', min=null, max=null, label=''){
+  const c=$(canvasId); if(!c) return;
+  const ctx=c.getContext('2d');
+  const W=c.offsetWidth||c.width; const H=c.offsetHeight||c.height;
+  c.width=W; c.height=H;
+  ctx.clearRect(0,0,W,H);
+  if(!data||data.length<2) return;
+  const mn = min!==null ? min : Math.min(...data);
+  const mx = max!==null ? max : Math.max(...data);
+  const range = mx - mn || 1;
+  ctx.beginPath();
+  ctx.strokeStyle=color; ctx.lineWidth=1.5;
+  data.forEach((v,i)=>{
+    const x = (i/(data.length-1))*W;
+    const y = H - ((v-mn)/range)*(H-4)-2;
+    i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+  });
+  ctx.stroke();
+  // fill
+  ctx.lineTo(W,H); ctx.lineTo(0,H); ctx.closePath();
+  const grad=ctx.createLinearGradient(0,0,0,H);
+  grad.addColorStop(0, color.replace(')',', 0.2)').replace('rgb','rgba').replace('#','').length>7 ? color+'33' : color+'33');
+  grad.addColorStop(1,'transparent');
+  ctx.fillStyle=color+'22';
+  ctx.fill();
+  // last value
+  if(data.length>0){
+    ctx.fillStyle=color;
+    ctx.font='9px DM Mono, monospace';
+    ctx.fillText(data[data.length-1].toFixed(2), W-40, 12);
+  }
+}
+
+// ── DEVICE DETECTION ────────────────────────────────
+function detectDevice(){
+  const ua=navigator.userAgent;
+  G.isIOS=/iPad|iPhone|iPod/.test(ua)&&!window.MSStream;
+  G.isAndroid=/Android/.test(ua);
+  G.os=G.isIOS?'iOS':G.isAndroid?'Android':'Desktop';
+
+  $('sp-os').textContent = G.isIOS ? '📱 iPhone / iOS' : G.isAndroid ? '🤖 Android' : '💻 Desktop / Other';
+  $('sp-note').textContent = G.isIOS
+    ? 'Safari · Tap "Request iOS Permission" for motion sensors · WebXR limited'
+    : G.isAndroid
+    ? 'Chrome recommended · ARCore enables full WebXR · All sensors available'
+    : 'Limited sensor access · Camera may work · WebXR not typically supported';
+  $('sp-icon').textContent = G.isIOS ? '🍎' : G.isAndroid ? '🤖' : '💻';
+  $('tb-os').textContent = G.os;
+}
+
+// ── CAPABILITY DETECTION ────────────────────────────
+async function detectCapabilities(){
+  const grid=$('cap-grid');
+  grid.innerHTML='';
+  CAPS_CONFIG.forEach(c=>{
+    grid.innerHTML+=`<div class="cap-item checking" id="${c.id}">
+      <div class="cap-dot"></div>
+      <div><div class="cap-text">${c.label}</div><div class="cap-sub">${c.sub}</div></div>
+    </div>`;
+  });
+
+  const setC=(id,status)=>{
+    const el=$(id); if(!el) return;
+    el.className='cap-item '+capClass(status);
   };
 
   // Camera
-  try {
-    const devices = await navigator.mediaDevices.enumerateDevices();
-    const hasCam = devices.some(d => d.kind === 'videoinput');
-    state.caps.camera = hasCam;
-    set('d-cam', hasCam);
-  } catch { set('d-cam', false); }
+  try{
+    const devs=await navigator.mediaDevices.enumerateDevices();
+    G.caps.camera=devs.some(d=>d.kind==='videoinput');
+  }catch{ G.caps.camera=false; }
+  setC('cap-cam', G.caps.camera);
 
-  // Gyroscope
-  state.caps.gyro = typeof DeviceOrientationEvent !== 'undefined';
-  set('d-gyro', state.caps.gyro ? 'partial' : false);
+  // Motion sensors — always potentially available
+  G.caps.gyro = typeof DeviceOrientationEvent!=='undefined';
+  G.caps.accel = typeof DeviceMotionEvent!=='undefined';
+  setC('cap-gyro', G.caps.gyro?'partial':false);
+  setC('cap-accel', G.caps.accel?'partial':false);
 
-  // Accelerometer
-  state.caps.accel = typeof DeviceMotionEvent !== 'undefined';
-  set('d-accel', state.caps.accel ? 'partial' : false);
-
-  // Magnetometer - check via Generic Sensor API
-  if (typeof Magnetometer !== 'undefined') {
-    try {
-      const m = new Magnetometer();
-      state.caps.mag = true;
-      set('d-mag', true);
-    } catch { set('d-mag', false); state.caps.mag = false; }
+  // Magnetometer
+  if(typeof Magnetometer!=='undefined'){
+    try{ new Magnetometer(); G.caps.mag=true; }
+    catch{ G.caps.mag='partial'; }
   } else {
-    // DeviceOrientation absolute gives magnetometer-like data
-    state.caps.mag = typeof DeviceOrientationAbsoluteEvent !== 'undefined';
-    set('d-mag', state.caps.mag ? 'partial' : false);
+    G.caps.mag = typeof DeviceOrientationAbsoluteEvent!=='undefined' ? 'partial' : false;
   }
+  setC('cap-mag', G.caps.mag);
 
   // Barometer
-  if (typeof Barometer !== 'undefined' || typeof RelativePressureSensor !== 'undefined') {
-    state.caps.baro = true;
-    set('d-baro', 'partial');
-  } else {
-    state.caps.baro = false;
-    set('d-baro', false);
+  G.caps.baro=false;
+  if(typeof AbsolutePressureSensor!=='undefined'){
+    try{ new AbsolutePressureSensor(); G.caps.baro=true; }catch{}
+  } else if(typeof RelativePressureSensor!=='undefined'){
+    try{ new RelativePressureSensor(); G.caps.baro='partial'; }catch{}
   }
+  setC('cap-baro', G.caps.baro);
 
-  // Ambient Light
-  if (typeof AmbientLightSensor !== 'undefined') {
-    try {
-      const a = new AmbientLightSensor();
-      state.caps.ambient = true;
-      set('d-ambient', 'partial');
-    } catch { set('d-ambient', false); state.caps.ambient = false; }
-  } else {
-    // some devices fire devicelight event
-    state.caps.ambient = typeof window.ondevicelight !== 'undefined';
-    set('d-ambient', state.caps.ambient ? 'partial' : false);
+  // Ambient Light Sensor
+  G.caps.als=false;
+  if(typeof AmbientLightSensor!=='undefined'){
+    try{ new AmbientLightSensor(); G.caps.als='partial'; }catch{}
   }
+  setC('cap-als', G.caps.als);
 
   // Proximity
-  state.caps.proximity = typeof DeviceProximitySensor !== 'undefined' || 'ondeviceproximity' in window;
-  set('d-prox', state.caps.proximity ? 'partial' : false);
+  G.caps.prox = 'ondeviceproximity' in window || typeof DeviceProximitySensor!=='undefined' ? 'partial' : false;
+  setC('cap-prox', G.caps.prox);
 
-  // WebXR
-  if (navigator.xr) {
-    try {
-      const arSupported = await navigator.xr.isSessionSupported('immersive-ar');
-      state.caps.webxr = true;
-      state.caps.ar = arSupported;
-      set('d-webxr', arSupported ? true : 'partial');
-    } catch { set('d-webxr', false); state.caps.webxr = false; }
+  // GPU / WebGL
+  try{
+    const tc=document.createElement('canvas');
+    G.caps.gpu=!!(tc.getContext('webgl2')||tc.getContext('webgl'));
+  }catch{ G.caps.gpu=false; }
+  setC('cap-gpu', G.caps.gpu);
+
+  // WebXR chain
+  if(navigator.xr){
+    G.caps.webxr=true; setC('cap-webxr',true);
+    try{
+      G.caps.ar=await navigator.xr.isSessionSupported('immersive-ar');
+      setC('cap-ar', G.caps.ar);
+
+      if(G.caps.ar){
+        // Check optional features by attempting session (just check, don't start)
+        const checkFeature=async(feat)=>{
+          try{
+            // We can't start a session just to check, so check known platform support
+            const isAndroidChrome = G.isAndroid && /Chrome/.test(navigator.userAgent);
+            const isIOS = G.isIOS;
+            // Known supported features per platform
+            if(isAndroidChrome){
+              return ['depth-sensing','hit-test','plane-detection','light-estimation',
+                      'anchors','camera-access','dom-overlay','local-floor'].includes(feat);
+            }
+            if(isIOS) return ['hit-test','plane-detection'].includes(feat);
+            return false;
+          }catch{ return false; }
+        };
+        G.caps.depth=await checkFeature('depth-sensing');
+        G.caps.hit=await checkFeature('hit-test');
+        G.caps.planes=await checkFeature('plane-detection');
+        G.caps.light_est=await checkFeature('light-estimation');
+        G.caps.anchors=await checkFeature('anchors');
+        G.caps.raw_cam=await checkFeature('camera-access');
+        G.xrFeatures.depthSensing=G.caps.depth;
+        G.xrFeatures.hitTest=G.caps.hit;
+        G.xrFeatures.planeDetection=G.caps.planes;
+        G.xrFeatures.lightEstimation=G.caps.light_est;
+        G.xrFeatures.anchors=G.caps.anchors;
+      }
+    }catch(e){ G.caps.ar=false; setC('cap-ar',false); }
   } else {
-    set('d-webxr', false); state.caps.webxr = false;
+    G.caps.webxr=false; G.caps.ar=false;
+    setC('cap-webxr',false); setC('cap-ar',false);
   }
+  setC('cap-depth', G.caps.depth||false);
+  setC('cap-hit', G.caps.hit||false);
+  setC('cap-planes', G.caps.planes||false);
+  setC('cap-light', G.caps.light_est||false);
+  setC('cap-anchor', G.caps.anchors||false);
+  setC('cap-raw', G.caps.raw_cam||false);
 
-  // Depth sensing
-  state.caps.depth = state.caps.ar; // requires AR session
-  set('d-depth', state.caps.depth ? 'partial' : false);
-
-  // Hit test
-  state.caps.hittest = state.caps.ar;
-  set('d-hittest', state.caps.hittest ? 'partial' : false);
-
-  // Update XR status badges
-  updateXRStatusBadges();
+  updateCompareXRStatus();
+  return G.caps;
 }
 
-function updateXRStatusBadges() {
-  const arOk = state.caps.ar;
-  const badge = (id, ok, yesText, noText) => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    el.className = 'status-badge ' + (ok ? 'badge-ok' : 'badge-err');
-    el.textContent = ok ? yesText : noText;
-  };
-  badge('depth-api-status', arOk, '✓ Available', '✗ Not available');
-  badge('depth-arcore-status', state.isAndroid && arOk, '✓ ARCore', '✗ No ARCore');
-  badge('planes-xr-status', arOk, '✓ Supported', '✗ Not supported');
-  badge('planes-pd-status', arOk, '✓ Available', '✗ Not available');
-  if (document.getElementById('dist-xr-status')) {
-    document.getElementById('dist-xr-status').innerHTML =
-      '<span class="status-badge ' + (arOk ? 'badge-ok' : 'badge-err') + '">' +
-      (arOk ? '✓ ARCore Ready' : '✗ Not available') + '</span>';
-  }
+function updateCompareXRStatus(){
+  const b=(v)=>v?'<span class="badge ok">✓ YES</span>':'<span class="badge err">✗ NO</span>';
+  setText('cmp-ar', G.caps.ar?'✓ Supported':'✗ Not supported');
+  setText('cmp-hit', G.caps.hit?'✓ Supported':'✗ Not supported');
+  setText('cmp-dep', G.caps.depth?'✓ Supported':'✗ Not supported');
+  setText('cmp-planes', G.caps.planes?'✓ Supported':'✗ Not supported');
+  setText('cmp-light-est', G.caps.light_est?'✓ Supported':'✗ Not supported');
+  setText('cmp-anchors', G.caps.anchors?'✓ Supported':'✗ Not supported');
+  setText('cmp-cam', G.caps.camera?'✓ Available':'✗ Not found');
+  setText('cmp-domov', G.caps.ar?'✓ Supported':'✗ Not supported');
+
+  badge('planes-xr-badge', G.caps.ar?'ok':'warn', G.caps.ar?'ARCORE':'NO XR');
+  badge('dep-api-badge', G.caps.depth?'ok':G.caps.ar?'warn':'err',
+        G.caps.depth?'WEBXR':'VISUAL');
+
+  // Compare page status list
+  const list=$('cmp-status-list');
+  if(!list) return;
+  const items=[
+    ['Camera', G.caps.camera],
+    ['Gyroscope', G.caps.gyro],
+    ['Accelerometer', G.caps.accel],
+    ['Magnetometer', G.caps.mag],
+    ['Barometer', G.caps.baro],
+    ['Ambient Light', G.caps.als],
+    ['WebXR AR', G.caps.ar],
+    ['Hit Test', G.caps.hit],
+    ['Depth Sensing', G.caps.depth],
+    ['Plane Detection', G.caps.planes],
+    ['Light Estimation', G.caps.light_est],
+  ];
+  list.innerHTML = items.map(([label, v])=>`
+    <div class="irow">
+      <span class="irow-lbl">${label}</span>
+      <span class="badge ${v===true?'ok':v==='partial'?'warn':'err'}">${v===true?'✓ YES':v==='partial'?'◐ PARTIAL':'✗ NO'}</span>
+    </div>`).join('');
 }
 
-// ═══════════════════════════════════════════
-// SENSOR LISTENERS
-// ═══════════════════════════════════════════
-function startSensorListeners() {
-  window.addEventListener('deviceorientation', (e) => {
-    state.sensors.alpha = e.alpha || 0;
-    state.sensors.beta  = e.beta  || 0;
-    state.sensors.gamma = e.gamma || 0;
-    updateSensorUI(e);
-  }, true);
-
-  window.addEventListener('deviceorientationabsolute', (e) => {
-    if (e.absolute && e.alpha !== null) {
-      state.sensors.alpha = e.alpha;
-      updateCompass(e.alpha);
-    }
-  }, true);
-
-  window.addEventListener('devicemotion', (e) => {
-    const a = e.accelerationIncludingGravity;
-    if (a) {
-      state.sensors.ax = a.x || 0;
-      state.sensors.ay = a.y || 0;
-      state.sensors.az = a.z || 0;
-    }
-    const r = e.rotationRate;
-    if (r) {
-      state.sensors.rr = r.alpha || 0;
-      state.sensors.rb = r.beta  || 0;
-      state.sensors.rg = r.gamma || 0;
-    }
-    updateMotionUI();
-  }, true);
+// ── SENSOR LISTENERS ────────────────────────────────
+function startSensors(){
+  window.addEventListener('deviceorientation', onOrient, true);
+  window.addEventListener('deviceorientationabsolute', onOrientAbs, true);
+  window.addEventListener('devicemotion', onMotion, true);
 
   // Generic Sensor API
-  if (typeof AmbientLightSensor !== 'undefined') {
-    try {
-      const als = new AmbientLightSensor();
-      als.onreading = () => {
-        document.getElementById('s-ambient').textContent = als.illuminance.toFixed(1) + ' lx';
-        document.getElementById('ambient-sensor-val').textContent = als.illuminance.toFixed(1) + ' lx';
+  startGenericSensors();
+}
+
+function onOrient(e){
+  const now=performance.now();
+  G.sensorCount++;
+  if(now-G.sensorLastTime>1000){
+    G.sensorRate=G.sensorCount;
+    G.sensorCount=0;
+    G.sensorLastTime=now;
+  }
+  G.sensors.alpha=e.alpha||0;
+  G.sensors.beta=e.beta!=null?e.beta:90;
+  G.sensors.gamma=e.gamma||0;
+  updateSensorUI();
+  updateHeightCalc();
+  updateDistCalc();
+  updateCompare();
+}
+function onOrientAbs(e){
+  if(e.absolute&&e.alpha!=null) G.sensors.alpha=e.alpha;
+}
+function onMotion(e){
+  const a=e.accelerationIncludingGravity;
+  if(a){ G.prevSensors={...G.sensors}; G.sensors.ax=a.x||0;G.sensors.ay=a.y||0;G.sensors.az=a.z||0; }
+  const r=e.rotationRate;
+  if(r){ G.sensors.rr=r.alpha||0;G.sensors.rb=r.beta||0;G.sensors.rg=r.gamma||0; }
+  updateMotionUI();
+}
+
+function startGenericSensors(){
+  // Ambient Light
+  if(typeof AmbientLightSensor!=='undefined'){
+    try{
+      const als=new AmbientLightSensor({frequency:2});
+      als.onreading=()=>{
+        setText('s-als', als.illuminance.toFixed(1)+' lx');
+        setText('l-als', als.illuminance.toFixed(1)+' lx');
+        G.measure.lux_sensor=als.illuminance;
       };
+      als.onerror=(e)=>setText('s-als','Error: '+e.error.message);
       als.start();
-    } catch(e) {}
+      setText('l-als-status','ALS active');
+    }catch(e){ setText('s-als','API present, no permission'); }
   }
 
   // Barometer
-  if (typeof AbsolutePressureSensor !== 'undefined') {
-    try {
-      const bar = new AbsolutePressureSensor({ frequency: 1 });
-      bar.onreading = () => {
-        const alt = 44330 * (1 - Math.pow(bar.pressure / 1013.25, 0.1903));
-        document.getElementById('s-baro').textContent = bar.pressure.toFixed(1) + ' hPa (~' + alt.toFixed(0) + 'm alt)';
+  if(typeof AbsolutePressureSensor!=='undefined'){
+    try{
+      const bar=new AbsolutePressureSensor({frequency:1});
+      bar.onreading=()=>{
+        const hPa=bar.pressure;
+        const alt=44330*(1-Math.pow(hPa/1013.25,0.1903));
+        setText('s-baro', hPa.toFixed(1)+' hPa');
+        setText('s-alt', alt.toFixed(0)+' m ASL');
+        G.measure.altitude=alt;
       };
       bar.start();
-    } catch(e) {}
+    }catch{}
+  }
+
+  // Magnetometer
+  if(typeof Magnetometer!=='undefined'){
+    try{
+      const mag=new Magnetometer({frequency:5});
+      mag.onreading=()=>{
+        setText('s-mag',`${mag.x?.toFixed(1)} / ${mag.y?.toFixed(1)} / ${mag.z?.toFixed(1)} µT`);
+      };
+      mag.start();
+    }catch{}
+  }
+
+  // Gravity
+  if(typeof GravitySensor!=='undefined'){
+    try{
+      const gs=new GravitySensor({frequency:10});
+      gs.onreading=()=>{
+        setText('s-grav',`${gs.x?.toFixed(2)},${gs.y?.toFixed(2)},${gs.z?.toFixed(2)}`);
+      };
+      gs.start();
+    }catch{}
   }
 
   // Proximity
-  if ('ondeviceproximity' in window) {
-    window.addEventListener('deviceproximity', (e) => {
-      document.getElementById('s-proximity').textContent = e.value + 'cm (max:' + e.max + ')';
+  if('ondeviceproximity' in window){
+    window.addEventListener('deviceproximity',(e)=>{
+      setText('s-prox', e.value+'cm / '+e.max+'cm max');
     });
   }
 }
 
-function updateSensorUI(e) {
-  const a = e.alpha?.toFixed(1) ?? '–';
-  const b = e.beta?.toFixed(1) ?? '–';
-  const g = e.gamma?.toFixed(1) ?? '–';
-  setText('s-alpha', a + '°');
-  setText('s-beta', b + '°');
-  setText('s-gamma', g + '°');
-  setText('s-absolute', e.absolute ? 'Yes' : 'No');
-  setText('gyro-a', a + '°');
-  setText('gyro-b', b + '°');
-  setText('gyro-g', g + '°');
-  updateBar('bar-ga', e.alpha, 0, 360, 'var(--danger)');
-  updateBar('bar-gb', (e.beta || 0) + 90, 0, 180, 'var(--accent3)');
-  updateBar('bar-gg', (e.gamma || 0) + 90, 0, 180, 'var(--accent)');
-  updateTiltViz(e.beta, e.gamma);
-  updateCompass(e.alpha);
-  updateHeightFromSensor(e.beta, e.gamma);
-  updateDistanceFromSensor(e.beta);
+// ── SENSOR UI UPDATES ────────────────────────────────
+function updateSensorUI(){
+  const s=G.sensors;
+  const fmt=v=>v!=null?v.toFixed(1)+'°':'–°';
+  setText('s-alpha',fmt(s.alpha)); setText('s-beta',fmt(s.beta)); setText('s-gamma',fmt(s.gamma));
+  setBar('bar-alpha',s.alpha,0,360,'var(--acc2)');
+  setBar('bar-beta',(s.beta||0)+90,0,180,'var(--acc)');
+  setBar('bar-gamma',(s.gamma||0)+90,0,180,'var(--acc3)');
+
+  // compass
+  const a=s.alpha||0;
+  const dirs=['N','NE','E','SE','S','SW','W','NW'];
+  const dir=dirs[Math.round(a/45)%8];
+  if($('compass-n')){ $('compass-n').style.transform=`translateX(-50%) rotate(${a}deg)`; }
+  if($('compass-s')){ $('compass-s').style.transform=`translateX(-50%) rotate(${a+180}deg)`; }
+  setText('compass-deg',a.toFixed(0));
+  setText('compass-dir',dir);
+
+  // 3D phone
+  const beta=s.beta||0,gamma=s.gamma||0;
+  const rx=Math.max(-70,Math.min(70,beta-90));
+  const ry=Math.max(-60,Math.min(60,gamma));
+  if($('phone3d')) $('phone3d').style.transform=`rotateX(${rx}deg) rotateY(${ry}deg)`;
+
+  // HUD updates
+  setText('h-hud-tl',`β${(s.beta||0).toFixed(0)}°`);
+  setText('h-hud-tr',`γ${(s.gamma||0).toFixed(0)}°`);
+  setText('d-hud-tl',`DEP ${getDepressionAngle().toFixed(0)}°`);
+  setText('s-abs', s.alpha!=null?'Yes (absolute)':'No (relative)');
+
+  // orientation wave
+  pushWave('orient', [s.alpha/360, (s.beta+90)/180, (s.gamma+90)/180]);
+
+  // rate
+  setText('h-rate', G.sensorRate+' Hz');
+
+  // ring viz
+  drawRingViz(s.beta||0, s.gamma||0, s.alpha||0);
 }
 
-function updateMotionUI() {
-  const s = state.sensors;
-  setText('accel-x', s.ax?.toFixed(2) ?? '–');
-  setText('accel-y', s.ay?.toFixed(2) ?? '–');
-  setText('accel-z', s.az?.toFixed(2) ?? '–');
-  updateBar('bar-ax', s.ax + 10, 0, 20, 'var(--danger)');
-  updateBar('bar-ay', s.ay + 10, 0, 20, 'var(--accent3)');
-  updateBar('bar-az', s.az + 10, 0, 20, 'var(--accent)');
-  setText('s-mag', `ax:${s.ax?.toFixed(1)} ay:${s.ay?.toFixed(1)} az:${s.az?.toFixed(1)}`);
+function updateMotionUI(){
+  const s=G.sensors;
+  setText('s-ax',s.ax?.toFixed(2));setText('s-ay',s.ay?.toFixed(2));setText('s-az',s.az?.toFixed(2));
+  setBar('bar-ax',s.ax+12,0,24,'var(--acc2)');
+  setBar('bar-ay',s.ay+12,0,24,'var(--acc3)');
+  setBar('bar-az',s.az+12,0,24,'var(--acc)');
+  const totalG=Math.sqrt(s.ax*s.ax+s.ay*s.ay+s.az*s.az);
+  setText('s-g-total',totalG.toFixed(2)+' m/s²');
+  const prevG=Math.sqrt(G.prevSensors.ax**2+G.prevSensors.ay**2+G.prevSensors.az**2);
+  setText('s-jerk',Math.abs(totalG-prevG).toFixed(2)+' m/s³');
+  setText('s-ra',s.rr?.toFixed(1)+'°/s');setText('s-rb',s.rb?.toFixed(1)+'°/s');setText('s-rg',s.rg?.toFixed(1)+'°/s');
+  setBar('bar-ra',s.rr+90,0,180,'var(--acc2)');
+  setBar('bar-rb',s.rb+90,0,180,'var(--acc3)');
+  setBar('bar-rg',s.rg+90,0,180,'var(--acc)');
+  pushWave('accel',[s.ax/20,s.ay/20,s.az/20]);
+  pushWave('gyro',[s.rr/180,s.rb/180,s.rg/180]);
 }
 
-function updateTiltViz(beta, gamma) {
-  if (beta == null) return;
-  const el = document.getElementById('tilt-phone-viz');
-  const rx = Math.max(-60, Math.min(60, beta));
-  const ry = Math.max(-60, Math.min(60, gamma || 0));
-  el.style.transform = `rotateX(${-rx}deg) rotateY(${ry}deg)`;
+function setBar(id,val,mn,mx,color){
+  const el=$(id); if(!el) return;
+  const pct=Math.max(0,Math.min(100,((val-mn)/(mx-mn))*100));
+  el.style.width=pct+'%'; el.style.background=color;
 }
 
-function updateCompass(alpha) {
-  if (alpha == null) return;
-  const needle = document.getElementById('compass-needle');
-  needle.style.transform = `translateX(-50%) rotate(${alpha}deg)`;
-  setText('compass-heading', alpha.toFixed(0));
+// Waveform buffers
+const _waves={};
+function pushWave(key, vals){
+  if(!_waves[key]) _waves[key]=[];
+  _waves[key].push(vals);
+  if(_waves[key].length>120) _waves[key].shift();
 }
-
-function updateBar(id, val, min, max, color) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  const pct = Math.max(0, Math.min(100, ((val - min) / (max - min)) * 100));
-  el.style.width = pct + '%';
-  el.style.background = color;
-}
-
-// ═══════════════════════════════════════════
-// HEIGHT ESTIMATION
-// ═══════════════════════════════════════════
-let hStream = null, hAnimFrame = null;
-
-async function toggleHeightCam() {
-  if (state.hCamActive) {
-    stopHeightCam(); return;
+function drawWaveCanvas(canvasId, key, colors){
+  const c=$(canvasId); if(!c||!_waves[key]) return;
+  const data=_waves[key];
+  const W=c.offsetWidth||300; const H=40;
+  c.width=W; c.height=H;
+  const ctx=c.getContext('2d');
+  ctx.clearRect(0,0,W,H);
+  const channels=data[0]?.length||1;
+  for(let ch=0;ch<channels;ch++){
+    ctx.beginPath();
+    ctx.strokeStyle=colors?colors[ch]:'var(--acc)';
+    ctx.lineWidth=1.2;
+    data.forEach((frame,i)=>{
+      const x=(i/(data.length-1))*W;
+      const v=frame[ch]||0;
+      const y=H/2-(v*H/2*0.9);
+      i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+    });
+    ctx.stroke();
   }
-  try {
-    hStream = await getRearCamera();
-    const video = document.getElementById('h-video');
-    video.srcObject = hStream;
-    await video.play();
-    document.getElementById('h-cam-overlay').style.display = 'none';
-    document.getElementById('h-cam-btn').textContent = '■ Stop Camera';
-    state.hCamActive = true;
-    runHeightOverlay();
-  } catch(e) { showToast('Camera error: ' + e.message); }
+}
+setInterval(()=>{
+  drawWaveCanvas('s-orient-wave','orient',['var(--acc2)','var(--acc)','var(--acc3)']);
+  drawWaveCanvas('s-accel-wave','accel',['var(--acc2)','var(--acc3)','var(--acc)']);
+  drawWaveCanvas('s-gyro-wave','gyro',['var(--acc2)','var(--acc3)','var(--acc)']);
+},80);
+
+// ── 3D RING VIZ ─────────────────────────────────────
+function drawRingViz(beta,gamma,alpha){
+  const c=$('ring-canvas'); if(!c) return;
+  const ctx=c.getContext('2d');
+  const W=160,H=160,cx=80,cy=80,r=55;
+  ctx.clearRect(0,0,W,H);
+
+  // tilt indicator
+  const bRad=beta*Math.PI/180;
+  const gRad=gamma*Math.PI/180;
+  const aRad=alpha*Math.PI/180;
+
+  // outer ring
+  ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2);
+  ctx.strokeStyle='rgba(0,245,212,0.15)'; ctx.lineWidth=1; ctx.stroke();
+
+  // tilt line (beta)
+  ctx.beginPath();
+  const bx=cx+Math.sin(bRad-Math.PI/2)*r*0.8;
+  const by=cy+Math.cos(bRad-Math.PI/2)*r*0.8;
+  ctx.moveTo(cx,cy); ctx.lineTo(bx,by);
+  ctx.strokeStyle='var(--acc)'; ctx.lineWidth=2; ctx.stroke();
+
+  // gamma arc
+  ctx.beginPath();
+  ctx.arc(cx,cy,r*0.55, -Math.PI/2, -Math.PI/2+gRad/90*Math.PI, gRad<0);
+  ctx.strokeStyle='var(--acc3)'; ctx.lineWidth=2; ctx.stroke();
+
+  // alpha dot
+  const ax2=cx+Math.cos(aRad-Math.PI/2)*r*0.7;
+  const ay2=cy+Math.sin(aRad-Math.PI/2)*r*0.7;
+  ctx.beginPath(); ctx.arc(ax2,ay2,5,0,Math.PI*2);
+  ctx.fillStyle='var(--acc2)'; ctx.fill();
+
+  // center
+  ctx.beginPath(); ctx.arc(cx,cy,4,0,Math.PI*2);
+  ctx.fillStyle='var(--fg)'; ctx.fill();
+
+  // labels
+  ctx.font='9px DM Mono,monospace'; ctx.fillStyle='var(--dim)';
+  ctx.fillText(`β${beta.toFixed(0)}°`,cx+r+4,cy-14);
+  ctx.fillText(`γ${gamma.toFixed(0)}°`,cx+r+4,cy);
+  ctx.fillText(`α${alpha.toFixed(0)}°`,cx+r+4,cy+14);
 }
 
-function stopHeightCam() {
-  if (hStream) { hStream.getTracks().forEach(t => t.stop()); hStream = null; }
-  document.getElementById('h-cam-overlay').style.display = 'flex';
-  document.getElementById('h-cam-btn').textContent = '▶ Start Camera';
-  state.hCamActive = false;
-  if (hAnimFrame) cancelAnimationFrame(hAnimFrame);
+// ── HEIGHT CALCULATION ───────────────────────────────
+function getDepressionAngle(){
+  const beta=G.sensors.beta||90;
+  return Math.max(0, 90-Math.abs(beta));
 }
 
-function runHeightOverlay() {
-  const video = document.getElementById('h-video');
-  const canvas = document.getElementById('h-canvas');
-  const ctx = canvas.getContext('2d');
-  function draw() {
-    if (!state.hCamActive) return;
-    canvas.width = video.videoWidth || canvas.offsetWidth;
-    canvas.height = video.videoHeight || canvas.offsetHeight;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+function updateHeightCalc(){
+  const beta=G.sensors.beta!=null?G.sensors.beta:90;
+  const gamma=G.sensors.gamma||0;
+  const tiltFromVert=Math.abs(90-Math.abs(beta));
 
-    // draw grid lines
-    ctx.strokeStyle = 'rgba(0,212,255,0.1)';
-    ctx.lineWidth = 1;
-    for (let i = 1; i < 5; i++) {
-      ctx.beginPath();
-      ctx.moveTo(0, canvas.height * i / 5);
-      ctx.lineTo(canvas.width, canvas.height * i / 5);
-      ctx.stroke();
+  // Method 1: sensor tilt model
+  // User height ~170cm average, hold offset ~30cm below eye
+  // Camera height ≈ eye height × cos(tilt from vertical) when tilted
+  // When phone perfectly vertical (beta=90 or -90): height = eye_height
+  // Auto-estimate from accelerometer + tilt
+  const estUserH = 1.7; // 1.7m assumed
+  const holdRatio = 0.82; // phone held at ~82% of body height
+  const cosT = Math.cos(tiltFromVert * Math.PI/180);
+  const sensorH = estUserH * holdRatio * cosT;
+  G.measure.height_sensor = sensorH;
+
+  // Method 2: visual horizon — using beta directly
+  // When beta < 90 (pointing down), estimate using: h ≈ tan(|90-beta|) * typical_room_depth
+  // This only works if we have some reference; use ground angle from vertical
+  const elevAngle = beta - 90; // negative = pointing down
+  const visualH = Math.abs(Math.tan(elevAngle*Math.PI/180)) > 0.01
+    ? Math.abs(Math.tan(elevAngle*Math.PI/180)) * 2.0 // 2m estimated floor dist
+    : sensorH;
+  G.measure.height_visual = Math.abs(visualH) < 5 ? Math.abs(visualH) : sensorH;
+
+  // Confidence based on how close to vertical phone is
+  const isPerp = tiltFromVert < 15;
+  const conf = Math.max(0, Math.round(100 - tiltFromVert * 3));
+
+  // Best estimate
+  const bestH = isPerp ? sensorH : (sensorH * 0.7 + G.measure.height_visual * 0.3);
+  G.measure.height_fused = bestH;
+
+  // Push history
+  G.heightHistory.push(parseFloat(bestH.toFixed(3)));
+  if(G.heightHistory.length>120) G.heightHistory.shift();
+
+  // Update UI
+  setText('h-height-val', bestH.toFixed(2)+'m');
+  setText('h-tilt-val', tiltFromVert.toFixed(1)+'°');
+  setText('h-beta', beta.toFixed(1)+'°');
+  setText('h-gamma', gamma.toFixed(1)+'°');
+  setText('h-perp', isPerp?'✓ YES':'✗ TILT PHONE');
+  setText('h-conf', conf+'%');
+  setText('h-method-name', G.heightTab==='sensor'?'Sensor Tilt':G.heightTab==='visual'?'Visual Horizon':'Both (fused)');
+  setText('h-perm', G.isIOS?(typeof DeviceOrientationEvent?.requestPermission==='function'?'Needed':'Auto'):'Auto');
+  setText('h-hud-br', bestH.toFixed(2)+'m');
+
+  // Compare cells
+  setText('hc-sensor-val', sensorH.toFixed(2)+'m');
+  setText('hc-visual-val', (G.measure.height_visual||0).toFixed(2)+'m');
+  setText('hc-sensor-conf', 'conf: '+conf+'% | tilt: '+tiltFromVert.toFixed(0)+'°');
+
+  // Horizon line on cam
+  const horizFrac = Math.max(0.05, Math.min(0.95, 0.5 + (beta-90)/180));
+  updateHorizon('h-horizon', horizFrac);
+  updateHorizon('d-horizon', horizFrac);
+
+  // Highlight winner
+  if(sensorH > G.measure.height_visual){
+    $('h-cc-sensor')?.classList.add('winner');
+    $('h-cc-visual')?.classList.remove('winner');
+  } else {
+    $('h-cc-visual')?.classList.add('winner');
+    $('h-cc-sensor')?.classList.remove('winner');
+  }
+
+  // Compare page
+  setText('cmp-h-sensor-v', sensorH.toFixed(2)+'m');
+  setText('cmp-h-visual-v', (G.measure.height_visual||0).toFixed(2)+'m');
+  setText('cmp-h-plane-v', G.measure.height_plane ? G.measure.height_plane.toFixed(2)+'m' : '–');
+  setText('cmp-h-fused-v', bestH.toFixed(2)+'m');
+  setText('cmp-best-h', bestH.toFixed(2)+'m');
+  setText('cmp-tilt', tiltFromVert.toFixed(0)+'°');
+  setText('cmp-heading', (G.sensors.alpha||0).toFixed(0)+'°');
+
+  // Sparkline
+  if(G.heightHistory.length>2)
+    drawSparkline('h-spark', G.heightHistory, 'var(--acc)', 0, 3);
+}
+
+function updateHorizon(id, frac){
+  const el=$(id); if(!el) return;
+  el.style.top=(frac*100)+'%';
+}
+
+// ── DISTANCE CALCULATION ─────────────────────────────
+function updateDistCalc(){
+  const beta=G.sensors.beta!=null?G.sensors.beta:90;
+  const depressionDeg = 90 - Math.abs(beta);
+  const camH = G.measure.height_fused || 1.4;
+
+  setText('d-depr-val', depressionDeg.toFixed(1)+'°');
+  setText('d-camh', camH.toFixed(2)+'m');
+  setText('d-hud-tr', 'h '+camH.toFixed(1)+'m');
+
+  if(depressionDeg > 1 && depressionDeg < 89){
+    const depRad = depressionDeg * Math.PI/180;
+    const trigDist = camH / Math.tan(depRad);
+    G.measure.dist_trig = trigDist;
+    setText('d-dist-val', trigDist.toFixed(2)+'m');
+    setText('d-hud-br', trigDist.toFixed(1)+'m');
+    setText('dc-trig', trigDist.toFixed(2)+'m');
+    setText('cmp-d-trig-v', trigDist.toFixed(2)+'m');
+  } else {
+    setText('d-dist-val', '–'); setText('d-hud-br','–');
+  }
+
+  // Fusion
+  const vals=[];
+  if(G.measure.dist_trig) vals.push(G.measure.dist_trig);
+  if(G.measure.dist_xr) vals.push(G.measure.dist_xr);
+  if(G.measure.centerDepth) vals.push(G.measure.centerDepth);
+  if(vals.length>0){
+    const avg=vals.reduce((a,b)=>a+b,0)/vals.length;
+    G.measure.dist_fused=avg;
+    setText('dc-avg',avg.toFixed(2)+'m');
+    setText('cmp-d-fused-v',avg.toFixed(2)+'m');
+    setText('cmp-best-d',avg.toFixed(2)+'m');
+    G.distHistory.push(parseFloat(avg.toFixed(3)));
+    if(G.distHistory.length>120) G.distHistory.shift();
+    if(G.distHistory.length>2)
+      drawSparkline('d-spark', G.distHistory, 'var(--acc3)', 0, 10);
+  }
+
+  setText('d-depth-ctr', G.measure.centerDepth ? G.measure.centerDepth.toFixed(2)+'m' : '–');
+  setText('d-xrhit', G.measure.dist_xr ? G.measure.dist_xr.toFixed(2)+'m' : '–');
+  setText('dc-dep', G.measure.centerDepth ? G.measure.centerDepth.toFixed(2)+'m' : '–');
+  setText('cmp-d-depth-v', G.measure.centerDepth ? G.measure.centerDepth.toFixed(2)+'m' : '–');
+  setText('cmp-d-xr-v', G.measure.dist_xr ? G.measure.dist_xr.toFixed(2)+'m' : '–');
+}
+
+// ── CAMERA MANAGEMENT ────────────────────────────────
+async function getRearCam(hd=false){
+  const constraints={
+    video:{
+      facingMode:{exact:'environment'},
+      width:{ideal:hd?1280:640}, height:{ideal:hd?960:480}
+    }
+  };
+  try{ return await navigator.mediaDevices.getUserMedia(constraints); }
+  catch{
+    return await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});
+  }
+}
+
+async function toggleCam(key){
+  if(G.active[key]){ stopCam(key); return; }
+  clearErr(key+'-err-zone');
+  try{
+    const stream = await getRearCam(key==='dep');
+    G.streams[key]=stream;
+    G.active[key]=true;
+    const vid=$(key+'-vid')||$(key==='dep'?'dep-vid':key+'-vid');
+    if(vid){ vid.srcObject=stream; await vid.play(); }
+    const ph=$(key+'-placeholder')||$(key==='dep'?'dep-placeholder':key+'-placeholder');
+    if(ph) ph.style.display='none';
+    const btn=$(key+'-cam-btn');
+    if(btn) btn.textContent='■ STOP CAMERA';
+    if(btn) btn.className='btn btn-err';
+    // start processing loop
+    if(key==='h') startHeightOverlay();
+    if(key==='d') startDistOverlay();
+    if(key==='e') startEdgeLoop();
+    if(key==='l') startLightLoop();
+    if(key==='pl') startVisualFloor();
+    toast('Camera started');
+  }catch(e){
+    G.active[key]=false;
+    showErr(key+'-err-zone',
+      `Camera failed: ${e.message}. Ensure HTTPS and rear camera permission.`,
+      ()=>toggleCam(key));
+    toast('Camera error: '+e.message);
+  }
+}
+
+function stopCam(key){
+  if(G.streams[key]){ G.streams[key].getTracks().forEach(t=>t.stop()); G.streams[key]=null; }
+  G.active[key]=false;
+  const btn=$(key+'-cam-btn');
+  if(btn){ btn.textContent='▶ START CAMERA'; btn.className='btn btn-acc'; }
+  const ph=$(key+'-placeholder');
+  if(ph) ph.style.display='';
+  if(G.animFrames[key]){ cancelAnimationFrame(G.animFrames[key]); delete G.animFrames[key]; }
+}
+
+// ── HEIGHT OVERLAY ────────────────────────────────────
+function startHeightOverlay(){
+  const vid=$('h-vid'), canvas=$('h-ov');
+  const ctx=canvas.getContext('2d');
+  function frame(){
+    if(!G.active.h){ return; }
+    G.animFrames.h=requestAnimationFrame(frame);
+    const W=vid.videoWidth||canvas.offsetWidth;
+    const H=vid.videoHeight||canvas.offsetHeight;
+    if(!W||!H) return;
+    canvas.width=W; canvas.height=H;
+    ctx.clearRect(0,0,W,H);
+
+    // Grid
+    ctx.strokeStyle='rgba(0,245,212,0.06)'; ctx.lineWidth=.5;
+    for(let i=1;i<5;i++){
+      ctx.beginPath();ctx.moveTo(0,H*i/5);ctx.lineTo(W,H*i/5);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(W*i/5,0);ctx.lineTo(W*i/5,H);ctx.stroke();
     }
 
-    // horizon line based on tilt
-    const beta = state.sensors.beta;
-    const horizonFrac = 0.5 - (beta / 90) * 0.5;
-    const horizonY = Math.max(0, Math.min(1, horizonFrac));
-    const hEl = document.getElementById('h-horizon');
-    hEl.style.top = (horizonY * 100) + '%';
-
-    ctx.strokeStyle = 'rgba(255,107,53,0.7)';
-    ctx.lineWidth = 2;
-    ctx.setLineDash([8, 4]);
-    ctx.beginPath();
-    ctx.moveTo(0, canvas.height * horizonY);
-    ctx.lineTo(canvas.width, canvas.height * horizonY);
-    ctx.stroke();
+    // Horizon overlay
+    const beta=G.sensors.beta||90;
+    const hFrac=Math.max(0.05,Math.min(0.95, 0.5+(beta-90)/180));
+    const hY=hFrac*H;
+    const grad=ctx.createLinearGradient(0,0,W,0);
+    grad.addColorStop(0,'transparent');
+    grad.addColorStop(.5,'rgba(255,107,107,0.5)');
+    grad.addColorStop(1,'transparent');
+    ctx.strokeStyle=grad; ctx.lineWidth=1.5;
+    ctx.setLineDash([8,4]);
+    ctx.beginPath(); ctx.moveTo(0,hY); ctx.lineTo(W,hY); ctx.stroke();
     ctx.setLineDash([]);
 
-    // label
-    ctx.fillStyle = 'rgba(255,107,53,0.9)';
-    ctx.font = '11px Space Mono, monospace';
-    ctx.fillText('HORIZON', 8, canvas.height * horizonY - 6);
+    // Ground area indicator
+    ctx.fillStyle='rgba(0,245,212,0.04)';
+    ctx.fillRect(0,hY,W,H-hY);
 
-    hAnimFrame = requestAnimationFrame(draw);
+    // Height label
+    const bestH=(G.measure.height_fused||1.4).toFixed(2);
+    ctx.fillStyle='rgba(6,8,16,0.8)';
+    ctx.roundRect(W/2-45,hY-22,90,18,4);
+    ctx.fill();
+    ctx.font='11px DM Mono,monospace';
+    ctx.fillStyle='#ff6b6b';
+    ctx.textAlign='center';
+    ctx.fillText('HORIZON · h='+bestH+'m', W/2, hY-8);
+    ctx.textAlign='left';
+
+    // Perpendicular indicator
+    const tilt=Math.abs(90-Math.abs(beta));
+    const perpColor = tilt<15 ? 'rgba(0,245,212,0.8)' : 'rgba(255,209,102,0.8)';
+    ctx.fillStyle=perpColor;
+    ctx.font='10px DM Mono,monospace';
+    ctx.fillText(`⊥ TILT: ${tilt.toFixed(0)}°`, 8, H-10);
   }
-  draw();
+  frame();
 }
 
-function setHeightMethod(m) {
-  state.heightMethod = m;
-  document.getElementById('h-sensor-method').style.display = m === 'sensor' ? 'block' : 'none';
-  document.getElementById('h-visual-method').style.display = m === 'visual' ? 'block' : 'none';
-  document.getElementById('htab-sensor').classList.toggle('active', m === 'sensor');
-  document.getElementById('htab-visual').classList.toggle('active', m === 'visual');
-}
+// ── DISTANCE OVERLAY ─────────────────────────────────
+function startDistOverlay(){
+  const vid=$('d-vid'), canvas=$('d-ov');
+  const ctx=canvas.getContext('2d');
+  function frame(){
+    if(!G.active.d){ return; }
+    G.animFrames.d=requestAnimationFrame(frame);
+    const W=vid.videoWidth||canvas.offsetWidth;
+    const H=vid.videoHeight||canvas.offsetHeight;
+    if(!W||!H) return;
+    canvas.width=W; canvas.height=H;
+    ctx.clearRect(0,0,W,H);
 
-function updateHeightFromSensor(beta, gamma) {
-  if (!document.getElementById('page-height').classList.contains('active') &&
-      !document.getElementById('page-sensors').classList.contains('active')) return;
-  if (beta == null) return;
+    // Distance arc viz
+    const dist = G.measure.dist_trig||0;
+    if(dist>0){
+      const maxDist=10;
+      const arcFrac=Math.min(1,dist/maxDist);
+      ctx.strokeStyle=`rgba(0,245,212,${0.4-arcFrac*0.3})`;
+      ctx.lineWidth=1;
+      const rad=(W/2)*0.4*(1-arcFrac*0.7);
+      ctx.beginPath();
+      ctx.arc(W/2,H/2,rad,0,Math.PI*2);
+      ctx.stroke();
+    }
 
-  const userH = parseFloat(document.getElementById('user-height')?.value || 170);
-  const holdOff = parseFloat(document.getElementById('hold-offset')?.value || 30);
-  // beta: 0 = flat, 90 = upright portrait
-  // When phone is perpendicular to ground in portrait: beta ≈ 90
-  const betaRad = (beta * Math.PI) / 180;
-  const gammaRad = ((gamma || 0) * Math.PI) / 180;
-  const isPerp = Math.abs(beta) > 70 && Math.abs(beta) < 110;
+    // Depression angle viz
+    const dep=getDepressionAngle();
+    const lineEnd = {
+      x: W/2 + Math.sin(dep*Math.PI/180)*(H*0.4),
+      y: H/2 + Math.cos(dep*Math.PI/180)*(H*0.4)
+    };
+    ctx.strokeStyle='rgba(0,245,212,0.4)'; ctx.lineWidth=1.5;
+    ctx.setLineDash([4,4]);
+    ctx.beginPath(); ctx.moveTo(W/2,H/2); ctx.lineTo(lineEnd.x,lineEnd.y); ctx.stroke();
+    ctx.setLineDash([]);
 
-  // Sensor method: camera height = holding height
-  // When phone is perfectly vertical, camera is at roughly user_height - hold_offset
-  // Tilt from vertical = |90 - beta|
-  const tiltFromVertical = Math.abs(90 - Math.abs(beta));
-  const cameraHeightCm = (userH - holdOff) * Math.cos(tiltFromVertical * Math.PI / 180);
-  const hM = (cameraHeightCm / 100).toFixed(2);
-
-  // Visual method: using depression angle to ground
-  let visualH = null;
-  if (state.heightMethod === 'visual' && beta < 0) {
-    const depression = Math.abs(90 + beta); // angle below horizontal
-    if (depression > 1) {
-      visualH = 1.5; // placeholder - needs known distance
+    // Distance text
+    const dv=G.measure.dist_trig;
+    if(dv){
+      ctx.fillStyle='rgba(6,8,16,0.85)';
+      ctx.roundRect(W/2-50,H/2-36,100,20,4);
+      ctx.fill();
+      ctx.fillStyle='var(--acc)';
+      ctx.font='bold 12px DM Mono,monospace';
+      ctx.textAlign='center';
+      ctx.fillText(`D: ${dv.toFixed(2)}m`, W/2, H/2-22);
+      ctx.textAlign='left';
     }
   }
-
-  const displayH = state.heightMethod === 'sensor' ? hM : (visualH?.toFixed(2) ?? '?');
-  setText('h-height', displayH + 'm');
-  setText('h-tilt', tiltFromVertical.toFixed(1) + '°');
-  setText('h-beta', beta.toFixed(1) + '°');
-  setText('h-gamma', (gamma || 0).toFixed(1) + '°');
-  setText('h-perp-check', isPerp ? '✓ Yes' : '✗ Tilt phone upright');
-  const conf = isPerp ? Math.round(100 - tiltFromVertical * 2) : Math.round(50 - tiltFromVertical);
-  setText('h-confidence', Math.max(0, conf) + '%');
-  setText('h-method-active', state.heightMethod === 'sensor' ? 'Sensor Trig' : 'Visual Aim');
+  frame();
 }
 
-// ═══════════════════════════════════════════
-// DISTANCE ESTIMATION
-// ═══════════════════════════════════════════
-let dStream = null, dAnimFrame = null;
+// ── DEPTH PAGE ───────────────────────────────────────
+let depthActive=false,depthVid=null,depthStream=null;
+let depthMode='heatmap';
 
-async function toggleDistCam() {
-  if (state.dCamActive) { stopDistCam(); return; }
-  try {
-    dStream = await getRearCamera();
-    const video = document.getElementById('d-video');
-    video.srcObject = dStream;
-    await video.play();
-    document.getElementById('d-cam-overlay').style.display = 'none';
-    document.getElementById('d-cam-btn').textContent = '■ Stop Camera';
-    state.dCamActive = true;
-    setupDistTap();
-    runDistOverlay();
-  } catch(e) { showToast('Camera error: ' + e.message); }
-}
+async function startDepth(){
+  clearErr('dep-err-zone');
+  if(depthActive){ showWarn('dep-err-zone','Depth already running.'); return; }
 
-function stopDistCam() {
-  if (dStream) { dStream.getTracks().forEach(t => t.stop()); dStream = null; }
-  document.getElementById('d-cam-overlay').style.display = 'flex';
-  document.getElementById('d-cam-btn').textContent = '▶ Start Camera';
-  state.dCamActive = false;
-}
-
-function runDistOverlay() {
-  const video = document.getElementById('d-video');
-  const canvas = document.getElementById('d-canvas');
-  const ctx = canvas.getContext('2d');
-  function draw() {
-    if (!state.dCamActive) return;
-    canvas.width = video.videoWidth || canvas.offsetWidth;
-    canvas.height = video.videoHeight || canvas.offsetHeight;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    // draw tap points
-    state.tapPoints.forEach((pt, i) => {
-      ctx.beginPath();
-      ctx.arc(pt.x * canvas.width, pt.y * canvas.height, 10, 0, Math.PI * 2);
-      ctx.strokeStyle = i === 0 ? 'var(--accent)' : 'var(--accent2)';
-      ctx.lineWidth = 2;
-      ctx.stroke();
-      ctx.fillStyle = i === 0 ? 'var(--accent)' : 'var(--accent2)';
-      ctx.font = '12px Space Mono';
-      ctx.fillText('P' + (i + 1), pt.x * canvas.width + 14, pt.y * canvas.height + 4);
-    });
-    if (state.tapPoints.length === 2) {
-      ctx.strokeStyle = 'rgba(0,212,255,0.5)';
-      ctx.lineWidth = 1;
-      ctx.setLineDash([4, 4]);
-      ctx.beginPath();
-      ctx.moveTo(state.tapPoints[0].x * canvas.width, state.tapPoints[0].y * canvas.height);
-      ctx.lineTo(state.tapPoints[1].x * canvas.width, state.tapPoints[1].y * canvas.height);
-      ctx.stroke();
-      ctx.setLineDash([]);
-    }
-    dAnimFrame = requestAnimationFrame(draw);
-  }
-  draw();
-}
-
-function setupDistTap() {
-  const canvas = document.getElementById('d-canvas');
-  canvas.style.pointerEvents = 'auto';
-  canvas.onclick = (e) => {
-    if (state.distMethod !== 'ref') return;
-    const rect = canvas.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / rect.width;
-    const y = (e.clientY - rect.top) / rect.height;
-    if (state.tapPoints.length >= 2) state.tapPoints = [];
-    state.tapPoints.push({ x, y });
-    const idx = state.tapPoints.length - 1;
-    setText('d-tap' + (idx + 1), `(${(x * 100).toFixed(0)}%, ${(y * 100).toFixed(0)}%)`);
-    setText('d-tap-status', 'Tap points: ' + state.tapPoints.length + '/2');
-    if (state.tapPoints.length === 2) calcRefDistance();
-  };
-}
-
-function calcRefDistance() {
-  const [p1, p2] = state.tapPoints;
-  const video = document.getElementById('d-video');
-  const pixelHeight = Math.abs(p2.y - p1.y) * (video.videoHeight || 480);
-  const fovV = 60 * Math.PI / 180;
-  const focalLen = (video.videoHeight || 480) / (2 * Math.tan(fovV / 2));
-  const realH = parseFloat(document.getElementById('d-ref-size')?.value || 30) / 100;
-  const dist = (focalLen * realH) / pixelHeight;
-  setText('dist-value', dist.toFixed(2) + 'm');
-}
-
-function updateDistanceFromSensor(beta) {
-  if (beta == null) return;
-  if (state.distMethod !== 'trig') return;
-  const camH = parseFloat(document.getElementById('d-cam-height')?.value || 150) / 100;
-  // depression angle = how much below horizontal
-  const depression = -(90 - Math.abs(beta)); // negative means pointing down
-  const horizAngle = beta; // angle from vertical
-  // When phone is held portrait, beta~90 = level. Beta<90 = pointing down
-  const depressionDeg = 90 - Math.abs(beta);
-  if (depressionDeg > 1 && depressionDeg < 89) {
-    const depressionRad = depressionDeg * Math.PI / 180;
-    const dist = camH / Math.tan(depressionRad);
-    setText('dist-value', dist.toFixed(2) + 'm');
-    setText('dist-angle', depressionDeg.toFixed(1) + '°');
-    updateHorizonLine('d-horizon', beta);
+  // Try WebXR depth first
+  if(G.caps.ar && G.caps.depth){
+    await startXRDepth();
   } else {
-    setText('dist-value', '–');
-    setText('dist-angle', depressionDeg.toFixed(1) + '°');
+    await startVisualDepth();
   }
 }
 
-function updateHorizonLine(id, beta) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  const frac = 0.5 - (beta / 90) * 0.5;
-  el.style.top = (Math.max(0, Math.min(1, frac)) * 100) + '%';
+async function startXRDepth(){
+  try{
+    G.xr.depthSession = await navigator.xr.requestSession('immersive-ar',{
+      requiredFeatures:['depth-sensing'],
+      depthSensing:{
+        usagePreference:['cpu-optimized','gpu-optimized'],
+        dataFormatPreference:['luminance-alpha','float32']
+      }
+    });
+    depthActive=true;
+    setText('dep-method','WebXR Depth');
+    setText('dep-hud-mode','WEBXR DEPTH');
+    badge('dep-api-badge','ok','WEBXR');
+    $('dep-placeholder').style.display='none';
+
+    const canvas=$('dep-canvas');
+    const gl=canvas.getContext('webgl',{xrCompatible:true});
+    try{ await gl.makeXRCompatible?.(); }catch{}
+    G.xr.depthSession.updateRenderState({baseLayer:new XRWebGLLayer(G.xr.depthSession,gl)});
+    const rs=await G.xr.depthSession.requestReferenceSpace('local');
+
+    function onXRFrame(t,frame){
+      if(!depthActive) return;
+      G.xr.depthSession.requestAnimationFrame(onXRFrame);
+      const pose=frame.getViewerPose(rs);
+      if(!pose) return;
+      for(const view of pose.views){
+        const di=frame.getDepthInformation(view);
+        if(di) renderDepthBuffer(di,canvas);
+      }
+    }
+    G.xr.depthSession.requestAnimationFrame(onXRFrame);
+    G.xr.depthSession.addEventListener('end',()=>{depthActive=false;});
+    toast('WebXR depth session started');
+  }catch(e){
+    toast('WebXR depth unavailable — using visual fallback');
+    showWarn('dep-err-zone','WebXR Depth API unavailable on this device. Using visual edge-based depth estimation. '+e.message);
+    await startVisualDepth();
+  }
 }
 
-function clearTapPoints() {
-  state.tapPoints = [];
-  setText('d-tap1', '–'); setText('d-tap2', '–');
-  setText('d-tap-status', 'Tap points: 0/2');
-  setText('dist-value', '–');
+async function startVisualDepth(){
+  try{
+    depthStream=await getRearCam(true);
+    depthVid=document.createElement('video');
+    depthVid.srcObject=depthStream; depthVid.autoplay=true;
+    depthVid.playsInline=true; depthVid.muted=true;
+    await depthVid.play();
+    depthActive=true;
+    setText('dep-method','Visual Est.');
+    setText('dep-hud-mode','VISUAL DEPTH');
+    badge('dep-api-badge','warn','VISUAL');
+    $('dep-placeholder').style.display='none';
+    runVisualDepth();
+  }catch(e){
+    showErr('dep-err-zone','Cannot start depth: '+e.message, startDepth);
+  }
 }
 
-function setDistMethod(m) {
-  state.distMethod = m;
-  ['trig','ref','xr'].forEach(k => {
-    document.getElementById('dist-' + k).style.display = k === m ? 'block' : 'none';
-    document.getElementById('dtab-' + k).classList.toggle('active', k === m);
+function renderDepthBuffer(di,canvas){
+  const ctx=canvas.getContext('2d');
+  const w=di.width,h=di.height;
+  canvas.width=w; canvas.height=h;
+  const img=ctx.createImageData(w,h);
+  let mn=Infinity,mx=0;
+  for(let i=0;i<w*h;i++){
+    const x=i%w,y=Math.floor(i/w);
+    const d=di.getDepthInMeters(x,y);
+    if(d<mn)mn=d; if(d>mx)mx=d;
+  }
+  for(let i=0;i<w*h;i++){
+    const x=i%w,y=Math.floor(i/w);
+    const d=di.getDepthInMeters(x,y);
+    const norm=Math.max(0,Math.min(1,(d-mn)/(mx-mn||1)));
+    const [r,g,b]=depthColor(norm,depthMode);
+    img.data[i*4]=r;img.data[i*4+1]=g;img.data[i*4+2]=b;img.data[i*4+3]=255;
+  }
+  ctx.putImageData(img,0,0);
+  const cx=Math.floor(w/2),cy=Math.floor(h/2);
+  const cd=di.getDepthInMeters(cx,cy);
+  G.measure.centerDepth=cd;
+  setText('dep-center',cd.toFixed(2)+'m');
+  setText('dep-min',mn.toFixed(2)+'m');
+  setText('dep-max',mx.toFixed(2)+'m');
+  setText('dep-hud-center','CTR: '+cd.toFixed(2)+'m');
+  drawDepthProfile(di,w,h,mn,mx);
+}
+
+function runVisualDepth(){
+  const canvas=$('dep-canvas');
+  const ctx=canvas.getContext('2d');
+  const tmp=document.createElement('canvas');
+  const tCtx=tmp.getContext('2d');
+  let prevFrame=null;
+
+  function frame(){
+    if(!depthActive) return;
+    G.animFrames.dep=requestAnimationFrame(frame);
+    const vw=depthVid.videoWidth||320,vh=depthVid.videoHeight||240;
+    if(!vw) return;
+    const dw=Math.floor(vw/3),dh=Math.floor(vh/3);
+    tmp.width=dw; tmp.height=dh;
+    tCtx.drawImage(depthVid,0,0,dw,dh);
+    const src=tCtx.getImageData(0,0,dw,dh);
+
+    canvas.width=dw; canvas.height=dh;
+    const out=ctx.createImageData(dw,dh);
+    let mn=255,mx=0,sumCenter=0,centerN=0;
+    const cx=Math.floor(dw/2),cy=Math.floor(dh/2),cr=dw/8;
+
+    for(let y=1;y<dh-1;y++){
+      for(let x=1;x<dw-1;x++){
+        const edge=sobelMag(src,x,y,dw,dh);
+        const luma=lumaAt(src,x,y,dw);
+        // edge strength as depth proxy (high edge = close)
+        const depProxy=Math.min(255,edge*2);
+        if(depProxy<mn) mn=depProxy;
+        if(depProxy>mx) mx=depProxy;
+        const norm=(mx>mn)?(depProxy-mn)/(mx-mn):0.5;
+        const invNorm=1-norm; // low edge = far
+        const [r,g,b]=depthColor(invNorm,depthMode);
+        const idx=(y*dw+x)*4;
+        out.data[idx]=r;out.data[idx+1]=g;out.data[idx+2]=b;out.data[idx+3]=255;
+
+        const dx=x-cx,dy=y-cy;
+        if(dx*dx+dy*dy<cr*cr){ sumCenter+=edge; centerN++; }
+      }
+    }
+    ctx.putImageData(out,0,0);
+    prevFrame=new Uint8ClampedArray(src.data);
+
+    const edgeCenter=centerN?sumCenter/centerN:0;
+    const estDepth=Math.max(0.2,5-edgeCenter/50);
+    G.measure.centerDepth=estDepth;
+    setText('dep-center','~'+estDepth.toFixed(1)+'m');
+    setText('dep-min','~0.2m');
+    setText('dep-max','~5m+');
+    setText('dep-hud-center','~'+estDepth.toFixed(1)+'m');
+    drawSimpleDepthProfile(src,dw,dh);
+  }
+  frame();
+}
+
+function drawDepthProfile(di,w,h,mn,mx){
+  const c=$('dep-profile'); if(!c) return;
+  const ctx=c.getContext('2d');
+  const W=c.offsetWidth||300,H=50;
+  c.width=W; c.height=H;
+  ctx.clearRect(0,0,W,H);
+  const midY=Math.floor(h/2);
+  ctx.beginPath(); ctx.strokeStyle='var(--acc)'; ctx.lineWidth=1.5;
+  for(let x=0;x<W;x++){
+    const sx=Math.floor(x*w/W);
+    const d=di.getDepthInMeters(sx,midY);
+    const norm=(d-mn)/(mx-mn||1);
+    const y=H-norm*(H-4)-2;
+    x===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+  }
+  ctx.stroke();
+}
+
+function drawSimpleDepthProfile(src,dw,dh){
+  const c=$('dep-profile'); if(!c) return;
+  const ctx=c.getContext('2d');
+  const W=c.offsetWidth||300,H=50;
+  c.width=W; c.height=H;
+  ctx.clearRect(0,0,W,H);
+  const midY=Math.floor(dh/2);
+  ctx.beginPath(); ctx.strokeStyle='var(--acc)'; ctx.lineWidth=1.5;
+  for(let x=0;x<W;x++){
+    const sx=Math.floor(x*dw/W);
+    const e=sobelMag(src,sx,midY,dw,dh);
+    const y=H-Math.min(H-2,(e/200)*H);
+    x===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+  }
+  ctx.stroke();
+}
+
+function stopDepth(){
+  depthActive=false;
+  if(G.xr.depthSession){ try{G.xr.depthSession.end();}catch{} G.xr.depthSession=null; }
+  if(depthStream){ depthStream.getTracks().forEach(t=>t.stop()); depthStream=null; }
+  if(G.animFrames.dep){ cancelAnimationFrame(G.animFrames.dep); }
+  $('dep-placeholder').style.display='';
+  badge('dep-api-badge','off','STOPPED');
+  setText('dep-method','–');
+}
+
+function setDepthMode(m){
+  depthMode=m;
+  $$('[id^="dm-"]').forEach(b=>b.classList.remove('active'));
+  $('dm-'+m)?.classList.add('active');
+}
+
+function depthColor(norm, mode){
+  mode=mode||'heatmap';
+  if(mode==='heatmap'){
+    if(norm<0.25) return [255,Math.round(norm*4*255),0];
+    if(norm<0.5)  return [Math.round((1-(norm-0.25)*4)*255),255,0];
+    if(norm<0.75) return [0,Math.round((1-(norm-0.5)*4)*255),Math.round((norm-0.5)*4*255)];
+    return [0,0,Math.max(50,Math.round((1-norm)*200))];
+  }
+  if(mode==='rainbow'){
+    const h=norm*270; // hue 0-270
+    return hslToRgb(h/360,0.9,0.5);
+  }
+  if(mode==='grayscale'){
+    const v=Math.round((1-norm)*255);
+    return [v,v,v];
+  }
+  if(mode==='contour'){
+    const lines=10;
+    const q=Math.floor(norm*lines)/lines;
+    const r=norm*lines-Math.floor(norm*lines);
+    const onLine = r<0.05||r>0.95;
+    if(onLine) return [0,245,212];
+    const v=Math.round(q*180+20);
+    return [v,v,v];
+  }
+  return [128,128,128];
+}
+
+function hslToRgb(h,s,l){
+  const c=(1-Math.abs(2*l-1))*s;
+  const x=c*(1-Math.abs((h*6)%2-1));
+  const m=l-c/2;
+  let r=0,g=0,b=0;
+  if(h<1/6){r=c;g=x;}else if(h<2/6){r=x;g=c;}
+  else if(h<3/6){g=c;b=x;}else if(h<4/6){g=x;b=c;}
+  else if(h<5/6){r=x;b=c;}else{r=c;b=x;}
+  return [Math.round((r+m)*255),Math.round((g+m)*255),Math.round((b+m)*255)];
+}
+
+// ── EDGE / OBJECT DETECTION ──────────────────────────
+function startEdgeLoop(){
+  const vid=$('e-vid'), canvas=$('e-canvas');
+  const ctx=canvas.getContext('2d');
+  const tmp=document.createElement('canvas');
+  const tCtx=tmp.getContext('2d');
+  let prevData=null;
+  const motionHist=[];
+
+  function frame(){
+    if(!G.active.e) return;
+    G.animFrames.e=requestAnimationFrame(frame);
+    const vw=vid.videoWidth||320,vh=vid.videoHeight||240;
+    if(!vw) return;
+    const scale=0.5;
+    const w=Math.floor(vw*scale),h=Math.floor(vh*scale);
+    tmp.width=w; tmp.height=h;
+    tCtx.drawImage(vid,0,0,w,h);
+    const src=tCtx.getImageData(0,0,w,h);
+
+    canvas.width=w; canvas.height=h;
+    const out=ctx.createImageData(w,h);
+    let edgePx=0,sumB=0,motDelta=0;
+    let hueSum=0,hueN=0,minL=255,maxL=0;
+    const hueHist=new Array(36).fill(0);
+
+    for(let y=1;y<h-1;y++){
+      for(let x=1;x<w-1;x++){
+        const idx=(y*w+x)*4;
+        const r=src.data[idx],g=src.data[idx+1],b=src.data[idx+2];
+        const luma=0.299*r+0.587*g+0.114*b;
+        sumB+=luma; if(luma<minL)minL=luma; if(luma>maxL)maxL=luma;
+
+        // hue
+        const mx=Math.max(r,g,b),mn=Math.min(r,g,b),d=mx-mn;
+        if(mx>30&&d>20){
+          let hue=0;
+          if(mx===r) hue=((g-b)/d)%6;
+          else if(mx===g) hue=(b-r)/d+2;
+          else hue=(r-g)/d+4;
+          hue=(hue*60+360)%360;
+          hueHist[Math.min(35,Math.floor(hue/10))]++;
+          hueSum+=hue; hueN++;
+        }
+
+        let rv=0,gv=0,bv=0;
+        const mode=G.edgeMode||'edge';
+
+        if(mode==='edge'){
+          const e=sobelMag(src,x,y,w,h);
+          if(e>edgeThresh){rv=0;gv=245;bv=212;edgePx++;}
+          else{rv=r>>3;gv=g>>3;bv=b>>3;}
+        } else if(mode==='motion'){
+          if(prevData){
+            const pi=(y*w+x)*4;
+            const dl=Math.abs(luma-(0.299*prevData[pi]+0.587*prevData[pi+1]+0.114*prevData[pi+2]));
+            motDelta+=dl;
+            const v=Math.min(255,dl*6);
+            rv=v;gv=Math.round(v*0.2);bv=Math.round(255-v*0.5);
+          } else {rv=r>>2;gv=g>>2;bv=b>>2;}
+        } else if(mode==='luma'){
+          const v=Math.round(luma);
+          // false color luma
+          rv=v<128?0:Math.round((v-128)*2);
+          gv=v;
+          bv=v>128?0:Math.round((128-v)*2);
+        } else if(mode==='color'){
+          // Segment by dominant channel
+          if(r>g&&r>b&&r>80){rv=255;gv=50;bv=50;}
+          else if(g>r&&g>b&&g>80){rv=50;gv=255;bv=50;}
+          else if(b>r&&b>g&&b>80){rv=50;gv=50;bv=255;}
+          else if(luma>200){rv=255;gv=255;bv=255;}
+          else if(luma<30){rv=0;gv=0;bv=0;}
+          else{rv=120;gv=120;bv=140;}
+        } else if(mode==='thermal'){
+          // Simulate thermal camera
+          const hot=luma/255;
+          if(hot<0.25){rv=0;gv=0;bv=Math.round(hot*4*200);}
+          else if(hot<0.5){rv=0;gv=Math.round((hot-0.25)*4*255);bv=200;}
+          else if(hot<0.75){rv=Math.round((hot-0.5)*4*255);gv=255;bv=0;}
+          else{rv=255;gv=Math.round((1-hot)*4*255);bv=0;}
+        }
+        out.data[idx]=rv;out.data[idx+1]=gv;out.data[idx+2]=bv;out.data[idx+3]=255;
+      }
+    }
+    ctx.putImageData(out,0,0);
+    prevData=new Uint8ClampedArray(src.data);
+
+    const avgB=sumB/(w*h);
+    const contrast=maxL-minL;
+    const motAvg=motDelta/(w*h);
+    const domHue=hueHist.indexOf(Math.max(...hueHist))*10;
+    motionHist.push(motAvg); if(motionHist.length>100) motionHist.shift();
+
+    setText('e-edges',edgePx.toLocaleString());
+    setText('e-motion',motAvg.toFixed(1));
+    setText('e-bright',avgB.toFixed(0));
+    setText('e-contrast',contrast.toFixed(0));
+    setText('e-hue',domHue+'°');
+    setText('e-hud-mode',({edge:'EDGES',motion:'MOTION',luma:'LUMA',color:'COLOR SEG',thermal:'THERMAL'}[G.edgeMode||'edge']));
+    setText('e-hud-info',`E:${edgePx}|M:${motAvg.toFixed(0)}`);
+
+    if(motionHist.length>2) drawSparkline('e-motion-spark',motionHist,'var(--acc3)',0,30);
+  }
+  frame();
+}
+
+function setEdgeMode(m){
+  G.edgeMode=m;
+  $$('[id^="em-"]').forEach(b=>b.classList.remove('active'));
+  $('em-'+m)?.classList.add('active');
+}
+
+// ── LIGHT ANALYSIS ───────────────────────────────────
+function startLightLoop(){
+  const vid=$('l-vid'), canvas=$('l-canvas');
+  const ctx=canvas.getContext('2d');
+  const tmp=document.createElement('canvas');
+  const tCtx=tmp.getContext('2d');
+  const luxHist=[];
+
+  function frame(){
+    if(!G.active.l) return;
+    G.animFrames.l=requestAnimationFrame(frame);
+    const vw=vid.videoWidth||320,vh=vid.videoHeight||240;
+    if(!vw) return;
+    const w=80,h=60;
+    tmp.width=w;tmp.height=h;
+    tCtx.drawImage(vid,0,0,w,h);
+    const src=tCtx.getImageData(0,0,w,h);
+    const n=w*h;
+    let sumR=0,sumG=0,sumB=0;
+    const rHist=new Array(16).fill(0);
+    const gHist=new Array(16).fill(0);
+    const bHist=new Array(16).fill(0);
+
+    for(let i=0;i<n*4;i+=4){
+      sumR+=src.data[i]; sumG+=src.data[i+1]; sumB+=src.data[i+2];
+      rHist[src.data[i]>>4]++;
+      gHist[src.data[i+1]>>4]++;
+      bHist[src.data[i+2]>>4]++;
+    }
+    const avgR=sumR/n,avgG=sumG/n,avgB=sumB/n;
+    const luma=0.299*avgR+0.587*avgG+0.114*avgB;
+    const lux=Math.round(luma*luma/8);
+    const cct=estimateCCT(avgR,avgG,avgB);
+
+    G.measure.lux=lux;
+    luxHist.push(lux); if(luxHist.length>100) luxHist.shift();
+    G.luxHistory.push(lux); if(G.luxHistory.length>120) G.luxHistory.shift();
+
+    setText('l-lux',lux.toLocaleString());
+    setText('l-cct',Math.round(cct).toLocaleString());
+    setText('l-r',Math.round(avgR));
+    setText('l-g',Math.round(avgG));
+    setText('l-b',Math.round(avgB));
+    setText('l-hud-lux',lux.toLocaleString()+' lx');
+    setText('l-hud-temp',Math.round(cct/100)+'00K');
+
+    const luxPct=Math.min(100,lux/100);
+    $('lux-fill').style.width=luxPct+'%';
+
+    let cond='Indoor ☁';
+    if(lux>30000) cond='☀️ Bright Sun';
+    else if(lux>10000) cond='🌤 Overcast';
+    else if(lux>1000) cond='💡 Office / Day';
+    else if(lux>200) cond='💡 Indoor Light';
+    else if(lux>50) cond='🕯 Dim Indoor';
+    else cond='🌑 Very Dark';
+    setText('l-cond',cond);
+
+    // XR light if available
+    if(G.measure.xrLightColor){
+      const xl=G.measure.xrLightColor;
+      setText('l-xr',`R:${xl.r.toFixed(1)} G:${xl.g.toFixed(1)} B:${xl.b.toFixed(1)}`);
+    } else {
+      setText('l-xr', lux>0 ? `~${lux.toLocaleString()} est` : '–');
+    }
+
+    // Histogram
+    drawRGBHistogram('l-hist',rHist,gHist,bHist);
+
+    if(G.luxHistory.length>2) drawSparkline('l-spark',G.luxHistory,'var(--acc3)',0,5000);
+
+    // Also update compare page
+    setText('cmp-lux', lux.toLocaleString());
+
+    // compare timeline
+    G.cmpTimeline.h.push(G.measure.height_fused||0);
+    G.cmpTimeline.d.push(G.measure.dist_fused||0);
+    G.cmpTimeline.l.push(lux/100);
+    if(G.cmpTimeline.h.length>120){ G.cmpTimeline.h.shift();G.cmpTimeline.d.shift();G.cmpTimeline.l.shift(); }
+    drawCompareTimeline();
+  }
+  frame();
+}
+
+function estimateCCT(r,g,b){
+  const total=r+g+b||1;
+  const x=r/total,y=g/total;
+  const n=(x-0.3320)/(0.1858-y);
+  const cct=449*n*n*n+3525*n*n+6823.3*n+5520.33;
+  return Math.max(1000,Math.min(20000,cct));
+}
+
+function drawRGBHistogram(canvasId,rH,gH,bH){
+  const c=$(canvasId); if(!c) return;
+  const ctx=c.getContext('2d');
+  const W=c.offsetWidth||300,H=60;
+  c.width=W; c.height=H;
+  ctx.clearRect(0,0,W,H);
+  const mx=Math.max(...rH,...gH,...bH)||1;
+  const bw=W/16;
+  [[rH,'rgba(255,107,107,0.6)'],[gH,'rgba(0,245,212,0.6)'],[bH,'rgba(168,218,220,0.6)']].forEach(([hist,color])=>{
+    hist.forEach((v,i)=>{
+      const h2=(v/mx)*(H-2);
+      ctx.fillStyle=color;
+      ctx.fillRect(i*bw,H-h2,bw-1,h2);
+    });
   });
 }
 
-// ═══════════════════════════════════════════
-// DEPTH SENSING
-// ═══════════════════════════════════════════
-let depthXRSession = null, depthStream = null, depthVideo = null, depthAnimFrame = null;
-let depthActive = false;
-
-async function startDepth() {
-  if (depthActive) return;
-  if (state.caps.ar) {
-    await startWebXRDepth();
-  } else {
-    await startFallbackDepth();
-  }
+function setLightMode(m){
+  G.lightMode=m;
+  $$('[id^="lm-"]').forEach(b=>b.classList.remove('active'));
+  $('lm-'+m)?.classList.add('active');
+  if(m==='xr-light' && G.caps.ar) startXRLightEstimation();
 }
 
-async function startWebXRDepth() {
-  try {
-    depthXRSession = await navigator.xr.requestSession('immersive-ar', {
-      requiredFeatures: ['depth-sensing'],
-      depthSensing: {
-        usagePreference: ['cpu-optimized', 'gpu-optimized'],
-        dataFormatPreference: ['luminance-alpha', 'float32']
+async function startXRLightEstimation(){
+  if(!G.caps.ar||!G.caps.light_est){
+    showWarn('l-err-zone','XR Lighting Estimation requires ARCore support.');
+    return;
+  }
+  try{
+    G.xr.lightSession=await navigator.xr.requestSession('immersive-ar',{
+      requiredFeatures:['light-estimation']
+    });
+    const rs=await G.xr.lightSession.requestReferenceSpace('local');
+    G.xr.lightSession.requestAnimationFrame(function onFrame(t,frame){
+      G.xr.lightSession.requestAnimationFrame(onFrame);
+      const lightProbe=frame.getLightEstimate?.(frame.getViewerPose(rs)?.views[0]);
+      if(lightProbe){
+        G.measure.xrLightColor={
+          r:lightProbe.primaryLightIntensity?.x||1,
+          g:lightProbe.primaryLightIntensity?.y||1,
+          b:lightProbe.primaryLightIntensity?.z||1
+        };
       }
     });
-    setText('depth-mode', 'WebXR Depth');
-    depthActive = true;
-    showToast('WebXR depth session started!');
-    depthXRSession.addEventListener('end', () => { depthActive = false; });
-
-    const canvas = document.getElementById('depth-canvas');
-    const gl = canvas.getContext('webgl', { xrCompatible: true });
-    await gl.makeXRCompatible?.();
-    depthXRSession.updateRenderState({ baseLayer: new XRWebGLLayer(depthXRSession, gl) });
-
-    const refSpace = await depthXRSession.requestReferenceSpace('local');
-    function onXRFrame(t, frame) {
-      if (!depthActive) return;
-      depthXRSession.requestAnimationFrame(onXRFrame);
-      const pose = frame.getViewerPose(refSpace);
-      if (!pose) return;
-      for (const view of pose.views) {
-        const depthData = frame.getDepthInformation(view);
-        if (depthData) renderXRDepth(depthData, canvas);
-      }
-    }
-    depthXRSession.requestAnimationFrame(onXRFrame);
-  } catch(e) {
-    showToast('WebXR depth failed: ' + e.message + '. Using fallback.');
-    await startFallbackDepth();
-  }
+  }catch(e){ showWarn('l-err-zone','XR Light Est failed: '+e.message); }
 }
 
-function renderXRDepth(depthData, canvas) {
-  const ctx = canvas.getContext('2d');
-  const w = depthData.width, h = depthData.height;
-  canvas.width = w; canvas.height = h;
-  const imgData = ctx.createImageData(w, h);
-  let minD = Infinity, maxD = 0;
+// ── PLANE DETECTION ──────────────────────────────────
+let planesSession=null,planesActive=false;
 
-  for (let i = 0; i < w * h; i++) {
-    const x = i % w, y = Math.floor(i / w);
-    const d = depthData.getDepthInMeters(x, y);
-    if (d < minD) minD = d;
-    if (d > maxD) maxD = d;
-  }
-
-  for (let i = 0; i < w * h; i++) {
-    const x = i % w, y = Math.floor(i / w);
-    const d = depthData.getDepthInMeters(x, y);
-    const norm = Math.max(0, Math.min(1, (d - minD) / (maxD - minD)));
-    const [r, g, b] = depthColor(norm);
-    imgData.data[i * 4] = r;
-    imgData.data[i * 4 + 1] = g;
-    imgData.data[i * 4 + 2] = b;
-    imgData.data[i * 4 + 3] = 255;
-  }
-  ctx.putImageData(imgData, 0, 0);
-
-  const cx = Math.floor(w / 2), cy = Math.floor(h / 2);
-  const centerDepth = depthData.getDepthInMeters(cx, cy);
-  setText('depth-center', centerDepth.toFixed(2) + 'm');
-  setText('depth-min', minD.toFixed(2) + 'm');
-  setText('depth-max', maxD.toFixed(2) + 'm');
-}
-
-async function startFallbackDepth() {
-  try {
-    depthStream = await getRearCamera(true);
-    depthVideo = document.createElement('video');
-    depthVideo.srcObject = depthStream;
-    depthVideo.autoplay = true; depthVideo.playsInline = true; depthVideo.muted = true;
-    await depthVideo.play();
-    depthActive = true;
-    setText('depth-mode', 'Visual Est.');
-    runFallbackDepth();
-  } catch(e) { showToast('Cannot start depth: ' + e.message); }
-}
-
-function runFallbackDepth() {
-  const canvas = document.getElementById('depth-canvas');
-  const ctx = canvas.getContext('2d');
-  const tmp = document.createElement('canvas');
-  const tCtx = tmp.getContext('2d');
-
-  function draw() {
-    if (!depthActive) return;
-    const w = depthVideo.videoWidth || 320;
-    const h = depthVideo.videoHeight || 240;
-    tmp.width = w; tmp.height = h;
-    tCtx.drawImage(depthVideo, 0, 0, w, h);
-    const frame = tCtx.getImageData(0, 0, w, h);
-
-    // Blur-based depth estimation: less sharp = farther
-    // Edge magnitude as proxy for depth (edges = near, smooth = far)
-    const dW = Math.floor(w / 4), dH = Math.floor(h / 4);
-    canvas.width = dW; canvas.height = dH;
-    const imgData = ctx.createImageData(dW, dH);
-
-    for (let py = 0; py < dH; py++) {
-      for (let px = 0; px < dW; px++) {
-        const sx = Math.floor(px * w / dW);
-        const sy = Math.floor(py * h / dH);
-        // Sobel-like edge = "closeness"
-        const edge = getSobelAt(frame, sx, sy, w, h);
-        const norm = Math.min(1, edge / 200);
-        const [r, g, b] = depthColor(1 - norm); // edges = near = low normalized
-        const i = (py * dW + px) * 4;
-        imgData.data[i] = r;
-        imgData.data[i+1] = g;
-        imgData.data[i+2] = b;
-        imgData.data[i+3] = 255;
-      }
-    }
-    ctx.putImageData(imgData, 0, 0);
-
-    // rough estimate: high edge center = close, low = far
-    const cx = Math.floor(dW / 2), cy = Math.floor(dH / 2);
-    const cSx = Math.floor(w / 2), cSy = Math.floor(h / 2);
-    const edgeC = getSobelAt(frame, cSx, cSy, w, h);
-    const estDist = Math.max(0.3, 5 - edgeC / 40);
-    setText('depth-center', '~' + estDist.toFixed(1) + 'm');
-    setText('depth-min', '~0.3m');
-    setText('depth-max', '~5m+');
-
-    depthAnimFrame = requestAnimationFrame(draw);
-  }
-  draw();
-}
-
-function getSobelAt(img, x, y, w, h) {
-  const gx = (r, dx, dy) => {
-    const nx = Math.max(0, Math.min(w-1, x+dx));
-    const ny = Math.max(0, Math.min(h-1, y+dy));
-    const i = (ny * w + nx) * 4;
-    return (img.data[i] + img.data[i+1] + img.data[i+2]) / 3;
-  };
-  const Gx = -gx(0,-1,-1) + gx(0,1,-1) - 2*gx(0,-1,0) + 2*gx(0,1,0) - gx(0,-1,1) + gx(0,1,1);
-  const Gy = -gx(0,-1,-1) - 2*gx(0,0,-1) - gx(0,1,-1) + gx(0,-1,1) + 2*gx(0,0,1) + gx(0,1,1);
-  return Math.sqrt(Gx*Gx + Gy*Gy);
-}
-
-function depthColor(norm) {
-  // near=red, mid=yellow, far=cyan/blue
-  if (norm < 0.25) return [255, Math.round(norm*4*255), 0];
-  if (norm < 0.5)  return [Math.round((1-(norm-0.25)*4)*255), 255, 0];
-  if (norm < 0.75) return [0, Math.round((1-(norm-0.5)*4)*255), Math.round((norm-0.5)*4*255)];
-  return [0, 0, Math.round(50 + (1-norm)*205)];
-}
-
-function stopDepth() {
-  depthActive = false;
-  if (depthXRSession) { depthXRSession.end(); depthXRSession = null; }
-  if (depthStream) { depthStream.getTracks().forEach(t => t.stop()); depthStream = null; }
-  if (depthAnimFrame) cancelAnimationFrame(depthAnimFrame);
-  showToast('Depth stopped.');
-}
-
-// ═══════════════════════════════════════════
-// EDGE / OBJECT DETECTION
-// ═══════════════════════════════════════════
-let eStream = null, eAnimFrame = null;
-
-async function toggleEdgeCam() {
-  if (state.eCamActive) {
-    if (eStream) { eStream.getTracks().forEach(t => t.stop()); eStream = null; }
-    document.getElementById('e-cam-overlay').style.display = 'flex';
-    document.getElementById('e-cam-btn').textContent = '▶ Start Camera';
-    state.eCamActive = false;
-    if (eAnimFrame) cancelAnimationFrame(eAnimFrame);
+async function startPlanesXR(){
+  clearErr('pl-err-zone');
+  if(!G.caps.ar){
+    showErr('pl-err-zone','WebXR AR not supported on this device/browser. Try Android Chrome with ARCore.', startPlanesXR);
     return;
   }
-  try {
-    eStream = await getRearCamera(true);
-    const video = document.getElementById('e-video');
-    video.srcObject = eStream;
-    await video.play();
-    document.getElementById('e-cam-overlay').style.display = 'none';
-    document.getElementById('e-cam-btn').textContent = '■ Stop Camera';
-    state.eCamActive = true;
-    runEdgeDetection();
-  } catch(e) { showToast('Camera error: ' + e.message); }
-}
+  try{
+    const features=['local-floor'];
+    if(G.caps.planes) features.push('plane-detection');
 
-function setEdgeMode(m) {
-  state.edgeMode = m;
-  ['edge','diff','luma','hsv'].forEach(k => {
-    document.getElementById('etab-' + k).classList.toggle('active', k === m);
-  });
-}
-
-function runEdgeDetection() {
-  const video = document.getElementById('e-video');
-  const canvas = document.getElementById('edge-canvas');
-  const ctx = canvas.getContext('2d');
-  const tmp = document.createElement('canvas');
-  const tCtx = tmp.getContext('2d');
-  let prevData = null;
-
-  document.getElementById('edge-threshold').oninput = function() {
-    state.edgeThreshold = parseInt(this.value);
-    document.getElementById('edge-thresh-val').textContent = this.value;
-  };
-
-  function draw() {
-    if (!state.eCamActive) return;
-    const vw = video.videoWidth || 320, vh = video.videoHeight || 240;
-    // downscale for performance
-    const scale = 0.4;
-    const w = Math.floor(vw * scale), h = Math.floor(vh * scale);
-    tmp.width = w; tmp.height = h;
-    tCtx.drawImage(video, 0, 0, w, h);
-    const frame = tCtx.getImageData(0, 0, w, h);
-
-    canvas.width = w; canvas.height = h;
-    const out = ctx.createImageData(w, h);
-
-    let edgePx = 0, sumBright = 0, motionDelta = 0;
-    let hueHist = new Array(36).fill(0);
-
-    for (let y = 1; y < h - 1; y++) {
-      for (let x = 1; x < w - 1; x++) {
-        const i = (y * w + x) * 4;
-        const r = frame.data[i], g = frame.data[i+1], b = frame.data[i+2];
-        const luma = 0.299*r + 0.587*g + 0.114*b;
-        sumBright += luma;
-
-        // HSV hue
-        const mx = Math.max(r,g,b), mn = Math.min(r,g,b);
-        if (mx > 30) {
-          let hue = 0;
-          if (mx === r) hue = ((g - b) / (mx - mn)) % 6;
-          else if (mx === g) hue = (b - r) / (mx - mn) + 2;
-          else hue = (r - g) / (mx - mn) + 4;
-          hue = Math.round((hue * 60 + 360) % 360 / 10);
-          hueHist[Math.min(35, Math.max(0, hue))]++;
-        }
-
-        let rv = 0, gv = 0, bv = 0;
-
-        if (state.edgeMode === 'edge') {
-          const edge = getSobelAt(frame, x, y, w, h);
-          const t = state.edgeThreshold;
-          if (edge > t) {
-            rv = 0; gv = 212; bv = 255; edgePx++;
-          } else {
-            rv = Math.floor(r * 0.15); gv = Math.floor(g * 0.15); bv = Math.floor(b * 0.15);
-          }
-        } else if (state.edgeMode === 'diff') {
-          if (prevData) {
-            const d = Math.abs(luma - (0.299*prevData[i]+0.587*prevData[i+1]+0.114*prevData[i+2]));
-            motionDelta += d;
-            const v = Math.min(255, d * 5);
-            rv = v; gv = 0; bv = Math.floor(255 - v);
-          } else { rv = r * 0.3; gv = g * 0.3; bv = b * 0.3; }
-        } else if (state.edgeMode === 'luma') {
-          const v = Math.floor(luma);
-          rv = v; gv = v; bv = v;
-        } else if (state.edgeMode === 'hsv') {
-          // color segmentation
-          rv = r; gv = g; bv = b;
-          if (luma < 40) { rv = 0; gv = 0; bv = 0; }
-          else if (luma > 200) { rv = 255; gv = 255; bv = 255; }
-        }
-
-        out.data[i] = rv; out.data[i+1] = gv; out.data[i+2] = bv; out.data[i+3] = 255;
-      }
-    }
-    ctx.putImageData(out, 0, 0);
-    prevData = new Uint8ClampedArray(frame.data);
-
-    setText('edge-pixels', edgePx.toLocaleString());
-    setText('edge-motion', (motionDelta / (w * h)).toFixed(1));
-    setText('edge-bright', (sumBright / (w * h)).toFixed(0));
-    const domHue = hueHist.indexOf(Math.max(...hueHist)) * 10;
-    setText('edge-hue', domHue + '°');
-
-    eAnimFrame = requestAnimationFrame(draw);
-  }
-  draw();
-}
-
-// ═══════════════════════════════════════════
-// LIGHT ESTIMATION
-// ═══════════════════════════════════════════
-let lStream = null, lAnimFrame = null;
-
-async function toggleLightCam() {
-  if (state.lCamActive) {
-    if (lStream) { lStream.getTracks().forEach(t => t.stop()); lStream = null; }
-    document.getElementById('l-cam-overlay').style.display = 'flex';
-    document.getElementById('l-cam-btn').textContent = '▶ Start Camera';
-    state.lCamActive = false;
-    if (lAnimFrame) cancelAnimationFrame(lAnimFrame);
-    return;
-  }
-  try {
-    lStream = await getRearCamera();
-    const video = document.getElementById('l-video');
-    video.srcObject = lStream;
-    await video.play();
-    document.getElementById('l-cam-overlay').style.display = 'none';
-    document.getElementById('l-cam-btn').textContent = '■ Stop Camera';
-    state.lCamActive = true;
-    runLightAnalysis();
-  } catch(e) { showToast('Camera error: ' + e.message); }
-}
-
-function runLightAnalysis() {
-  const video = document.getElementById('l-video');
-  const canvas = document.getElementById('l-canvas');
-  const ctx = canvas.getContext('2d');
-  const tmp = document.createElement('canvas');
-  const tCtx = tmp.getContext('2d');
-
-  function draw() {
-    if (!state.lCamActive) return;
-    const w = 80, h = 60;
-    tmp.width = w; tmp.height = h;
-    tCtx.drawImage(video, 0, 0, w, h);
-    const frame = tCtx.getImageData(0, 0, w, h);
-    let sumR = 0, sumG = 0, sumB = 0;
-    const n = w * h;
-    for (let i = 0; i < n * 4; i += 4) {
-      sumR += frame.data[i];
-      sumG += frame.data[i+1];
-      sumB += frame.data[i+2];
-    }
-    const avgR = sumR / n, avgG = sumG / n, avgB = sumB / n;
-    const luma = 0.299*avgR + 0.587*avgG + 0.114*avgB;
-    const lux = Math.round(luma * luma / 10); // rough approximation
-    const colorTemp = estimateColorTemp(avgR, avgG, avgB);
-
-    // Update UI
-    setText('avg-r', Math.round(avgR));
-    setText('avg-g', Math.round(avgG));
-    setText('avg-b', Math.round(avgB));
-    setText('lux-val', lux.toLocaleString());
-    setText('color-temp', Math.round(colorTemp));
-    document.getElementById('light-fill-bar').style.width = Math.min(100, luma * 100 / 200) + '%';
-
-    let cond = 'Indoor';
-    if (lux > 10000) cond = '☀️ Bright Sun';
-    else if (lux > 1000) cond = '🌤 Overcast';
-    else if (lux > 100) cond = '💡 Office';
-    else if (lux > 10) cond = '🌆 Dim';
-    else cond = '🌑 Dark';
-    setText('light-cond', cond);
-
-    // overlay on main canvas
-    canvas.width = video.videoWidth || 300;
-    canvas.height = video.videoHeight || 400;
-    ctx.fillStyle = 'rgba(0,212,255,0.05)';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    lAnimFrame = requestAnimationFrame(draw);
-  }
-  draw();
-}
-
-function estimateColorTemp(r, g, b) {
-  // McCamy's approximation using chromaticity
-  const total = r + g + b;
-  if (total === 0) return 6500;
-  const x = r / total, y = g / total;
-  const n = (x - 0.3320) / (0.1858 - y);
-  return Math.round(449 * n*n*n + 3525 * n*n + 6823.3 * n + 5520.33);
-}
-
-// ═══════════════════════════════════════════
-// WEBXR PLANE DETECTION
-// ═══════════════════════════════════════════
-let planesXRSession = null;
-
-async function startPlanesXR() {
-  if (!state.caps.ar) {
-    showToast('WebXR AR not available on this device/browser');
-    return;
-  }
-  try {
-    planesXRSession = await navigator.xr.requestSession('immersive-ar', {
-      requiredFeatures: ['plane-detection', 'local-floor'],
-      optionalFeatures: ['dom-overlay'],
-      domOverlay: { root: document.getElementById('page-planes') }
+    planesSession=await navigator.xr.requestSession('immersive-ar',{
+      requiredFeatures:features,
+      optionalFeatures:['anchors','light-estimation']
     });
+    planesActive=true;
+    $('pl-placeholder').style.display='none';
+    badge('planes-xr-badge','ok','XR ACTIVE');
+    toast('WebXR plane detection started!');
 
-    const canvas = document.getElementById('xr-canvas');
-    const gl = canvas.getContext('webgl', { xrCompatible: true });
-    await gl.makeXRCompatible?.();
-    planesXRSession.updateRenderState({ baseLayer: new XRWebGLLayer(planesXRSession, gl) });
+    const canvas=$('pl-canvas');
+    const gl=canvas.getContext('webgl',{xrCompatible:true});
+    try{ await gl.makeXRCompatible?.(); }catch{}
+    planesSession.updateRenderState({baseLayer:new XRWebGLLayer(planesSession,gl)});
+    const refSpace=await planesSession.requestReferenceSpace('local-floor');
 
-    const refSpace = await planesXRSession.requestReferenceSpace('local-floor');
-    state.xrRefSpace = refSpace;
-
-    showToast('WebXR plane detection started!');
-
-    function onFrame(t, frame) {
-      planesXRSession.requestAnimationFrame(onFrame);
-      if (frame.detectedPlanes) {
-        const planes = [];
-        frame.detectedPlanes.forEach(plane => {
-          const pose = frame.getPose(plane.planeSpace, refSpace);
-          if (pose) {
-            const y = pose.transform.position.y;
-            planes.push({ orientation: plane.orientation, y });
+    planesSession.requestAnimationFrame(function onFrame(t,frame){
+      if(!planesActive) return;
+      planesSession.requestAnimationFrame(onFrame);
+      const planes=[];
+      if(frame.detectedPlanes){
+        frame.detectedPlanes.forEach(plane=>{
+          const pose=frame.getPose(plane.planeSpace,refSpace);
+          if(pose){
+            planes.push({
+              orientation:plane.orientation,
+              y:pose.transform.position.y,
+              polygon:plane.polygon
+            });
           }
         });
-        updatePlanesUI(planes);
       }
-    }
-    planesXRSession.requestAnimationFrame(onFrame);
-    planesXRSession.addEventListener('end', () => {
-      showToast('XR session ended');
-      planesXRSession = null;
+      updatePlanesUI(planes,frame,refSpace);
+      renderPlanesOnCanvas(planes,canvas,gl);
     });
-  } catch(e) {
-    showToast('WebXR planes failed: ' + e.message);
+
+    planesSession.addEventListener('end',()=>{
+      planesActive=false;
+      badge('planes-xr-badge','warn','ENDED');
+    });
+  }catch(e){
+    showErr('pl-err-zone','WebXR failed: '+e.message+'. Starting visual fallback.', startPlanesXR);
+    badge('planes-xr-badge','err','FAILED');
+    toast('WebXR planes failed. Try visual detection.');
   }
 }
 
-function updatePlanesUI(planes) {
-  setText('plane-count', planes.length);
-  const list = document.getElementById('planes-list');
-  if (planes.length === 0) {
-    list.innerHTML = '<div style="color:var(--text-dim);font-size:13px;padding:8px 0">No planes detected yet…</div>';
+function updatePlanesUI(planes,frame,refSpace){
+  G.planeData=planes;
+  G.measure.planeCount=planes.length;
+  setText('pl-count',planes.length);
+  setText('pl-hud-count','PLANES: '+planes.length);
+
+  let floorY=null;
+  planes.forEach(p=>{
+    if(p.orientation==='horizontal'&&(floorY===null||p.y<floorY)) floorY=p.y;
+  });
+
+  if(floorY!==null){
+    G.measure.planeFloorY=floorY;
+    G.measure.height_plane=Math.abs(floorY);
+    setText('pl-floory',floorY.toFixed(3)+'m');
+    setText('pl-camh',Math.abs(floorY).toFixed(2)+'m');
+    setText('pl-conf','High (XR)');
+    setText('pl-hud-floor','FLOOR: '+Math.abs(floorY).toFixed(2)+'m');
+    setText('cmp-h-plane-v',Math.abs(floorY).toFixed(2)+'m');
+  }
+
+  const list=$('planes-list');
+  list.innerHTML=planes.length===0
+    ? '<div style="color:var(--dim);font-size:13px;padding:8px 0">Move device to detect surfaces…</div>'
+    : planes.map((p,i)=>`
+        <div class="plane-card">
+          <div>
+            <div style="font-size:13px;font-weight:600">Plane #${i+1} · ${p.orientation}</div>
+            <div style="font-size:11px;color:var(--dim)">Y: ${p.y?.toFixed(3)}m</div>
+          </div>
+          <span class="badge ${p.orientation==='horizontal'?'ok':'warn'}">${p.orientation==='horizontal'?'FLOOR/CEIL':'WALL'}</span>
+        </div>`).join('');
+}
+
+function renderPlanesOnCanvas(planes,canvas,gl){
+  // Simple 2D overlay showing plane count & height
+  const ctx2=document.createElement('canvas').getContext('2d');
+  // just update HUD text, WebGL handles the actual AR rendering
+}
+
+function stopPlanesXR(){
+  if(planesSession){ try{planesSession.end();}catch{} planesSession=null; }
+  planesActive=false;
+  stopCam('pl');
+  badge('planes-xr-badge','off','STOPPED');
+  toast('Plane detection stopped');
+}
+
+let visualFloorActive=false;
+async function startVisualFloor(){
+  clearErr('pl-err-zone');
+  try{
+    if(!G.streams.pl){
+      const stream=await getRearCam();
+      G.streams.pl=stream;
+      G.active.pl=true;
+      $('pl-vid').srcObject=stream;
+      await $('pl-vid').play();
+      $('pl-placeholder').style.display='none';
+    }
+    visualFloorActive=true;
+    runFloorLineDetect();
+    toast('Visual floor detection started');
+  }catch(e){
+    showErr('pl-err-zone','Camera failed: '+e.message, startVisualFloor);
+  }
+}
+
+function runFloorLineDetect(){
+  const vid=$('pl-vid');
+  const canvas=$('floor-detect-canvas');
+  const ctx=canvas.getContext('2d');
+  const tmp=document.createElement('canvas');
+  const tCtx=tmp.getContext('2d');
+
+  function frame(){
+    if(!visualFloorActive||!G.active.pl) return;
+    G.animFrames.plvis=requestAnimationFrame(frame);
+    const vw=vid.videoWidth||320,vh=vid.videoHeight||240;
+    if(!vw) return;
+    const w=160,h=60;
+    tmp.width=w; tmp.height=h;
+    tCtx.drawImage(vid,0,vw*0.5,vw,vh*0.5,0,0,w,h);
+    const src=tCtx.getImageData(0,0,w,h);
+    canvas.width=w; canvas.height=h;
+    const out=ctx.createImageData(w,h);
+
+    // Simple horizontal edge detection (floor line appears as strong horizontal edge)
+    let maxEdgeY=-1,maxEdge=0;
+    for(let y=1;y<h-1;y++){
+      let rowEdge=0;
+      for(let x=1;x<w-1;x++){
+        const gy=lumaAt(src,x,y+1,w)-lumaAt(src,x,y-1,w);
+        rowEdge+=Math.abs(gy);
+      }
+      if(rowEdge>maxEdge){ maxEdge=rowEdge; maxEdgeY=y; }
+    }
+
+    // Draw grayscale + highlight floor line
+    for(let i=0;i<w*h;i++){
+      const x=i%w,y=Math.floor(i/w);
+      const l=lumaAt(src,x,y,w);
+      const idx=i*4;
+      const isFloor=Math.abs(y-maxEdgeY)<=1;
+      out.data[idx]=isFloor?0:l>>1;
+      out.data[idx+1]=isFloor?245:l>>1;
+      out.data[idx+2]=isFloor?212:l>>1;
+      out.data[idx+3]=255;
+    }
+    ctx.putImageData(out,0,0);
+
+    const relY=maxEdgeY/h;
+    const floorPct=Math.round(relY*100);
+    setText('floor-line-y',floorPct+'% from top of lower half');
+
+    // Camera height estimate from visual floor line
+    const fovV=Math.PI/3;
+    const tiltDeg=90-Math.abs(G.sensors.beta||90);
+    const angleToFloor=tiltDeg+(0.5-relY)*fovV*180/Math.PI;
+    if(angleToFloor>1 && angleToFloor<89){
+      const estH=Math.tan(angleToFloor*Math.PI/180)*1.5;
+      G.measure.height_plane=Math.abs(estH);
+      setText('cmp-h-plane-v',Math.abs(estH).toFixed(2)+'m');
+    }
+  }
+  frame();
+}
+
+// ── WebXR SESSION (HIT TEST / DISTANCE) ─────────────
+async function startXRSession(mode){
+  if(!G.caps.ar){
+    toast('WebXR AR not available on this device');
     return;
   }
-  list.innerHTML = '';
-  let floorY = null;
-  planes.forEach((p, i) => {
-    const div = document.createElement('div');
-    div.className = 'plane-card';
-    div.innerHTML = `
-      <div>
-        <div style="font-size:13px;font-weight:600">Plane #${i+1}</div>
-        <div style="font-size:11px;color:var(--text-dim)">${p.orientation}</div>
-      </div>
-      <div class="status-badge badge-info">Y: ${p.y?.toFixed(2)}m</div>
-    `;
-    list.appendChild(div);
-    if (p.orientation === 'horizontal' && (floorY === null || p.y < floorY)) floorY = p.y;
-  });
-  if (floorY !== null) {
-    setText('plane-floor-y', floorY.toFixed(2) + 'm');
-    const camH = Math.abs(floorY).toFixed(2);
-    setText('plane-cam-height', camH + 'm above floor');
-    setText('plane-confidence', 'High (WebXR)');
-  }
-}
-
-async function startVisualFloor() {
-  showToast('Visual floor detection: use Height tab for best results');
-}
-
-function stopPlanesXR() {
-  if (planesXRSession) { planesXRSession.end(); planesXRSession = null; }
-}
-
-// ═══════════════════════════════════════════
-// UTILITIES
-// ═══════════════════════════════════════════
-async function getRearCamera(hires = false) {
-  const constraints = {
-    video: {
-      facingMode: { exact: 'environment' },
-      width: hires ? { ideal: 1280 } : { ideal: 640 },
-      height: hires ? { ideal: 960 } : { ideal: 480 }
-    }
-  };
-  try {
-    return await navigator.mediaDevices.getUserMedia(constraints);
-  } catch {
-    // fallback without exact
-    return await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: 'environment' }
+  try{
+    const feats=['local-floor'];
+    if(mode==='distance') feats.push('hit-test');
+    G.xr.session=await navigator.xr.requestSession('immersive-ar',{
+      requiredFeatures:feats,
+      optionalFeatures:['depth-sensing']
     });
-  }
-}
+    G.xr.refSpace=await G.xr.session.requestReferenceSpace('local-floor');
 
-async function requestMotionPermission() {
-  if (typeof DeviceOrientationEvent?.requestPermission === 'function') {
-    try {
-      const r = await DeviceOrientationEvent.requestPermission();
-      showToast(r === 'granted' ? '✓ Motion permission granted!' : '✗ Permission denied');
-      if (r === 'granted') {
-        state.motionGranted = true;
-        startSensorListeners();
+    // Setup hit test
+    if(mode==='distance' && G.caps.hit){
+      const viewerSpace=await G.xr.session.requestReferenceSpace('viewer');
+      G.xr.hitTestSrc=await G.xr.session.requestHitTestSource({space:viewerSpace});
+    }
+
+    G.xr.session.requestAnimationFrame(function onFrame(t,frame){
+      G.xr.session.requestAnimationFrame(onFrame);
+      // Hit test
+      if(G.xr.hitTestSrc){
+        const hits=frame.getHitTestResults(G.xr.hitTestSrc);
+        if(hits.length>0){
+          const pose=hits[0].getPose(G.xr.refSpace);
+          if(pose){
+            const p=pose.transform.position;
+            const d=Math.sqrt(p.x*p.x+p.y*p.y+p.z*p.z);
+            G.measure.dist_xr=d;
+            setText('d-xrhit',d.toFixed(2)+'m');
+            setText('dc-hit',d.toFixed(2)+'m');
+            setText('cmp-d-xr-v',d.toFixed(2)+'m');
+          }
+        }
       }
-    } catch(e) { showToast('Error: ' + e.message); }
-  } else {
-    showToast('No permission needed (Android) — sensors auto-active');
-    startSensorListeners();
+      // Depth from viewer pose
+      if(G.caps.depth){
+        const vpose=frame.getViewerPose(G.xr.refSpace);
+        if(vpose){
+          for(const view of vpose.views){
+            const di=frame.getDepthInformation(view);
+            if(di){
+              const cd=di.getDepthInMeters(di.width>>1,di.height>>1);
+              G.measure.centerDepth=cd;
+              setText('dep-center',cd.toFixed(2)+'m');
+            }
+          }
+        }
+      }
+    });
+
+    G.xr.session.addEventListener('end',()=>{G.xr.session=null;G.xr.hitTestSrc=null;});
+    badge('d-status-badge','ok','XR ACTIVE');
+    toast('WebXR hit-test active!');
+  }catch(e){
+    badge('d-status-badge','warn','XR FAILED');
+    showWarn('d-err-zone','WebXR session failed: '+e.message);
+    toast('XR failed: '+e.message);
   }
 }
 
-function setText(id, val) {
-  const el = document.getElementById(id);
-  if (el) el.textContent = val;
+// ── TAB MANAGEMENT ───────────────────────────────────
+function setHeightTab(t){
+  G.heightTab=t;
+  $$('[id^="ht-"]').forEach(b=>b.classList.remove('active'));
+  $('ht-'+t)?.classList.add('active');
+  const f={
+    sensor:'h = (estUserH × holdRatio) × cos(tilt_from_vertical)',
+    visual: 'h ≈ tan(depression_angle) × estimated_floor_distance',
+    both:   'FUSED: weighted average of sensor + visual methods'
+  };
+  setText('h-formula-txt',f[t]);
+  $('h-compare-section').style.display = (t==='both')?'block':'none';
 }
 
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 3000);
+function setDistTab(t){
+  G.distTab=t;
+  $$('[id^="dt-"]').forEach(b=>b.classList.remove('active'));
+  $('dt-'+t)?.classList.add('active');
+  const formulae={
+    trig:'D = h ÷ tan(depression_angle)  [h = camera height]',
+    'xr-hit':'D = |XRHitTestResult.pose.position|  [ARCore raycast]',
+    'xr-depth':'D = XRDepthInformation.getDepthInMeters(cx, cy)',
+    all:'FUSION: average of all available methods'
+  };
+  setText('d-formula', formulae[t]||'');
+  $('d-all-compare').style.display=(t==='all')?'block':'none';
 }
 
-function switchTab(name) {
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.getElementById('page-' + name).classList.add('active');
-  event.currentTarget.classList.add('active');
+// ── COMPARE TIMELINE ─────────────────────────────────
+function drawCompareTimeline(){
+  const c=$('cmp-timeline'); if(!c) return;
+  const ctx=c.getContext('2d');
+  const W=c.offsetWidth||300,H=120;
+  c.width=W; c.height=H;
+  ctx.clearRect(0,0,W,H);
+
+  const datasets=[
+    {data:G.cmpTimeline.h,color:'var(--acc)',label:'h',max:3},
+    {data:G.cmpTimeline.d,color:'var(--acc3)',label:'d',max:10},
+    {data:G.cmpTimeline.l,color:'var(--acc2)',label:'lux/100',max:50},
+  ];
+  datasets.forEach(({data,color,max})=>{
+    if(data.length<2) return;
+    ctx.beginPath();ctx.strokeStyle=color;ctx.lineWidth=1.5;
+    data.forEach((v,i)=>{
+      const x=(i/(data.length-1))*W;
+      const y=H-Math.max(0,Math.min(H-2,(v/max)*H));
+      i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+    });
+    ctx.stroke();
+  });
+  // grid
+  ctx.strokeStyle='rgba(255,255,255,0.04)'; ctx.lineWidth=.5;
+  for(let i=1;i<4;i++){
+    ctx.beginPath();ctx.moveTo(0,H*i/4);ctx.lineTo(W,H*i/4);ctx.stroke();
+  }
 }
 
-// ═══════════════════════════════════════════
-// INIT
-// ═══════════════════════════════════════════
-async function init() {
+// ── COMPARE PAGE UPDATE ──────────────────────────────
+function updateCompare(){
+  // updated inline in other functions
+}
+
+// ── SOBELOPERATOR ────────────────────────────────────
+function sobelMag(img,x,y,w,h){
+  const g=(dx,dy)=>{
+    const nx=Math.max(0,Math.min(w-1,x+dx));
+    const ny=Math.max(0,Math.min(h-1,y+dy));
+    const i=(ny*w+nx)*4;
+    return (img.data[i]*299+img.data[i+1]*587+img.data[i+2]*114)/1000;
+  };
+  const Gx=-g(-1,-1)+g(1,-1)-2*g(-1,0)+2*g(1,0)-g(-1,1)+g(1,1);
+  const Gy=-g(-1,-1)-2*g(0,-1)-g(1,-1)+g(-1,1)+2*g(0,1)+g(1,1);
+  return Math.sqrt(Gx*Gx+Gy*Gy);
+}
+function lumaAt(img,x,y,w){
+  const i=(y*w+x)*4;
+  return (img.data[i]*299+img.data[i+1]*587+img.data[i+2]*114)/1000;
+}
+
+// ── iOS PERMISSION ───────────────────────────────────
+async function reqMotionPerm(){
+  if(typeof DeviceOrientationEvent?.requestPermission==='function'){
+    try{
+      const r=await DeviceOrientationEvent.requestPermission();
+      if(r==='granted'){
+        toast('✓ Motion permission granted!');
+        startSensors();
+      } else {
+        toast('✗ Permission denied');
+      }
+    }catch(e){ toast('Permission error: '+e.message); }
+  } else {
+    toast('No manual permission needed — sensors auto-start');
+    startSensors();
+  }
+}
+
+// ── TAB SWITCHING ────────────────────────────────────
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click',function(){
+    const tab=this.dataset.tab;
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    this.classList.add('active');
+    $('page-'+tab)?.classList.add('active');
+    // scroll tab into view
+    this.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
+  });
+});
+
+// ── LAUNCH ───────────────────────────────────────────
+$('launch-btn').onclick=()=>{
+  $('splash').style.display='none';
+  $('app').style.display='flex';
+  // iOS needs a user gesture to request motion
+  if(G.isIOS) toast('Tap "Request iOS Sensor Permission" in the Sensors tab');
+  else startSensors();
+  toast('AR·SENSE ready. Start any camera to begin measuring!');
+};
+
+// ── INIT ─────────────────────────────────────────────
+async function init(){
   detectDevice();
   await detectCapabilities();
 
-  // Try starting sensors right away (Android doesn't need permission)
-  if (!state.isIOS) {
-    startSensorListeners();
-  }
+  if(!G.isIOS) startSensors();
 
-  document.getElementById('splash-btn').disabled = false;
-  document.getElementById('splash-btn').textContent = '▶ Launch AR Toolkit';
-  document.getElementById('splash-btn').onclick = launchApp;
-}
+  $('launch-btn').disabled=false;
+  $('launch-btn').textContent='▶ LAUNCH AR·SENSE';
 
-function launchApp() {
-  document.getElementById('splash').style.display = 'none';
-  document.getElementById('app').style.display = 'flex';
-  // iOS: prompt for sensor permission on first tap
-  if (state.isIOS) {
-    requestMotionPermission();
-  }
-  showToast('Welcome! Use the tabs above to explore AR features.');
+  // Auto-start a gentle sensor update loop
+  setInterval(()=>{
+    if(G.active.l||G.active.h||G.active.d||G.active.e||G.active.pl) updateCompare();
+    if($('page-compare').classList.contains('active')) drawCompareTimeline();
+  },200);
 }
 
 window.addEventListener('DOMContentLoaded', init);
 </script>
-</body>
-</html>

@@ -8,1114 +8,749 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>AR·SENSE</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Barlow:wght@300;400;500;600;700;900&display=swap');
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none}
-html,body{height:100%;overflow:hidden;background:#060810}
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400;500&family=Barlow:wght@300;400;500;600;700;900&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+html,body{height:100%;overflow:hidden;background:#04060c;touch-action:pan-y}
 :root{
-  --bg:#060810;--s1:#0b1120;--s2:#111b2e;--s3:#172338;
-  --acc:#00f5d4;--acc2:#ff6b6b;--acc3:#ffd166;--acc4:#a8dadc;
-  --fg:#e8f4f8;--dim:#4a6580;--border:rgba(0,245,212,0.12);
-  --gborder:rgba(255,255,255,0.06);
-  --glow:0 0 24px rgba(0,245,212,0.25);
-  --glow2:0 0 24px rgba(255,107,107,0.25);
-  --r:12px;--r2:8px;
-  --mono:'DM Mono',monospace;
-  --sans:'Barlow',sans-serif;
-  --display:'Bebas Neue',sans-serif;
-  --safe-top:env(safe-area-inset-top,0px);
-  --safe-bot:env(safe-area-inset-bottom,0px);
+  --bg:#04060c;--s1:#08101e;--s2:#0e1828;--s3:#14202e;
+  --acc:#00e5c8;--acc2:#ff5a5a;--acc3:#ffcc44;--acc4:#5af;
+  --fg:#ddeeff;--dim:#3a5570;--bdim:#1e3347;
+  --glow:0 0 16px rgba(0,229,200,.2);
+  --glow2:0 0 16px rgba(255,90,90,.2);
+  --r:10px;--r2:7px;
+  --mono:'DM Mono',monospace;--sans:'Barlow',sans-serif;--disp:'Bebas Neue',cursive;
+  --st:env(safe-area-inset-top,0px);--sb:env(safe-area-inset-bottom,0px);
+  --tab-h:44px;--top-h:46px;
 }
+body{font-family:var(--sans);color:var(--fg)}
 
-/* ══ SPLASH ══════════════════════════════ */
-#splash{
-  position:fixed;inset:0;z-index:9999;
-  background:var(--bg);
+/* ── SPLASH ──────────────────────────────── */
+#splash{position:fixed;inset:0;z-index:9999;background:var(--bg);
   display:flex;flex-direction:column;align-items:center;
-  overflow-y:auto;padding:calc(var(--safe-top) + 24px) 20px calc(var(--safe-bot) + 24px);
-  gap:14px;
-}
-.splash-eyebrow{
-  font-family:var(--mono);font-size:10px;letter-spacing:4px;
-  color:var(--acc);text-transform:uppercase;
-  display:flex;align-items:center;gap:8px;
-}
-.splash-eyebrow::before,.splash-eyebrow::after{content:'';height:1px;width:24px;background:var(--acc);opacity:.4}
-.splash-title{
-  font-family:var(--display);font-size:clamp(52px,14vw,80px);
-  color:var(--fg);letter-spacing:4px;line-height:.9;text-align:center;
-}
-.splash-title em{color:var(--acc);font-style:normal}
-.splash-sub{font-family:var(--sans);font-size:13px;color:var(--dim);text-align:center;line-height:1.5}
-
-.device-card{
-  width:100%;background:var(--s1);border:1px solid var(--border);
-  border-radius:var(--r);padding:16px;
-}
-.dc-row{display:flex;align-items:center;justify-content:space-between}
-.dc-label{font-family:var(--mono);font-size:9px;letter-spacing:3px;color:var(--dim);text-transform:uppercase}
-.dc-val{font-family:var(--sans);font-size:22px;font-weight:700;color:var(--fg);margin-top:2px}
-.dc-note{font-size:12px;color:var(--dim);margin-top:4px;font-family:var(--sans)}
-.os-icon{font-size:32px}
-
-.cap-grid{
-  width:100%;display:grid;grid-template-columns:1fr 1fr;gap:8px;
-}
-.cap-item{
-  background:var(--s1);border:1px solid var(--gborder);
-  border-radius:var(--r2);padding:10px 12px;
-  display:flex;align-items:center;gap:8px;
-  transition:border-color .3s;
-}
-.cap-item.ok{border-color:rgba(0,245,212,.3)}
-.cap-item.warn{border-color:rgba(255,209,102,.3)}
-.cap-item.err{border-color:rgba(255,107,107,.3)}
-.cap-dot{
-  width:7px;height:7px;border-radius:50%;flex-shrink:0;
-  background:var(--dim);transition:background .3s;
-}
+  overflow-y:auto;padding:calc(var(--st)+20px) 16px calc(var(--sb)+20px);gap:12px}
+.sp-logo{font-family:var(--disp);font-size:clamp(60px,18vw,96px);color:var(--fg);
+  letter-spacing:6px;line-height:.9;text-align:center;margin-top:8px}
+.sp-logo span{color:var(--acc)}
+.sp-tag{font-family:var(--mono);font-size:10px;letter-spacing:4px;color:var(--dim);
+  text-align:center;text-transform:uppercase;margin-bottom:4px}
+.sp-devcard{width:100%;background:var(--s1);border:1px solid var(--bdim);
+  border-radius:var(--r);padding:14px;display:flex;justify-content:space-between;align-items:center}
+.sp-devcard .left .lbl{font-family:var(--mono);font-size:8px;letter-spacing:3px;color:var(--dim);text-transform:uppercase;margin-bottom:4px}
+.sp-devcard .left .val{font-size:22px;font-weight:700}
+.sp-devcard .left .note{font-size:11px;color:var(--dim);margin-top:3px;max-width:240px;line-height:1.4}
+.sp-devcard .icon{font-size:36px}
+.cap-grid{width:100%;display:grid;grid-template-columns:repeat(2,1fr);gap:7px}
+.cap-item{background:var(--s1);border:1px solid var(--bdim);border-radius:var(--r2);
+  padding:9px 11px;display:flex;align-items:center;gap:8px;transition:border-color .3s}
+.cap-item.ok{border-color:rgba(0,229,200,.25)}
+.cap-item.warn{border-color:rgba(255,204,68,.25)}
+.cap-item.err{border-color:rgba(255,90,90,.2)}
+.cap-dot{width:6px;height:6px;border-radius:50%;background:var(--dim);flex-shrink:0;transition:background .3s}
 .cap-item.ok .cap-dot{background:var(--acc)}
 .cap-item.warn .cap-dot{background:var(--acc3);animation:blink .8s infinite}
 .cap-item.err .cap-dot{background:var(--acc2)}
-.cap-item.checking .cap-dot{background:var(--dim);animation:pulse 1s infinite}
-.cap-text{font-family:var(--sans);font-size:12px;color:var(--fg);font-weight:500}
+.cap-item.checking .cap-dot{animation:pulse 1s infinite}
+.cap-text{font-size:12px;font-weight:600;line-height:1.2}
 .cap-sub{font-family:var(--mono);font-size:9px;color:var(--dim);margin-top:1px}
-
-#launch-btn{
-  width:100%;padding:18px;background:var(--acc);color:#000;
-  border:none;border-radius:var(--r);cursor:pointer;
-  font-family:var(--display);font-size:22px;letter-spacing:3px;
-  box-shadow:var(--glow);transition:all .2s;margin-top:4px;
-}
+#launch-btn{width:100%;padding:16px;background:var(--acc);color:#000;border:none;
+  border-radius:var(--r);font-family:var(--disp);font-size:22px;letter-spacing:3px;
+  cursor:pointer;box-shadow:var(--glow);transition:all .15s;margin-top:4px}
 #launch-btn:active{transform:scale(.97)}
-#launch-btn:disabled{opacity:.4;cursor:not-allowed;box-shadow:none}
+#launch-btn:disabled{opacity:.35;cursor:not-allowed;box-shadow:none}
 
-/* ══ APP SHELL ════════════════════════════ */
-#app{
-  display:none;flex-direction:column;
-  height:100vh;height:100dvh;
-  padding-top:var(--safe-top);
-  padding-bottom:var(--safe-bot);
-  overflow:hidden;
-}
+/* ── APP SHELL ───────────────────────────── */
+#app{display:none;flex-direction:column;height:100dvh;height:100vh;overflow:hidden;
+  padding-top:var(--st)}
+.topbar{height:var(--top-h);background:var(--s1);border-bottom:1px solid var(--bdim);
+  display:flex;align-items:center;padding:0 14px;gap:10px;flex-shrink:0}
+.tb-logo{font-family:var(--disp);font-size:18px;letter-spacing:3px;color:var(--acc)}
+.tb-sep{width:1px;height:18px;background:var(--bdim)}
+.tb-os{font-family:var(--mono);font-size:9px;color:var(--dim);background:var(--s2);
+  padding:2px 8px;border-radius:20px;border:1px solid var(--bdim)}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:5px}
+.live-dot{width:6px;height:6px;background:var(--acc2);border-radius:50%;animation:blink .6s infinite}
+.live-txt{font-family:var(--mono);font-size:8px;color:var(--acc2);letter-spacing:1px}
 
-/* top bar */
-.topbar{
-  height:48px;background:var(--s1);border-bottom:1px solid var(--gborder);
-  display:flex;align-items:center;padding:0 16px;gap:10px;flex-shrink:0;
-  position:relative;z-index:10;
-}
-.topbar-logo{font-family:var(--display);font-size:20px;letter-spacing:3px;color:var(--acc)}
-.topbar-sep{width:1px;height:20px;background:var(--gborder)}
-.topbar-os{
-  font-family:var(--mono);font-size:10px;color:var(--dim);
-  background:var(--s2);padding:3px 8px;border-radius:20px;
-  border:1px solid var(--gborder);
-}
-.topbar-right{margin-left:auto;display:flex;align-items:center;gap:6px}
-.live-dot{
-  width:7px;height:7px;background:var(--acc2);border-radius:50%;
-  animation:blink .6s infinite;
-}
-.live-txt{font-family:var(--mono);font-size:9px;color:var(--acc2)}
-
-/* tab bar */
-.tabbar{
-  background:var(--s1);border-bottom:1px solid var(--gborder);
-  display:flex;overflow-x:auto;flex-shrink:0;
-  scrollbar-width:none;-webkit-overflow-scrolling:touch;
-}
+.tabbar{height:var(--tab-h);background:var(--s1);border-bottom:1px solid var(--bdim);
+  display:flex;overflow-x:auto;flex-shrink:0;scrollbar-width:none;-webkit-overflow-scrolling:touch}
 .tabbar::-webkit-scrollbar{display:none}
-.tab-btn{
-  flex-shrink:0;padding:0 14px;height:42px;
-  font-family:var(--sans);font-size:12px;font-weight:600;
-  color:var(--dim);background:none;border:none;
-  border-bottom:2px solid transparent;cursor:pointer;
-  white-space:nowrap;letter-spacing:.3px;
-  display:flex;align-items:center;gap:5px;
-  transition:color .2s,border-color .2s;
-}
+.tab-btn{flex-shrink:0;padding:0 13px;height:100%;font-size:11px;font-weight:700;
+  color:var(--dim);background:none;border:none;border-bottom:2px solid transparent;
+  cursor:pointer;white-space:nowrap;letter-spacing:.3px;display:flex;align-items:center;
+  gap:4px;transition:color .15s,border-color .15s;font-family:var(--sans)}
 .tab-btn.active{color:var(--acc);border-bottom-color:var(--acc)}
-.tab-btn .ti{font-size:13px}
+.tab-btn .ic{font-size:12px}
 
-/* pages */
 .pages{flex:1;overflow:hidden;position:relative}
-.page{
-  position:absolute;inset:0;
-  overflow-y:auto;-webkit-overflow-scrolling:touch;
-  padding:14px 14px calc(14px + var(--safe-bot));
-  display:none;
-}
+.page{position:absolute;inset:0;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding:12px 12px calc(12px + var(--sb));display:none}
 .page.active{display:block}
 
-/* ══ COMPONENTS ══════════════════════════ */
-.card{
-  background:var(--s1);border:1px solid var(--gborder);
-  border-radius:var(--r);padding:14px;margin-bottom:10px;
-  position:relative;overflow:hidden;
-}
-.card.accent-top::before{
-  content:'';position:absolute;top:0;left:0;right:0;height:2px;
-  background:linear-gradient(90deg,var(--acc),transparent);
-}
-.card.warn-top::before{background:linear-gradient(90deg,var(--acc3),transparent)}
-.card.err-top::before{background:linear-gradient(90deg,var(--acc2),transparent)}
+/* ── CARDS ───────────────────────────────── */
+.card{background:var(--s1);border:1px solid var(--bdim);border-radius:var(--r);
+  padding:12px;margin-bottom:10px;position:relative;overflow:hidden}
+.card.a::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--acc),transparent)}
+.card.b::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--acc3),transparent)}
+.card.c::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--acc2),transparent)}
+.ch{font-family:var(--mono);font-size:8px;letter-spacing:3px;color:var(--acc);
+  text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between}
 
-.card-hd{
-  font-family:var(--mono);font-size:9px;letter-spacing:3px;
-  color:var(--acc);text-transform:uppercase;margin-bottom:12px;
-  display:flex;align-items:center;justify-content:space-between;
-}
-.card-hd-right{display:flex;align-items:center;gap:6px}
+/* ── CAMERA WRAPPER ─────────────────────── */
+.cam-box{position:relative;width:100%;aspect-ratio:3/4;background:#000;
+  border-radius:var(--r);overflow:hidden;margin-bottom:10px}
+.cam-box video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.cam-box canvas.ov{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.cam-ph{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:8px;color:var(--dim);font-size:13px;background:var(--bg)}
+.cam-ph.hidden{display:none}
 
-/* camera view */
-.cam-wrap{
-  position:relative;width:100%;
-  background:#000;border-radius:var(--r);overflow:hidden;
-  margin-bottom:10px;
-}
-.cam-wrap video,.cam-wrap canvas.cam-overlay{
-  position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;
-}
-.cam-wrap .cam-ui{
-  position:absolute;inset:0;pointer-events:none;
-}
-.cam-placeholder{
-  aspect-ratio:3/4;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;gap:10px;
-  color:var(--dim);font-size:13px;font-family:var(--sans);
-}
-.cam-active .cam-placeholder{display:none}
-
-/* scanlines */
-.scanlines::after{
-  content:'';position:absolute;inset:0;
-  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.05) 2px,rgba(0,0,0,.05) 4px);
-  pointer-events:none;
-}
-.scan-bar{
-  position:absolute;left:0;right:0;height:3px;
-  background:linear-gradient(90deg,transparent,rgba(0,245,212,.15),transparent);
-  animation:scandown 4s linear infinite;pointer-events:none;
-}
-@keyframes scandown{from{top:-4px}to{top:100%}}
-
-/* metric widgets */
-.metrics-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
-.metrics-row.three{grid-template-columns:1fr 1fr 1fr}
-.metrics-row.one{grid-template-columns:1fr}
-.metric{
-  background:var(--s2);border:1px solid var(--gborder);
-  border-radius:var(--r2);padding:11px 13px;
-}
-.metric.hi{border-color:var(--border);background:linear-gradient(135deg,var(--s2),rgba(0,245,212,.05))}
-.m-lbl{font-family:var(--mono);font-size:8px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;margin-bottom:5px}
-.m-val{font-family:var(--mono);font-size:20px;font-weight:500;color:var(--fg);line-height:1}
-.m-val.big{font-size:28px;color:var(--acc)}
-.m-val.warn{color:var(--acc3)}
-.m-val.err{color:var(--acc2)}
-.m-unit{font-size:11px;color:var(--dim);margin-left:2px}
-.m-sub{font-size:10px;color:var(--dim);margin-top:3px;font-family:var(--sans)}
-
-/* button */
-.btn{
-  display:block;width:100%;padding:13px;border:none;
-  border-radius:var(--r2);cursor:pointer;
-  font-family:var(--sans);font-size:14px;font-weight:700;
-  letter-spacing:.5px;text-transform:uppercase;
-  transition:all .15s;margin-bottom:8px;
-}
-.btn:active{transform:scale(.97)}
-.btn:last-child{margin-bottom:0}
-.btn-acc{background:var(--acc);color:#000;box-shadow:var(--glow)}
-.btn-ghost{background:var(--s2);color:var(--fg);border:1px solid var(--gborder)}
-.btn-warn{background:var(--acc3);color:#000}
-.btn-err{background:var(--acc2);color:#000}
-.btn-small{padding:8px 14px;font-size:12px;margin-bottom:0;width:auto;display:inline-block}
-
-/* status badge */
-.badge{
-  display:inline-flex;align-items:center;gap:4px;
-  padding:3px 8px;border-radius:20px;
-  font-family:var(--mono);font-size:9px;letter-spacing:1px;
-}
-.badge.ok{background:rgba(0,245,212,.1);color:var(--acc);border:1px solid rgba(0,245,212,.2)}
-.badge.warn{background:rgba(255,209,102,.1);color:var(--acc3);border:1px solid rgba(255,209,102,.2)}
-.badge.err{background:rgba(255,107,107,.1);color:var(--acc2);border:1px solid rgba(255,107,107,.2)}
-.badge.off{background:rgba(74,101,128,.1);color:var(--dim);border:1px solid rgba(74,101,128,.2)}
-
-/* info rows */
-.irow{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:8px 0;border-bottom:1px solid var(--gborder);
-  font-size:13px;
-}
-.irow:last-child{border:none;padding-bottom:0}
-.irow-lbl{color:var(--dim);font-family:var(--sans);font-size:12px}
-.irow-val{font-family:var(--mono);font-size:12px;color:var(--fg)}
-
-/* sub-tabs */
-.subtabs{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
-.stab{
-  padding:6px 12px;border-radius:var(--r2);
-  border:1px solid var(--gborder);background:var(--s2);
-  color:var(--dim);font-family:var(--sans);font-size:12px;font-weight:600;
-  cursor:pointer;transition:all .15s;
-}
-.stab.active{background:rgba(0,245,212,.1);border-color:var(--border);color:var(--acc)}
-
-/* range slider */
-.range-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
-.range-row label{font-family:var(--mono);font-size:10px;color:var(--dim);flex-shrink:0;letter-spacing:1px}
-input[type=range]{
-  flex:1;height:4px;-webkit-appearance:none;
-  background:var(--gborder);border-radius:2px;
-}
-input[type=range]::-webkit-slider-thumb{
-  -webkit-appearance:none;width:18px;height:18px;
-  border-radius:50%;background:var(--acc);cursor:pointer;
-}
-.range-val{font-family:var(--mono);font-size:11px;color:var(--acc);flex-shrink:0;min-width:30px}
-
-/* bar graph */
-.bar-group{margin-bottom:6px}
-.bar-label{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;color:var(--dim);margin-bottom:3px}
-.bar-track{height:5px;background:var(--s2);border-radius:3px;overflow:hidden}
-.bar-fill{height:100%;border-radius:3px;transition:width .1s}
-
-/* waveform canvas */
-.wave-canvas{width:100%;height:60px;display:block;border-radius:var(--r2);background:var(--s2)}
-
-/* compass */
-.compass-wrap{display:flex;justify-content:center;padding:8px 0}
-.compass{
-  width:110px;height:110px;border-radius:50%;
-  border:1px solid var(--border);position:relative;
-  background:radial-gradient(circle,var(--s2),var(--bg));
-}
-.compass-ring{
-  position:absolute;inset:8px;border-radius:50%;
-  border:1px dashed rgba(0,245,212,.15);
-}
-.compass-n{
-  position:absolute;top:4px;left:50%;transform:translateX(-50%);
-  font-family:var(--mono);font-size:9px;color:var(--acc2);font-weight:700;
-}
-.compass-needle{
-  position:absolute;width:3px;border-radius:2px;
-  left:50%;transform-origin:bottom center;
-  transform:translateX(-50%) rotate(0deg);
-  transition:transform .15s ease-out;
-}
-.compass-needle.north{height:42px;bottom:50%;background:var(--acc2)}
-.compass-needle.south{height:38px;top:50%;background:var(--dim)}
-.compass-center{
-  position:absolute;top:50%;left:50%;
-  transform:translate(-50%,-50%);
-  width:8px;height:8px;background:var(--fg);border-radius:50%;
-}
-
-/* 3D phone viz */
-.phone3d-wrap{
-  perspective:400px;display:flex;
-  justify-content:center;padding:10px 0;
-}
-.phone3d{
-  width:52px;height:96px;
-  background:linear-gradient(135deg,var(--s2),var(--s3));
-  border:1.5px solid var(--border);border-radius:10px;
-  position:relative;transform-style:preserve-3d;
-  transition:transform .08s ease-out;box-shadow:var(--glow);
-}
-.phone3d::before{
-  content:'';position:absolute;top:7px;left:50%;
-  transform:translateX(-50%);width:18px;height:2.5px;
-  background:var(--s1);border-radius:2px;
-}
-.phone3d::after{
-  content:'▣';position:absolute;inset:0;
-  display:flex;align-items:center;justify-content:center;
-  color:rgba(0,245,212,.2);font-size:20px;
-}
-
-/* horizon line */
-.horizon-line{
-  position:absolute;left:0;right:0;height:1px;
-  pointer-events:none;transition:top .1s;
-}
-.horizon-line::before{
-  content:'';display:block;height:100%;
-  background:linear-gradient(90deg,transparent,var(--acc2),transparent);
-  opacity:.7;
-}
-.horizon-line::after{
-  content:attr(data-label);
-  position:absolute;right:8px;top:-14px;
-  font-family:var(--mono);font-size:9px;color:var(--acc2);
-  background:rgba(6,8,16,.8);padding:2px 5px;border-radius:3px;
-}
-
-/* crosshair */
-.xhair{
-  position:absolute;top:50%;left:50%;
-  transform:translate(-50%,-50%);pointer-events:none;
-}
-.xhair-h{
-  position:absolute;width:40px;height:1px;top:0;left:-20px;
-  background:rgba(0,245,212,.6);
-}
-.xhair-v{
-  position:absolute;width:1px;height:40px;left:0;top:-20px;
-  background:rgba(0,245,212,.6);
-}
-.xhair-dot{
-  position:absolute;width:4px;height:4px;
-  background:var(--acc);border-radius:50%;
-  top:-2px;left:-2px;
-}
-.xhair-ring{
-  position:absolute;width:20px;height:20px;
-  border:1px solid rgba(0,245,212,.3);border-radius:50%;
-  top:-10px;left:-10px;
-}
-
-/* depth heatmap legend */
-.depth-legend{
-  display:flex;align-items:center;gap:8px;margin-top:6px;
-}
-.depth-grad{
-  flex:1;height:10px;border-radius:5px;
-  background:linear-gradient(90deg,#ff1744,#ffd600,#00d4ff,#0d47a1);
-}
-.depth-legend span{font-family:var(--mono);font-size:9px;color:var(--dim)}
-
-/* waveform history */
-.sparkline{
-  width:100%;height:40px;display:block;
-  border-radius:4px;background:transparent;
-}
-
-/* error/warn box */
-.err-box{
-  background:rgba(255,107,107,.08);border:1px solid rgba(255,107,107,.2);
-  border-radius:var(--r2);padding:12px;margin-bottom:8px;
-  display:flex;align-items:flex-start;gap:10px;
-}
-.warn-box{
-  background:rgba(255,209,102,.08);border:1px solid rgba(255,209,102,.2);
-  border-radius:var(--r2);padding:12px;margin-bottom:8px;
-  display:flex;align-items:flex-start;gap:10px;
-}
-.err-box .icon,.warn-box .icon{font-size:16px;flex-shrink:0;margin-top:1px}
-.err-box .msg,.warn-box .msg{font-size:12px;font-family:var(--sans);color:var(--fg);flex:1}
-.err-box .retry-btn,.warn-box .retry-btn{
-  font-family:var(--mono);font-size:9px;color:var(--acc);
-  background:none;border:1px solid var(--border);
-  border-radius:4px;padding:4px 8px;cursor:pointer;
-  margin-top:6px;white-space:nowrap;
-}
-
-/* canvas overlays */
-canvas.fullcam{position:absolute;inset:0;width:100%;height:100%;display:block}
-
-/* 2-col compare */
-.compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
-.compare-cell{background:var(--s2);border:1px solid var(--gborder);border-radius:var(--r2);padding:10px;text-align:center}
-.compare-cell.winner{border-color:var(--border);background:rgba(0,245,212,.05)}
-.cc-label{font-family:var(--mono);font-size:9px;color:var(--dim);letter-spacing:2px;margin-bottom:4px}
-.cc-val{font-family:var(--mono);font-size:16px;color:var(--fg)}
-.cc-conf{font-size:10px;color:var(--dim);margin-top:2px;font-family:var(--sans)}
-
-/* light meter */
-.lux-meter{height:24px;border-radius:6px;overflow:hidden;background:var(--s2);position:relative;margin:6px 0}
-.lux-fill{height:100%;transition:width .2s;border-radius:6px}
-.lux-tick{position:absolute;top:0;bottom:0;width:1px;background:rgba(255,255,255,.15)}
-
-/* plane card */
-.plane-card{
-  background:var(--s2);border:1px solid var(--gborder);
-  border-radius:var(--r2);padding:10px 12px;margin-bottom:6px;
-  display:flex;justify-content:space-between;align-items:center;
-}
-
-/* toast */
-#toast{
-  position:fixed;bottom:calc(var(--safe-bot) + 16px);left:50%;
-  transform:translateX(-50%) translateY(80px);
-  background:var(--s2);border:1px solid var(--border);
-  color:var(--fg);padding:10px 18px;border-radius:10px;
-  font-family:var(--sans);font-size:13px;z-index:9000;
-  transition:transform .25s;white-space:nowrap;max-width:90vw;
-  overflow:hidden;text-overflow:ellipsis;box-shadow:var(--glow);
-}
-#toast.show{transform:translateX(-50%) translateY(0)}
-
-/* HUD overlays on camera */
-.hud-tl,.hud-tr,.hud-bl,.hud-br{
-  position:absolute;font-family:var(--mono);font-size:10px;
-  color:var(--acc);padding:4px 7px;
-  background:rgba(6,8,16,.7);border-radius:4px;
-}
-.hud-tl{top:8px;left:8px}
-.hud-tr{top:8px;right:8px}
-.hud-bl{bottom:8px;left:8px}
-.hud-br{bottom:8px;right:8px}
+/* scan animation */
+.scan{position:absolute;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,rgba(0,229,200,.3),transparent);
+  animation:scandown 3.5s linear infinite;pointer-events:none}
+@keyframes scandown{0%{top:-2px}100%{top:100%}}
 
 /* corner brackets */
-.corner{position:absolute;width:16px;height:16px;pointer-events:none}
-.corner.tl{top:6px;left:6px;border-top:2px solid var(--acc);border-left:2px solid var(--acc)}
-.corner.tr{top:6px;right:6px;border-top:2px solid var(--acc);border-right:2px solid var(--acc)}
-.corner.bl{bottom:6px;left:6px;border-bottom:2px solid var(--acc);border-left:2px solid var(--acc)}
-.corner.br{bottom:6px;right:6px;border-bottom:2px solid var(--acc);border-right:2px solid var(--acc)}
+.corners{position:absolute;inset:0;pointer-events:none}
+.corners::before,.corners::after{content:'';position:absolute;width:18px;height:18px}
+.corners::before{top:7px;left:7px;border-top:2px solid var(--acc);border-left:2px solid var(--acc)}
+.corners::after{top:7px;right:7px;border-top:2px solid var(--acc);border-right:2px solid var(--acc)}
+.corners2{position:absolute;inset:0;pointer-events:none}
+.corners2::before,.corners2::after{content:'';position:absolute;width:18px;height:18px}
+.corners2::before{bottom:7px;left:7px;border-bottom:2px solid var(--acc);border-left:2px solid var(--acc)}
+.corners2::after{bottom:7px;right:7px;border-bottom:2px solid var(--acc);border-right:2px solid var(--acc)}
+
+/* ── METRICS ─────────────────────────────── */
+.mrow{display:grid;gap:8px;margin-bottom:8px}
+.mrow.c2{grid-template-columns:1fr 1fr}
+.mrow.c3{grid-template-columns:1fr 1fr 1fr}
+.mrow.c1{grid-template-columns:1fr}
+.met{background:var(--s2);border:1px solid var(--bdim);border-radius:var(--r2);padding:10px 12px}
+.met.hi{border-color:rgba(0,229,200,.2);background:linear-gradient(135deg,var(--s2),rgba(0,229,200,.04))}
+.met.hi2{border-color:rgba(255,90,90,.2);background:linear-gradient(135deg,var(--s2),rgba(255,90,90,.04))}
+.ml{font-family:var(--mono);font-size:8px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;margin-bottom:4px}
+.mv{font-family:var(--mono);font-size:18px;font-weight:500;color:var(--fg);line-height:1}
+.mv.big{font-size:26px;color:var(--acc)}
+.mv.big2{font-size:26px;color:var(--acc3)}
+.mu{font-size:10px;color:var(--dim);margin-left:2px}
+.ms{font-size:10px;color:var(--dim);margin-top:3px;font-family:var(--sans);line-height:1.3}
+
+/* ── BADGES ─────────────────────────────── */
+.badge{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:20px;
+  font-family:var(--mono);font-size:8px;letter-spacing:.5px}
+.badge.ok{background:rgba(0,229,200,.1);color:var(--acc);border:1px solid rgba(0,229,200,.2)}
+.badge.warn{background:rgba(255,204,68,.1);color:var(--acc3);border:1px solid rgba(255,204,68,.2)}
+.badge.err{background:rgba(255,90,90,.1);color:var(--acc2);border:1px solid rgba(255,90,90,.2)}
+.badge.off{background:rgba(58,85,112,.1);color:var(--dim);border:1px solid rgba(58,85,112,.2)}
+
+/* ── INFO ROWS ──────────────────────────── */
+.ir{display:flex;align-items:center;justify-content:space-between;padding:7px 0;
+  border-bottom:1px solid var(--bdim);font-size:12px}
+.ir:last-child{border:none;padding-bottom:0}
+.ir-l{color:var(--dim)}
+.ir-v{font-family:var(--mono);font-size:11px}
+
+/* ── BAR ─────────────────────────────────── */
+.bargrp{margin-bottom:7px}
+.bar-lbl{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;
+  color:var(--dim);margin-bottom:3px}
+.bar-lbl .bv{color:var(--fg)}
+.bar-track{height:4px;background:var(--bdim);border-radius:2px;overflow:hidden}
+.bar-fill{height:100%;border-radius:2px;transition:width .12s}
+
+/* ── SPARKLINE ──────────────────────────── */
+.spark{width:100%;display:block;border-radius:var(--r2);background:var(--s2);height:44px}
+
+/* ── HUD overlays ───────────────────────── */
+.hud{position:absolute;font-family:var(--mono);font-size:10px;color:var(--acc);
+  background:rgba(4,6,12,.75);padding:3px 7px;border-radius:4px;line-height:1.4}
+.hud.tl{top:8px;left:8px}
+.hud.tr{top:8px;right:8px}
+.hud.bl{bottom:8px;left:8px}
+.hud.br{bottom:8px;right:8px}
+.hud.center{top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;white-space:nowrap}
+
+/* crosshair */
+.xhair{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none}
+.xhair .xh{position:absolute;width:36px;height:1px;top:0;left:-18px;background:rgba(0,229,200,.7)}
+.xhair .xv{position:absolute;width:1px;height:36px;left:0;top:-18px;background:rgba(0,229,200,.7)}
+.xhair .xd{position:absolute;width:4px;height:4px;background:var(--acc);border-radius:50%;top:-2px;left:-2px}
+.xhair .xr{position:absolute;width:16px;height:16px;border:1px solid rgba(0,229,200,.4);border-radius:50%;top:-8px;left:-8px}
+
+/* horizon */
+.hor-line{position:absolute;left:0;right:0;height:1px;pointer-events:none;transition:top .08s}
+.hor-line::after{content:'';display:block;height:1px;
+  background:linear-gradient(90deg,transparent 0%,rgba(255,90,90,.7) 20%,rgba(255,90,90,.7) 80%,transparent 100%)}
+.hor-line .hl-lbl{position:absolute;right:8px;top:-13px;font-family:var(--mono);font-size:8px;
+  color:var(--acc2);background:rgba(4,6,12,.7);padding:1px 5px;border-radius:3px}
+
+/* target reticle for distance */
+.target-ring{position:absolute;border:2px solid var(--acc3);border-radius:50%;
+  pointer-events:none;transition:all .12s;animation:pulse-ring .8s ease-in-out infinite alternate}
+@keyframes pulse-ring{from{border-color:rgba(255,204,68,.6)}to{border-color:rgba(255,204,68,1)}}
+
+/* error/warn boxes */
+.ebox{background:rgba(255,90,90,.07);border:1px solid rgba(255,90,90,.2);
+  border-radius:var(--r2);padding:10px 12px;margin-bottom:8px;display:flex;gap:8px}
+.wbox{background:rgba(255,204,68,.07);border:1px solid rgba(255,204,68,.2);
+  border-radius:var(--r2);padding:10px 12px;margin-bottom:8px;display:flex;gap:8px}
+.ebox .ico,.wbox .ico{font-size:14px;flex-shrink:0;margin-top:1px}
+.ebox .msg,.wbox .msg{font-size:11px;line-height:1.5;flex:1}
+.retry{font-family:var(--mono);font-size:8px;color:var(--acc);background:none;
+  border:1px solid rgba(0,229,200,.3);border-radius:3px;padding:3px 8px;cursor:pointer;
+  margin-top:5px;display:inline-block}
+
+/* subtabs */
+.stabs{display:flex;gap:5px;margin-bottom:10px;overflow-x:auto;scrollbar-width:none}
+.stabs::-webkit-scrollbar{display:none}
+.stab{flex-shrink:0;padding:5px 11px;border-radius:var(--r2);border:1px solid var(--bdim);
+  background:var(--s2);color:var(--dim);font-family:var(--mono);font-size:9px;letter-spacing:.5px;
+  cursor:pointer;transition:all .15s}
+.stab.on{background:rgba(0,229,200,.1);border-color:rgba(0,229,200,.25);color:var(--acc)}
+
+/* range */
+.rrow{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.rrow label{font-family:var(--mono);font-size:9px;color:var(--dim);flex-shrink:0;letter-spacing:1px;width:60px}
+input[type=range]{flex:1;height:3px;-webkit-appearance:none;background:var(--bdim);border-radius:2px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;
+  border-radius:50%;background:var(--acc);cursor:pointer}
+.rv{font-family:var(--mono);font-size:10px;color:var(--acc);flex-shrink:0;width:28px;text-align:right}
+
+/* compass */
+.cpass-wrap{display:flex;justify-content:center;margin:8px 0}
+.cpass{width:100px;height:100px;border-radius:50%;border:1px solid var(--bdim);position:relative;
+  background:radial-gradient(circle,var(--s2),var(--bg))}
+.cpass-n{position:absolute;top:4px;left:50%;transform:translateX(-50%);
+  font-family:var(--mono);font-size:8px;color:var(--acc2);font-weight:700}
+.cpass-needle{position:absolute;width:2px;left:50%;transform-origin:bottom center;
+  transition:transform .12s ease-out}
+.cpass-needle.n{height:38px;bottom:50%;background:var(--acc2);border-radius:2px}
+.cpass-needle.s{height:34px;top:50%;background:var(--dim);border-radius:2px}
+.cpass-dot{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:7px;height:7px;background:var(--fg);border-radius:50%}
+
+/* phone3d */
+.p3d-wrap{perspective:350px;display:flex;justify-content:center;padding:6px 0}
+.p3d{width:44px;height:80px;background:linear-gradient(135deg,var(--s2),var(--s3));
+  border:1.5px solid rgba(0,229,200,.3);border-radius:8px;position:relative;
+  transform-style:preserve-3d;transition:transform .08s ease-out;box-shadow:var(--glow)}
+.p3d::before{content:'';position:absolute;top:5px;left:50%;transform:translateX(-50%);
+  width:14px;height:2px;background:var(--bdim);border-radius:1px}
+
+/* lux meter */
+.luxm{height:20px;border-radius:5px;overflow:hidden;background:var(--s2);position:relative;margin:6px 0}
+.luxm-fill{height:100%;border-radius:5px;transition:width .2s;
+  background:linear-gradient(90deg,#0d47a1,#1565c0,#ffd600,#fff)}
+.luxm-tick{position:absolute;top:0;bottom:0;width:1px;background:rgba(255,255,255,.1)}
+
+/* depth legend */
+.dlgnd{display:flex;align-items:center;gap:6px;margin:4px 0 8px}
+.dlgnd-bar{flex:1;height:8px;border-radius:4px;
+  background:linear-gradient(90deg,#ff1744,#ff6d00,#ffd600,#00e5ff,#1a237e)}
+.dlgnd span{font-family:var(--mono);font-size:8px;color:var(--dim)}
+
+/* wave */
+.wc{width:100%;height:36px;display:block;border-radius:4px;background:transparent}
+
+/* plane card */
+.plane-item{background:var(--s2);border:1px solid var(--bdim);border-radius:var(--r2);
+  padding:9px 11px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center}
+
+/* compare highlight */
+.compare-best{border-color:rgba(0,229,200,.4)!important;background:rgba(0,229,200,.05)!important}
+
+/* toast */
+#toast{position:fixed;bottom:calc(var(--sb)+14px);left:50%;
+  transform:translateX(-50%) translateY(70px);background:var(--s2);
+  border:1px solid rgba(0,229,200,.2);color:var(--fg);padding:9px 16px;
+  border-radius:8px;font-size:12px;z-index:9000;transition:transform .2s;
+  white-space:nowrap;max-width:92vw;overflow:hidden;text-overflow:ellipsis}
+#toast.on{transform:translateX(-50%) translateY(0)}
 
 /* animations */
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
-@keyframes fadein{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-.fadein{animation:fadein .3s ease-out}
-
-/* method comparison row */
-.method-compare{
-  display:flex;gap:6px;margin-bottom:10px;overflow-x:auto;
-  scrollbar-width:none;
-}
-.method-compare::-webkit-scrollbar{display:none}
-.mc-btn{
-  flex-shrink:0;padding:7px 12px;border-radius:var(--r2);
-  border:1px solid var(--gborder);background:var(--s2);
-  color:var(--dim);font-family:var(--mono);font-size:10px;
-  cursor:pointer;transition:all .15s;letter-spacing:.5px;
-}
-.mc-btn.active{background:rgba(0,245,212,.1);border-color:var(--border);color:var(--acc)}
-
-/* accel/gyro ring */
-.ring-viz{
-  display:flex;justify-content:center;align-items:center;
-  padding:10px 0;
-}
-.ring-svg{width:140px;height:140px}
-
-/* scrollable canvas with fixed aspect */
-.scroll-cam{width:100%;aspect-ratio:3/4;position:relative}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.15}}
+@keyframes fi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.fi{animation:fi .25s ease-out}
 </style>
 </head>
 <body>
 
-<!-- ══════════ SPLASH ══════════ -->
+<!-- ═══════════════ SPLASH ═══════════════ -->
 <div id="splash">
-  <div class="splash-eyebrow">Sensor · AR · Toolkit</div>
-  <div class="splash-title">AR<em>·</em>SENSE</div>
-  <div class="splash-sub">All sensors. All AR features. Real-time visualization.<br>Portrait mode · Rear camera · Auto-detect everything.</div>
+  <div class="sp-tag">Sensor · AR · Measurement · Toolkit</div>
+  <div class="sp-logo">AR<span>·</span>SENSE</div>
+  <div class="sp-tag" style="margin-bottom:4px">Portrait Mode · Rear Camera · Auto-detect · Real-time</div>
 
-  <div class="device-card">
-    <div class="dc-row">
-      <div>
-        <div class="dc-label">Detected Device</div>
-        <div class="dc-val" id="sp-os">Analyzing…</div>
-        <div class="dc-note" id="sp-note">Please wait…</div>
-      </div>
-      <div class="os-icon" id="sp-icon">⏳</div>
+  <div class="sp-devcard">
+    <div class="left">
+      <div class="lbl">Detected Platform</div>
+      <div class="val" id="sp-os">Detecting…</div>
+      <div class="note" id="sp-note">Initializing…</div>
     </div>
+    <div class="icon" id="sp-icon">⏳</div>
   </div>
 
-  <div class="cap-grid" id="cap-grid">
-    <!-- filled by JS -->
-  </div>
-
-  <button id="launch-btn" disabled>Scanning capabilities…</button>
+  <div class="cap-grid" id="cap-grid"></div>
+  <button id="launch-btn" disabled>Scanning…</button>
 </div>
 
-<!-- ══════════ APP ══════════ -->
+<!-- ═══════════════ APP ═══════════════════ -->
 <div id="app">
   <div class="topbar">
-    <div class="topbar-logo">AR·SENSE</div>
-    <div class="topbar-sep"></div>
-    <div class="topbar-os" id="tb-os">–</div>
-    <div class="topbar-right">
+    <div class="tb-logo">AR·SENSE</div>
+    <div class="tb-sep"></div>
+    <div class="tb-os" id="tb-os">–</div>
+    <div class="tb-right">
       <div class="live-dot"></div>
       <div class="live-txt">LIVE</div>
     </div>
   </div>
 
-  <div class="tabbar" id="tabbar">
-    <button class="tab-btn active" data-tab="height"><span class="ti">📏</span>Height</button>
-    <button class="tab-btn" data-tab="distance"><span class="ti">📐</span>Distance</button>
-    <button class="tab-btn" data-tab="depth"><span class="ti">🌊</span>Depth</button>
-    <button class="tab-btn" data-tab="edges"><span class="ti">🔲</span>Objects</button>
-    <button class="tab-btn" data-tab="sensors"><span class="ti">📡</span>Sensors</button>
-    <button class="tab-btn" data-tab="light"><span class="ti">💡</span>Light</button>
-    <button class="tab-btn" data-tab="planes"><span class="ti">🟦</span>Planes</button>
-    <button class="tab-btn" data-tab="compare"><span class="ti">⚖️</span>Compare</button>
+  <div class="tabbar">
+    <button class="tab-btn active" data-tab="height"><span class="ic">📏</span>Height</button>
+    <button class="tab-btn" data-tab="distance"><span class="ic">📐</span>Distance</button>
+    <button class="tab-btn" data-tab="depth"><span class="ic">🌊</span>Depth</button>
+    <button class="tab-btn" data-tab="objects"><span class="ic">🔲</span>Objects</button>
+    <button class="tab-btn" data-tab="sensors"><span class="ic">📡</span>Sensors</button>
+    <button class="tab-btn" data-tab="light"><span class="ic">💡</span>Light</button>
+    <button class="tab-btn" data-tab="planes"><span class="ic">🟦</span>Planes</button>
+    <button class="tab-btn" data-tab="compare"><span class="ic">⚖️</span>All Data</button>
   </div>
 
-  <div class="pages" id="pages">
+  <div class="pages">
 
-    <!-- ══ HEIGHT ══ -->
+    <!-- ═══ HEIGHT ═══ -->
     <div class="page active" id="page-height">
-      <div class="card accent-top">
-        <div class="card-hd">
-          Camera Height from Ground
-          <div class="card-hd-right">
-            <span class="badge ok" id="h-status-badge">ACTIVE</span>
-          </div>
+      <div class="card a">
+        <div class="ch">Camera Height from Ground
+          <span class="badge ok" id="h-badge">LIVE</span>
         </div>
-        <div class="method-compare">
-          <button class="mc-btn active" onclick="setHeightTab('sensor')" id="ht-sensor">SENSOR TILT</button>
-          <button class="mc-btn" onclick="setHeightTab('visual')" id="ht-visual">VISUAL AIM</button>
-          <button class="mc-btn" onclick="setHeightTab('both')" id="ht-both">SIDE BY SIDE</button>
+        <!-- Key insight: phone perpendicular to ground in portrait = beta ≈ 90°.
+             Camera height = constant ≈ 1.2-1.5m when held normally.
+             Tilt angle (deviation from upright) reduces effective height.
+             Method: use gravity vector components to derive pitch angle.
+        -->
+        <div class="stabs" id="h-stabs">
+          <div class="stab on" data-m="gravity">Gravity Vector</div>
+          <div class="stab" data-m="pitch">Pitch Trig</div>
+          <div class="stab" data-m="both">Both Methods</div>
         </div>
-        <div id="h-formula" class="irow" style="border:none;padding:0 0 10px">
-          <span style="font-family:var(--mono);font-size:10px;color:var(--dim)" id="h-formula-txt">h = (user_height − hold_offset) × cos(tilt_from_vertical)</span>
-        </div>
-      </div>
-
-      <!-- Camera + overlay -->
-      <div class="cam-wrap scroll-cam" id="h-cam-wrap">
-        <video id="h-vid" autoplay playsinline muted style="width:100%;height:100%;object-fit:cover"></video>
-        <canvas id="h-ov" class="fullcam"></canvas>
-        <div class="scan-bar"></div>
-        <div class="corner tl"></div><div class="corner tr"></div>
-        <div class="corner bl"></div><div class="corner br"></div>
-        <div class="xhair"><div class="xhair-h"></div><div class="xhair-v"></div><div class="xhair-dot"></div><div class="xhair-ring"></div></div>
-        <div class="horizon-line" id="h-horizon" data-label="HORIZON" style="top:50%"></div>
-        <div class="hud-tl" id="h-hud-tl">β–</div>
-        <div class="hud-tr" id="h-hud-tr">γ–</div>
-        <div class="hud-br" id="h-hud-br">–m</div>
-        <div class="cam-placeholder" id="h-placeholder">
-          <div style="font-size:32px">📷</div>
-          <div>Tap Start Camera</div>
+        <div id="h-formula" style="font-family:var(--mono);font-size:9px;color:var(--dim);margin-bottom:8px;line-height:1.6">
+          pitch = arctan2(ay, √(ax²+az²)) &nbsp;|&nbsp; h_camera = h_eye × cos(pitch_from_vertical)
         </div>
       </div>
 
-      <!-- Side-by-side compare -->
-      <div id="h-compare-section">
-        <div class="compare-grid" id="h-compare-grid">
-          <div class="compare-cell" id="h-cc-sensor">
-            <div class="cc-label">SENSOR METHOD</div>
-            <div class="cc-val" id="hc-sensor-val">–</div>
-            <div class="cc-conf" id="hc-sensor-conf">tilt-based</div>
-          </div>
-          <div class="compare-cell" id="h-cc-visual">
-            <div class="cc-label">VISUAL METHOD</div>
-            <div class="cc-val" id="hc-visual-val">–</div>
-            <div class="cc-conf" id="hc-visual-conf">horizon-based</div>
-          </div>
-        </div>
+      <div class="cam-box" id="h-cam-box">
+        <video id="h-vid" autoplay playsinline muted></video>
+        <canvas id="h-ov" class="ov"></canvas>
+        <div class="scan"></div>
+        <div class="corners"></div><div class="corners2"></div>
+        <div class="xhair"><div class="xh"></div><div class="xv"></div><div class="xd"></div><div class="xr"></div></div>
+        <div class="hor-line" id="h-hor" style="top:50%"><div class="hl-lbl" id="h-hor-lbl">HORIZON</div></div>
+        <div class="hud tl" id="h-hud-tl">β –°</div>
+        <div class="hud tr" id="h-hud-tr">pitch –°</div>
+        <div class="hud br" id="h-hud-br">h = –</div>
+        <div class="cam-ph" id="h-ph"><div style="font-size:28px">📷</div><div>Starting camera…</div></div>
       </div>
 
-      <div class="metrics-row">
-        <div class="metric hi">
-          <div class="m-lbl">Camera Height</div>
-          <div class="m-val big" id="h-height-val">–<span class="m-unit">m</span></div>
-          <div class="m-sub" id="h-height-sub">awaiting sensors</div>
+      <div class="mrow c2">
+        <div class="met hi">
+          <div class="ml">Camera Height</div>
+          <div class="mv big" id="h-main">–<span class="mu">m</span></div>
+          <div class="ms" id="h-main-sub">awaiting sensor data</div>
         </div>
-        <div class="metric">
-          <div class="m-lbl">Tilt from Vertical</div>
-          <div class="m-val" id="h-tilt-val">–<span class="m-unit">°</span></div>
+        <div class="met">
+          <div class="ml">Pitch from Vertical</div>
+          <div class="mv" id="h-pitch">–<span class="mu">°</span></div>
+          <div class="ms" id="h-pitch-sub">–</div>
         </div>
       </div>
-      <div class="metrics-row three">
-        <div class="metric">
-          <div class="m-lbl">Beta (X)</div>
-          <div class="m-val" id="h-beta">–</div>
-        </div>
-        <div class="metric">
-          <div class="m-lbl">Gamma (Y)</div>
-          <div class="m-val" id="h-gamma">–</div>
-        </div>
-        <div class="metric">
-          <div class="m-lbl">Perpendicular</div>
-          <div class="m-val" id="h-perp">–</div>
-        </div>
+      <div class="mrow c3">
+        <div class="met"><div class="ml">Beta (X-rot)</div><div class="mv" id="h-beta" style="font-size:14px">–°</div></div>
+        <div class="met"><div class="ml">Gamma (Y-rot)</div><div class="mv" id="h-gamma" style="font-size:14px">–°</div></div>
+        <div class="met"><div class="ml">Upright?</div><div class="mv" id="h-upright" style="font-size:14px">–</div></div>
       </div>
 
-      <!-- History sparkline -->
-      <div class="card">
-        <div class="card-hd">Height History (last 60s)</div>
-        <canvas id="h-spark" class="sparkline" height="50"></canvas>
+      <div class="card" id="h-both-card" style="display:none">
+        <div class="ch">Method Comparison</div>
+        <div class="mrow c2">
+          <div class="met" id="h-grav-cell"><div class="ml">Gravity Vector</div><div class="mv" id="h-grav-v">–<span class="mu">m</span></div><div class="ms">arctan2 method</div></div>
+          <div class="met" id="h-pitch-cell"><div class="ml">Pitch Trig</div><div class="mv" id="h-ptrig-v">–<span class="mu">m</span></div><div class="ms">beta-based</div></div>
+        </div>
       </div>
 
       <div class="card">
-        <div class="card-hd">Method Info</div>
-        <div class="irow"><span class="irow-lbl">Active Method</span><span class="irow-val" id="h-method-name">–</span></div>
-        <div class="irow"><span class="irow-lbl">Confidence</span><span class="irow-val" id="h-conf">–</span></div>
-        <div class="irow"><span class="irow-lbl">Sensor Permission</span><span class="irow-val" id="h-perm">–</span></div>
-        <div class="irow"><span class="irow-lbl">Update Rate</span><span class="irow-val" id="h-rate">–</span></div>
+        <div class="ch">Height History (60s)</div>
+        <canvas id="h-spark" class="spark"></canvas>
       </div>
 
-      <div id="h-err-zone"></div>
-      <button class="btn btn-acc" id="h-cam-btn" onclick="toggleCam('h')">▶ START CAMERA</button>
-      <button class="btn btn-ghost" onclick="reqMotionPerm()">🔒 REQUEST iOS SENSOR PERMISSION</button>
+      <div id="h-err"></div>
     </div>
 
-    <!-- ══ DISTANCE ══ -->
+    <!-- ═══ DISTANCE ═══ -->
     <div class="page" id="page-distance">
-      <div class="card accent-top">
-        <div class="card-hd">
-          Distance to Object / Surface
-          <span class="badge ok" id="d-status-badge">AUTO</span>
+      <div class="card a">
+        <div class="ch">Distance to Object / Surface
+          <span class="badge ok" id="d-badge">LIVE</span>
         </div>
-        <div class="method-compare">
-          <button class="mc-btn active" onclick="setDistTab('trig')" id="dt-trig">TRIG</button>
-          <button class="mc-btn" onclick="setDistTab('xr-hit')" id="dt-xr-hit">XR HIT-TEST</button>
-          <button class="mc-btn" onclick="setDistTab('xr-depth')" id="dt-xr-depth">XR DEPTH</button>
-          <button class="mc-btn" onclick="setDistTab('all')" id="dt-all">ALL METHODS</button>
+        <div class="stabs" id="d-stabs">
+          <div class="stab on" data-m="trig">Trig (Sensor)</div>
+          <div class="stab" data-m="focus">Focus-based</div>
+          <div class="stab" data-m="all">Compare All</div>
         </div>
-        <div id="d-formula-row">
-          <div style="font-family:var(--mono);font-size:10px;color:var(--dim)" id="d-formula">D = h ÷ tan(depression_angle)</div>
+        <div id="d-formula" style="font-family:var(--mono);font-size:9px;color:var(--dim);margin-bottom:8px;line-height:1.7">
+          D = h / tan(depression_angle) &nbsp;|&nbsp; depression = 90° - β (when β &gt; 0)
         </div>
       </div>
 
-      <div class="cam-wrap scroll-cam" id="d-cam-wrap">
-        <video id="d-vid" autoplay playsinline muted style="width:100%;height:100%;object-fit:cover"></video>
-        <canvas id="d-ov" class="fullcam"></canvas>
-        <div class="scan-bar"></div>
-        <div class="corner tl"></div><div class="corner tr"></div>
-        <div class="corner bl"></div><div class="corner br"></div>
-        <div class="xhair"><div class="xhair-h"></div><div class="xhair-v"></div><div class="xhair-dot"></div><div class="xhair-ring"></div></div>
-        <div class="horizon-line" id="d-horizon" data-label="HORIZONTAL" style="top:50%"></div>
-        <div class="hud-tl" id="d-hud-tl">DEP –°</div>
-        <div class="hud-br" id="d-hud-br">–m</div>
-        <div class="hud-tr" id="d-hud-tr">h –m</div>
-        <div class="cam-placeholder" id="d-placeholder"><div style="font-size:32px">📷</div><div>Tap Start Camera</div></div>
+      <!-- Camera with target marker -->
+      <div class="cam-box" id="d-cam-box">
+        <video id="d-vid" autoplay playsinline muted></video>
+        <canvas id="d-ov" class="ov"></canvas>
+        <div class="scan"></div>
+        <div class="corners"></div><div class="corners2"></div>
+        <div class="xhair"><div class="xh"></div><div class="xv"></div><div class="xd"></div><div class="xr"></div></div>
+        <div class="hor-line" id="d-hor" style="top:50%"><div class="hl-lbl">HORIZONTAL</div></div>
+        <div class="hud tl" id="d-hud-tl">DEP –°</div>
+        <div class="hud tr" id="d-hud-tr">h –m</div>
+        <div class="hud br" id="d-hud-br">D = –</div>
+        <div class="cam-ph" id="d-ph"><div style="font-size:28px">📷</div><div>Starting camera…</div></div>
       </div>
 
-      <!-- All methods compare -->
-      <div id="d-all-compare" style="display:none">
-        <div class="compare-grid">
-          <div class="compare-cell" id="d-cc-trig"><div class="cc-label">TRIG</div><div class="cc-val" id="dc-trig">–</div><div class="cc-conf">sensor angle</div></div>
-          <div class="compare-cell" id="d-cc-hit"><div class="cc-label">XR HIT-TEST</div><div class="cc-val" id="dc-hit">–</div><div class="cc-conf">ARCore raycast</div></div>
+      <div class="mrow c2">
+        <div class="met hi">
+          <div class="ml">Distance to Target</div>
+          <div class="mv big" id="d-main">–<span class="mu">m</span></div>
+          <div class="ms" id="d-main-sub">point at base of object</div>
         </div>
-        <div class="compare-grid">
-          <div class="compare-cell" id="d-cc-dep"><div class="cc-label">XR DEPTH</div><div class="cc-val" id="dc-dep">–</div><div class="cc-conf">depth buffer</div></div>
-          <div class="compare-cell" id="d-cc-avg"><div class="cc-label">AVERAGE</div><div class="cc-val warn" id="dc-avg">–</div><div class="cc-conf">fusion estimate</div></div>
+        <div class="met">
+          <div class="ml">Depression Angle</div>
+          <div class="mv" id="d-dep">–<span class="mu">°</span></div>
+          <div class="ms" id="d-dep-sub">from horizontal</div>
         </div>
+      </div>
+      <div class="mrow c3">
+        <div class="met"><div class="ml">Camera H</div><div class="mv" id="d-camh" style="font-size:14px">–m</div></div>
+        <div class="met"><div class="ml">XR Hit</div><div class="mv" id="d-xrh" style="font-size:14px">–</div></div>
+        <div class="met"><div class="ml">Depth Ctr</div><div class="mv" id="d-depthctr" style="font-size:14px">–</div></div>
       </div>
 
-      <div class="metrics-row">
-        <div class="metric hi">
-          <div class="m-lbl">Distance</div>
-          <div class="m-val big" id="d-dist-val">–<span class="m-unit">m</span></div>
+      <div class="card" id="d-all-card" style="display:none">
+        <div class="ch">All Methods Comparison</div>
+        <div class="mrow c2">
+          <div class="met" id="d-c-trig"><div class="ml">Trig (Sensor)</div><div class="mv" id="d-cv-trig">–</div></div>
+          <div class="met" id="d-c-focus"><div class="ml">Focus-based</div><div class="mv" id="d-cv-focus">–</div></div>
         </div>
-        <div class="metric">
-          <div class="m-lbl">Depression°</div>
-          <div class="m-val" id="d-depr-val">–<span class="m-unit">°</span></div>
+        <div class="mrow c2">
+          <div class="met" id="d-c-xr"><div class="ml">XR Hit-test</div><div class="mv" id="d-cv-xr">–</div></div>
+          <div class="met" id="d-c-fused"><div class="ml">Fused Best</div><div class="mv big2" id="d-cv-fused">–</div></div>
         </div>
-      </div>
-      <div class="metrics-row three">
-        <div class="metric"><div class="m-lbl">Camera H</div><div class="m-val" id="d-camh">–<span class="m-unit">m</span></div></div>
-        <div class="metric"><div class="m-lbl">XR Hit</div><div class="m-val" id="d-xrhit">–</div></div>
-        <div class="metric"><div class="m-lbl">Depth Ctr</div><div class="m-val" id="d-depth-ctr">–</div></div>
       </div>
 
       <div class="card">
-        <div class="card-hd">Distance History</div>
-        <canvas id="d-spark" class="sparkline" height="50"></canvas>
+        <div class="ch">Distance History (60s)</div>
+        <canvas id="d-spark" class="spark"></canvas>
       </div>
 
-      <div id="d-err-zone"></div>
-      <button class="btn btn-acc" id="d-cam-btn" onclick="toggleCam('d')">▶ START CAMERA</button>
-      <button class="btn btn-ghost" onclick="startXRSession('distance')">🔮 INIT WebXR HIT-TEST</button>
+      <div id="d-err"></div>
     </div>
 
-    <!-- ══ DEPTH ══ -->
+    <!-- ═══ DEPTH ═══ -->
     <div class="page" id="page-depth">
-      <div class="card accent-top">
-        <div class="card-hd">
-          Depth Map Visualization
-          <span class="badge warn" id="dep-api-badge">CHECKING</span>
+      <div class="card a">
+        <div class="ch">Depth Map
+          <span class="badge warn" id="dep-badge">VISUAL</span>
         </div>
-        <div class="method-compare">
-          <button class="mc-btn active" onclick="setDepthMode('heatmap')" id="dm-heatmap">HEATMAP</button>
-          <button class="mc-btn" onclick="setDepthMode('rainbow')" id="dm-rainbow">RAINBOW</button>
-          <button class="mc-btn" onclick="setDepthMode('grayscale')" id="dm-grayscale">GRAYSCALE</button>
-          <button class="mc-btn" onclick="setDepthMode('contour')" id="dm-contour">CONTOUR</button>
+        <div class="stabs" id="dep-stabs">
+          <div class="stab on" data-m="heatmap">Heatmap</div>
+          <div class="stab" data-m="rainbow">Rainbow</div>
+          <div class="stab" data-m="gray">Grayscale</div>
+          <div class="stab" data-m="contour">Contour</div>
         </div>
       </div>
 
-      <div class="cam-wrap scroll-cam" id="dep-cam-wrap">
-        <video id="dep-vid" autoplay playsinline muted style="width:100%;height:100%;object-fit:cover;display:none"></video>
-        <canvas id="dep-canvas" class="fullcam"></canvas>
-        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
-        <div class="xhair"><div class="xhair-h"></div><div class="xhair-v"></div><div class="xhair-dot"></div></div>
-        <div class="hud-tl" id="dep-hud-mode">VISUAL DEPTH</div>
-        <div class="hud-br" id="dep-hud-center">CENTER: –</div>
-        <div class="cam-placeholder" id="dep-placeholder"><div style="font-size:32px">🌊</div><div>Tap Start Depth</div></div>
+      <div class="cam-box" id="dep-cam-box" style="aspect-ratio:3/4">
+        <video id="dep-vid" autoplay playsinline muted style="display:none"></video>
+        <canvas id="dep-cv" class="ov" style="position:relative;width:100%;height:100%"></canvas>
+        <div class="corners"></div><div class="corners2"></div>
+        <div class="xhair" style="top:50%;left:50%"><div class="xh"></div><div class="xv"></div><div class="xd"></div></div>
+        <div class="hud tl" id="dep-hud-mode">DEPTH MAP</div>
+        <div class="hud br" id="dep-hud-ctr">CENTER –m</div>
+        <div class="cam-ph" id="dep-ph"><div style="font-size:28px">🌊</div><div>Starting depth…</div></div>
       </div>
 
-      <div class="depth-legend">
-        <span>Near</span>
-        <div class="depth-grad"></div>
-        <span>Far</span>
-      </div>
+      <div class="dlgnd"><span>Near</span><div class="dlgnd-bar"></div><span>Far</span></div>
 
-      <div class="metrics-row">
-        <div class="metric hi"><div class="m-lbl">Center Depth</div><div class="m-val big" id="dep-center">–<span class="m-unit">m</span></div></div>
-        <div class="metric"><div class="m-lbl">Min Depth</div><div class="m-val" id="dep-min">–</div></div>
+      <div class="mrow c2">
+        <div class="met hi"><div class="ml">Center Depth</div><div class="mv big" id="dep-ctr">–<span class="mu">m</span></div></div>
+        <div class="met"><div class="ml">Min Depth</div><div class="mv" id="dep-min">–</div></div>
       </div>
-      <div class="metrics-row">
-        <div class="metric"><div class="m-lbl">Max Depth</div><div class="m-val" id="dep-max">–</div></div>
-        <div class="metric"><div class="m-lbl">Method</div><div class="m-val" id="dep-method" style="font-size:12px">–</div></div>
+      <div class="mrow c2">
+        <div class="met"><div class="ml">Max Depth</div><div class="mv" id="dep-max">–</div></div>
+        <div class="met"><div class="ml">Engine</div><div class="mv" id="dep-eng" style="font-size:12px">–</div></div>
       </div>
 
       <div class="card">
-        <div class="card-hd">Depth Profile (horizontal slice)</div>
-        <canvas id="dep-profile" style="width:100%;height:50px;display:block;background:var(--s2);border-radius:var(--r2)"></canvas>
+        <div class="ch">Depth Profile (center row)</div>
+        <canvas id="dep-profile" style="width:100%;height:44px;display:block;background:var(--s2);border-radius:var(--r2)"></canvas>
       </div>
 
-      <div id="dep-err-zone"></div>
-      <button class="btn btn-acc" id="dep-btn" onclick="startDepth()">▶ START DEPTH SENSING</button>
-      <button class="btn btn-ghost" onclick="stopDepth()">■ STOP</button>
+      <div id="dep-err"></div>
     </div>
 
-    <!-- ══ EDGES / OBJECTS ══ -->
-    <div class="page" id="page-edges">
-      <div class="card accent-top">
-        <div class="card-hd">Object & Edge Detection</div>
-        <div class="method-compare">
-          <button class="mc-btn active" onclick="setEdgeMode('edge')" id="em-edge">EDGES</button>
-          <button class="mc-btn" onclick="setEdgeMode('motion')" id="em-motion">MOTION</button>
-          <button class="mc-btn" onclick="setEdgeMode('luma')" id="em-luma">LUMA</button>
-          <button class="mc-btn" onclick="setEdgeMode('color')" id="em-color">COLOR SEG</button>
-          <button class="mc-btn" onclick="setEdgeMode('thermal')" id="em-thermal">THERMAL SIM</button>
+    <!-- ═══ OBJECTS ═══ -->
+    <div class="page" id="page-objects">
+      <div class="card a">
+        <div class="ch">Object & Edge Detection</div>
+        <div class="stabs" id="obj-stabs">
+          <div class="stab on" data-m="edge">Edges</div>
+          <div class="stab" data-m="motion">Motion</div>
+          <div class="stab" data-m="luma">Luminance</div>
+          <div class="stab" data-m="color">Color Seg</div>
+          <div class="stab" data-m="thermal">Thermal</div>
         </div>
-        <div class="range-row">
+        <div class="rrow">
           <label>THRESH</label>
-          <input type="range" id="edge-thresh-sl" min="10" max="180" value="60" oninput="edgeThresh=+this.value;document.getElementById('edge-thresh-v').textContent=this.value">
-          <span class="range-val" id="edge-thresh-v">60</span>
+          <input type="range" id="obj-thresh" min="10" max="200" value="60" oninput="G.edgeT=+this.value;$('obj-tv').textContent=this.value">
+          <span class="rv" id="obj-tv">60</span>
         </div>
       </div>
 
-      <div class="cam-wrap scroll-cam" id="e-cam-wrap">
-        <video id="e-vid" autoplay playsinline muted style="display:none"></video>
-        <canvas id="e-canvas" class="fullcam" style="position:relative;width:100%;height:100%;display:block"></canvas>
-        <div class="hud-tl" id="e-hud-mode">EDGES</div>
-        <div class="hud-br" id="e-hud-info">–</div>
-        <div class="cam-placeholder" id="e-placeholder"><div style="font-size:32px">🔲</div><div>Tap Start Camera</div></div>
+      <div class="cam-box" id="obj-cam-box" style="aspect-ratio:3/4;position:relative">
+        <video id="obj-vid" autoplay playsinline muted style="display:none"></video>
+        <canvas id="obj-cv" style="position:relative;width:100%;height:100%;display:block"></canvas>
+        <div class="hud tl" id="obj-hud-mode">EDGES</div>
+        <div class="hud br" id="obj-hud-info">–</div>
+        <div class="cam-ph" id="obj-ph"><div style="font-size:28px">🔲</div><div>Starting camera…</div></div>
       </div>
 
-      <div class="metrics-row">
-        <div class="metric hi"><div class="m-lbl">Edge Pixels</div><div class="m-val big" id="e-edges">–</div></div>
-        <div class="metric"><div class="m-lbl">Motion Δ</div><div class="m-val" id="e-motion">–</div></div>
+      <div class="mrow c2">
+        <div class="met hi"><div class="ml">Edge Pixels</div><div class="mv big" id="obj-edges">–</div></div>
+        <div class="met"><div class="ml">Motion Δ</div><div class="mv" id="obj-motion">–</div></div>
       </div>
-      <div class="metrics-row three">
-        <div class="metric"><div class="m-lbl">Brightness</div><div class="m-val" id="e-bright">–</div></div>
-        <div class="metric"><div class="m-lbl">Contrast</div><div class="m-val" id="e-contrast">–</div></div>
-        <div class="metric"><div class="m-lbl">Dom Hue</div><div class="m-val" id="e-hue">–</div></div>
+      <div class="mrow c3">
+        <div class="met"><div class="ml">Brightness</div><div class="mv" id="obj-bright">–</div></div>
+        <div class="met"><div class="ml">Contrast</div><div class="mv" id="obj-contrast">–</div></div>
+        <div class="met"><div class="ml">Dom Hue</div><div class="mv" id="obj-hue">–</div></div>
       </div>
 
       <div class="card">
-        <div class="card-hd">Motion History</div>
-        <canvas id="e-motion-spark" class="sparkline" height="40"></canvas>
+        <div class="ch">Motion History</div>
+        <canvas id="obj-mspark" class="spark"></canvas>
       </div>
 
-      <div id="e-err-zone"></div>
-      <button class="btn btn-acc" id="e-cam-btn" onclick="toggleCam('e')">▶ START CAMERA</button>
+      <div id="obj-err"></div>
     </div>
 
-    <!-- ══ SENSORS ══ -->
+    <!-- ═══ SENSORS ═══ -->
     <div class="page" id="page-sensors">
-      <div class="card accent-top">
-        <div class="card-hd">All Sensors Dashboard</div>
+      <div class="card a">
+        <div class="ch">Device Orientation (Live 3D)</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="p3d-wrap"><div class="p3d" id="p3d"></div></div>
           <div>
-            <div class="phone3d-wrap">
-              <div class="phone3d" id="phone3d"></div>
-            </div>
-          </div>
-          <div>
-            <div class="compass-wrap">
-              <div class="compass">
-                <div class="compass-ring"></div>
-                <div class="compass-n">N</div>
-                <div class="compass-needle north" id="compass-n"></div>
-                <div class="compass-needle south" id="compass-s" style="transform:translateX(-50%) rotate(180deg)"></div>
-                <div class="compass-center"></div>
+            <div class="cpass-wrap">
+              <div class="cpass">
+                <div class="cpass-n">N</div>
+                <div class="cpass-needle n" id="cpass-n"></div>
+                <div class="cpass-needle s" id="cpass-s" style="transform:translateX(-50%) rotate(0deg)"></div>
+                <div class="cpass-dot"></div>
               </div>
             </div>
-            <div style="text-align:center;font-family:var(--mono);font-size:11px;color:var(--acc)">
-              <span id="compass-deg">–</span>° <span id="compass-dir">–</span>
+            <div style="text-align:center;font-family:var(--mono);font-size:10px;color:var(--acc)">
+              <span id="cpass-deg">–</span>° <span id="cpass-dir">–</span>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Orientation -->
       <div class="card">
-        <div class="card-hd">Device Orientation</div>
-        <div id="s-orient-bars">
-          <div class="bar-group">
-            <div class="bar-label"><span>Alpha (compass Z)</span><span id="s-alpha">–°</span></div>
-            <div class="bar-track"><div class="bar-fill" id="bar-alpha" style="width:50%;background:var(--acc2)"></div></div>
-          </div>
-          <div class="bar-group">
-            <div class="bar-label"><span>Beta (front-back X)</span><span id="s-beta">–°</span></div>
-            <div class="bar-track"><div class="bar-fill" id="bar-beta" style="width:50%;background:var(--acc)"></div></div>
-          </div>
-          <div class="bar-group">
-            <div class="bar-label"><span>Gamma (left-right Y)</span><span id="s-gamma">–°</span></div>
-            <div class="bar-track"><div class="bar-fill" id="bar-gamma" style="width:50%;background:var(--acc3)"></div></div>
-          </div>
-        </div>
-        <canvas id="s-orient-wave" class="wave-canvas" style="margin-top:10px"></canvas>
+        <div class="ch">Orientation Angles</div>
+        <div class="bargrp"><div class="bar-lbl"><span>Alpha (compass)</span><span class="bv" id="s-alpha">–°</span></div><div class="bar-track"><div class="bar-fill" id="ba-alpha" style="width:50%;background:var(--acc2)"></div></div></div>
+        <div class="bargrp"><div class="bar-lbl"><span>Beta (front-back)</span><span class="bv" id="s-beta">–°</span></div><div class="bar-track"><div class="bar-fill" id="ba-beta" style="width:50%;background:var(--acc)"></div></div></div>
+        <div class="bargrp"><div class="bar-lbl"><span>Gamma (left-right)</span><span class="bv" id="s-gamma">–°</span></div><div class="bar-track"><div class="bar-fill" id="ba-gamma" style="width:50%;background:var(--acc3)"></div></div></div>
+        <canvas id="s-orient-wave" class="wc" style="margin-top:6px"></canvas>
       </div>
 
-      <!-- Accelerometer -->
       <div class="card">
-        <div class="card-hd">Accelerometer (m/s²) <span class="badge ok" id="accel-badge">ACTIVE</span></div>
-        <div class="bar-group">
-          <div class="bar-label"><span>X (lateral)</span><span id="s-ax">–</span></div>
-          <div class="bar-track"><div class="bar-fill" id="bar-ax" style="width:50%;background:var(--acc2)"></div></div>
+        <div class="ch">Accelerometer (m/s²) <span class="badge ok">LIVE</span></div>
+        <div class="bargrp"><div class="bar-lbl"><span>X (lateral)</span><span class="bv" id="s-ax">–</span></div><div class="bar-track"><div class="bar-fill" id="ba-ax" style="width:50%;background:var(--acc2)"></div></div></div>
+        <div class="bargrp"><div class="bar-lbl"><span>Y (vertical)</span><span class="bv" id="s-ay">–</span></div><div class="bar-track"><div class="bar-fill" id="ba-ay" style="width:50%;background:var(--acc3)"></div></div></div>
+        <div class="bargrp"><div class="bar-lbl"><span>Z (depth)</span><span class="bv" id="s-az">–</span></div><div class="bar-track"><div class="bar-fill" id="ba-az" style="width:50%;background:var(--acc)"></div></div></div>
+        <div class="mrow c2" style="margin-top:8px">
+          <div class="met"><div class="ml">Total |g|</div><div class="mv" id="s-gtot">–<span class="mu">m/s²</span></div></div>
+          <div class="met"><div class="ml">Gravity Pitch</div><div class="mv" id="s-gpitch">–<span class="mu">°</span></div></div>
         </div>
-        <div class="bar-group">
-          <div class="bar-label"><span>Y (vertical)</span><span id="s-ay">–</span></div>
-          <div class="bar-track"><div class="bar-fill" id="bar-ay" style="width:50%;background:var(--acc3)"></div></div>
-        </div>
-        <div class="bar-group">
-          <div class="bar-label"><span>Z (depth)</span><span id="s-az">–</span></div>
-          <div class="bar-track"><div class="bar-fill" id="bar-az" style="width:50%;background:var(--acc)"></div></div>
-        </div>
-        <div class="metrics-row" style="margin-top:8px">
-          <div class="metric"><div class="m-lbl">Total G</div><div class="m-val" id="s-g-total">–</div></div>
-          <div class="metric"><div class="m-lbl">Jerk</div><div class="m-val" id="s-jerk">–</div></div>
-        </div>
-        <canvas id="s-accel-wave" class="wave-canvas"></canvas>
+        <canvas id="s-accel-wave" class="wc"></canvas>
       </div>
 
-      <!-- Gyroscope -->
       <div class="card">
-        <div class="card-hd">Rotation Rate (°/s) <span class="badge ok" id="gyro-badge">ACTIVE</span></div>
-        <div class="bar-group">
-          <div class="bar-label"><span>Alpha rate</span><span id="s-ra">–</span></div>
-          <div class="bar-track"><div class="bar-fill" id="bar-ra" style="width:50%;background:var(--acc2)"></div></div>
-        </div>
-        <div class="bar-group">
-          <div class="bar-label"><span>Beta rate</span><span id="s-rb">–</span></div>
-          <div class="bar-track"><div class="bar-fill" id="bar-rb" style="width:50%;background:var(--acc3)"></div></div>
-        </div>
-        <div class="bar-group">
-          <div class="bar-label"><span>Gamma rate</span><span id="s-rg">–</span></div>
-          <div class="bar-track"><div class="bar-fill" id="bar-rg" style="width:50%;background:var(--acc)"></div></div>
-        </div>
-        <canvas id="s-gyro-wave" class="wave-canvas"></canvas>
+        <div class="ch">Rotation Rate (°/s)</div>
+        <div class="bargrp"><div class="bar-lbl"><span>Alpha rate</span><span class="bv" id="s-ra">–</span></div><div class="bar-track"><div class="bar-fill" id="ba-ra" style="width:50%;background:var(--acc2)"></div></div></div>
+        <div class="bargrp"><div class="bar-lbl"><span>Beta rate</span><span class="bv" id="s-rb">–</span></div><div class="bar-track"><div class="bar-fill" id="ba-rb" style="width:50%;background:var(--acc3)"></div></div></div>
+        <div class="bargrp"><div class="bar-lbl"><span>Gamma rate</span><span class="bv" id="s-rg">–</span></div><div class="bar-track"><div class="bar-fill" id="ba-rg" style="width:50%;background:var(--acc)"></div></div></div>
+        <canvas id="s-gyro-wave" class="wc"></canvas>
       </div>
 
-      <!-- Other sensors -->
       <div class="card">
-        <div class="card-hd">Environmental Sensors</div>
-        <div class="irow"><span class="irow-lbl">Barometer / Pressure</span><span class="irow-val" id="s-baro">–</span></div>
-        <div class="irow"><span class="irow-lbl">Estimated Altitude</span><span class="irow-val" id="s-alt">–</span></div>
-        <div class="irow"><span class="irow-lbl">Ambient Light</span><span class="irow-val" id="s-als">–</span></div>
-        <div class="irow"><span class="irow-lbl">Proximity</span><span class="irow-val" id="s-prox">–</span></div>
-        <div class="irow"><span class="irow-lbl">Magnetometer X/Y/Z</span><span class="irow-val" id="s-mag">–</span></div>
-        <div class="irow"><span class="irow-lbl">Gravity Vector</span><span class="irow-val" id="s-grav">–</span></div>
-        <div class="irow"><span class="irow-lbl">Orientation Absolute</span><span class="irow-val" id="s-abs">–</span></div>
+        <div class="ch">Environmental Sensors</div>
+        <div class="ir"><span class="ir-l">Barometer / Pressure</span><span class="ir-v" id="s-baro">–</span></div>
+        <div class="ir"><span class="ir-l">Altitude (estimated)</span><span class="ir-v" id="s-alt">–</span></div>
+        <div class="ir"><span class="ir-l">Ambient Light (ALS)</span><span class="ir-v" id="s-als">–</span></div>
+        <div class="ir"><span class="ir-l">Proximity Sensor</span><span class="ir-v" id="s-prox">–</span></div>
+        <div class="ir"><span class="ir-l">Magnetometer x/y/z</span><span class="ir-v" id="s-mag">–</span></div>
+        <div class="ir"><span class="ir-l">Gravity Vector x/y/z</span><span class="ir-v" id="s-grav">–</span></div>
       </div>
 
-      <!-- 3D orientation ring viz -->
-      <div class="card">
-        <div class="card-hd">3D Orientation Ring</div>
-        <div class="ring-viz">
-          <canvas id="ring-canvas" width="160" height="160"></canvas>
-        </div>
-      </div>
-
-      <button class="btn btn-ghost" onclick="reqMotionPerm()">🔒 REQUEST iOS SENSOR PERMISSION</button>
+      <button style="width:100%;padding:12px;background:var(--s2);color:var(--dim);border:1px solid var(--bdim);border-radius:var(--r2);font-size:12px;font-weight:700;font-family:var(--sans);cursor:pointer;letter-spacing:.5px" onclick="reqPerm()">🔒 REQUEST iOS SENSOR PERMISSION</button>
     </div>
 
-    <!-- ══ LIGHT ══ -->
+    <!-- ═══ LIGHT ═══ -->
     <div class="page" id="page-light">
-      <div class="card accent-top">
-        <div class="card-hd">
-          Light & Environment Estimation
-          <span class="badge ok" id="light-status">LIVE</span>
-        </div>
-        <div class="method-compare">
-          <button class="mc-btn active" onclick="setLightMode('lux')" id="lm-lux">LUX</button>
-          <button class="mc-btn" onclick="setLightMode('rgb')" id="lm-rgb">RGB</button>
-          <button class="mc-btn" onclick="setLightMode('spectrum')" id="lm-spectrum">SPECTRUM</button>
-          <button class="mc-btn" onclick="setLightMode('xr-light')" id="lm-xr">XR LIGHT</button>
-        </div>
+      <div class="card a">
+        <div class="ch">Light & Color Estimation <span class="badge ok" id="l-badge">LIVE</span></div>
       </div>
 
-      <div class="cam-wrap" style="aspect-ratio:3/4;position:relative">
-        <video id="l-vid" autoplay playsinline muted style="width:100%;height:100%;object-fit:cover"></video>
-        <canvas id="l-canvas" class="fullcam"></canvas>
-        <div class="scan-bar"></div>
-        <div class="hud-tl" id="l-hud-lux">– lux</div>
-        <div class="hud-tr" id="l-hud-temp">–K</div>
-        <div class="cam-placeholder" id="l-placeholder"><div style="font-size:32px">💡</div><div>Tap Start Camera</div></div>
+      <div class="cam-box" style="aspect-ratio:3/4">
+        <video id="l-vid" autoplay playsinline muted></video>
+        <canvas id="l-ov" class="ov"></canvas>
+        <div class="hud tl" id="l-hud-lux">– lux</div>
+        <div class="hud tr" id="l-hud-cct">–K</div>
+        <div class="cam-ph" id="l-ph"><div style="font-size:28px">💡</div><div>Starting camera…</div></div>
       </div>
 
       <div class="card" style="margin-top:10px">
-        <div class="card-hd">Luminance Meter</div>
-        <div class="lux-meter">
-          <div class="lux-fill" id="lux-fill" style="width:0%;background:linear-gradient(90deg,#1a1a2e,#ffd600,#fff)"></div>
-          <div class="lux-tick" style="left:25%"></div>
-          <div class="lux-tick" style="left:50%"></div>
-          <div class="lux-tick" style="left:75%"></div>
+        <div class="ch">Luminance</div>
+        <div class="luxm">
+          <div class="luxm-fill" id="lux-fill" style="width:0%"></div>
+          <div class="luxm-tick" style="left:25%"></div>
+          <div class="luxm-tick" style="left:50%"></div>
+          <div class="luxm-tick" style="left:75%"></div>
         </div>
-        <div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:9px;color:var(--dim)">
-          <span>Dark</span><span>Indoor</span><span>Office</span><span>Outdoor</span>
+        <div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:8px;color:var(--dim)">
+          <span>Dark</span><span>Dim</span><span>Office</span><span>Bright</span>
         </div>
       </div>
 
-      <div class="metrics-row">
-        <div class="metric hi"><div class="m-lbl">Estimated Lux</div><div class="m-val big" id="l-lux">–</div></div>
-        <div class="metric"><div class="m-lbl">Color Temp</div><div class="m-val" id="l-cct">–<span class="m-unit">K</span></div></div>
+      <div class="mrow c2">
+        <div class="met hi"><div class="ml">Est. Lux</div><div class="mv big" id="l-lux">–</div></div>
+        <div class="met"><div class="ml">Color Temp</div><div class="mv" id="l-cct">–<span class="mu">K</span></div></div>
       </div>
-      <div class="metrics-row three">
-        <div class="metric"><div class="m-lbl">Avg R</div><div class="m-val" id="l-r" style="color:#ff6b6b">–</div></div>
-        <div class="metric"><div class="m-lbl">Avg G</div><div class="m-val" id="l-g" style="color:#00f5d4">–</div></div>
-        <div class="metric"><div class="m-lbl">Avg B</div><div class="m-val" id="l-b" style="color:#a8dadc">–</div></div>
+      <div class="mrow c3">
+        <div class="met"><div class="ml">R</div><div class="mv" id="l-r" style="color:#ff5a5a">–</div></div>
+        <div class="met"><div class="ml">G</div><div class="mv" id="l-g" style="color:#00e5c8">–</div></div>
+        <div class="met"><div class="ml">B</div><div class="mv" id="l-b" style="color:#55aaff">–</div></div>
       </div>
-      <div class="metrics-row">
-        <div class="metric"><div class="m-lbl">Condition</div><div class="m-val" id="l-cond" style="font-size:13px">–</div></div>
-        <div class="metric"><div class="m-lbl">XR Light Est.</div><div class="m-val" id="l-xr" style="font-size:12px">–</div></div>
-      </div>
-
-      <div class="card">
-        <div class="card-hd">RGB Histogram</div>
-        <canvas id="l-hist" style="width:100%;height:60px;display:block;background:var(--s2);border-radius:var(--r2)"></canvas>
+      <div class="mrow c2">
+        <div class="met"><div class="ml">Condition</div><div class="mv" id="l-cond" style="font-size:12px">–</div></div>
+        <div class="met"><div class="ml">ALS Sensor</div><div class="mv" id="l-als" style="font-size:11px">–</div></div>
       </div>
 
       <div class="card">
-        <div class="card-hd">Lux History</div>
-        <canvas id="l-spark" class="sparkline" height="50"></canvas>
+        <div class="ch">RGB Histogram</div>
+        <canvas id="l-hist" style="width:100%;height:56px;display:block;background:var(--s2);border-radius:var(--r2)"></canvas>
       </div>
-
       <div class="card">
-        <div class="card-hd">Device Ambient Light Sensor</div>
-        <div class="irow"><span class="irow-lbl">ALS Reading</span><span class="irow-val" id="l-als">Not available</span></div>
-        <div class="irow"><span class="irow-lbl">API Status</span><span class="irow-val" id="l-als-status">–</span></div>
+        <div class="ch">Lux History</div>
+        <canvas id="l-spark" class="spark"></canvas>
       </div>
-
-      <div id="l-err-zone"></div>
-      <button class="btn btn-acc" id="l-cam-btn" onclick="toggleCam('l')">▶ START CAMERA</button>
+      <div id="l-err"></div>
     </div>
 
-    <!-- ══ PLANES ══ -->
+    <!-- ═══ PLANES ═══ -->
     <div class="page" id="page-planes">
-      <div class="card accent-top">
-        <div class="card-hd">
-          Plane & Surface Detection
-          <span class="badge warn" id="planes-xr-badge">CHECKING</span>
+      <div class="card a">
+        <div class="ch">Plane Detection
+          <span class="badge warn" id="pl-badge">CHECKING</span>
         </div>
-        <div class="irow"><span class="irow-lbl">WebXR AR</span><span class="irow-val" id="pl-ar-status">–</span></div>
-        <div class="irow"><span class="irow-lbl">Plane Detection</span><span class="irow-val" id="pl-pd-status">–</span></div>
-        <div class="irow"><span class="irow-lbl">Local Floor</span><span class="irow-val" id="pl-floor-status">–</span></div>
+        <div class="ir"><span class="ir-l">WebXR AR Session</span><span class="ir-v" id="pl-ar">–</span></div>
+        <div class="ir"><span class="ir-l">Plane Detection API</span><span class="ir-v" id="pl-pd">–</span></div>
+        <div class="ir"><span class="ir-l">Fallback</span><span class="ir-v">Visual floor line detection</span></div>
       </div>
 
-      <div class="cam-wrap scroll-cam" id="pl-cam-wrap">
-        <video id="pl-vid" autoplay playsinline muted style="width:100%;height:100%;object-fit:cover"></video>
-        <canvas id="pl-canvas" class="fullcam"></canvas>
-        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
-        <div class="hud-tl" id="pl-hud-count">PLANES: –</div>
-        <div class="hud-br" id="pl-hud-floor">FLOOR: –m</div>
-        <div class="cam-placeholder" id="pl-placeholder"><div style="font-size:32px">🟦</div><div>Tap Start Plane Detection</div></div>
+      <div class="cam-box" id="pl-cam-box" style="aspect-ratio:3/4">
+        <video id="pl-vid" autoplay playsinline muted></video>
+        <canvas id="pl-ov" class="ov"></canvas>
+        <div class="scan"></div>
+        <div class="corners"></div><div class="corners2"></div>
+        <div class="hud tl" id="pl-hud-n">PLANES: –</div>
+        <div class="hud br" id="pl-hud-h">FLOOR: –m</div>
+        <div class="cam-ph" id="pl-ph"><div style="font-size:28px">🟦</div><div>Starting plane detection…</div></div>
       </div>
 
-      <div class="metrics-row">
-        <div class="metric hi"><div class="m-lbl">Camera Height</div><div class="m-val big" id="pl-camh">–<span class="m-unit">m</span></div></div>
-        <div class="metric"><div class="m-lbl">Planes Found</div><div class="m-val" id="pl-count">0</div></div>
+      <div class="mrow c2">
+        <div class="met hi"><div class="ml">Camera Height (planes)</div><div class="mv big" id="pl-camh">–<span class="mu">m</span></div></div>
+        <div class="met"><div class="ml">Planes Detected</div><div class="mv" id="pl-count">0</div></div>
       </div>
-      <div class="metrics-row">
-        <div class="metric"><div class="m-lbl">Floor Y</div><div class="m-val" id="pl-floory">–</div></div>
-        <div class="metric"><div class="m-lbl">Confidence</div><div class="m-val" id="pl-conf">–</div></div>
+      <div class="mrow c2">
+        <div class="met"><div class="ml">Floor Y (world)</div><div class="mv" id="pl-floory">–</div></div>
+        <div class="met"><div class="ml">Visual Floor Line</div><div class="mv" id="pl-visl">–</div></div>
       </div>
 
       <div class="card">
-        <div class="card-hd">Detected Planes</div>
-        <div id="planes-list"><div style="color:var(--dim);font-size:13px;padding:8px 0">No planes yet. Start WebXR session.</div></div>
+        <div class="ch">Detected Planes</div>
+        <div id="pl-list"><div style="color:var(--dim);font-size:12px;padding:6px 0">Auto-starting detection…</div></div>
       </div>
 
-      <!-- Visual fallback floor detection -->
-      <div class="card">
-        <div class="card-hd">Visual Floor Line Detection (Fallback)</div>
-        <canvas id="floor-detect-canvas" style="width:100%;height:100px;display:block;background:var(--s2);border-radius:var(--r2)"></canvas>
-        <div class="irow"><span class="irow-lbl">Detected Floor Line</span><span class="irow-val" id="floor-line-y">–</span></div>
-      </div>
-
-      <div id="pl-err-zone"></div>
-      <button class="btn btn-acc" id="pl-xr-btn" onclick="startPlanesXR()">▶ START WebXR PLANE DETECTION</button>
-      <button class="btn btn-ghost" id="pl-vis-btn" onclick="startVisualFloor()">📷 VISUAL FLOOR DETECTION</button>
-      <button class="btn btn-err" onclick="stopPlanesXR()">■ STOP ALL</button>
+      <div id="pl-err"></div>
     </div>
 
-    <!-- ══ COMPARE ══ -->
+    <!-- ═══ ALL DATA ═══ -->
     <div class="page" id="page-compare">
-      <div class="card accent-top">
-        <div class="card-hd">All Methods Comparison Dashboard</div>
-        <div style="font-size:12px;color:var(--dim);font-family:var(--sans);line-height:1.5">
-          Real-time fusion of all available measurement methods. Winner highlighted in green.
+      <div class="card a">
+        <div class="ch">Sensor Fusion — All Data <span class="badge ok">LIVE</span></div>
+        <div class="mrow c2">
+          <div class="met hi"><div class="ml">Best Height</div><div class="mv big" id="cmp-h">–<span class="mu">m</span></div><div class="ms" id="cmp-h-src">–</div></div>
+          <div class="met hi2"><div class="ml">Best Distance</div><div class="mv big" id="cmp-d">–<span class="mu">m</span></div><div class="ms" id="cmp-d-src">–</div></div>
         </div>
-      </div>
-
-      <!-- Height comparison -->
-      <div class="card">
-        <div class="card-hd">📏 HEIGHT FROM GROUND — All Methods</div>
-        <div class="compare-grid">
-          <div class="compare-cell" id="cmp-h-sensor"><div class="cc-label">SENSOR TILT</div><div class="cc-val" id="cmp-h-sensor-v">–</div><div class="cc-conf">cos(tilt) model</div></div>
-          <div class="compare-cell" id="cmp-h-visual"><div class="cc-label">VISUAL HORIZON</div><div class="cc-val" id="cmp-h-visual-v">–</div><div class="cc-conf">horizon angle</div></div>
-        </div>
-        <div class="compare-grid">
-          <div class="compare-cell" id="cmp-h-plane"><div class="cc-label">PLANE DETECT</div><div class="cc-val" id="cmp-h-plane-v">–</div><div class="cc-conf">WebXR floor Y</div></div>
-          <div class="compare-cell winner" id="cmp-h-fused"><div class="cc-label">FUSED BEST</div><div class="cc-val warn" id="cmp-h-fused-v">–</div><div class="cc-conf">weighted average</div></div>
-        </div>
-      </div>
-
-      <!-- Distance comparison -->
-      <div class="card">
-        <div class="card-hd">📐 DISTANCE TO OBJECT — All Methods</div>
-        <div class="compare-grid">
-          <div class="compare-cell" id="cmp-d-trig"><div class="cc-label">TRIG</div><div class="cc-val" id="cmp-d-trig-v">–</div></div>
-          <div class="compare-cell" id="cmp-d-xr-hit"><div class="cc-label">XR HIT-TEST</div><div class="cc-val" id="cmp-d-xr-v">–</div></div>
-        </div>
-        <div class="compare-grid">
-          <div class="compare-cell" id="cmp-d-depth"><div class="cc-label">DEPTH BUFFER</div><div class="cc-val" id="cmp-d-depth-v">–</div></div>
-          <div class="compare-cell winner"><div class="cc-label">FUSED BEST</div><div class="cc-val warn" id="cmp-d-fused-v">–</div></div>
-        </div>
-      </div>
-
-      <!-- Sensor fusion card -->
-      <div class="card">
-        <div class="card-hd">🧠 Sensor Fusion Summary</div>
-        <div class="metrics-row">
-          <div class="metric hi"><div class="m-lbl">Best Height</div><div class="m-val big" id="cmp-best-h">–<span class="m-unit">m</span></div></div>
-          <div class="metric hi"><div class="m-lbl">Best Distance</div><div class="m-val big" id="cmp-best-d">–<span class="m-unit">m</span></div></div>
-        </div>
-        <div class="metrics-row three">
-          <div class="metric"><div class="m-lbl">Light (lux)</div><div class="m-val" id="cmp-lux">–</div></div>
-          <div class="metric"><div class="m-lbl">Heading</div><div class="m-val" id="cmp-heading">–<span class="m-unit">°</span></div></div>
-          <div class="metric"><div class="m-lbl">Tilt</div><div class="m-val" id="cmp-tilt">–<span class="m-unit">°</span></div></div>
-        </div>
-      </div>
-
-      <!-- All-in-one timeline -->
-      <div class="card">
-        <div class="card-hd">All Measurements Timeline</div>
-        <canvas id="cmp-timeline" style="width:100%;height:120px;display:block;background:var(--s2);border-radius:var(--r2)"></canvas>
-        <div style="display:flex;gap:12px;margin-top:8px;flex-wrap:wrap">
-          <span style="font-family:var(--mono);font-size:9px;color:var(--acc)">━ Height</span>
-          <span style="font-family:var(--mono);font-size:9px;color:var(--acc3)">━ Distance</span>
-          <span style="font-family:var(--mono);font-size:9px;color:var(--acc2)">━ Lux/100</span>
+        <div class="mrow c3">
+          <div class="met"><div class="ml">Lux</div><div class="mv" id="cmp-lux" style="font-size:14px">–</div></div>
+          <div class="met"><div class="ml">Heading</div><div class="mv" id="cmp-hdg" style="font-size:14px">–°</div></div>
+          <div class="met"><div class="ml">Pitch</div><div class="mv" id="cmp-pitch" style="font-size:14px">–°</div></div>
         </div>
       </div>
 
       <div class="card">
-        <div class="card-hd">Active Features Status</div>
-        <div id="cmp-status-list"><!-- filled by JS --></div>
+        <div class="ch">Height — All Methods</div>
+        <div class="mrow c2">
+          <div class="met" id="cmp-h1"><div class="ml">Gravity Vector</div><div class="mv" id="cmp-hv1">–</div></div>
+          <div class="met" id="cmp-h2"><div class="ml">Pitch (Beta)</div><div class="mv" id="cmp-hv2">–</div></div>
+        </div>
+        <div class="mrow c2">
+          <div class="met" id="cmp-h3"><div class="ml">XR Floor Plane</div><div class="mv" id="cmp-hv3">–</div></div>
+          <div class="met" id="cmp-h4"><div class="ml">Visual Floor</div><div class="mv" id="cmp-hv4">–</div></div>
+        </div>
       </div>
 
       <div class="card">
-        <div class="card-hd">WebXR Features</div>
-        <div class="irow"><span class="irow-lbl">AR Session</span><span class="irow-val" id="cmp-ar">–</span></div>
-        <div class="irow"><span class="irow-lbl">Hit Test</span><span class="irow-val" id="cmp-hit">–</span></div>
-        <div class="irow"><span class="irow-lbl">Depth Sensing</span><span class="irow-val" id="cmp-dep">–</span></div>
-        <div class="irow"><span class="irow-lbl">Plane Detection</span><span class="irow-val" id="cmp-planes">–</span></div>
-        <div class="irow"><span class="irow-lbl">Lighting Estimation</span><span class="irow-val" id="cmp-light-est">–</span></div>
-        <div class="irow"><span class="irow-lbl">Anchors</span><span class="irow-val" id="cmp-anchors">–</span></div>
-        <div class="irow"><span class="irow-lbl">Camera Access</span><span class="irow-val" id="cmp-cam">–</span></div>
-        <div class="irow"><span class="irow-lbl">DOM Overlay</span><span class="irow-val" id="cmp-domov">–</span></div>
+        <div class="ch">Distance — All Methods</div>
+        <div class="mrow c2">
+          <div class="met" id="cmp-d1"><div class="ml">Trig (Sensor)</div><div class="mv" id="cmp-dv1">–</div></div>
+          <div class="met" id="cmp-d2"><div class="ml">Focus-based</div><div class="mv" id="cmp-dv2">–</div></div>
+        </div>
+        <div class="mrow c2">
+          <div class="met" id="cmp-d3"><div class="ml">XR Hit-test</div><div class="mv" id="cmp-dv3">–</div></div>
+          <div class="met" id="cmp-d4"><div class="ml">Depth Center</div><div class="mv" id="cmp-dv4">–</div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="ch">Multi-channel Timeline</div>
+        <canvas id="cmp-timeline" style="width:100%;height:110px;display:block;background:var(--s2);border-radius:var(--r2)"></canvas>
+        <div style="display:flex;gap:10px;margin-top:6px;flex-wrap:wrap">
+          <span style="font-family:var(--mono);font-size:8px;color:var(--acc)">━ Height (m)</span>
+          <span style="font-family:var(--mono);font-size:8px;color:var(--acc3)">━ Distance (m)</span>
+          <span style="font-family:var(--mono);font-size:8px;color:var(--acc2)">━ Lux/100</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="ch">WebXR Feature Availability</div>
+        <div id="cmp-xr-list"></div>
       </div>
     </div>
 
@@ -1123,1739 +758,1315 @@ canvas.fullcam{position:absolute;inset:0;width:100%;height:100%;display:block}
 </div><!-- /app -->
 
 <div id="toast"></div>
-</body>
-</html>
+
 <script>
-// ══════════════════════════════════════════════════════
-// AR·SENSE — Full JS Engine
-// ══════════════════════════════════════════════════════
+'use strict';
+// ══════════════════════════════════════════════
+// AR·SENSE ENGINE — Rebuilt with correct physics
+// ══════════════════════════════════════════════
 
-// ── GLOBAL STATE ─────────────────────────────────────
+// ── GLOBALS ──────────────────────────────────
 const G = {
-  os:'unknown', isAndroid:false, isIOS:false,
+  // Platform
+  os:'unknown', isIOS:false, isAndroid:false,
+  // Capabilities
   caps:{},
-  sensors:{ alpha:0, beta:90, gamma:0, ax:0, ay:0, az:9.8, rr:0, rb:0, rg:0 },
-  prevSensors:{ ax:0, ay:0, az:9.8 },
-  streams:{ h:null, d:null, e:null, l:null, pl:null, dep:null },
-  active:{ h:false, d:false, e:false, l:false, pl:false, dep:false },
-  xr:{ session:null, refSpace:null, hitTestSrc:null, depthSession:null, planeSession:null, lightSession:null },
-  measure:{ height_sensor:null, height_visual:null, height_plane:null,
-            dist_trig:null, dist_xr:null, dist_depth:null,
-            lux:null, planeFloorY:null, planeCount:0, centerDepth:null },
-  heightHistory:[], distHistory:[], luxHistory:[], motionHistory:[],
-  cmpTimeline:{ h:[], d:[], l:[] },
-  heightTab:'both', distTab:'all', depthMode:'heatmap',
-  edgeMode:'edge', lightMode:'lux',
-  edgeThresh:60,
+  // Sensor readings (smoothed)
+  S:{ alpha:0, beta:90, gamma:0, ax:0, ay:0, az:9.81,
+      rr:0, rb:0, rg:0, gx:0, gy:9.81, gz:0 },
+  // Kalman-like smoothing state
+  _beta:90, _gamma:0, _ax:0, _ay:0, _az:9.81,
+  // Derived measurements (all in meters)
+  M:{ height_grav:1.3, height_pitch:1.3, height_plane:null, height_visual:null,
+      dist_trig:null, dist_focus:null, dist_xr:null, dist_depth:null,
+      lux:0, cct:6500, planeFloorY:null, centerDepth:null },
+  // Active streams
+  streams:{},
+  active:{},
+  // Animation frame handles
+  AF:{},
+  // History buffers
+  H:{ height:[], dist:[], lux:[], motionH:[], tl_h:[], tl_d:[], tl_l:[] },
+  // UI state
+  heightMode:'gravity', distMode:'trig', depMode:'heatmap', objMode:'edge',
+  edgeT:60,
+  // Wave data
+  waves:{},
+  // XR
+  xrSessions:{},
+  // Rate tracking
+  _hz:0, _hzCount:0, _hzT:0,
+  // Prev frame for motion
   prevFrame:null,
-  animFrames:{},
-  sensorRate:0, sensorLastTime:0, sensorCount:0,
-  planeData:[],
-  xrFeatures:{},
+  // Camera auto-start
+  camStarted:{},
 };
-let edgeThresh = 60; // global for slider
 
-// ── CAPABILITIES MAP ─────────────────────────────────
-const CAPS_CONFIG = [
-  { id:'cap-cam',    label:'Rear Camera',      sub:'getUserMedia',         key:'camera' },
-  { id:'cap-gyro',   label:'Gyroscope',         sub:'DeviceOrientation',    key:'gyro' },
-  { id:'cap-accel',  label:'Accelerometer',     sub:'DeviceMotion',         key:'accel' },
-  { id:'cap-mag',    label:'Magnetometer',      sub:'Sensor API / Orient',  key:'mag' },
-  { id:'cap-baro',   label:'Barometer',         sub:'AbsolutePressure',     key:'baro' },
-  { id:'cap-als',    label:'Ambient Light',     sub:'AmbientLightSensor',   key:'als' },
-  { id:'cap-prox',   label:'Proximity',         sub:'DeviceProximity',      key:'prox' },
-  { id:'cap-webxr',  label:'WebXR',             sub:'immersive-ar',         key:'webxr' },
-  { id:'cap-ar',     label:'AR Mode',           sub:'ARCore / ARKit',       key:'ar' },
-  { id:'cap-depth',  label:'Depth Sensing',     sub:'XR depth-sensing',     key:'depth' },
-  { id:'cap-hit',    label:'Hit Test',          sub:'XR hit-test',          key:'hit' },
-  { id:'cap-planes', label:'Plane Detection',   sub:'XR plane-detection',   key:'planes' },
-  { id:'cap-light',  label:'Light Estimation',  sub:'XR light-estimation',  key:'light_est' },
-  { id:'cap-anchor', label:'Anchors',           sub:'XR anchors',           key:'anchors' },
-  { id:'cap-raw',    label:'Raw Camera XR',     sub:'XR camera-access',     key:'raw_cam' },
-  { id:'cap-gpu',    label:'GPU / WebGL',       sub:'WebGL2 context',       key:'gpu' },
-];
-
-// ── UTILS ────────────────────────────────────────────
-const $  = id => document.getElementById(id);
-const $$ = sel => document.querySelectorAll(sel);
-function setText(id, v){ const e=$( id); if(e) e.textContent=v; }
-function setHTML(id,v){ const e=$(id); if(e) e.innerHTML=v; }
+// ── DOM SHORTCUTS ─────────────────────────────
+const $ = id => document.getElementById(id);
+const T = (id, v) => { const e=$(id); if(e) e.textContent = v; };
+const CL = (id, cls, on) => { const e=$(id); if(e) e.classList.toggle(cls, on); };
 
 let _toastT;
 function toast(msg, dur=3000){
-  const el=$('toast');
-  el.textContent=msg; el.classList.add('show');
-  clearTimeout(_toastT);
-  _toastT=setTimeout(()=>el.classList.remove('show'), dur);
+  const el=$('toast'); el.textContent=msg; el.classList.add('on');
+  clearTimeout(_toastT); _toastT=setTimeout(()=>el.classList.remove('on'),dur);
 }
 
-function badge(id, st, txt){
-  const e=$(id); if(!e) return;
-  e.className='badge '+st;
-  e.textContent=txt;
+function showErr(zone, msg, fn){
+  const z=$(zone); if(!z) return;
+  z.innerHTML=`<div class="ebox fi"><div class="ico">⚠</div><div class="msg">${msg}${fn?`<br><button class="retry" onclick="(${fn.toString()})()">↺ Retry</button>`:''}</div></div>`;
 }
-
-function showErr(zoneId, msg, retryFn){
-  const z=$(zoneId); if(!z) return;
-  z.innerHTML=`<div class="err-box">
-    <div class="icon">⚠</div>
-    <div class="msg">${msg}<br>
-    ${retryFn?`<button class="retry-btn" onclick="(${retryFn.toString()})()">↺ Retry</button>`:''}
-    </div></div>`;
+function showWarn(zone, msg){
+  const z=$(zone); if(!z) return;
+  z.innerHTML=`<div class="wbox fi"><div class="ico">ℹ</div><div class="msg">${msg}</div></div>`;
 }
-function clearErr(zoneId){ const z=$(zoneId); if(z) z.innerHTML=''; }
+function clearNotice(zone){ const z=$(zone); if(z) z.innerHTML=''; }
 
-function showWarn(zoneId, msg){
-  const z=$(zoneId); if(!z) return;
-  z.innerHTML=`<div class="warn-box"><div class="icon">ℹ</div><div class="msg">${msg}</div></div>`;
-}
-
-function capClass(status){
-  if(status===true) return 'ok';
-  if(status===false) return 'err';
-  if(status==='partial') return 'warn';
-  return 'checking';
-}
-
-// ── SPARKLINE HELPER ─────────────────────────────────
-function drawSparkline(canvasId, data, color='#00f5d4', min=null, max=null, label=''){
-  const c=$(canvasId); if(!c) return;
-  const ctx=c.getContext('2d');
-  const W=c.offsetWidth||c.width; const H=c.offsetHeight||c.height;
-  c.width=W; c.height=H;
-  ctx.clearRect(0,0,W,H);
-  if(!data||data.length<2) return;
-  const mn = min!==null ? min : Math.min(...data);
-  const mx = max!==null ? max : Math.max(...data);
-  const range = mx - mn || 1;
-  ctx.beginPath();
-  ctx.strokeStyle=color; ctx.lineWidth=1.5;
-  data.forEach((v,i)=>{
-    const x = (i/(data.length-1))*W;
-    const y = H - ((v-mn)/range)*(H-4)-2;
-    i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
-  });
-  ctx.stroke();
-  // fill
-  ctx.lineTo(W,H); ctx.lineTo(0,H); ctx.closePath();
-  const grad=ctx.createLinearGradient(0,0,0,H);
-  grad.addColorStop(0, color.replace(')',', 0.2)').replace('rgb','rgba').replace('#','').length>7 ? color+'33' : color+'33');
-  grad.addColorStop(1,'transparent');
-  ctx.fillStyle=color+'22';
-  ctx.fill();
-  // last value
-  if(data.length>0){
-    ctx.fillStyle=color;
-    ctx.font='9px DM Mono, monospace';
-    ctx.fillText(data[data.length-1].toFixed(2), W-40, 12);
-  }
-}
-
-// ── DEVICE DETECTION ────────────────────────────────
+// ── DEVICE DETECTION ─────────────────────────
 function detectDevice(){
   const ua=navigator.userAgent;
   G.isIOS=/iPad|iPhone|iPod/.test(ua)&&!window.MSStream;
   G.isAndroid=/Android/.test(ua);
   G.os=G.isIOS?'iOS':G.isAndroid?'Android':'Desktop';
-
-  $('sp-os').textContent = G.isIOS ? '📱 iPhone / iOS' : G.isAndroid ? '🤖 Android' : '💻 Desktop / Other';
-  $('sp-note').textContent = G.isIOS
-    ? 'Safari · Tap "Request iOS Permission" for motion sensors · WebXR limited'
+  $('sp-os').textContent=G.isIOS?'📱 iPhone / iOS':G.isAndroid?'🤖 Android':'💻 Desktop';
+  $('sp-icon').textContent=G.isIOS?'🍎':G.isAndroid?'🤖':'💻';
+  $('sp-note').textContent=G.isIOS
+    ? 'Motion needs user permission tap · WebXR limited'
     : G.isAndroid
-    ? 'Chrome recommended · ARCore enables full WebXR · All sensors available'
-    : 'Limited sensor access · Camera may work · WebXR not typically supported';
-  $('sp-icon').textContent = G.isIOS ? '🍎' : G.isAndroid ? '🤖' : '💻';
-  $('tb-os').textContent = G.os;
+    ? 'Chrome + ARCore = full WebXR · All sensors available'
+    : 'Limited sensor support · Camera may work over HTTPS';
+  $('tb-os').textContent=G.os;
 }
 
-// ── CAPABILITY DETECTION ────────────────────────────
-async function detectCapabilities(){
-  const grid=$('cap-grid');
-  grid.innerHTML='';
-  CAPS_CONFIG.forEach(c=>{
-    grid.innerHTML+=`<div class="cap-item checking" id="${c.id}">
-      <div class="cap-dot"></div>
-      <div><div class="cap-text">${c.label}</div><div class="cap-sub">${c.sub}</div></div>
-    </div>`;
-  });
+// ── CAPABILITIES ─────────────────────────────
+const CAPS=[
+  {id:'cc-cam',  label:'Rear Camera',    sub:'getUserMedia',      key:'camera'},
+  {id:'cc-gyro', label:'Gyroscope',      sub:'DeviceOrientation', key:'gyro'},
+  {id:'cc-accel',label:'Accelerometer',  sub:'DeviceMotion',      key:'accel'},
+  {id:'cc-mag',  label:'Magnetometer',   sub:'Sensor API/Orient', key:'mag'},
+  {id:'cc-baro', label:'Barometer',      sub:'AbsolutePressure',  key:'baro'},
+  {id:'cc-als',  label:'Ambient Light',  sub:'AmbientLightSensor',key:'als'},
+  {id:'cc-prox', label:'Proximity',      sub:'DeviceProximity',   key:'prox'},
+  {id:'cc-webxr',label:'WebXR AR',       sub:'immersive-ar',      key:'webxr'},
+  {id:'cc-depth',label:'XR Depth',       sub:'depth-sensing',     key:'xr_depth'},
+  {id:'cc-hit',  label:'XR Hit-test',    sub:'hit-test',          key:'xr_hit'},
+  {id:'cc-plane',label:'XR Planes',      sub:'plane-detection',   key:'xr_planes'},
+  {id:'cc-light',label:'XR Lighting',    sub:'light-estimation',  key:'xr_light'},
+];
 
-  const setC=(id,status)=>{
-    const el=$(id); if(!el) return;
-    el.className='cap-item '+capClass(status);
-  };
+async function detectCaps(){
+  const g=$('cap-grid');
+  g.innerHTML=CAPS.map(c=>`<div class="cap-item checking" id="${c.id}">
+    <div class="cap-dot"></div>
+    <div><div class="cap-text">${c.label}</div><div class="cap-sub">${c.sub}</div></div>
+  </div>`).join('');
+
+  const sc=(id,s)=>{const e=$(id);if(e){e.className='cap-item '+s;}};
 
   // Camera
   try{
-    const devs=await navigator.mediaDevices.enumerateDevices();
-    G.caps.camera=devs.some(d=>d.kind==='videoinput');
-  }catch{ G.caps.camera=false; }
-  setC('cap-cam', G.caps.camera);
+    const ds=await navigator.mediaDevices.enumerateDevices();
+    G.caps.camera=ds.some(d=>d.kind==='videoinput');
+  }catch{G.caps.camera=false;}
+  sc('cc-cam',G.caps.camera?'ok':'err');
 
-  // Motion sensors — always potentially available
-  G.caps.gyro = typeof DeviceOrientationEvent!=='undefined';
-  G.caps.accel = typeof DeviceMotionEvent!=='undefined';
-  setC('cap-gyro', G.caps.gyro?'partial':false);
-  setC('cap-accel', G.caps.accel?'partial':false);
+  // Motion
+  G.caps.gyro=typeof DeviceOrientationEvent!=='undefined';
+  G.caps.accel=typeof DeviceMotionEvent!=='undefined';
+  sc('cc-gyro',G.caps.gyro?'warn':'err');
+  sc('cc-accel',G.caps.accel?'warn':'err');
 
   // Magnetometer
-  if(typeof Magnetometer!=='undefined'){
-    try{ new Magnetometer(); G.caps.mag=true; }
-    catch{ G.caps.mag='partial'; }
-  } else {
-    G.caps.mag = typeof DeviceOrientationAbsoluteEvent!=='undefined' ? 'partial' : false;
-  }
-  setC('cap-mag', G.caps.mag);
+  G.caps.mag=false;
+  if(typeof Magnetometer!=='undefined'){try{new Magnetometer();G.caps.mag=true;}catch{G.caps.mag='partial';}}
+  else G.caps.mag=typeof DeviceOrientationAbsoluteEvent!=='undefined'?'partial':false;
+  sc('cc-mag',G.caps.mag?'warn':'err');
 
   // Barometer
   G.caps.baro=false;
-  if(typeof AbsolutePressureSensor!=='undefined'){
-    try{ new AbsolutePressureSensor(); G.caps.baro=true; }catch{}
-  } else if(typeof RelativePressureSensor!=='undefined'){
-    try{ new RelativePressureSensor(); G.caps.baro='partial'; }catch{}
-  }
-  setC('cap-baro', G.caps.baro);
+  if(typeof AbsolutePressureSensor!=='undefined'){try{new AbsolutePressureSensor();G.caps.baro=true;}catch{}}
+  sc('cc-baro',G.caps.baro?'ok':'err');
 
-  // Ambient Light Sensor
+  // ALS
   G.caps.als=false;
-  if(typeof AmbientLightSensor!=='undefined'){
-    try{ new AmbientLightSensor(); G.caps.als='partial'; }catch{}
-  }
-  setC('cap-als', G.caps.als);
+  if(typeof AmbientLightSensor!=='undefined'){try{new AmbientLightSensor();G.caps.als='partial';}catch{}}
+  sc('cc-als',G.caps.als?'warn':'err');
 
   // Proximity
-  G.caps.prox = 'ondeviceproximity' in window || typeof DeviceProximitySensor!=='undefined' ? 'partial' : false;
-  setC('cap-prox', G.caps.prox);
+  G.caps.prox='ondeviceproximity' in window?'partial':false;
+  sc('cc-prox',G.caps.prox?'warn':'err');
 
-  // GPU / WebGL
-  try{
-    const tc=document.createElement('canvas');
-    G.caps.gpu=!!(tc.getContext('webgl2')||tc.getContext('webgl'));
-  }catch{ G.caps.gpu=false; }
-  setC('cap-gpu', G.caps.gpu);
-
-  // WebXR chain
+  // WebXR AR
   if(navigator.xr){
-    G.caps.webxr=true; setC('cap-webxr',true);
     try{
-      G.caps.ar=await navigator.xr.isSessionSupported('immersive-ar');
-      setC('cap-ar', G.caps.ar);
-
-      if(G.caps.ar){
-        // Check optional features by attempting session (just check, don't start)
-        const checkFeature=async(feat)=>{
-          try{
-            // We can't start a session just to check, so check known platform support
-            const isAndroidChrome = G.isAndroid && /Chrome/.test(navigator.userAgent);
-            const isIOS = G.isIOS;
-            // Known supported features per platform
-            if(isAndroidChrome){
-              return ['depth-sensing','hit-test','plane-detection','light-estimation',
-                      'anchors','camera-access','dom-overlay','local-floor'].includes(feat);
-            }
-            if(isIOS) return ['hit-test','plane-detection'].includes(feat);
-            return false;
-          }catch{ return false; }
-        };
-        G.caps.depth=await checkFeature('depth-sensing');
-        G.caps.hit=await checkFeature('hit-test');
-        G.caps.planes=await checkFeature('plane-detection');
-        G.caps.light_est=await checkFeature('light-estimation');
-        G.caps.anchors=await checkFeature('anchors');
-        G.caps.raw_cam=await checkFeature('camera-access');
-        G.xrFeatures.depthSensing=G.caps.depth;
-        G.xrFeatures.hitTest=G.caps.hit;
-        G.xrFeatures.planeDetection=G.caps.planes;
-        G.xrFeatures.lightEstimation=G.caps.light_est;
-        G.xrFeatures.anchors=G.caps.anchors;
+      G.caps.webxr=await navigator.xr.isSessionSupported('immersive-ar');
+      sc('cc-webxr',G.caps.webxr?'ok':'err');
+      if(G.caps.webxr){
+        const chrome=G.isAndroid&&/Chrome/.test(navigator.userAgent);
+        G.caps.xr_depth=chrome;G.caps.xr_hit=chrome||G.isIOS;
+        G.caps.xr_planes=chrome||G.isIOS;G.caps.xr_light=chrome;
       }
-    }catch(e){ G.caps.ar=false; setC('cap-ar',false); }
-  } else {
-    G.caps.webxr=false; G.caps.ar=false;
-    setC('cap-webxr',false); setC('cap-ar',false);
-  }
-  setC('cap-depth', G.caps.depth||false);
-  setC('cap-hit', G.caps.hit||false);
-  setC('cap-planes', G.caps.planes||false);
-  setC('cap-light', G.caps.light_est||false);
-  setC('cap-anchor', G.caps.anchors||false);
-  setC('cap-raw', G.caps.raw_cam||false);
+    }catch{G.caps.webxr=false;sc('cc-webxr','err');}
+  } else {G.caps.webxr=false;sc('cc-webxr','err');}
 
-  updateCompareXRStatus();
-  return G.caps;
+  sc('cc-depth',G.caps.xr_depth?'ok':'err');
+  sc('cc-hit',G.caps.xr_hit?'ok':'err');
+  sc('cc-plane',G.caps.xr_planes?'ok':'err');
+  sc('cc-light',G.caps.xr_light?'ok':'err');
+
+  // Update plane page
+  T('pl-ar',G.caps.webxr?'✓ Supported':'✗ Not supported');
+  T('pl-pd',G.caps.xr_planes?'✓ Supported':'✗ Not supported (using visual fallback)');
+  $('pl-badge').className='badge '+(G.caps.xr_planes?'ok':'warn');
+  $('pl-badge').textContent=G.caps.xr_planes?'ARCORE':'VISUAL';
+
+  updateXRCompare();
 }
 
-function updateCompareXRStatus(){
-  const b=(v)=>v?'<span class="badge ok">✓ YES</span>':'<span class="badge err">✗ NO</span>';
-  setText('cmp-ar', G.caps.ar?'✓ Supported':'✗ Not supported');
-  setText('cmp-hit', G.caps.hit?'✓ Supported':'✗ Not supported');
-  setText('cmp-dep', G.caps.depth?'✓ Supported':'✗ Not supported');
-  setText('cmp-planes', G.caps.planes?'✓ Supported':'✗ Not supported');
-  setText('cmp-light-est', G.caps.light_est?'✓ Supported':'✗ Not supported');
-  setText('cmp-anchors', G.caps.anchors?'✓ Supported':'✗ Not supported');
-  setText('cmp-cam', G.caps.camera?'✓ Available':'✗ Not found');
-  setText('cmp-domov', G.caps.ar?'✓ Supported':'✗ Not supported');
-
-  badge('planes-xr-badge', G.caps.ar?'ok':'warn', G.caps.ar?'ARCORE':'NO XR');
-  badge('dep-api-badge', G.caps.depth?'ok':G.caps.ar?'warn':'err',
-        G.caps.depth?'WEBXR':'VISUAL');
-
-  // Compare page status list
-  const list=$('cmp-status-list');
-  if(!list) return;
+function updateXRCompare(){
+  const f=(v)=>v?'<span class="badge ok">✓ YES</span>':'<span class="badge err">✗ NO</span>';
   const items=[
-    ['Camera', G.caps.camera],
-    ['Gyroscope', G.caps.gyro],
-    ['Accelerometer', G.caps.accel],
-    ['Magnetometer', G.caps.mag],
-    ['Barometer', G.caps.baro],
-    ['Ambient Light', G.caps.als],
-    ['WebXR AR', G.caps.ar],
-    ['Hit Test', G.caps.hit],
-    ['Depth Sensing', G.caps.depth],
-    ['Plane Detection', G.caps.planes],
-    ['Light Estimation', G.caps.light_est],
+    ['WebXR AR',G.caps.webxr],['XR Depth Sensing',G.caps.xr_depth],
+    ['XR Hit-test',G.caps.xr_hit],['XR Plane Detection',G.caps.xr_planes],
+    ['XR Light Estimation',G.caps.xr_light],['Camera',G.caps.camera],
+    ['Gyroscope',G.caps.gyro],['Accelerometer',G.caps.accel],
+    ['Magnetometer',G.caps.mag],['Barometer',G.caps.baro],
+    ['Ambient Light',G.caps.als],
   ];
-  list.innerHTML = items.map(([label, v])=>`
-    <div class="irow">
-      <span class="irow-lbl">${label}</span>
-      <span class="badge ${v===true?'ok':v==='partial'?'warn':'err'}">${v===true?'✓ YES':v==='partial'?'◐ PARTIAL':'✗ NO'}</span>
-    </div>`).join('');
+  const el=$('cmp-xr-list');
+  if(el) el.innerHTML=items.map(([l,v])=>`<div class="ir"><span class="ir-l">${l}</span>${f(v)}</div>`).join('');
 }
 
-// ── SENSOR LISTENERS ────────────────────────────────
+// ── SENSOR LISTENERS ─────────────────────────
 function startSensors(){
   window.addEventListener('deviceorientation', onOrient, true);
   window.addEventListener('deviceorientationabsolute', onOrientAbs, true);
   window.addEventListener('devicemotion', onMotion, true);
-
-  // Generic Sensor API
   startGenericSensors();
 }
 
+// ═══ CRITICAL PHYSICS FIX ═══
+// DeviceOrientation.beta:
+//   0°  = phone flat on table (face up)
+//   90° = phone upright portrait (perpendicular to ground) ← this is normal holding
+//   -90° = phone face down
+//
+// Camera height from ground: when phone is held upright (beta≈90),
+//   the camera is at approximately eye-level minus some offset.
+//   The correct formula uses the GRAVITY VECTOR from accelerometer.
+//
+// Using accelerometer gravity components (with low-pass filter):
+//   pitch_angle = atan2(-ay, sqrt(ax²+az²))  [pitch of phone from horizontal]
+//   When pitch=90° = phone perfectly vertical, camera at max height
+//   camera_height = EYE_HEIGHT × sin(|pitch_angle|) + LENS_OFFSET × cos(|pitch_angle|)
+//   Since EYE_HEIGHT ≈ 1.6m (average), LENS_OFFSET from eye to camera rear ≈ 0.05m
+//   Simplified: h = 1.55 × sin(|pitch|)  [goes to 0 when flat, max when vertical]
+//
+// Depression angle for distance:
+//   When phone is vertical (beta≈90) pointing straight ahead: depression=0, infinite distance
+//   When tilted down (beta < 90): depression = 90 - beta
+//   distance = camera_height / tan(depression_rad)
+
+const EYE_H = 1.55;   // avg camera height when phone held upright = eye level * 0.97
+const ALPHA_F = 0.15; // low-pass filter alpha (smooth sensor noise)
+
+function lowPass(newV, oldV){ return oldV + ALPHA_F*(newV-oldV); }
+
 function onOrient(e){
   const now=performance.now();
-  G.sensorCount++;
-  if(now-G.sensorLastTime>1000){
-    G.sensorRate=G.sensorCount;
-    G.sensorCount=0;
-    G.sensorLastTime=now;
-  }
-  G.sensors.alpha=e.alpha||0;
-  G.sensors.beta=e.beta!=null?e.beta:90;
-  G.sensors.gamma=e.gamma||0;
-  updateSensorUI();
-  updateHeightCalc();
-  updateDistCalc();
-  updateCompare();
+  G._hzCount++;
+  if(now-G._hzT>1000){G._hz=G._hzCount;G._hzCount=0;G._hzT=now;}
+
+  // Low-pass filter to reduce noise
+  const rawBeta=e.beta??90, rawGamma=e.gamma??0, rawAlpha=e.alpha??0;
+  G._beta=lowPass(rawBeta,G._beta);
+  G._gamma=lowPass(rawGamma,G._gamma);
+  G.S.alpha=rawAlpha; // don't filter compass
+  G.S.beta=G._beta;
+  G.S.gamma=G._gamma;
+
+  computeHeight();
+  computeDistance();
+  updateOrientUI();
+  pushTimeline();
 }
+
 function onOrientAbs(e){
-  if(e.absolute&&e.alpha!=null) G.sensors.alpha=e.alpha;
+  if(e.absolute&&e.alpha!=null) G.S.alpha=e.alpha;
 }
+
 function onMotion(e){
   const a=e.accelerationIncludingGravity;
-  if(a){ G.prevSensors={...G.sensors}; G.sensors.ax=a.x||0;G.sensors.ay=a.y||0;G.sensors.az=a.z||0; }
+  if(a&&a.x!=null){
+    G._ax=lowPass(a.x,G._ax);
+    G._ay=lowPass(a.y,G._ay);
+    G._az=lowPass(a.z,G._az);
+    G.S.ax=G._ax; G.S.ay=G._ay; G.S.az=G._az;
+  }
   const r=e.rotationRate;
-  if(r){ G.sensors.rr=r.alpha||0;G.sensors.rb=r.beta||0;G.sensors.rg=r.gamma||0; }
+  if(r){G.S.rr=r.alpha??0;G.S.rb=r.beta??0;G.S.rg=r.gamma??0;}
+  computeHeightFromGravity();
   updateMotionUI();
 }
 
+// ═══ HEIGHT COMPUTATION ═══
+// Method 1: From gravity vector (accelerometer)
+// pitch = angle between device and horizontal, derived from gravity
+function computeHeightFromGravity(){
+  const ax=G.S.ax, ay=G.S.ay, az=G.S.az;
+  const g=Math.sqrt(ax*ax+ay*ay+az*az)||9.81;
+  // For phone held portrait upright:
+  // ay ≈ -9.81 when vertical, az ≈ 0
+  // pitch from horizontal = arcsin(ay/g) → when ay=-9.81, pitch=-90° (upright)
+  // Tilt from horizontal = arctan2(-ay, sqrt(ax²+az²))
+  const pitchRad=Math.atan2(-ay, Math.sqrt(ax*ax+az*az));
+  const pitchDeg=pitchRad*180/Math.PI;
+  // pitch=90° when phone face up flat, pitch=-90° when upright portrait
+  // We want angle from vertical (upright), so tilt_from_upright = 90+pitchDeg
+  const tiltFromUpright=Math.abs(90+pitchDeg); // 0 when vertical, 90 when flat
+  const sinT=Math.abs(Math.sin(tiltFromUpright*Math.PI/180));
+  // h = EYE_H when vertical (sin(0)=0 → 1-sin = 1), 0 when flat
+  // Correct: h = EYE_H * cos(tilt_from_upright)
+  const cosT=Math.cos(tiltFromUpright*Math.PI/180);
+  G.M.height_grav=Math.max(0.1, EYE_H * Math.abs(cosT));
+  G.S.grav_pitch=pitchDeg;
+  G.S.grav_g=g;
+}
+
+// Method 2: From DeviceOrientation beta
+function computeHeight(){
+  const beta=G.S.beta; // 90=upright, 0=flat
+  // camera height = EYE_H when beta=90 (vertical)
+  // reduces as phone tilts (beta approaches 0 = flat)
+  const betaRad=beta*Math.PI/180;
+  // sin(beta) = 1 when beta=90, 0 when beta=0
+  G.M.height_pitch=Math.max(0.1, EYE_H * Math.abs(Math.sin(betaRad)));
+  // Use gravity vector if available, else fall back to beta
+  const h = G.M.height_grav !== null ? G.M.height_grav : G.M.height_pitch;
+  G.M.height_best = h;
+
+  updateHeightUI();
+}
+
+// ═══ DISTANCE COMPUTATION ═══
+function computeDistance(){
+  const beta=G.S.beta;
+  // Depression angle = how far below horizontal the camera is pointing
+  // When beta=90 (upright, camera pointing forward): depression=0
+  // When beta=0 (flat, camera pointing up): depression=-90 (pointing skyward)
+  // When beta tilted forward (beta<90): depression = 90-beta (positive = looking down)
+  const depressionDeg = 90 - beta; // positive means looking down
+  G.S.depression=depressionDeg;
+
+  const h=G.M.height_best||EYE_H;
+
+  if(depressionDeg>0.5 && depressionDeg<89){
+    const depRad=depressionDeg*Math.PI/180;
+    const dist=h/Math.tan(depRad);
+    if(dist>0&&dist<200){
+      G.M.dist_trig=dist;
+    } else {
+      G.M.dist_trig=null;
+    }
+  } else if(depressionDeg<=0.5){
+    G.M.dist_trig=null; // pointing too horizontal or upward
+  } else {
+    G.M.dist_trig=0.01; // nearly straight down
+  }
+
+  // Fuse with other methods
+  const vals=[];
+  if(G.M.dist_trig!=null) vals.push({v:G.M.dist_trig,w:1});
+  if(G.M.dist_xr!=null) vals.push({v:G.M.dist_xr,w:2}); // XR more trusted
+  if(G.M.centerDepth!=null) vals.push({v:G.M.centerDepth,w:1.5});
+  if(vals.length>0){
+    const wsum=vals.reduce((s,x)=>s+x.w,0);
+    const wavg=vals.reduce((s,x)=>s+x.v*x.w,0)/wsum;
+    G.M.dist_best=wavg;
+  } else {
+    G.M.dist_best=null;
+  }
+
+  G.H.dist.push(G.M.dist_best??0);
+  if(G.H.dist.length>120) G.H.dist.shift();
+  updateDistUI();
+}
+
+// ── HEIGHT UI ─────────────────────────────────
+function updateHeightUI(){
+  const h=(G.M.height_grav??G.M.height_pitch??0);
+  const beta=G.S.beta;
+  const tiltFromVert=Math.abs(90-Math.abs(beta));
+  const isUpright=tiltFromVert<20;
+  const pitchDeg=G.S.grav_pitch??0;
+
+  T('h-main', h.toFixed(2)+'m');
+  T('h-main-sub', isUpright?`upright ✓ · conf ${Math.round(100-tiltFromVert*3)}%`:`tilt: ${tiltFromVert.toFixed(0)}° from vertical`);
+  T('h-pitch', tiltFromVert.toFixed(1)+'°');
+  T('h-pitch-sub', isUpright?'perpendicular to ground':'tilt phone more upright');
+  T('h-beta', beta.toFixed(1)+'°');
+  T('h-gamma', G.S.gamma.toFixed(1)+'°');
+  T('h-upright', isUpright?'✓ YES':'✗ NO');
+  T('h-hud-tl', `β${beta.toFixed(0)}°`);
+  T('h-hud-tr', `pitch ${tiltFromVert.toFixed(0)}°`);
+  T('h-hud-br', `h=${h.toFixed(2)}m`);
+  T('h-grav-v', (G.M.height_grav??0).toFixed(2)+'m');
+  T('h-ptrig-v', (G.M.height_pitch??0).toFixed(2)+'m');
+
+  // Horizon line position: beta=90→horizon at 50%, beta=0→horizon at 0%
+  const horizFrac=Math.max(0.05,Math.min(0.95, beta/180));
+  const el=$('h-hor'); if(el) el.style.top=(horizFrac*100)+'%';
+
+  G.H.height.push(parseFloat(h.toFixed(3)));
+  if(G.H.height.length>120) G.H.height.shift();
+  if(G.H.height.length>3) drawSparkline('h-spark',G.H.height,'#00e5c8',0,3);
+
+  // Compare page
+  T('cmp-h',(G.M.height_best??0).toFixed(2)+'m');
+  T('cmp-h-src', G.M.height_grav?'gravity vector':'beta angle');
+  T('cmp-hv1',(G.M.height_grav??0).toFixed(2)+'m');
+  T('cmp-hv2',(G.M.height_pitch??0).toFixed(2)+'m');
+  if(G.M.height_plane!=null) T('cmp-hv3',G.M.height_plane.toFixed(2)+'m');
+  if(G.M.height_visual!=null) T('cmp-hv4',G.M.height_visual.toFixed(2)+'m');
+  T('cmp-pitch', tiltFromVert.toFixed(0)+'°');
+  T('cmp-hdg', G.S.alpha.toFixed(0)+'°');
+
+  // winner highlight
+  const methods=[G.M.height_grav,G.M.height_pitch,G.M.height_plane,G.M.height_visual];
+  const ids=['cmp-h1','cmp-h2','cmp-h3','cmp-h4'];
+  ids.forEach((id,i)=>{const e=$(id);if(e) e.classList.remove('compare-best');});
+  // best = grav if available
+  if(G.M.height_grav!=null) $('cmp-h1')?.classList.add('compare-best');
+}
+
+// ── DISTANCE UI ───────────────────────────────
+function updateDistUI(){
+  const dist=G.M.dist_best;
+  const dep=G.S.depression??0;
+  const h=(G.M.height_best??EYE_H);
+
+  T('d-main', dist!=null ? dist.toFixed(2)+'m' : dep<=0?'pointing up/level':'too close');
+  T('d-main-sub', dist!=null ? `depression ${dep.toFixed(1)}°` : dep<=0?'tilt phone downward slightly':'<0.5m range');
+  T('d-dep', dep.toFixed(1)+'°');
+  T('d-dep-sub', dep>0?`${dep.toFixed(1)}° below horiz`:'pointing level/up');
+  T('d-camh', h.toFixed(2)+'m');
+  T('d-hud-tl', `DEP ${dep.toFixed(0)}°`);
+  T('d-hud-tr', `h=${h.toFixed(1)}m`);
+  T('d-hud-br', dist!=null ? `D=${dist.toFixed(1)}m` : '–');
+  T('d-depthctr', G.M.centerDepth!=null ? G.M.centerDepth.toFixed(2)+'m' : '–');
+  T('d-xrh', G.M.dist_xr!=null ? G.M.dist_xr.toFixed(2)+'m' : '–');
+
+  // Horizon for distance cam
+  const beta=G.S.beta;
+  const el=$('d-hor'); if(el) el.style.top=(Math.max(0.05,Math.min(0.95,beta/180))*100)+'%';
+
+  // All methods compare
+  T('d-cv-trig', G.M.dist_trig!=null?G.M.dist_trig.toFixed(2)+'m':'–');
+  T('d-cv-focus', G.M.dist_focus!=null?G.M.dist_focus.toFixed(2)+'m':'n/a');
+  T('d-cv-xr', G.M.dist_xr!=null?G.M.dist_xr.toFixed(2)+'m':'–');
+  T('d-cv-fused', dist!=null?dist.toFixed(2)+'m':'–');
+
+  // Compare page
+  T('cmp-d', dist!=null?dist.toFixed(2)+'m':'–');
+  T('cmp-d-src', G.M.dist_xr?'xr+sensor':'sensor trig');
+  T('cmp-dv1',G.M.dist_trig!=null?G.M.dist_trig.toFixed(2)+'m':'–');
+  T('cmp-dv2','n/a');
+  T('cmp-dv3',G.M.dist_xr!=null?G.M.dist_xr.toFixed(2)+'m':'–');
+  T('cmp-dv4',G.M.centerDepth!=null?G.M.centerDepth.toFixed(2)+'m':'–');
+
+  if(G.H.dist.length>3) drawSparkline('d-spark',G.H.dist,'#ffcc44',0,10);
+}
+
+// ── ORIENTATION UI ───────────────────────────
+function updateOrientUI(){
+  const s=G.S;
+  T('s-alpha',s.alpha.toFixed(1)+'°');
+  T('s-beta',s.beta.toFixed(1)+'°');
+  T('s-gamma',s.gamma.toFixed(1)+'°');
+  setBar('ba-alpha',s.alpha,0,360,'var(--acc2)');
+  setBar('ba-beta',(s.beta+90),0,180,'var(--acc)');
+  setBar('ba-gamma',(s.gamma+90),0,180,'var(--acc3)');
+
+  // Compass
+  const a=s.alpha;
+  const dirs=['N','NE','E','SE','S','SW','W','NW'];
+  T('cpass-deg',a.toFixed(0));
+  T('cpass-dir',dirs[Math.round(a/45)%8]);
+  if($('cpass-n')) $('cpass-n').style.transform=`translateX(-50%) rotate(${a}deg)`;
+  if($('cpass-s')) $('cpass-s').style.transform=`translateX(-50%) rotate(${a+180}deg)`;
+
+  // 3D phone
+  const rx=Math.max(-60,Math.min(60, -(s.beta-90)));
+  const ry=Math.max(-50,Math.min(50, s.gamma));
+  if($('p3d')) $('p3d').style.transform=`rotateX(${rx}deg) rotateY(${ry}deg)`;
+
+  pushW('orient',[(s.alpha/360),(s.beta+90)/180,(s.gamma+90)/180]);
+  T('cmp-hdg',a.toFixed(0)+'°');
+}
+
+function updateMotionUI(){
+  const s=G.S;
+  const fmt=v=>v.toFixed(2);
+  T('s-ax',fmt(s.ax)); T('s-ay',fmt(s.ay)); T('s-az',fmt(s.az));
+  setBar('ba-ax',s.ax+12,0,24,'var(--acc2)');
+  setBar('ba-ay',s.ay+12,0,24,'var(--acc3)');
+  setBar('ba-az',s.az+12,0,24,'var(--acc)');
+  const g=Math.sqrt(s.ax*s.ax+s.ay*s.ay+s.az*s.az);
+  T('s-gtot',g.toFixed(2)+'m/s²');
+  T('s-gpitch',(G.S.grav_pitch??0).toFixed(1)+'°');
+  T('s-ra',s.rr.toFixed(1)+'°/s');T('s-rb',s.rb.toFixed(1)+'°/s');T('s-rg',s.rg.toFixed(1)+'°/s');
+  setBar('ba-ra',s.rr+90,0,180,'var(--acc2)');
+  setBar('ba-rb',s.rb+90,0,180,'var(--acc3)');
+  setBar('ba-rg',s.rg+90,0,180,'var(--acc)');
+  pushW('accel',[s.ax/20,s.ay/20,s.az/20]);
+  pushW('gyro',[s.rr/180,s.rb/180,s.rg/180]);
+}
+
+function setBar(id,v,mn,mx,color){
+  const e=$(id); if(!e) return;
+  e.style.width=Math.max(0,Math.min(100,((v-mn)/(mx-mn))*100))+'%';
+  e.style.background=color;
+}
+
+// Generic sensors
 function startGenericSensors(){
-  // Ambient Light
   if(typeof AmbientLightSensor!=='undefined'){
     try{
       const als=new AmbientLightSensor({frequency:2});
-      als.onreading=()=>{
-        setText('s-als', als.illuminance.toFixed(1)+' lx');
-        setText('l-als', als.illuminance.toFixed(1)+' lx');
-        G.measure.lux_sensor=als.illuminance;
-      };
-      als.onerror=(e)=>setText('s-als','Error: '+e.error.message);
+      als.onreading=()=>{T('s-als',als.illuminance.toFixed(0)+' lx');T('l-als',als.illuminance.toFixed(0)+' lx');};
+      als.onerror=e=>T('s-als','err:'+e.error.message);
       als.start();
-      setText('l-als-status','ALS active');
-    }catch(e){ setText('s-als','API present, no permission'); }
+    }catch(e){T('s-als','no permission');}
   }
-
-  // Barometer
   if(typeof AbsolutePressureSensor!=='undefined'){
     try{
       const bar=new AbsolutePressureSensor({frequency:1});
       bar.onreading=()=>{
         const hPa=bar.pressure;
         const alt=44330*(1-Math.pow(hPa/1013.25,0.1903));
-        setText('s-baro', hPa.toFixed(1)+' hPa');
-        setText('s-alt', alt.toFixed(0)+' m ASL');
-        G.measure.altitude=alt;
+        T('s-baro',hPa.toFixed(1)+' hPa');T('s-alt',alt.toFixed(0)+' m');
       };
       bar.start();
     }catch{}
   }
-
-  // Magnetometer
   if(typeof Magnetometer!=='undefined'){
     try{
       const mag=new Magnetometer({frequency:5});
-      mag.onreading=()=>{
-        setText('s-mag',`${mag.x?.toFixed(1)} / ${mag.y?.toFixed(1)} / ${mag.z?.toFixed(1)} µT`);
-      };
+      mag.onreading=()=>T('s-mag',`${mag.x?.toFixed(0)}/${mag.y?.toFixed(0)}/${mag.z?.toFixed(0)} µT`);
       mag.start();
     }catch{}
   }
-
-  // Gravity
   if(typeof GravitySensor!=='undefined'){
     try{
-      const gs=new GravitySensor({frequency:10});
-      gs.onreading=()=>{
-        setText('s-grav',`${gs.x?.toFixed(2)},${gs.y?.toFixed(2)},${gs.z?.toFixed(2)}`);
-      };
-      gs.start();
+      const gv=new GravitySensor({frequency:10});
+      gv.onreading=()=>{G.S.gx=gv.x;G.S.gy=gv.y;G.S.gz=gv.z;T('s-grav',`${gv.x?.toFixed(2)},${gv.y?.toFixed(2)},${gv.z?.toFixed(2)}`);};
+      gv.start();
     }catch{}
   }
-
-  // Proximity
-  if('ondeviceproximity' in window){
-    window.addEventListener('deviceproximity',(e)=>{
-      setText('s-prox', e.value+'cm / '+e.max+'cm max');
-    });
-  }
+  if('ondeviceproximity' in window) window.addEventListener('deviceproximity',e=>T('s-prox',e.value+'cm'));
 }
 
-// ── SENSOR UI UPDATES ────────────────────────────────
-function updateSensorUI(){
-  const s=G.sensors;
-  const fmt=v=>v!=null?v.toFixed(1)+'°':'–°';
-  setText('s-alpha',fmt(s.alpha)); setText('s-beta',fmt(s.beta)); setText('s-gamma',fmt(s.gamma));
-  setBar('bar-alpha',s.alpha,0,360,'var(--acc2)');
-  setBar('bar-beta',(s.beta||0)+90,0,180,'var(--acc)');
-  setBar('bar-gamma',(s.gamma||0)+90,0,180,'var(--acc3)');
-
-  // compass
-  const a=s.alpha||0;
-  const dirs=['N','NE','E','SE','S','SW','W','NW'];
-  const dir=dirs[Math.round(a/45)%8];
-  if($('compass-n')){ $('compass-n').style.transform=`translateX(-50%) rotate(${a}deg)`; }
-  if($('compass-s')){ $('compass-s').style.transform=`translateX(-50%) rotate(${a+180}deg)`; }
-  setText('compass-deg',a.toFixed(0));
-  setText('compass-dir',dir);
-
-  // 3D phone
-  const beta=s.beta||0,gamma=s.gamma||0;
-  const rx=Math.max(-70,Math.min(70,beta-90));
-  const ry=Math.max(-60,Math.min(60,gamma));
-  if($('phone3d')) $('phone3d').style.transform=`rotateX(${rx}deg) rotateY(${ry}deg)`;
-
-  // HUD updates
-  setText('h-hud-tl',`β${(s.beta||0).toFixed(0)}°`);
-  setText('h-hud-tr',`γ${(s.gamma||0).toFixed(0)}°`);
-  setText('d-hud-tl',`DEP ${getDepressionAngle().toFixed(0)}°`);
-  setText('s-abs', s.alpha!=null?'Yes (absolute)':'No (relative)');
-
-  // orientation wave
-  pushWave('orient', [s.alpha/360, (s.beta+90)/180, (s.gamma+90)/180]);
-
-  // rate
-  setText('h-rate', G.sensorRate+' Hz');
-
-  // ring viz
-  drawRingViz(s.beta||0, s.gamma||0, s.alpha||0);
-}
-
-function updateMotionUI(){
-  const s=G.sensors;
-  setText('s-ax',s.ax?.toFixed(2));setText('s-ay',s.ay?.toFixed(2));setText('s-az',s.az?.toFixed(2));
-  setBar('bar-ax',s.ax+12,0,24,'var(--acc2)');
-  setBar('bar-ay',s.ay+12,0,24,'var(--acc3)');
-  setBar('bar-az',s.az+12,0,24,'var(--acc)');
-  const totalG=Math.sqrt(s.ax*s.ax+s.ay*s.ay+s.az*s.az);
-  setText('s-g-total',totalG.toFixed(2)+' m/s²');
-  const prevG=Math.sqrt(G.prevSensors.ax**2+G.prevSensors.ay**2+G.prevSensors.az**2);
-  setText('s-jerk',Math.abs(totalG-prevG).toFixed(2)+' m/s³');
-  setText('s-ra',s.rr?.toFixed(1)+'°/s');setText('s-rb',s.rb?.toFixed(1)+'°/s');setText('s-rg',s.rg?.toFixed(1)+'°/s');
-  setBar('bar-ra',s.rr+90,0,180,'var(--acc2)');
-  setBar('bar-rb',s.rb+90,0,180,'var(--acc3)');
-  setBar('bar-rg',s.rg+90,0,180,'var(--acc)');
-  pushWave('accel',[s.ax/20,s.ay/20,s.az/20]);
-  pushWave('gyro',[s.rr/180,s.rb/180,s.rg/180]);
-}
-
-function setBar(id,val,mn,mx,color){
-  const el=$(id); if(!el) return;
-  const pct=Math.max(0,Math.min(100,((val-mn)/(mx-mn))*100));
-  el.style.width=pct+'%'; el.style.background=color;
-}
-
-// Waveform buffers
-const _waves={};
-function pushWave(key, vals){
-  if(!_waves[key]) _waves[key]=[];
-  _waves[key].push(vals);
-  if(_waves[key].length>120) _waves[key].shift();
-}
-function drawWaveCanvas(canvasId, key, colors){
-  const c=$(canvasId); if(!c||!_waves[key]) return;
-  const data=_waves[key];
-  const W=c.offsetWidth||300; const H=40;
-  c.width=W; c.height=H;
-  const ctx=c.getContext('2d');
-  ctx.clearRect(0,0,W,H);
-  const channels=data[0]?.length||1;
-  for(let ch=0;ch<channels;ch++){
-    ctx.beginPath();
-    ctx.strokeStyle=colors?colors[ch]:'var(--acc)';
-    ctx.lineWidth=1.2;
-    data.forEach((frame,i)=>{
-      const x=(i/(data.length-1))*W;
-      const v=frame[ch]||0;
-      const y=H/2-(v*H/2*0.9);
-      i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
-    });
-    ctx.stroke();
-  }
+// ── WAVEFORM ─────────────────────────────────
+function pushW(k,vals){
+  if(!G.waves[k]) G.waves[k]=[];
+  G.waves[k].push(vals);
+  if(G.waves[k].length>100) G.waves[k].shift();
 }
 setInterval(()=>{
-  drawWaveCanvas('s-orient-wave','orient',['var(--acc2)','var(--acc)','var(--acc3)']);
-  drawWaveCanvas('s-accel-wave','accel',['var(--acc2)','var(--acc3)','var(--acc)']);
-  drawWaveCanvas('s-gyro-wave','gyro',['var(--acc2)','var(--acc3)','var(--acc)']);
-},80);
-
-// ── 3D RING VIZ ─────────────────────────────────────
-function drawRingViz(beta,gamma,alpha){
-  const c=$('ring-canvas'); if(!c) return;
+  drawWave('s-orient-wave','orient',['#ff5a5a','#00e5c8','#ffcc44']);
+  drawWave('s-accel-wave','accel',['#ff5a5a','#ffcc44','#00e5c8']);
+  drawWave('s-gyro-wave','gyro',['#ff5a5a','#ffcc44','#00e5c8']);
+},60);
+function drawWave(id,key,colors){
+  const c=$(id); if(!c||!G.waves[key]) return;
+  const d=G.waves[key];
+  const W=c.offsetWidth||300,H=36;
+  c.width=W;c.height=H;
   const ctx=c.getContext('2d');
-  const W=160,H=160,cx=80,cy=80,r=55;
   ctx.clearRect(0,0,W,H);
-
-  // tilt indicator
-  const bRad=beta*Math.PI/180;
-  const gRad=gamma*Math.PI/180;
-  const aRad=alpha*Math.PI/180;
-
-  // outer ring
-  ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2);
-  ctx.strokeStyle='rgba(0,245,212,0.15)'; ctx.lineWidth=1; ctx.stroke();
-
-  // tilt line (beta)
-  ctx.beginPath();
-  const bx=cx+Math.sin(bRad-Math.PI/2)*r*0.8;
-  const by=cy+Math.cos(bRad-Math.PI/2)*r*0.8;
-  ctx.moveTo(cx,cy); ctx.lineTo(bx,by);
-  ctx.strokeStyle='var(--acc)'; ctx.lineWidth=2; ctx.stroke();
-
-  // gamma arc
-  ctx.beginPath();
-  ctx.arc(cx,cy,r*0.55, -Math.PI/2, -Math.PI/2+gRad/90*Math.PI, gRad<0);
-  ctx.strokeStyle='var(--acc3)'; ctx.lineWidth=2; ctx.stroke();
-
-  // alpha dot
-  const ax2=cx+Math.cos(aRad-Math.PI/2)*r*0.7;
-  const ay2=cy+Math.sin(aRad-Math.PI/2)*r*0.7;
-  ctx.beginPath(); ctx.arc(ax2,ay2,5,0,Math.PI*2);
-  ctx.fillStyle='var(--acc2)'; ctx.fill();
-
-  // center
-  ctx.beginPath(); ctx.arc(cx,cy,4,0,Math.PI*2);
-  ctx.fillStyle='var(--fg)'; ctx.fill();
-
-  // labels
-  ctx.font='9px DM Mono,monospace'; ctx.fillStyle='var(--dim)';
-  ctx.fillText(`β${beta.toFixed(0)}°`,cx+r+4,cy-14);
-  ctx.fillText(`γ${gamma.toFixed(0)}°`,cx+r+4,cy);
-  ctx.fillText(`α${alpha.toFixed(0)}°`,cx+r+4,cy+14);
-}
-
-// ── HEIGHT CALCULATION ───────────────────────────────
-function getDepressionAngle(){
-  const beta=G.sensors.beta||90;
-  return Math.max(0, 90-Math.abs(beta));
-}
-
-function updateHeightCalc(){
-  const beta=G.sensors.beta!=null?G.sensors.beta:90;
-  const gamma=G.sensors.gamma||0;
-  const tiltFromVert=Math.abs(90-Math.abs(beta));
-
-  // Method 1: sensor tilt model
-  // User height ~170cm average, hold offset ~30cm below eye
-  // Camera height ≈ eye height × cos(tilt from vertical) when tilted
-  // When phone perfectly vertical (beta=90 or -90): height = eye_height
-  // Auto-estimate from accelerometer + tilt
-  const estUserH = 1.7; // 1.7m assumed
-  const holdRatio = 0.82; // phone held at ~82% of body height
-  const cosT = Math.cos(tiltFromVert * Math.PI/180);
-  const sensorH = estUserH * holdRatio * cosT;
-  G.measure.height_sensor = sensorH;
-
-  // Method 2: visual horizon — using beta directly
-  // When beta < 90 (pointing down), estimate using: h ≈ tan(|90-beta|) * typical_room_depth
-  // This only works if we have some reference; use ground angle from vertical
-  const elevAngle = beta - 90; // negative = pointing down
-  const visualH = Math.abs(Math.tan(elevAngle*Math.PI/180)) > 0.01
-    ? Math.abs(Math.tan(elevAngle*Math.PI/180)) * 2.0 // 2m estimated floor dist
-    : sensorH;
-  G.measure.height_visual = Math.abs(visualH) < 5 ? Math.abs(visualH) : sensorH;
-
-  // Confidence based on how close to vertical phone is
-  const isPerp = tiltFromVert < 15;
-  const conf = Math.max(0, Math.round(100 - tiltFromVert * 3));
-
-  // Best estimate
-  const bestH = isPerp ? sensorH : (sensorH * 0.7 + G.measure.height_visual * 0.3);
-  G.measure.height_fused = bestH;
-
-  // Push history
-  G.heightHistory.push(parseFloat(bestH.toFixed(3)));
-  if(G.heightHistory.length>120) G.heightHistory.shift();
-
-  // Update UI
-  setText('h-height-val', bestH.toFixed(2)+'m');
-  setText('h-tilt-val', tiltFromVert.toFixed(1)+'°');
-  setText('h-beta', beta.toFixed(1)+'°');
-  setText('h-gamma', gamma.toFixed(1)+'°');
-  setText('h-perp', isPerp?'✓ YES':'✗ TILT PHONE');
-  setText('h-conf', conf+'%');
-  setText('h-method-name', G.heightTab==='sensor'?'Sensor Tilt':G.heightTab==='visual'?'Visual Horizon':'Both (fused)');
-  setText('h-perm', G.isIOS?(typeof DeviceOrientationEvent?.requestPermission==='function'?'Needed':'Auto'):'Auto');
-  setText('h-hud-br', bestH.toFixed(2)+'m');
-
-  // Compare cells
-  setText('hc-sensor-val', sensorH.toFixed(2)+'m');
-  setText('hc-visual-val', (G.measure.height_visual||0).toFixed(2)+'m');
-  setText('hc-sensor-conf', 'conf: '+conf+'% | tilt: '+tiltFromVert.toFixed(0)+'°');
-
-  // Horizon line on cam
-  const horizFrac = Math.max(0.05, Math.min(0.95, 0.5 + (beta-90)/180));
-  updateHorizon('h-horizon', horizFrac);
-  updateHorizon('d-horizon', horizFrac);
-
-  // Highlight winner
-  if(sensorH > G.measure.height_visual){
-    $('h-cc-sensor')?.classList.add('winner');
-    $('h-cc-visual')?.classList.remove('winner');
-  } else {
-    $('h-cc-visual')?.classList.add('winner');
-    $('h-cc-sensor')?.classList.remove('winner');
-  }
-
-  // Compare page
-  setText('cmp-h-sensor-v', sensorH.toFixed(2)+'m');
-  setText('cmp-h-visual-v', (G.measure.height_visual||0).toFixed(2)+'m');
-  setText('cmp-h-plane-v', G.measure.height_plane ? G.measure.height_plane.toFixed(2)+'m' : '–');
-  setText('cmp-h-fused-v', bestH.toFixed(2)+'m');
-  setText('cmp-best-h', bestH.toFixed(2)+'m');
-  setText('cmp-tilt', tiltFromVert.toFixed(0)+'°');
-  setText('cmp-heading', (G.sensors.alpha||0).toFixed(0)+'°');
-
-  // Sparkline
-  if(G.heightHistory.length>2)
-    drawSparkline('h-spark', G.heightHistory, 'var(--acc)', 0, 3);
-}
-
-function updateHorizon(id, frac){
-  const el=$(id); if(!el) return;
-  el.style.top=(frac*100)+'%';
-}
-
-// ── DISTANCE CALCULATION ─────────────────────────────
-function updateDistCalc(){
-  const beta=G.sensors.beta!=null?G.sensors.beta:90;
-  const depressionDeg = 90 - Math.abs(beta);
-  const camH = G.measure.height_fused || 1.4;
-
-  setText('d-depr-val', depressionDeg.toFixed(1)+'°');
-  setText('d-camh', camH.toFixed(2)+'m');
-  setText('d-hud-tr', 'h '+camH.toFixed(1)+'m');
-
-  if(depressionDeg > 1 && depressionDeg < 89){
-    const depRad = depressionDeg * Math.PI/180;
-    const trigDist = camH / Math.tan(depRad);
-    G.measure.dist_trig = trigDist;
-    setText('d-dist-val', trigDist.toFixed(2)+'m');
-    setText('d-hud-br', trigDist.toFixed(1)+'m');
-    setText('dc-trig', trigDist.toFixed(2)+'m');
-    setText('cmp-d-trig-v', trigDist.toFixed(2)+'m');
-  } else {
-    setText('d-dist-val', '–'); setText('d-hud-br','–');
-  }
-
-  // Fusion
-  const vals=[];
-  if(G.measure.dist_trig) vals.push(G.measure.dist_trig);
-  if(G.measure.dist_xr) vals.push(G.measure.dist_xr);
-  if(G.measure.centerDepth) vals.push(G.measure.centerDepth);
-  if(vals.length>0){
-    const avg=vals.reduce((a,b)=>a+b,0)/vals.length;
-    G.measure.dist_fused=avg;
-    setText('dc-avg',avg.toFixed(2)+'m');
-    setText('cmp-d-fused-v',avg.toFixed(2)+'m');
-    setText('cmp-best-d',avg.toFixed(2)+'m');
-    G.distHistory.push(parseFloat(avg.toFixed(3)));
-    if(G.distHistory.length>120) G.distHistory.shift();
-    if(G.distHistory.length>2)
-      drawSparkline('d-spark', G.distHistory, 'var(--acc3)', 0, 10);
-  }
-
-  setText('d-depth-ctr', G.measure.centerDepth ? G.measure.centerDepth.toFixed(2)+'m' : '–');
-  setText('d-xrhit', G.measure.dist_xr ? G.measure.dist_xr.toFixed(2)+'m' : '–');
-  setText('dc-dep', G.measure.centerDepth ? G.measure.centerDepth.toFixed(2)+'m' : '–');
-  setText('cmp-d-depth-v', G.measure.centerDepth ? G.measure.centerDepth.toFixed(2)+'m' : '–');
-  setText('cmp-d-xr-v', G.measure.dist_xr ? G.measure.dist_xr.toFixed(2)+'m' : '–');
-}
-
-// ── CAMERA MANAGEMENT ────────────────────────────────
-async function getRearCam(hd=false){
-  const constraints={
-    video:{
-      facingMode:{exact:'environment'},
-      width:{ideal:hd?1280:640}, height:{ideal:hd?960:480}
-    }
-  };
-  try{ return await navigator.mediaDevices.getUserMedia(constraints); }
-  catch{
-    return await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});
+  const ch=d[0]?.length||1;
+  for(let i=0;i<ch;i++){
+    ctx.beginPath();ctx.strokeStyle=colors?colors[i]:'#00e5c8';ctx.lineWidth=1.2;
+    d.forEach((fr,j)=>{
+      const x=(j/(d.length-1))*W;
+      const y=H/2-(fr[i]||0)*(H/2*.9);
+      j===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+    });ctx.stroke();
   }
 }
 
-async function toggleCam(key){
-  if(G.active[key]){ stopCam(key); return; }
-  clearErr(key+'-err-zone');
+// ── SPARKLINE ─────────────────────────────────
+function drawSparkline(id,data,color,mn,mx){
+  const c=$(id); if(!c||data.length<2) return;
+  const W=c.offsetWidth||300,H=44;
+  c.width=W;c.height=H;
+  const ctx=c.getContext('2d');
+  ctx.clearRect(0,0,W,H);
+  const min=mn??Math.min(...data);
+  const max=mx??Math.max(...data);
+  const range=max-min||1;
+  ctx.beginPath();ctx.strokeStyle=color;ctx.lineWidth=1.5;
+  data.forEach((v,i)=>{
+    const x=(i/(data.length-1))*W;
+    const y=H-((v-min)/range)*(H-4)-2;
+    i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+  });ctx.stroke();
+  ctx.lineTo(W,H);ctx.lineTo(0,H);ctx.closePath();
+  ctx.fillStyle=color+'22';ctx.fill();
+  ctx.fillStyle=color;ctx.font='9px DM Mono,monospace';
+  ctx.fillText(data[data.length-1].toFixed(2),W-38,11);
+}
+
+// ── CAMERA ───────────────────────────────────
+async function getRear(hd){
+  try{return await navigator.mediaDevices.getUserMedia({video:{facingMode:{exact:'environment'},width:{ideal:hd?1280:640},height:{ideal:hd?960:480}}});}
+  catch{return await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});}
+}
+
+async function startCam(key, hd=false){
+  if(G.camStarted[key]) return;
+  G.camStarted[key]=true;
+  clearNotice(key+'-err');
   try{
-    const stream = await getRearCam(key==='dep');
+    const stream=await getRear(hd);
     G.streams[key]=stream;
     G.active[key]=true;
-    const vid=$(key+'-vid')||$(key==='dep'?'dep-vid':key+'-vid');
-    if(vid){ vid.srcObject=stream; await vid.play(); }
-    const ph=$(key+'-placeholder')||$(key==='dep'?'dep-placeholder':key+'-placeholder');
-    if(ph) ph.style.display='none';
-    const btn=$(key+'-cam-btn');
-    if(btn) btn.textContent='■ STOP CAMERA';
-    if(btn) btn.className='btn btn-err';
-    // start processing loop
-    if(key==='h') startHeightOverlay();
-    if(key==='d') startDistOverlay();
-    if(key==='e') startEdgeLoop();
+    const vid=$(key+'-vid');
+    if(vid){vid.srcObject=stream;await vid.play();}
+    $(key+'-ph')?.classList.add('hidden');
+    if(key==='h') startHeightLoop();
+    if(key==='d') startDistLoop();
     if(key==='l') startLightLoop();
-    if(key==='pl') startVisualFloor();
-    toast('Camera started');
+    if(key==='dep') startDepthLoop();
+    if(key==='obj') startObjLoop();
+    if(key==='pl') startPlaneVisual();
   }catch(e){
+    G.camStarted[key]=false;
     G.active[key]=false;
-    showErr(key+'-err-zone',
-      `Camera failed: ${e.message}. Ensure HTTPS and rear camera permission.`,
-      ()=>toggleCam(key));
+    showErr(key+'-err',`Camera failed: ${e.message}. Ensure HTTPS is required for getUserMedia.`,()=>startCam(key,hd));
     toast('Camera error: '+e.message);
   }
 }
 
 function stopCam(key){
-  if(G.streams[key]){ G.streams[key].getTracks().forEach(t=>t.stop()); G.streams[key]=null; }
+  if(G.streams[key]){G.streams[key].getTracks().forEach(t=>t.stop());delete G.streams[key];}
   G.active[key]=false;
-  const btn=$(key+'-cam-btn');
-  if(btn){ btn.textContent='▶ START CAMERA'; btn.className='btn btn-acc'; }
-  const ph=$(key+'-placeholder');
-  if(ph) ph.style.display='';
-  if(G.animFrames[key]){ cancelAnimationFrame(G.animFrames[key]); delete G.animFrames[key]; }
+  G.camStarted[key]=false;
+  if(G.AF[key]){cancelAnimationFrame(G.AF[key]);delete G.AF[key];}
+  $(key+'-ph')?.classList.remove('hidden');
 }
 
-// ── HEIGHT OVERLAY ────────────────────────────────────
-function startHeightOverlay(){
-  const vid=$('h-vid'), canvas=$('h-ov');
-  const ctx=canvas.getContext('2d');
+// ── HEIGHT CAM OVERLAY ────────────────────────
+function startHeightLoop(){
+  const vid=$('h-vid'),cv=$('h-ov');
+  const ctx=cv.getContext('2d');
   function frame(){
-    if(!G.active.h){ return; }
-    G.animFrames.h=requestAnimationFrame(frame);
-    const W=vid.videoWidth||canvas.offsetWidth;
-    const H=vid.videoHeight||canvas.offsetHeight;
-    if(!W||!H) return;
-    canvas.width=W; canvas.height=H;
+    if(!G.active.h){return;}
+    G.AF.h=requestAnimationFrame(frame);
+    const W=vid.videoWidth||cv.offsetWidth,H=vid.videoHeight||cv.offsetHeight;
+    if(!W||!H)return;
+    cv.width=W;cv.height=H;
     ctx.clearRect(0,0,W,H);
 
-    // Grid
-    ctx.strokeStyle='rgba(0,245,212,0.06)'; ctx.lineWidth=.5;
+    // subtle grid
+    ctx.strokeStyle='rgba(0,229,200,0.05)';ctx.lineWidth=.5;
     for(let i=1;i<5;i++){
       ctx.beginPath();ctx.moveTo(0,H*i/5);ctx.lineTo(W,H*i/5);ctx.stroke();
       ctx.beginPath();ctx.moveTo(W*i/5,0);ctx.lineTo(W*i/5,H);ctx.stroke();
     }
 
-    // Horizon overlay
-    const beta=G.sensors.beta||90;
-    const hFrac=Math.max(0.05,Math.min(0.95, 0.5+(beta-90)/180));
+    // Horizon line
+    const beta=G.S.beta;
+    const hFrac=Math.max(0.05,Math.min(0.95,beta/180));
     const hY=hFrac*H;
-    const grad=ctx.createLinearGradient(0,0,W,0);
-    grad.addColorStop(0,'transparent');
-    grad.addColorStop(.5,'rgba(255,107,107,0.5)');
-    grad.addColorStop(1,'transparent');
-    ctx.strokeStyle=grad; ctx.lineWidth=1.5;
-    ctx.setLineDash([8,4]);
-    ctx.beginPath(); ctx.moveTo(0,hY); ctx.lineTo(W,hY); ctx.stroke();
+    const g=ctx.createLinearGradient(0,0,W,0);
+    g.addColorStop(0,'transparent');g.addColorStop(.5,'rgba(255,90,90,.6)');g.addColorStop(1,'transparent');
+    ctx.strokeStyle=g;ctx.lineWidth=1.5;ctx.setLineDash([6,4]);
+    ctx.beginPath();ctx.moveTo(0,hY);ctx.lineTo(W,hY);ctx.stroke();
     ctx.setLineDash([]);
 
-    // Ground area indicator
-    ctx.fillStyle='rgba(0,245,212,0.04)';
+    // ground area fill
+    ctx.fillStyle='rgba(0,229,200,0.03)';
     ctx.fillRect(0,hY,W,H-hY);
 
-    // Height label
-    const bestH=(G.measure.height_fused||1.4).toFixed(2);
-    ctx.fillStyle='rgba(6,8,16,0.8)';
-    ctx.roundRect(W/2-45,hY-22,90,18,4);
+    // height annotation
+    const h=(G.M.height_best??0).toFixed(2);
+    const beta2=G.S.beta,tilt=Math.abs(90-Math.abs(beta2));
+    const isUp=tilt<20;
+    ctx.save();
+    ctx.fillStyle='rgba(4,6,12,0.85)';
+    roundRect2(ctx,W/2-48,hY-24,96,18,3);
     ctx.fill();
-    ctx.font='11px DM Mono,monospace';
-    ctx.fillStyle='#ff6b6b';
+    ctx.fillStyle=isUp?'#00e5c8':'#ffcc44';
+    ctx.font='bold 11px DM Mono,monospace';
     ctx.textAlign='center';
-    ctx.fillText('HORIZON · h='+bestH+'m', W/2, hY-8);
-    ctx.textAlign='left';
+    ctx.fillText(`HORIZON  h=${h}m`,W/2,hY-10);
+    ctx.restore();
 
-    // Perpendicular indicator
-    const tilt=Math.abs(90-Math.abs(beta));
-    const perpColor = tilt<15 ? 'rgba(0,245,212,0.8)' : 'rgba(255,209,102,0.8)';
-    ctx.fillStyle=perpColor;
+    // tilt indicator bottom
+    ctx.fillStyle=isUp?'rgba(0,229,200,0.8)':'rgba(255,204,68,0.8)';
     ctx.font='10px DM Mono,monospace';
-    ctx.fillText(`⊥ TILT: ${tilt.toFixed(0)}°`, 8, H-10);
+    ctx.textAlign='left';
+    ctx.fillText(`⊥ ${tilt.toFixed(0)}° from vert`,8,H-8);
   }
   frame();
 }
 
-// ── DISTANCE OVERLAY ─────────────────────────────────
-function startDistOverlay(){
-  const vid=$('d-vid'), canvas=$('d-ov');
-  const ctx=canvas.getContext('2d');
+// ── DISTANCE CAM OVERLAY ──────────────────────
+function startDistLoop(){
+  const vid=$('d-vid'),cv=$('d-ov');
+  const ctx=cv.getContext('2d');
   function frame(){
-    if(!G.active.d){ return; }
-    G.animFrames.d=requestAnimationFrame(frame);
-    const W=vid.videoWidth||canvas.offsetWidth;
-    const H=vid.videoHeight||canvas.offsetHeight;
-    if(!W||!H) return;
-    canvas.width=W; canvas.height=H;
+    if(!G.active.d){return;}
+    G.AF.d=requestAnimationFrame(frame);
+    const W=vid.videoWidth||cv.offsetWidth,H=vid.videoHeight||cv.offsetHeight;
+    if(!W||!H)return;
+    cv.width=W;cv.height=H;
     ctx.clearRect(0,0,W,H);
 
-    // Distance arc viz
-    const dist = G.measure.dist_trig||0;
-    if(dist>0){
-      const maxDist=10;
-      const arcFrac=Math.min(1,dist/maxDist);
-      ctx.strokeStyle=`rgba(0,245,212,${0.4-arcFrac*0.3})`;
-      ctx.lineWidth=1;
-      const rad=(W/2)*0.4*(1-arcFrac*0.7);
-      ctx.beginPath();
-      ctx.arc(W/2,H/2,rad,0,Math.PI*2);
-      ctx.stroke();
+    const dep=G.S.depression??0;
+    const dist=G.M.dist_best;
+    const cx=W/2,cy=H/2;
+
+    // Projection ray from center
+    if(dep>0){
+      const rayLen=H*0.35;
+      const endX=cx+Math.sin(dep*Math.PI/180)*rayLen;
+      const endY=cy+Math.cos(dep*Math.PI/180)*rayLen;
+      ctx.strokeStyle='rgba(255,204,68,0.5)';ctx.lineWidth=1.5;
+      ctx.setLineDash([5,4]);
+      ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(endX,endY);ctx.stroke();
+      ctx.setLineDash([]);
     }
 
-    // Depression angle viz
-    const dep=getDepressionAngle();
-    const lineEnd = {
-      x: W/2 + Math.sin(dep*Math.PI/180)*(H*0.4),
-      y: H/2 + Math.cos(dep*Math.PI/180)*(H*0.4)
-    };
-    ctx.strokeStyle='rgba(0,245,212,0.4)'; ctx.lineWidth=1.5;
-    ctx.setLineDash([4,4]);
-    ctx.beginPath(); ctx.moveTo(W/2,H/2); ctx.lineTo(lineEnd.x,lineEnd.y); ctx.stroke();
-    ctx.setLineDash([]);
+    // Target reticle at crosshair
+    if(dist!=null){
+      const sz=Math.max(20,Math.min(80, 500/dist));
+      ctx.strokeStyle='rgba(255,204,68,0.9)';ctx.lineWidth=2;
+      ctx.beginPath();ctx.arc(cx,cy,sz,0,Math.PI*2);ctx.stroke();
+      // tick marks
+      [[0,sz+6],[Math.PI/2,sz+6],[Math.PI,sz+6],[1.5*Math.PI,sz+6]].forEach(([a,r])=>{
+        ctx.beginPath();
+        ctx.moveTo(cx+Math.cos(a)*(sz),cy+Math.sin(a)*(sz));
+        ctx.lineTo(cx+Math.cos(a)*(sz+6),cy+Math.sin(a)*(sz+6));
+        ctx.stroke();
+      });
 
-    // Distance text
-    const dv=G.measure.dist_trig;
-    if(dv){
-      ctx.fillStyle='rgba(6,8,16,0.85)';
-      ctx.roundRect(W/2-50,H/2-36,100,20,4);
+      // Distance label on target
+      ctx.save();
+      ctx.fillStyle='rgba(4,6,12,0.9)';
+      roundRect2(ctx,cx-44,cy+sz+4,88,18,3);
       ctx.fill();
-      ctx.fillStyle='var(--acc)';
-      ctx.font='bold 12px DM Mono,monospace';
+      ctx.fillStyle='#ffcc44';ctx.font='bold 11px DM Mono,monospace';
       ctx.textAlign='center';
-      ctx.fillText(`D: ${dv.toFixed(2)}m`, W/2, H/2-22);
-      ctx.textAlign='left';
+      ctx.fillText(`◎ ${dist.toFixed(2)} m`,cx,cy+sz+16);
+      ctx.restore();
+    } else {
+      // no distance - show instruction
+      ctx.save();
+      ctx.fillStyle='rgba(4,6,12,0.7)';
+      roundRect2(ctx,cx-68,cy+30,136,18,3);
+      ctx.fill();
+      ctx.fillStyle='rgba(255,90,90,0.8)';ctx.font='10px DM Mono,monospace';
+      ctx.textAlign='center';
+      ctx.fillText(dep<=0?'TILT DOWN TO MEASURE':'TOO LEVEL',cx,cy+42);
+      ctx.restore();
     }
+
+    // Horizon line
+    const beta=G.S.beta;
+    const hFrac=Math.max(0.02,Math.min(0.98,beta/180));
+    const hY=hFrac*H;
+    ctx.strokeStyle='rgba(255,90,90,0.4)';ctx.lineWidth=1;
+    ctx.setLineDash([4,6]);
+    ctx.beginPath();ctx.moveTo(0,hY);ctx.lineTo(W,hY);ctx.stroke();
+    ctx.setLineDash([]);
   }
   frame();
 }
 
-// ── DEPTH PAGE ───────────────────────────────────────
-let depthActive=false,depthVid=null,depthStream=null;
-let depthMode='heatmap';
-
-async function startDepth(){
-  clearErr('dep-err-zone');
-  if(depthActive){ showWarn('dep-err-zone','Depth already running.'); return; }
-
-  // Try WebXR depth first
-  if(G.caps.ar && G.caps.depth){
-    await startXRDepth();
-  } else {
-    await startVisualDepth();
-  }
+function roundRect2(ctx,x,y,w,h,r){
+  ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.arcTo(x+w,y,x+w,y+r,r);
+  ctx.lineTo(x+w,y+h-r);ctx.arcTo(x+w,y+h,x+w-r,y+h,r);ctx.lineTo(x+r,y+h);
+  ctx.arcTo(x,y+h,x,y+h-r,r);ctx.lineTo(x,y+r);ctx.arcTo(x,y,x+r,y,r);ctx.closePath();
 }
 
-async function startXRDepth(){
-  try{
-    G.xr.depthSession = await navigator.xr.requestSession('immersive-ar',{
-      requiredFeatures:['depth-sensing'],
-      depthSensing:{
-        usagePreference:['cpu-optimized','gpu-optimized'],
-        dataFormatPreference:['luminance-alpha','float32']
-      }
-    });
-    depthActive=true;
-    setText('dep-method','WebXR Depth');
-    setText('dep-hud-mode','WEBXR DEPTH');
-    badge('dep-api-badge','ok','WEBXR');
-    $('dep-placeholder').style.display='none';
+// ── DEPTH ────────────────────────────────────
+let _depActive=false,_depStream=null,_depVid=null;
 
-    const canvas=$('dep-canvas');
-    const gl=canvas.getContext('webgl',{xrCompatible:true});
-    try{ await gl.makeXRCompatible?.(); }catch{}
-    G.xr.depthSession.updateRenderState({baseLayer:new XRWebGLLayer(G.xr.depthSession,gl)});
-    const rs=await G.xr.depthSession.requestReferenceSpace('local');
-
-    function onXRFrame(t,frame){
-      if(!depthActive) return;
-      G.xr.depthSession.requestAnimationFrame(onXRFrame);
-      const pose=frame.getViewerPose(rs);
-      if(!pose) return;
-      for(const view of pose.views){
-        const di=frame.getDepthInformation(view);
-        if(di) renderDepthBuffer(di,canvas);
-      }
-    }
-    G.xr.depthSession.requestAnimationFrame(onXRFrame);
-    G.xr.depthSession.addEventListener('end',()=>{depthActive=false;});
-    toast('WebXR depth session started');
-  }catch(e){
-    toast('WebXR depth unavailable — using visual fallback');
-    showWarn('dep-err-zone','WebXR Depth API unavailable on this device. Using visual edge-based depth estimation. '+e.message);
-    await startVisualDepth();
-  }
-}
-
-async function startVisualDepth(){
-  try{
-    depthStream=await getRearCam(true);
-    depthVid=document.createElement('video');
-    depthVid.srcObject=depthStream; depthVid.autoplay=true;
-    depthVid.playsInline=true; depthVid.muted=true;
-    await depthVid.play();
-    depthActive=true;
-    setText('dep-method','Visual Est.');
-    setText('dep-hud-mode','VISUAL DEPTH');
-    badge('dep-api-badge','warn','VISUAL');
-    $('dep-placeholder').style.display='none';
-    runVisualDepth();
-  }catch(e){
-    showErr('dep-err-zone','Cannot start depth: '+e.message, startDepth);
-  }
-}
-
-function renderDepthBuffer(di,canvas){
-  const ctx=canvas.getContext('2d');
-  const w=di.width,h=di.height;
-  canvas.width=w; canvas.height=h;
-  const img=ctx.createImageData(w,h);
-  let mn=Infinity,mx=0;
-  for(let i=0;i<w*h;i++){
-    const x=i%w,y=Math.floor(i/w);
-    const d=di.getDepthInMeters(x,y);
-    if(d<mn)mn=d; if(d>mx)mx=d;
-  }
-  for(let i=0;i<w*h;i++){
-    const x=i%w,y=Math.floor(i/w);
-    const d=di.getDepthInMeters(x,y);
-    const norm=Math.max(0,Math.min(1,(d-mn)/(mx-mn||1)));
-    const [r,g,b]=depthColor(norm,depthMode);
-    img.data[i*4]=r;img.data[i*4+1]=g;img.data[i*4+2]=b;img.data[i*4+3]=255;
-  }
-  ctx.putImageData(img,0,0);
-  const cx=Math.floor(w/2),cy=Math.floor(h/2);
-  const cd=di.getDepthInMeters(cx,cy);
-  G.measure.centerDepth=cd;
-  setText('dep-center',cd.toFixed(2)+'m');
-  setText('dep-min',mn.toFixed(2)+'m');
-  setText('dep-max',mx.toFixed(2)+'m');
-  setText('dep-hud-center','CTR: '+cd.toFixed(2)+'m');
-  drawDepthProfile(di,w,h,mn,mx);
-}
-
-function runVisualDepth(){
-  const canvas=$('dep-canvas');
-  const ctx=canvas.getContext('2d');
+function startDepthLoop(){
+  const vid=$('dep-vid');
+  if(!vid){return;}
+  const cv=$('dep-cv');
+  const ctx=cv.getContext('2d');
   const tmp=document.createElement('canvas');
   const tCtx=tmp.getContext('2d');
-  let prevFrame=null;
+  _depActive=true;
+  T('dep-eng','Visual Sobel');
 
   function frame(){
-    if(!depthActive) return;
-    G.animFrames.dep=requestAnimationFrame(frame);
-    const vw=depthVid.videoWidth||320,vh=depthVid.videoHeight||240;
-    if(!vw) return;
-    const dw=Math.floor(vw/3),dh=Math.floor(vh/3);
-    tmp.width=dw; tmp.height=dh;
-    tCtx.drawImage(depthVid,0,0,dw,dh);
-    const src=tCtx.getImageData(0,0,dw,dh);
+    if(!G.active.dep)return;
+    G.AF.dep=requestAnimationFrame(frame);
+    const vw=vid.videoWidth||320,vh=vid.videoHeight||240;
+    if(!vw)return;
+    const scale=0.45;
+    const w=Math.floor(vw*scale),h=Math.floor(vh*scale);
+    tmp.width=w;tmp.height=h;
+    tCtx.drawImage(vid,0,0,w,h);
+    const src=tCtx.getImageData(0,0,w,h);
 
-    canvas.width=dw; canvas.height=dh;
-    const out=ctx.createImageData(dw,dh);
-    let mn=255,mx=0,sumCenter=0,centerN=0;
-    const cx=Math.floor(dw/2),cy=Math.floor(dh/2),cr=dw/8;
+    cv.width=w;cv.height=h;
+    const out=ctx.createImageData(w,h);
+    let sumE=0,n=0;
+    const cx=Math.floor(w/2),cy=Math.floor(h/2),cr=Math.floor(w/10);
+    let cSum=0,cN=0;
 
-    for(let y=1;y<dh-1;y++){
-      for(let x=1;x<dw-1;x++){
-        const edge=sobelMag(src,x,y,dw,dh);
-        const luma=lumaAt(src,x,y,dw);
-        // edge strength as depth proxy (high edge = close)
-        const depProxy=Math.min(255,edge*2);
-        if(depProxy<mn) mn=depProxy;
-        if(depProxy>mx) mx=depProxy;
-        const norm=(mx>mn)?(depProxy-mn)/(mx-mn):0.5;
-        const invNorm=1-norm; // low edge = far
-        const [r,g,b]=depthColor(invNorm,depthMode);
-        const idx=(y*dw+x)*4;
+    for(let y=1;y<h-1;y++){
+      for(let x=1;x<w-1;x++){
+        const e=sobel(src,x,y,w,h);
+        const norm=Math.min(1,e/220);
+        // high edge = near (invert for depth: close=bright edge=0 norm near), far=no edges
+        const depth_norm=1-norm;
+        const [r,g,b]=depthCol(depth_norm,G.depMode);
+        const idx=(y*w+x)*4;
         out.data[idx]=r;out.data[idx+1]=g;out.data[idx+2]=b;out.data[idx+3]=255;
-
+        sumE+=e;n++;
         const dx=x-cx,dy=y-cy;
-        if(dx*dx+dy*dy<cr*cr){ sumCenter+=edge; centerN++; }
+        if(dx*dx+dy*dy<cr*cr){cSum+=e;cN++;}
       }
     }
     ctx.putImageData(out,0,0);
-    prevFrame=new Uint8ClampedArray(src.data);
 
-    const edgeCenter=centerN?sumCenter/centerN:0;
-    const estDepth=Math.max(0.2,5-edgeCenter/50);
-    G.measure.centerDepth=estDepth;
-    setText('dep-center','~'+estDepth.toFixed(1)+'m');
-    setText('dep-min','~0.2m');
-    setText('dep-max','~5m+');
-    setText('dep-hud-center','~'+estDepth.toFixed(1)+'m');
-    drawSimpleDepthProfile(src,dw,dh);
+    const avgCenterEdge=cN?cSum/cN:0;
+    const estDist=Math.max(0.3,6-avgCenterEdge/35);
+    G.M.centerDepth=estDist;
+    T('dep-ctr','~'+estDist.toFixed(1)+'m');
+    T('dep-hud-ctr','CENTER ~'+estDist.toFixed(1)+'m');
+    T('dep-min','~0.3m');T('dep-max','~6m+');
+
+    // profile
+    drawDepthProfile(src,w,h);
   }
   frame();
 }
 
-function drawDepthProfile(di,w,h,mn,mx){
-  const c=$('dep-profile'); if(!c) return;
+function drawDepthProfile(src,w,h){
+  const c=$('dep-profile');if(!c)return;
   const ctx=c.getContext('2d');
-  const W=c.offsetWidth||300,H=50;
-  c.width=W; c.height=H;
+  const W=c.offsetWidth||300,H=44;
+  c.width=W;c.height=H;
   ctx.clearRect(0,0,W,H);
   const midY=Math.floor(h/2);
-  ctx.beginPath(); ctx.strokeStyle='var(--acc)'; ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.strokeStyle='var(--acc)';ctx.lineWidth=1.5;
   for(let x=0;x<W;x++){
     const sx=Math.floor(x*w/W);
-    const d=di.getDepthInMeters(sx,midY);
-    const norm=(d-mn)/(mx-mn||1);
+    const e=sobel(src,sx,midY,w,h);
+    const norm=1-Math.min(1,e/200);
     const y=H-norm*(H-4)-2;
     x===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
-  }
-  ctx.stroke();
+  }ctx.stroke();
 }
 
-function drawSimpleDepthProfile(src,dw,dh){
-  const c=$('dep-profile'); if(!c) return;
-  const ctx=c.getContext('2d');
-  const W=c.offsetWidth||300,H=50;
-  c.width=W; c.height=H;
-  ctx.clearRect(0,0,W,H);
-  const midY=Math.floor(dh/2);
-  ctx.beginPath(); ctx.strokeStyle='var(--acc)'; ctx.lineWidth=1.5;
-  for(let x=0;x<W;x++){
-    const sx=Math.floor(x*dw/W);
-    const e=sobelMag(src,sx,midY,dw,dh);
-    const y=H-Math.min(H-2,(e/200)*H);
-    x===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
-  }
-  ctx.stroke();
-}
-
-function stopDepth(){
-  depthActive=false;
-  if(G.xr.depthSession){ try{G.xr.depthSession.end();}catch{} G.xr.depthSession=null; }
-  if(depthStream){ depthStream.getTracks().forEach(t=>t.stop()); depthStream=null; }
-  if(G.animFrames.dep){ cancelAnimationFrame(G.animFrames.dep); }
-  $('dep-placeholder').style.display='';
-  badge('dep-api-badge','off','STOPPED');
-  setText('dep-method','–');
-}
-
-function setDepthMode(m){
-  depthMode=m;
-  $$('[id^="dm-"]').forEach(b=>b.classList.remove('active'));
-  $('dm-'+m)?.classList.add('active');
-}
-
-function depthColor(norm, mode){
-  mode=mode||'heatmap';
-  if(mode==='heatmap'){
-    if(norm<0.25) return [255,Math.round(norm*4*255),0];
-    if(norm<0.5)  return [Math.round((1-(norm-0.25)*4)*255),255,0];
-    if(norm<0.75) return [0,Math.round((1-(norm-0.5)*4)*255),Math.round((norm-0.5)*4*255)];
-    return [0,0,Math.max(50,Math.round((1-norm)*200))];
-  }
-  if(mode==='rainbow'){
-    const h=norm*270; // hue 0-270
-    return hslToRgb(h/360,0.9,0.5);
-  }
-  if(mode==='grayscale'){
-    const v=Math.round((1-norm)*255);
-    return [v,v,v];
-  }
+function depthCol(n,mode){
+  if(mode==='rainbow'){const h=n*270;return hsl(h/360,.9,.5);}
+  if(mode==='gray'){const v=Math.round(n*255);return[v,v,v];}
   if(mode==='contour'){
-    const lines=10;
-    const q=Math.floor(norm*lines)/lines;
-    const r=norm*lines-Math.floor(norm*lines);
-    const onLine = r<0.05||r>0.95;
-    if(onLine) return [0,245,212];
-    const v=Math.round(q*180+20);
-    return [v,v,v];
+    const q=Math.floor(n*8)/8;const r=n*8-Math.floor(n*8);
+    if(r<0.06||r>0.94)return[0,229,200];
+    const v=Math.round(q*180+20);return[v,v,v];
   }
-  return [128,128,128];
+  // heatmap
+  if(n<.25)return[255,Math.round(n*4*255),0];
+  if(n<.5)return[Math.round((1-(n-.25)*4)*255),255,0];
+  if(n<.75)return[0,Math.round((1-(n-.5)*4)*255),Math.round((n-.5)*4*255)];
+  return[0,0,Math.max(50,Math.round((1-n)*200))];
 }
 
-function hslToRgb(h,s,l){
-  const c=(1-Math.abs(2*l-1))*s;
-  const x=c*(1-Math.abs((h*6)%2-1));
-  const m=l-c/2;
+function hsl(h,s,l){
+  const c=(1-Math.abs(2*l-1))*s,x=c*(1-Math.abs((h*6)%2-1)),m=l-c/2;
   let r=0,g=0,b=0;
   if(h<1/6){r=c;g=x;}else if(h<2/6){r=x;g=c;}
   else if(h<3/6){g=c;b=x;}else if(h<4/6){g=x;b=c;}
   else if(h<5/6){r=x;b=c;}else{r=c;b=x;}
-  return [Math.round((r+m)*255),Math.round((g+m)*255),Math.round((b+m)*255)];
+  return[Math.round((r+m)*255),Math.round((g+m)*255),Math.round((b+m)*255)];
 }
 
-// ── EDGE / OBJECT DETECTION ──────────────────────────
-function startEdgeLoop(){
-  const vid=$('e-vid'), canvas=$('e-canvas');
-  const ctx=canvas.getContext('2d');
+// ── OBJECTS ──────────────────────────────────
+let _motH=[];
+function startObjLoop(){
+  const vid=$('obj-vid'),cv=$('obj-cv');
+  const ctx=cv.getContext('2d');
   const tmp=document.createElement('canvas');
   const tCtx=tmp.getContext('2d');
-  let prevData=null;
-  const motionHist=[];
-
+  let prev=null;
   function frame(){
-    if(!G.active.e) return;
-    G.animFrames.e=requestAnimationFrame(frame);
+    if(!G.active.obj)return;
+    G.AF.obj=requestAnimationFrame(frame);
     const vw=vid.videoWidth||320,vh=vid.videoHeight||240;
-    if(!vw) return;
-    const scale=0.5;
-    const w=Math.floor(vw*scale),h=Math.floor(vh*scale);
-    tmp.width=w; tmp.height=h;
+    if(!vw)return;
+    const sc=0.5;const w=Math.floor(vw*sc),h=Math.floor(vh*sc);
+    tmp.width=w;tmp.height=h;
     tCtx.drawImage(vid,0,0,w,h);
     const src=tCtx.getImageData(0,0,w,h);
 
-    canvas.width=w; canvas.height=h;
+    cv.width=w;cv.height=h;
     const out=ctx.createImageData(w,h);
-    let edgePx=0,sumB=0,motDelta=0;
-    let hueSum=0,hueN=0,minL=255,maxL=0;
-    const hueHist=new Array(36).fill(0);
+    let edgePx=0,sumB=0,motD=0,minL=255,maxL=0;
+    const hueH=new Array(36).fill(0);
 
     for(let y=1;y<h-1;y++){
       for(let x=1;x<w-1;x++){
-        const idx=(y*w+x)*4;
-        const r=src.data[idx],g=src.data[idx+1],b=src.data[idx+2];
-        const luma=0.299*r+0.587*g+0.114*b;
-        sumB+=luma; if(luma<minL)minL=luma; if(luma>maxL)maxL=luma;
+        const i=(y*w+x)*4;
+        const r=src.data[i],g2=src.data[i+1],b=src.data[i+2];
+        const luma=.299*r+.587*g2+.114*b;
+        sumB+=luma;if(luma<minL)minL=luma;if(luma>maxL)maxL=luma;
 
-        // hue
-        const mx=Math.max(r,g,b),mn=Math.min(r,g,b),d=mx-mn;
-        if(mx>30&&d>20){
-          let hue=0;
-          if(mx===r) hue=((g-b)/d)%6;
-          else if(mx===g) hue=(b-r)/d+2;
-          else hue=(r-g)/d+4;
-          hue=(hue*60+360)%360;
-          hueHist[Math.min(35,Math.floor(hue/10))]++;
-          hueSum+=hue; hueN++;
+        const mx=Math.max(r,g2,b),mn=Math.min(r,g2,b),d=mx-mn;
+        if(mx>40&&d>15){
+          let hue=mx===r?((g2-b)/d)%6:mx===g2?(b-r)/d+2:(r-g2)/d+4;
+          hueH[Math.min(35,Math.floor(((hue*60+360)%360)/10))]++;
         }
 
+        const mode=G.objMode;
         let rv=0,gv=0,bv=0;
-        const mode=G.edgeMode||'edge';
-
         if(mode==='edge'){
-          const e=sobelMag(src,x,y,w,h);
-          if(e>edgeThresh){rv=0;gv=245;bv=212;edgePx++;}
-          else{rv=r>>3;gv=g>>3;bv=b>>3;}
+          const e=sobel(src,x,y,w,h);
+          if(e>G.edgeT){rv=0;gv=229;bv=200;edgePx++;}
+          else{rv=r>>3;gv=g2>>3;bv=b>>3;}
         } else if(mode==='motion'){
-          if(prevData){
-            const pi=(y*w+x)*4;
-            const dl=Math.abs(luma-(0.299*prevData[pi]+0.587*prevData[pi+1]+0.114*prevData[pi+2]));
-            motDelta+=dl;
-            const v=Math.min(255,dl*6);
-            rv=v;gv=Math.round(v*0.2);bv=Math.round(255-v*0.5);
-          } else {rv=r>>2;gv=g>>2;bv=b>>2;}
+          if(prev){
+            const dl=Math.abs(luma-(.299*prev[i]+.587*prev[i+1]+.114*prev[i+2]));
+            motD+=dl;const v=Math.min(255,dl*7);rv=v;gv=Math.round(v*.1);bv=Math.round(255-v*.6);
+          } else {rv=r>>2;gv=g2>>2;bv=b>>2;}
         } else if(mode==='luma'){
-          const v=Math.round(luma);
-          // false color luma
-          rv=v<128?0:Math.round((v-128)*2);
-          gv=v;
-          bv=v>128?0:Math.round((128-v)*2);
+          rv=luma<128?0:Math.round((luma-128)*2);gv=luma;bv=luma>128?0:Math.round((128-luma)*2);
         } else if(mode==='color'){
-          // Segment by dominant channel
-          if(r>g&&r>b&&r>80){rv=255;gv=50;bv=50;}
-          else if(g>r&&g>b&&g>80){rv=50;gv=255;bv=50;}
-          else if(b>r&&b>g&&b>80){rv=50;gv=50;bv=255;}
-          else if(luma>200){rv=255;gv=255;bv=255;}
-          else if(luma<30){rv=0;gv=0;bv=0;}
-          else{rv=120;gv=120;bv=140;}
-        } else if(mode==='thermal'){
-          // Simulate thermal camera
-          const hot=luma/255;
-          if(hot<0.25){rv=0;gv=0;bv=Math.round(hot*4*200);}
-          else if(hot<0.5){rv=0;gv=Math.round((hot-0.25)*4*255);bv=200;}
-          else if(hot<0.75){rv=Math.round((hot-0.5)*4*255);gv=255;bv=0;}
-          else{rv=255;gv=Math.round((1-hot)*4*255);bv=0;}
+          if(r>g2&&r>b&&r>70){rv=255;gv=50;bv=50;}
+          else if(g2>r&&g2>b&&g2>70){rv=50;gv=229;bv=50;}
+          else if(b>r&&b>g2&&b>70){rv=50;gv=100;bv=255;}
+          else if(luma>200){rv=gv=bv=255;}
+          else if(luma<30){rv=gv=bv=0;}
+          else{rv=100;gv=130;bv=160;}
+        } else { // thermal
+          const t=luma/255;
+          if(t<.25){rv=0;gv=0;bv=Math.round(t*4*200);}
+          else if(t<.5){rv=0;gv=Math.round((t-.25)*4*255);bv=200;}
+          else if(t<.75){rv=Math.round((t-.5)*4*255);gv=255;bv=0;}
+          else{rv=255;gv=Math.round((1-t)*4*255);bv=0;}
         }
-        out.data[idx]=rv;out.data[idx+1]=gv;out.data[idx+2]=bv;out.data[idx+3]=255;
+        out.data[i]=rv;out.data[i+1]=gv;out.data[i+2]=bv;out.data[i+3]=255;
       }
     }
     ctx.putImageData(out,0,0);
-    prevData=new Uint8ClampedArray(src.data);
+    prev=new Uint8ClampedArray(src.data);
 
-    const avgB=sumB/(w*h);
-    const contrast=maxL-minL;
-    const motAvg=motDelta/(w*h);
-    const domHue=hueHist.indexOf(Math.max(...hueHist))*10;
-    motionHist.push(motAvg); if(motionHist.length>100) motionHist.shift();
-
-    setText('e-edges',edgePx.toLocaleString());
-    setText('e-motion',motAvg.toFixed(1));
-    setText('e-bright',avgB.toFixed(0));
-    setText('e-contrast',contrast.toFixed(0));
-    setText('e-hue',domHue+'°');
-    setText('e-hud-mode',({edge:'EDGES',motion:'MOTION',luma:'LUMA',color:'COLOR SEG',thermal:'THERMAL'}[G.edgeMode||'edge']));
-    setText('e-hud-info',`E:${edgePx}|M:${motAvg.toFixed(0)}`);
-
-    if(motionHist.length>2) drawSparkline('e-motion-spark',motionHist,'var(--acc3)',0,30);
+    const avgB=sumB/(w*h),contrast=maxL-minL;
+    const motAvg=motD/(w*h);
+    _motH.push(motAvg);if(_motH.length>80)_motH.shift();
+    T('obj-edges',edgePx.toLocaleString());T('obj-motion',motAvg.toFixed(1));
+    T('obj-bright',avgB.toFixed(0));T('obj-contrast',contrast.toFixed(0));
+    T('obj-hue',(hueH.indexOf(Math.max(...hueH))*10)+'°');
+    T('obj-hud-mode',({edge:'EDGES',motion:'MOTION',luma:'LUMA',color:'COLOR',thermal:'THERMAL'}[G.objMode]));
+    T('obj-hud-info',`E${edgePx}|M${motAvg.toFixed(0)}`);
+    if(_motH.length>3)drawSparkline('obj-mspark',_motH,'var(--acc3)',0,30);
   }
   frame();
 }
 
-function setEdgeMode(m){
-  G.edgeMode=m;
-  $$('[id^="em-"]').forEach(b=>b.classList.remove('active'));
-  $('em-'+m)?.classList.add('active');
-}
-
-// ── LIGHT ANALYSIS ───────────────────────────────────
+// ── LIGHT ────────────────────────────────────
 function startLightLoop(){
-  const vid=$('l-vid'), canvas=$('l-canvas');
-  const ctx=canvas.getContext('2d');
+  const vid=$('l-vid'),cv=$('l-ov');
+  const ctx=cv.getContext('2d');
   const tmp=document.createElement('canvas');
   const tCtx=tmp.getContext('2d');
-  const luxHist=[];
-
   function frame(){
-    if(!G.active.l) return;
-    G.animFrames.l=requestAnimationFrame(frame);
+    if(!G.active.l)return;
+    G.AF.l=requestAnimationFrame(frame);
     const vw=vid.videoWidth||320,vh=vid.videoHeight||240;
-    if(!vw) return;
+    if(!vw)return;
     const w=80,h=60;
     tmp.width=w;tmp.height=h;
     tCtx.drawImage(vid,0,0,w,h);
     const src=tCtx.getImageData(0,0,w,h);
     const n=w*h;
-    let sumR=0,sumG=0,sumB=0;
-    const rHist=new Array(16).fill(0);
-    const gHist=new Array(16).fill(0);
-    const bHist=new Array(16).fill(0);
-
+    let sR=0,sG=0,sB=0;
+    const rH=new Array(16).fill(0),gH=new Array(16).fill(0),bH=new Array(16).fill(0);
     for(let i=0;i<n*4;i+=4){
-      sumR+=src.data[i]; sumG+=src.data[i+1]; sumB+=src.data[i+2];
-      rHist[src.data[i]>>4]++;
-      gHist[src.data[i+1]>>4]++;
-      bHist[src.data[i+2]>>4]++;
+      sR+=src.data[i];sG+=src.data[i+1];sB+=src.data[i+2];
+      rH[src.data[i]>>4]++;gH[src.data[i+1]>>4]++;bH[src.data[i+2]>>4]++;
     }
-    const avgR=sumR/n,avgG=sumG/n,avgB=sumB/n;
-    const luma=0.299*avgR+0.587*avgG+0.114*avgB;
+    const aR=sR/n,aG=sG/n,aB=sB/n;
+    const luma=.299*aR+.587*aG+.114*aB;
     const lux=Math.round(luma*luma/8);
-    const cct=estimateCCT(avgR,avgG,avgB);
+    const cct=cctEstimate(aR,aG,aB);
+    G.M.lux=lux;G.M.cct=cct;
+    G.H.lux.push(lux);if(G.H.lux.length>80)G.H.lux.shift();
 
-    G.measure.lux=lux;
-    luxHist.push(lux); if(luxHist.length>100) luxHist.shift();
-    G.luxHistory.push(lux); if(G.luxHistory.length>120) G.luxHistory.shift();
+    T('l-lux',lux.toLocaleString());T('l-cct',Math.round(cct).toLocaleString());
+    T('l-r',Math.round(aR));T('l-g',Math.round(aG));T('l-b',Math.round(aB));
+    T('l-hud-lux',lux.toLocaleString()+' lx');
+    T('l-hud-cct',Math.round(cct/100)+'00K');
+    $('lux-fill').style.width=Math.min(100,lux/80)+'%';
 
-    setText('l-lux',lux.toLocaleString());
-    setText('l-cct',Math.round(cct).toLocaleString());
-    setText('l-r',Math.round(avgR));
-    setText('l-g',Math.round(avgG));
-    setText('l-b',Math.round(avgB));
-    setText('l-hud-lux',lux.toLocaleString()+' lx');
-    setText('l-hud-temp',Math.round(cct/100)+'00K');
+    let cond='Indoor';
+    if(lux>25000)cond='☀️ Direct Sun';else if(lux>8000)cond='🌤 Overcast';
+    else if(lux>800)cond='💡 Office Day';else if(lux>100)cond='💡 Lit Room';
+    else if(lux>20)cond='🕯 Dim';else cond='🌑 Dark';
+    T('l-cond',cond);
+    T('cmp-lux',lux.toLocaleString());
 
-    const luxPct=Math.min(100,lux/100);
-    $('lux-fill').style.width=luxPct+'%';
+    drawHistogram('l-hist',rH,gH,bH);
+    if(G.H.lux.length>3)drawSparkline('l-spark',G.H.lux,'var(--acc3)',0,5000);
 
-    let cond='Indoor ☁';
-    if(lux>30000) cond='☀️ Bright Sun';
-    else if(lux>10000) cond='🌤 Overcast';
-    else if(lux>1000) cond='💡 Office / Day';
-    else if(lux>200) cond='💡 Indoor Light';
-    else if(lux>50) cond='🕯 Dim Indoor';
-    else cond='🌑 Very Dark';
-    setText('l-cond',cond);
-
-    // XR light if available
-    if(G.measure.xrLightColor){
-      const xl=G.measure.xrLightColor;
-      setText('l-xr',`R:${xl.r.toFixed(1)} G:${xl.g.toFixed(1)} B:${xl.b.toFixed(1)}`);
-    } else {
-      setText('l-xr', lux>0 ? `~${lux.toLocaleString()} est` : '–');
-    }
-
-    // Histogram
-    drawRGBHistogram('l-hist',rHist,gHist,bHist);
-
-    if(G.luxHistory.length>2) drawSparkline('l-spark',G.luxHistory,'var(--acc3)',0,5000);
-
-    // Also update compare page
-    setText('cmp-lux', lux.toLocaleString());
-
-    // compare timeline
-    G.cmpTimeline.h.push(G.measure.height_fused||0);
-    G.cmpTimeline.d.push(G.measure.dist_fused||0);
-    G.cmpTimeline.l.push(lux/100);
-    if(G.cmpTimeline.h.length>120){ G.cmpTimeline.h.shift();G.cmpTimeline.d.shift();G.cmpTimeline.l.shift(); }
-    drawCompareTimeline();
+    // light overlay on cam
+    cv.width=vid.videoWidth||300;cv.height=vid.videoHeight||400;
+    ctx.clearRect(0,0,cv.width,cv.height);
+    // warmth tint overlay
+    const warmth=(aR-aB)/255;
+    const tint=warmth>0?`rgba(255,200,100,${warmth*.06})`:`rgba(100,150,255,${-warmth*.06})`;
+    ctx.fillStyle=tint;ctx.fillRect(0,0,cv.width,cv.height);
   }
   frame();
 }
 
-function estimateCCT(r,g,b){
-  const total=r+g+b||1;
-  const x=r/total,y=g/total;
-  const n=(x-0.3320)/(0.1858-y);
-  const cct=449*n*n*n+3525*n*n+6823.3*n+5520.33;
-  return Math.max(1000,Math.min(20000,cct));
+function cctEstimate(r,g,b){
+  const t=r+g+b||1,x=r/t,y=g/t;
+  const n=(x-.332)/(.1858-y);
+  return Math.max(1000,Math.min(20000,449*n*n*n+3525*n*n+6823*n+5520));
 }
-
-function drawRGBHistogram(canvasId,rH,gH,bH){
-  const c=$(canvasId); if(!c) return;
+function drawHistogram(id,rH,gH,bH){
+  const c=$(id);if(!c)return;
   const ctx=c.getContext('2d');
-  const W=c.offsetWidth||300,H=60;
-  c.width=W; c.height=H;
+  const W=c.offsetWidth||300,H=56;
+  c.width=W;c.height=H;
   ctx.clearRect(0,0,W,H);
   const mx=Math.max(...rH,...gH,...bH)||1;
   const bw=W/16;
-  [[rH,'rgba(255,107,107,0.6)'],[gH,'rgba(0,245,212,0.6)'],[bH,'rgba(168,218,220,0.6)']].forEach(([hist,color])=>{
-    hist.forEach((v,i)=>{
-      const h2=(v/mx)*(H-2);
-      ctx.fillStyle=color;
-      ctx.fillRect(i*bw,H-h2,bw-1,h2);
-    });
+  [[rH,'rgba(255,90,90,.55)'],[gH,'rgba(0,229,200,.55)'],[bH,'rgba(85,170,255,.55)']].forEach(([h,col])=>{
+    h.forEach((v,i)=>{const ht=(v/mx)*(H-2);ctx.fillStyle=col;ctx.fillRect(i*bw,H-ht,bw-1,ht);});
   });
 }
 
-function setLightMode(m){
-  G.lightMode=m;
-  $$('[id^="lm-"]').forEach(b=>b.classList.remove('active'));
-  $('lm-'+m)?.classList.add('active');
-  if(m==='xr-light' && G.caps.ar) startXRLightEstimation();
+// ── PLANE DETECTION ──────────────────────────
+let _planeSession=null,_planeActive=false;
+
+async function startPlaneDetection(){
+  if(_planeActive)return;
+  clearNotice('pl-err');
+  $('pl-ph')?.classList.add('hidden');
+
+  if(G.caps.webxr&&G.caps.xr_planes){
+    await startXRPlanes();
+  } else {
+    showWarn('pl-err','WebXR plane detection not available (requires ARCore on Android Chrome). Using visual floor detection.');
+    await startCam('pl');
+  }
 }
 
-async function startXRLightEstimation(){
-  if(!G.caps.ar||!G.caps.light_est){
-    showWarn('l-err-zone','XR Lighting Estimation requires ARCore support.');
-    return;
-  }
+async function startXRPlanes(){
   try{
-    G.xr.lightSession=await navigator.xr.requestSession('immersive-ar',{
-      requiredFeatures:['light-estimation']
+    const feats=['local-floor'];
+    if(G.caps.xr_planes)feats.push('plane-detection');
+    _planeSession=await navigator.xr.requestSession('immersive-ar',{
+      requiredFeatures:feats,
+      optionalFeatures:['light-estimation']
     });
-    const rs=await G.xr.lightSession.requestReferenceSpace('local');
-    G.xr.lightSession.requestAnimationFrame(function onFrame(t,frame){
-      G.xr.lightSession.requestAnimationFrame(onFrame);
-      const lightProbe=frame.getLightEstimate?.(frame.getViewerPose(rs)?.views[0]);
-      if(lightProbe){
-        G.measure.xrLightColor={
-          r:lightProbe.primaryLightIntensity?.x||1,
-          g:lightProbe.primaryLightIntensity?.y||1,
-          b:lightProbe.primaryLightIntensity?.z||1
-        };
-      }
-    });
-  }catch(e){ showWarn('l-err-zone','XR Light Est failed: '+e.message); }
-}
+    _planeActive=true;
+    $('pl-badge').className='badge ok';$('pl-badge').textContent='XR ACTIVE';
+    toast('WebXR plane detection started');
 
-// ── PLANE DETECTION ──────────────────────────────────
-let planesSession=null,planesActive=false;
-
-async function startPlanesXR(){
-  clearErr('pl-err-zone');
-  if(!G.caps.ar){
-    showErr('pl-err-zone','WebXR AR not supported on this device/browser. Try Android Chrome with ARCore.', startPlanesXR);
-    return;
-  }
-  try{
-    const features=['local-floor'];
-    if(G.caps.planes) features.push('plane-detection');
-
-    planesSession=await navigator.xr.requestSession('immersive-ar',{
-      requiredFeatures:features,
-      optionalFeatures:['anchors','light-estimation']
-    });
-    planesActive=true;
-    $('pl-placeholder').style.display='none';
-    badge('planes-xr-badge','ok','XR ACTIVE');
-    toast('WebXR plane detection started!');
-
-    const canvas=$('pl-canvas');
+    const canvas=$('pl-ov');
     const gl=canvas.getContext('webgl',{xrCompatible:true});
-    try{ await gl.makeXRCompatible?.(); }catch{}
-    planesSession.updateRenderState({baseLayer:new XRWebGLLayer(planesSession,gl)});
-    const refSpace=await planesSession.requestReferenceSpace('local-floor');
+    try{if(gl.makeXRCompatible)await gl.makeXRCompatible();}catch{}
+    _planeSession.updateRenderState({baseLayer:new XRWebGLLayer(_planeSession,gl)});
+    const rs=await _planeSession.requestReferenceSpace('local-floor');
 
-    planesSession.requestAnimationFrame(function onFrame(t,frame){
-      if(!planesActive) return;
-      planesSession.requestAnimationFrame(onFrame);
+    _planeSession.addEventListener('end',()=>{
+      _planeActive=false;
+      $('pl-badge').className='badge off';$('pl-badge').textContent='ENDED';
+    });
+
+    _planeSession.requestAnimationFrame(function onXRF(t,frame){
+      if(!_planeActive)return;
+      _planeSession.requestAnimationFrame(onXRF);
       const planes=[];
       if(frame.detectedPlanes){
-        frame.detectedPlanes.forEach(plane=>{
-          const pose=frame.getPose(plane.planeSpace,refSpace);
-          if(pose){
-            planes.push({
-              orientation:plane.orientation,
-              y:pose.transform.position.y,
-              polygon:plane.polygon
-            });
-          }
+        frame.detectedPlanes.forEach(p=>{
+          const pose=frame.getPose(p.planeSpace,rs);
+          if(pose)planes.push({orient:p.orientation,y:pose.transform.position.y});
         });
       }
-      updatePlanesUI(planes,frame,refSpace);
-      renderPlanesOnCanvas(planes,canvas,gl);
-    });
-
-    planesSession.addEventListener('end',()=>{
-      planesActive=false;
-      badge('planes-xr-badge','warn','ENDED');
+      // Light estimation
+      if(G.caps.xr_light){
+        const vpose=frame.getViewerPose(rs);
+        if(vpose&&vpose.views[0]){
+          try{
+            const le=frame.getLightEstimate?.(vpose.views[0]);
+            if(le&&le.primaryLightIntensity){
+              G.M.xrLight={r:le.primaryLightIntensity.x,g:le.primaryLightIntensity.y,b:le.primaryLightIntensity.z};
+            }
+          }catch{}
+        }
+      }
+      updatePlanesUI(planes);
     });
   }catch(e){
-    showErr('pl-err-zone','WebXR failed: '+e.message+'. Starting visual fallback.', startPlanesXR);
-    badge('planes-xr-badge','err','FAILED');
-    toast('WebXR planes failed. Try visual detection.');
+    showErr('pl-err','WebXR session failed: '+e.message+'. Starting visual fallback.',startPlaneDetection);
+    $('pl-badge').className='badge err';$('pl-badge').textContent='XR FAILED';
+    await startCam('pl');
   }
 }
 
-function updatePlanesUI(planes,frame,refSpace){
-  G.planeData=planes;
-  G.measure.planeCount=planes.length;
-  setText('pl-count',planes.length);
-  setText('pl-hud-count','PLANES: '+planes.length);
-
+function updatePlanesUI(planes){
+  T('pl-count',planes.length);
+  T('pl-hud-n','PLANES: '+planes.length);
   let floorY=null;
-  planes.forEach(p=>{
-    if(p.orientation==='horizontal'&&(floorY===null||p.y<floorY)) floorY=p.y;
-  });
-
+  planes.forEach(p=>{if(p.orient==='horizontal'&&(floorY===null||p.y<floorY))floorY=p.y;});
   if(floorY!==null){
-    G.measure.planeFloorY=floorY;
-    G.measure.height_plane=Math.abs(floorY);
-    setText('pl-floory',floorY.toFixed(3)+'m');
-    setText('pl-camh',Math.abs(floorY).toFixed(2)+'m');
-    setText('pl-conf','High (XR)');
-    setText('pl-hud-floor','FLOOR: '+Math.abs(floorY).toFixed(2)+'m');
-    setText('cmp-h-plane-v',Math.abs(floorY).toFixed(2)+'m');
+    G.M.height_plane=Math.abs(floorY);
+    T('pl-floory',floorY.toFixed(3)+'m');
+    T('pl-camh',Math.abs(floorY).toFixed(2)+'m');
+    T('pl-hud-h','FLOOR: '+Math.abs(floorY).toFixed(2)+'m');
+    T('cmp-hv3',Math.abs(floorY).toFixed(2)+'m');
   }
-
-  const list=$('planes-list');
+  const list=$('pl-list');
   list.innerHTML=planes.length===0
-    ? '<div style="color:var(--dim);font-size:13px;padding:8px 0">Move device to detect surfaces…</div>'
-    : planes.map((p,i)=>`
-        <div class="plane-card">
-          <div>
-            <div style="font-size:13px;font-weight:600">Plane #${i+1} · ${p.orientation}</div>
-            <div style="font-size:11px;color:var(--dim)">Y: ${p.y?.toFixed(3)}m</div>
-          </div>
-          <span class="badge ${p.orientation==='horizontal'?'ok':'warn'}">${p.orientation==='horizontal'?'FLOOR/CEIL':'WALL'}</span>
-        </div>`).join('');
+    ?'<div style="color:var(--dim);font-size:12px;padding:6px 0">Scanning for surfaces… move device slowly.</div>'
+    :planes.map((p,i)=>`<div class="plane-item fi">
+      <div><div style="font-size:12px;font-weight:700">Plane #${i+1} · ${p.orient}</div>
+      <div style="font-size:10px;color:var(--dim);margin-top:2px;font-family:var(--mono)">Y: ${p.y?.toFixed(3)}m</div></div>
+      <span class="badge ${p.orient==='horizontal'?'ok':'warn'}">${p.orient==='horizontal'?'FLOOR/CEIL':'WALL'}</span>
+    </div>`).join('');
 }
 
-function renderPlanesOnCanvas(planes,canvas,gl){
-  // Simple 2D overlay showing plane count & height
-  const ctx2=document.createElement('canvas').getContext('2d');
-  // just update HUD text, WebGL handles the actual AR rendering
-}
-
-function stopPlanesXR(){
-  if(planesSession){ try{planesSession.end();}catch{} planesSession=null; }
-  planesActive=false;
-  stopCam('pl');
-  badge('planes-xr-badge','off','STOPPED');
-  toast('Plane detection stopped');
-}
-
-let visualFloorActive=false;
-async function startVisualFloor(){
-  clearErr('pl-err-zone');
-  try{
-    if(!G.streams.pl){
-      const stream=await getRearCam();
-      G.streams.pl=stream;
-      G.active.pl=true;
-      $('pl-vid').srcObject=stream;
-      await $('pl-vid').play();
-      $('pl-placeholder').style.display='none';
-    }
-    visualFloorActive=true;
-    runFloorLineDetect();
-    toast('Visual floor detection started');
-  }catch(e){
-    showErr('pl-err-zone','Camera failed: '+e.message, startVisualFloor);
-  }
-}
-
-function runFloorLineDetect(){
-  const vid=$('pl-vid');
-  const canvas=$('floor-detect-canvas');
-  const ctx=canvas.getContext('2d');
+// Visual floor detection
+function startPlaneVisual(){
+  const vid=$('pl-vid'),cv=$('pl-ov');
+  const ctx=cv.getContext('2d');
   const tmp=document.createElement('canvas');
   const tCtx=tmp.getContext('2d');
-
   function frame(){
-    if(!visualFloorActive||!G.active.pl) return;
-    G.animFrames.plvis=requestAnimationFrame(frame);
+    if(!G.active.pl)return;
+    G.AF.pl=requestAnimationFrame(frame);
     const vw=vid.videoWidth||320,vh=vid.videoHeight||240;
-    if(!vw) return;
-    const w=160,h=60;
-    tmp.width=w; tmp.height=h;
-    tCtx.drawImage(vid,0,vw*0.5,vw,vh*0.5,0,0,w,h);
+    if(!vw)return;
+    const w=160,h=80;
+    tmp.width=w;tmp.height=h;
+    // sample lower half
+    tCtx.drawImage(vid,0,vh*.4,vw,vh*.6,0,0,w,h);
     const src=tCtx.getImageData(0,0,w,h);
-    canvas.width=w; canvas.height=h;
-    const out=ctx.createImageData(w,h);
 
-    // Simple horizontal edge detection (floor line appears as strong horizontal edge)
-    let maxEdgeY=-1,maxEdge=0;
-    for(let y=1;y<h-1;y++){
-      let rowEdge=0;
-      for(let x=1;x<w-1;x++){
-        const gy=lumaAt(src,x,y+1,w)-lumaAt(src,x,y-1,w);
-        rowEdge+=Math.abs(gy);
+    // find row with max horizontal edge (floor line)
+    let maxE=0,maxY=h/2;
+    for(let y=2;y<h-2;y++){
+      let rowE=0;
+      for(let x=2;x<w-2;x++){
+        const top=lumaPx(src,x,y-1,w),bot=lumaPx(src,x,y+1,w);
+        rowE+=Math.abs(bot-top);
       }
-      if(rowEdge>maxEdge){ maxEdge=rowEdge; maxEdgeY=y; }
+      if(rowE>maxE){maxE=rowE;maxY=y;}
+    }
+    const relY=maxY/h; // 0=top, 1=bottom of lower half → 0.4+rel*0.6 of full
+    const fullY=0.4+relY*0.6;
+    T('pl-visl',(fullY*100).toFixed(0)+'% from top');
+
+    // cam height estimate from visual line
+    const beta=G.S.beta;const fovV=60;
+    const angFromHoriz=(fullY-0.5)*fovV; // degrees below/above center
+    const depressionDeg=90-beta+angFromHoriz;
+    if(depressionDeg>1&&depressionDeg<80){
+      const estH=Math.tan(depressionDeg*Math.PI/180)*1.2;
+      const valid=Math.abs(estH)>0.1&&Math.abs(estH)<4;
+      if(valid){
+        G.M.height_visual=Math.abs(estH);
+        T('cmp-hv4',Math.abs(estH).toFixed(2)+'m');
+      }
     }
 
-    // Draw grayscale + highlight floor line
-    for(let i=0;i<w*h;i++){
-      const x=i%w,y=Math.floor(i/w);
-      const l=lumaAt(src,x,y,w);
-      const idx=i*4;
-      const isFloor=Math.abs(y-maxEdgeY)<=1;
-      out.data[idx]=isFloor?0:l>>1;
-      out.data[idx+1]=isFloor?245:l>>1;
-      out.data[idx+2]=isFloor?212:l>>1;
-      out.data[idx+3]=255;
-    }
-    ctx.putImageData(out,0,0);
+    // Draw on canvas overlay
+    cv.width=vid.videoWidth||300;cv.height=vid.videoHeight||400;
+    ctx.clearRect(0,0,cv.width,cv.height);
+    const lineY=cv.height*fullY;
+    const grad=ctx.createLinearGradient(0,0,cv.width,0);
+    grad.addColorStop(0,'transparent');grad.addColorStop(.5,'rgba(0,229,200,.7)');grad.addColorStop(1,'transparent');
+    ctx.strokeStyle=grad;ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(0,lineY);ctx.lineTo(cv.width,lineY);ctx.stroke();
 
-    const relY=maxEdgeY/h;
-    const floorPct=Math.round(relY*100);
-    setText('floor-line-y',floorPct+'% from top of lower half');
-
-    // Camera height estimate from visual floor line
-    const fovV=Math.PI/3;
-    const tiltDeg=90-Math.abs(G.sensors.beta||90);
-    const angleToFloor=tiltDeg+(0.5-relY)*fovV*180/Math.PI;
-    if(angleToFloor>1 && angleToFloor<89){
-      const estH=Math.tan(angleToFloor*Math.PI/180)*1.5;
-      G.measure.height_plane=Math.abs(estH);
-      setText('cmp-h-plane-v',Math.abs(estH).toFixed(2)+'m');
-    }
+    ctx.fillStyle='rgba(0,229,200,.8)';ctx.font='10px DM Mono,monospace';
+    ctx.fillText('FLOOR LINE',8,lineY-6);
   }
   frame();
 }
 
-// ── WebXR SESSION (HIT TEST / DISTANCE) ─────────────
-async function startXRSession(mode){
-  if(!G.caps.ar){
-    toast('WebXR AR not available on this device');
-    return;
-  }
-  try{
-    const feats=['local-floor'];
-    if(mode==='distance') feats.push('hit-test');
-    G.xr.session=await navigator.xr.requestSession('immersive-ar',{
-      requiredFeatures:feats,
-      optionalFeatures:['depth-sensing']
-    });
-    G.xr.refSpace=await G.xr.session.requestReferenceSpace('local-floor');
-
-    // Setup hit test
-    if(mode==='distance' && G.caps.hit){
-      const viewerSpace=await G.xr.session.requestReferenceSpace('viewer');
-      G.xr.hitTestSrc=await G.xr.session.requestHitTestSource({space:viewerSpace});
-    }
-
-    G.xr.session.requestAnimationFrame(function onFrame(t,frame){
-      G.xr.session.requestAnimationFrame(onFrame);
-      // Hit test
-      if(G.xr.hitTestSrc){
-        const hits=frame.getHitTestResults(G.xr.hitTestSrc);
-        if(hits.length>0){
-          const pose=hits[0].getPose(G.xr.refSpace);
-          if(pose){
-            const p=pose.transform.position;
-            const d=Math.sqrt(p.x*p.x+p.y*p.y+p.z*p.z);
-            G.measure.dist_xr=d;
-            setText('d-xrhit',d.toFixed(2)+'m');
-            setText('dc-hit',d.toFixed(2)+'m');
-            setText('cmp-d-xr-v',d.toFixed(2)+'m');
-          }
-        }
-      }
-      // Depth from viewer pose
-      if(G.caps.depth){
-        const vpose=frame.getViewerPose(G.xr.refSpace);
-        if(vpose){
-          for(const view of vpose.views){
-            const di=frame.getDepthInformation(view);
-            if(di){
-              const cd=di.getDepthInMeters(di.width>>1,di.height>>1);
-              G.measure.centerDepth=cd;
-              setText('dep-center',cd.toFixed(2)+'m');
-            }
-          }
-        }
-      }
-    });
-
-    G.xr.session.addEventListener('end',()=>{G.xr.session=null;G.xr.hitTestSrc=null;});
-    badge('d-status-badge','ok','XR ACTIVE');
-    toast('WebXR hit-test active!');
-  }catch(e){
-    badge('d-status-badge','warn','XR FAILED');
-    showWarn('d-err-zone','WebXR session failed: '+e.message);
-    toast('XR failed: '+e.message);
-  }
+// ── TIMELINE ─────────────────────────────────
+function pushTimeline(){
+  G.H.tl_h.push(G.M.height_best||0);
+  G.H.tl_d.push(G.M.dist_best||0);
+  G.H.tl_l.push((G.M.lux||0)/100);
+  const ML=120;
+  if(G.H.tl_h.length>ML){G.H.tl_h.shift();G.H.tl_d.shift();G.H.tl_l.shift();}
+  drawTimeline();
 }
-
-// ── TAB MANAGEMENT ───────────────────────────────────
-function setHeightTab(t){
-  G.heightTab=t;
-  $$('[id^="ht-"]').forEach(b=>b.classList.remove('active'));
-  $('ht-'+t)?.classList.add('active');
-  const f={
-    sensor:'h = (estUserH × holdRatio) × cos(tilt_from_vertical)',
-    visual: 'h ≈ tan(depression_angle) × estimated_floor_distance',
-    both:   'FUSED: weighted average of sensor + visual methods'
-  };
-  setText('h-formula-txt',f[t]);
-  $('h-compare-section').style.display = (t==='both')?'block':'none';
-}
-
-function setDistTab(t){
-  G.distTab=t;
-  $$('[id^="dt-"]').forEach(b=>b.classList.remove('active'));
-  $('dt-'+t)?.classList.add('active');
-  const formulae={
-    trig:'D = h ÷ tan(depression_angle)  [h = camera height]',
-    'xr-hit':'D = |XRHitTestResult.pose.position|  [ARCore raycast]',
-    'xr-depth':'D = XRDepthInformation.getDepthInMeters(cx, cy)',
-    all:'FUSION: average of all available methods'
-  };
-  setText('d-formula', formulae[t]||'');
-  $('d-all-compare').style.display=(t==='all')?'block':'none';
-}
-
-// ── COMPARE TIMELINE ─────────────────────────────────
-function drawCompareTimeline(){
-  const c=$('cmp-timeline'); if(!c) return;
+function drawTimeline(){
+  const c=$('cmp-timeline');if(!c)return;
   const ctx=c.getContext('2d');
-  const W=c.offsetWidth||300,H=120;
-  c.width=W; c.height=H;
+  const W=c.offsetWidth||300,H=110;
+  c.width=W;c.height=H;
   ctx.clearRect(0,0,W,H);
-
-  const datasets=[
-    {data:G.cmpTimeline.h,color:'var(--acc)',label:'h',max:3},
-    {data:G.cmpTimeline.d,color:'var(--acc3)',label:'d',max:10},
-    {data:G.cmpTimeline.l,color:'var(--acc2)',label:'lux/100',max:50},
-  ];
-  datasets.forEach(({data,color,max})=>{
-    if(data.length<2) return;
+  // grid
+  ctx.strokeStyle='rgba(255,255,255,0.04)';ctx.lineWidth=.5;
+  for(let i=1;i<4;i++){ctx.beginPath();ctx.moveTo(0,H*i/4);ctx.lineTo(W,H*i/4);ctx.stroke();}
+  function plotLine(data,color,maxV){
+    if(data.length<2)return;
     ctx.beginPath();ctx.strokeStyle=color;ctx.lineWidth=1.5;
     data.forEach((v,i)=>{
       const x=(i/(data.length-1))*W;
-      const y=H-Math.max(0,Math.min(H-2,(v/max)*H));
+      const y=H-Math.max(0,Math.min(H-2,(v/maxV)*H));
       i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
-    });
-    ctx.stroke();
-  });
-  // grid
-  ctx.strokeStyle='rgba(255,255,255,0.04)'; ctx.lineWidth=.5;
-  for(let i=1;i<4;i++){
-    ctx.beginPath();ctx.moveTo(0,H*i/4);ctx.lineTo(W,H*i/4);ctx.stroke();
+    });ctx.stroke();
   }
+  plotLine(G.H.tl_h,'#00e5c8',3);
+  plotLine(G.H.tl_d,'#ffcc44',10);
+  plotLine(G.H.tl_l,'#ff5a5a',50);
 }
 
-// ── COMPARE PAGE UPDATE ──────────────────────────────
-function updateCompare(){
-  // updated inline in other functions
-}
-
-// ── SOBELOPERATOR ────────────────────────────────────
-function sobelMag(img,x,y,w,h){
-  const g=(dx,dy)=>{
-    const nx=Math.max(0,Math.min(w-1,x+dx));
-    const ny=Math.max(0,Math.min(h-1,y+dy));
-    const i=(ny*w+nx)*4;
-    return (img.data[i]*299+img.data[i+1]*587+img.data[i+2]*114)/1000;
-  };
+// ── SOBEL ─────────────────────────────────────
+function sobel(img,x,y,w,h){
+  const g=(dx,dy)=>{const nx=Math.max(0,Math.min(w-1,x+dx)),ny=Math.max(0,Math.min(h-1,y+dy));const i=(ny*w+nx)*4;return(img.data[i]*299+img.data[i+1]*587+img.data[i+2]*114)/1000;};
   const Gx=-g(-1,-1)+g(1,-1)-2*g(-1,0)+2*g(1,0)-g(-1,1)+g(1,1);
   const Gy=-g(-1,-1)-2*g(0,-1)-g(1,-1)+g(-1,1)+2*g(0,1)+g(1,1);
   return Math.sqrt(Gx*Gx+Gy*Gy);
 }
-function lumaAt(img,x,y,w){
-  const i=(y*w+x)*4;
-  return (img.data[i]*299+img.data[i+1]*587+img.data[i+2]*114)/1000;
-}
+function lumaPx(img,x,y,w){const i=(y*w+x)*4;return(img.data[i]*299+img.data[i+1]*587+img.data[i+2]*114)/1000;}
 
-// ── iOS PERMISSION ───────────────────────────────────
-async function reqMotionPerm(){
+// ── iOS PERMISSION ─────────────────────────────
+async function reqPerm(){
   if(typeof DeviceOrientationEvent?.requestPermission==='function'){
     try{
       const r=await DeviceOrientationEvent.requestPermission();
-      if(r==='granted'){
-        toast('✓ Motion permission granted!');
-        startSensors();
-      } else {
-        toast('✗ Permission denied');
-      }
-    }catch(e){ toast('Permission error: '+e.message); }
+      if(r==='granted'){toast('✓ Sensor permission granted');startSensors();}
+      else toast('✗ Sensor permission denied');
+    }catch(e){toast('Error: '+e.message);}
   } else {
-    toast('No manual permission needed — sensors auto-start');
+    toast('Sensors auto-active (no permission needed)');
     startSensors();
   }
 }
 
-// ── TAB SWITCHING ────────────────────────────────────
+// ── STAB CLICK HANDLERS ───────────────────────
+document.querySelectorAll('.stabs').forEach(group=>{
+  group.addEventListener('click',e=>{
+    const btn=e.target.closest('.stab');if(!btn)return;
+    group.querySelectorAll('.stab').forEach(b=>b.classList.remove('on'));
+    btn.classList.add('on');
+    const m=btn.dataset.m;
+    const pid=group.closest('.page')?.id;
+    if(pid==='page-height'){ G.heightMode=m; $('h-both-card').style.display=m==='both'?'block':'none'; }
+    if(pid==='page-distance'){ G.distMode=m; $('d-all-card').style.display=m==='all'?'block':'none'; }
+    if(pid==='page-depth'){ G.depMode=m; T('dep-hud-mode',m.toUpperCase()); }
+    if(pid==='page-objects'){ G.objMode=m; }
+    if(pid==='page-light'){ G.lightMode=m; }
+  });
+});
+
+// ── TAB SWITCHING ─────────────────────────────
 document.querySelectorAll('.tab-btn').forEach(btn=>{
   btn.addEventListener('click',function(){
     const tab=this.dataset.tab;
     document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
     document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
     this.classList.add('active');
-    $('page-'+tab)?.classList.add('active');
-    // scroll tab into view
+    document.getElementById('page-'+tab)?.classList.add('active');
     this.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
   });
 });
 
-// ── LAUNCH ───────────────────────────────────────────
-$('launch-btn').onclick=()=>{
-  $('splash').style.display='none';
-  $('app').style.display='flex';
-  // iOS needs a user gesture to request motion
-  if(G.isIOS) toast('Tap "Request iOS Sensor Permission" in the Sensors tab');
-  else startSensors();
-  toast('AR·SENSE ready. Start any camera to begin measuring!');
-};
-
-// ── INIT ─────────────────────────────────────────────
+// ── INIT ──────────────────────────────────────
 async function init(){
   detectDevice();
-  await detectCapabilities();
-
-  if(!G.isIOS) startSensors();
-
+  await detectCaps();
   $('launch-btn').disabled=false;
   $('launch-btn').textContent='▶ LAUNCH AR·SENSE';
-
-  // Auto-start a gentle sensor update loop
-  setInterval(()=>{
-    if(G.active.l||G.active.h||G.active.d||G.active.e||G.active.pl) updateCompare();
-    if($('page-compare').classList.contains('active')) drawCompareTimeline();
-  },200);
 }
 
-window.addEventListener('DOMContentLoaded', init);
+$('launch-btn').onclick=async()=>{
+  $('splash').style.display='none';
+  $('app').style.display='flex';
+
+  if(G.isIOS){
+    toast('Tap "Request iOS Sensor Permission" in Sensors tab to enable motion data');
+  } else {
+    startSensors();
+  }
+
+  // Auto-start all cameras
+  setTimeout(async()=>{
+    // Start height + distance cams (they share sensor, use different keys)
+    await startCam('h');
+    await startCam('d');
+    await startCam('dep',true);
+    await startCam('obj');
+    await startCam('l');
+    // Planes: try WebXR, fall back to visual
+    startPlaneDetection();
+    toast('All systems started automatically ✓');
+  }, 300);
+
+  // XR hit-test attempt for distance
+  if(G.caps.webxr&&G.caps.xr_hit){
+    setTimeout(()=>startXRHitTest(),2000);
+  }
+};
+
+// XR hit-test for distance
+async function startXRHitTest(){
+  try{
+    const sess=await navigator.xr.requestSession('immersive-ar',{
+      requiredFeatures:['hit-test','local-floor'],
+      optionalFeatures:['depth-sensing']
+    });
+    const rs=await sess.requestReferenceSpace('local-floor');
+    const vs=await sess.requestReferenceSpace('viewer');
+    const htSrc=await sess.requestHitTestSource({space:vs});
+    sess.requestAnimationFrame(function onf(t,frame){
+      if(!htSrc)return;
+      sess.requestAnimationFrame(onf);
+      const hits=frame.getHitTestResults(htSrc);
+      if(hits.length>0){
+        const pose=hits[0].getPose(rs);
+        if(pose){
+          const p=pose.transform.position;
+          G.M.dist_xr=Math.sqrt(p.x*p.x+p.y*p.y+p.z*p.z);
+          T('d-xrh',G.M.dist_xr.toFixed(2)+'m');
+          T('d-cv-xr',G.M.dist_xr.toFixed(2)+'m');
+        }
+      }
+      // depth from XR
+      if(G.caps.xr_depth){
+        const vp=frame.getViewerPose(rs);
+        if(vp){
+          for(const view of vp.views){
+            const di=frame.getDepthInformation?.(view);
+            if(di){
+              const d=di.getDepthInMeters(di.width>>1,di.height>>1);
+              G.M.centerDepth=d;
+              T('dep-ctr',d.toFixed(2)+'m');
+              T('d-depthctr',d.toFixed(2)+'m');
+              $('dep-badge').className='badge ok';$('dep-badge').textContent='WEBXR';
+            }
+          }
+        }
+      }
+    });
+    sess.addEventListener('end',()=>{G.M.dist_xr=null;});
+    toast('WebXR hit-test active');
+  }catch(e){
+    // silent fail, we use sensor trig as primary
+  }
+}
+
+window.addEventListener('DOMContentLoaded',init);
 </script>
+</body>
+</html>

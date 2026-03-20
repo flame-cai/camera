@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Ultimate WebXR AR Analyzer</title>
+
+<style>
+body { margin:0; font-family:Arial; background:black; color:white; }
+#ui {
+  position: fixed;
+  top:10px; left:10px;
+  background: rgba(0,0,0,0.7);
+  padding:10px;
+  border-radius:10px;
+  max-width:300px;
+}
+button { padding:8px; margin-top:5px; width:100%; }
+.ok { color: #00ff88; }
+.no { color: #ff5555; }
+#log { font-size:12px; max-height:200px; overflow:auto; }
+canvas { position:fixed; top:0; left:0; }
+</style>
+</head>
+
+<body>
+
+<div id="ui">
+<h3>🔍 AR Feature Scan</h3>
+<div id="features"></div>
+<button onclick="startAR()">▶ Start AR</button>
+<div id="log"></div>
+</div>
+
+<canvas id="xr-canvas"></canvas>
+
+<script>
+const FEATURES = [
+  "hit-test",
+  "anchors",
+  "plane-detection",
+  "light-estimation",
+  "depth-sensing",
+  "dom-overlay"
+];
+
+let featureSupport = {};
+let xrSession, gl, refSpace, viewerSpace;
+let hitTestSource = null;
+
+function log(msg){
+  const el = document.getElementById("log");
+  el.innerText = msg + "\n" + el.innerText;
+}
+
+// -------- FEATURE DETECTION ----------
+async function detectFeatures(){
+  const container = document.getElementById("features");
+
+  if(!navigator.xr){
+    container.innerHTML = "<span class='no'>❌ WebXR not supported</span>";
+    return;
+  }
+
+  const supported = await navigator.xr.isSessionSupported("immersive-ar");
+  if(!supported){
+    container.innerHTML = "<span class='no'>❌ AR not supported</span>";
+    return;
+  }
+
+  for(const f of FEATURES){
+    try{
+      await navigator.xr.requestSession("immersive-ar",{requiredFeatures:[f]});
+      featureSupport[f] = true;
+    }catch{
+      featureSupport[f] = false;
+    }
+  }
+
+  container.innerHTML = "";
+  for(const f in featureSupport){
+    const d = document.createElement("div");
+    d.className = featureSupport[f] ? "ok":"no";
+    d.textContent = (featureSupport[f]?"✅ ":"❌ ")+f;
+    container.appendChild(d);
+  }
+}
+
+// -------- START AR ----------
+async function startAR(){
+
+  try{
+    xrSession = await navigator.xr.requestSession("immersive-ar",{
+      requiredFeatures:["hit-test"],
+      optionalFeatures:[
+        "anchors",
+        "plane-detection",
+        "light-estimation",
+        "depth-sensing",
+        "dom-overlay"
+      ],
+      domOverlay:{root:document.body}
+    });
+
+    const canvas = document.getElementById("xr-canvas");
+    gl = canvas.getContext("webgl",{xrCompatible:true});
+
+    await xrSession.updateRenderState({
+      baseLayer: new XRWebGLLayer(xrSession, gl)
+    });
+
+    refSpace = await xrSession.requestReferenceSpace("local");
+    viewerSpace = await xrSession.requestReferenceSpace("viewer");
+
+    // HIT TEST INIT
+    hitTestSource = await xrSession.requestHitTestSource({
+      space: viewerSpace
+    });
+
+    xrSession.requestAnimationFrame(onXRFrame);
+
+  }catch(e){
+    log("❌ AR failed: "+e.message);
+  }
+}
+
+// -------- XR LOOP ----------
+function onXRFrame(t, frame){
+  xrSession.requestAnimationFrame(onXRFrame);
+
+  const pose = frame.getViewerPose(refSpace);
+  if(!pose) return;
+
+  const pos = pose.transform.position;
+
+  // CAMERA POSITION
+  log(`📍 Camera Y: ${pos.y.toFixed(2)}m`);
+
+  // HIT TEST (GROUND / OBJECT)
+  const hits = frame.getHitTestResults(hitTestSource);
+  if(hits.length){
+    const hitPose = hits[0].getPose(refSpace);
+    const h = hitPose.transform.position;
+
+    const distance = Math.sqrt(
+      (pos.x-h.x)**2 +
+      (pos.y-h.y)**2 +
+      (pos.z-h.z)**2
+    );
+
+    const height = pos.y - h.y;
+
+    log(`🟢 Surface detected`);
+    log(`📏 Distance: ${distance.toFixed(2)}m`);
+    log(`📐 Height: ${height.toFixed(2)}m`);
+  } else {
+    log("⚠️ scanning...");
+  }
+
+  // DEPTH SENSING
+  if(frame.getDepthInformation){
+    try{
+      const depth = frame.getDepthInformation(pose.views[0]);
+      if(depth){
+        log("🌊 Depth sensing active");
+      }
+    }catch{}
+  }
+
+  // PLANE DETECTION
+  if(frame.detectedPlanes){
+    log(`🟦 Planes: ${frame.detectedPlanes.size}`);
+  }
+
+  // LIGHT ESTIMATION
+  if(frame.getLightEstimate){
+    try{
+      const light = frame.getLightEstimate();
+      if(light) log("💡 Light OK");
+    }catch{}
+  }
+
+  drawOverlay(pos);
+}
+
+// -------- SIMPLE OVERLAY ----------
+function drawOverlay(pos){
+  const canvas = document.getElementById("xr-canvas");
+  const ctx = canvas.getContext("2d");
+
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  // crosshair
+  ctx.strokeStyle = "lime";
+  ctx.beginPath();
+  ctx.moveTo(canvas.width/2-20, canvas.height/2);
+  ctx.lineTo(canvas.width/2+20, canvas.height/2);
+  ctx.moveTo(canvas.width/2, canvas.height/2-20);
+  ctx.lineTo(canvas.width/2, canvas.height/2+20);
+  ctx.stroke();
+
+  ctx.fillText(`Y: ${pos.y.toFixed(2)}m`,20,20);
+}
+
+// INIT
+detectFeatures();
+
+</script>
+</body>
+</html>

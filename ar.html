@@ -1,212 +1,2171 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="utf-8">
-<title>Ultimate WebXR AR Analyzer</title>
-
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>AR Sensor Toolkit</title>
 <style>
-body { margin:0; font-family:Arial; background:black; color:white; }
-#ui {
-  position: fixed;
-  top:10px; left:10px;
-  background: rgba(0,0,0,0.7);
-  padding:10px;
-  border-radius:10px;
-  max-width:300px;
-}
-button { padding:8px; margin-top:5px; width:100%; }
-.ok { color: #00ff88; }
-.no { color: #ff5555; }
-#log { font-size:12px; max-height:200px; overflow:auto; }
-canvas { position:fixed; top:0; left:0; }
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Rajdhani:wght@300;400;500;600;700&display=swap');
+
+  :root {
+    --bg: #050a0f;
+    --surface: #0a1520;
+    --surface2: #0f1e2e;
+    --accent: #00d4ff;
+    --accent2: #ff6b35;
+    --accent3: #39ff14;
+    --warn: #ffd600;
+    --danger: #ff1744;
+    --text: #e0f0ff;
+    --text-dim: #6a8fa8;
+    --border: #1a3a5c;
+    --glow: 0 0 20px rgba(0,212,255,0.3);
+    --glow2: 0 0 20px rgba(255,107,53,0.3);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: 'Rajdhani', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+    user-select: none;
+  }
+
+  /* ── SPLASH ── */
+  #splash {
+    position: fixed; inset: 0; z-index: 9999;
+    background: var(--bg);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 16px; padding: 32px;
+  }
+  .splash-logo {
+    font-family: 'Space Mono', monospace;
+    font-size: 13px; letter-spacing: 6px;
+    color: var(--accent); text-transform: uppercase;
+    animation: pulse 2s ease-in-out infinite;
+  }
+  .splash-title {
+    font-size: 38px; font-weight: 700;
+    color: var(--text); line-height: 1;
+    text-align: center;
+  }
+  .splash-title span { color: var(--accent); }
+  .splash-badge {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px; padding: 4px 12px;
+    border: 1px solid var(--border);
+    color: var(--text-dim); border-radius: 20px;
+  }
+  .device-banner {
+    margin-top: 8px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px; padding: 12px 20px;
+    text-align: center; width: 100%;
+  }
+  .device-banner .os-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px; letter-spacing: 4px;
+    color: var(--text-dim); text-transform: uppercase;
+  }
+  .device-banner .os-name {
+    font-size: 26px; font-weight: 700;
+    margin-top: 4px;
+  }
+  .device-banner .os-note {
+    font-size: 13px; color: var(--text-dim);
+    margin-top: 4px;
+  }
+  .capability-grid {
+    width: 100%; display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px; margin-top: 8px;
+  }
+  .cap-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px; padding: 10px 12px;
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px;
+  }
+  .cap-item .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .dot-checking { background: var(--warn); animation: blink 1s infinite; }
+  .dot-yes { background: var(--accent3); }
+  .dot-no { background: var(--danger); }
+  .dot-partial { background: var(--warn); }
+
+  #splash-btn {
+    margin-top: 16px;
+    background: var(--accent); color: #000;
+    border: none; border-radius: 12px;
+    padding: 16px 40px; font-size: 18px; font-weight: 700;
+    font-family: 'Rajdhani', sans-serif;
+    cursor: pointer; width: 100%;
+    letter-spacing: 2px; text-transform: uppercase;
+    box-shadow: var(--glow);
+    transition: all 0.2s;
+  }
+  #splash-btn:active { transform: scale(0.97); }
+  #splash-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* ── MAIN APP ── */
+  #app { display: none; flex-direction: column; height: 100vh; overflow: hidden; }
+
+  /* top nav */
+  .top-bar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 16px;
+    display: flex; align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+  .top-bar-title {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px; letter-spacing: 3px;
+    color: var(--accent); text-transform: uppercase;
+  }
+  .top-bar-os {
+    font-size: 12px; color: var(--text-dim);
+    background: var(--surface2); border: 1px solid var(--border);
+    padding: 3px 10px; border-radius: 20px;
+  }
+
+  /* tab bar */
+  .tab-bar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex; overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    flex-shrink: 0;
+    scrollbar-width: none;
+  }
+  .tab-bar::-webkit-scrollbar { display: none; }
+  .tab-btn {
+    flex-shrink: 0;
+    padding: 10px 14px;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 13px; font-weight: 600;
+    color: var(--text-dim);
+    background: none; border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer; white-space: nowrap;
+    letter-spacing: 0.5px;
+    transition: all 0.2s;
+  }
+  .tab-btn.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+  .tab-icon { margin-right: 4px; }
+
+  /* pages */
+  .pages { flex: 1; overflow: hidden; position: relative; }
+  .page {
+    position: absolute; inset: 0;
+    overflow-y: auto; padding: 16px;
+    display: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .page.active { display: block; }
+
+  /* cards */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px; padding: 16px;
+    margin-bottom: 12px;
+  }
+  .card-title {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px; letter-spacing: 3px;
+    color: var(--accent); text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  /* camera view */
+  .camera-container {
+    position: relative; width: 100%;
+    border-radius: 14px; overflow: hidden;
+    background: #000; aspect-ratio: 9/16;
+    margin-bottom: 12px;
+  }
+  #cam-video {
+    width: 100%; height: 100%;
+    object-fit: cover; display: block;
+  }
+  #cam-canvas {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+  }
+  .cam-overlay {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(0,0,0,0.7);
+    flex-direction: column; gap: 12px;
+    font-size: 15px; color: var(--text-dim);
+    text-align: center; padding: 20px;
+  }
+
+  /* hud labels */
+  .hud-label {
+    position: absolute; font-family: 'Space Mono', monospace;
+    font-size: 11px; background: rgba(0,0,0,0.7);
+    padding: 3px 8px; border-radius: 4px;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+  }
+
+  /* metric boxes */
+  .metric-row {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 10px; margin-bottom: 10px;
+  }
+  .metric-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px; padding: 12px;
+    text-align: center;
+  }
+  .metric-box.accent-box { border-color: var(--accent); }
+  .metric-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px; letter-spacing: 2px;
+    color: var(--text-dim); text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .metric-value {
+    font-family: 'Space Mono', monospace;
+    font-size: 22px; font-weight: 700;
+    color: var(--text);
+  }
+  .metric-value.big { font-size: 28px; color: var(--accent); }
+  .metric-unit {
+    font-size: 11px; color: var(--text-dim);
+    margin-left: 3px;
+  }
+
+  /* buttons */
+  .btn {
+    width: 100%; padding: 14px;
+    border: none; border-radius: 12px;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 16px; font-weight: 700;
+    cursor: pointer; letter-spacing: 1px;
+    text-transform: uppercase; transition: all 0.2s;
+    margin-bottom: 8px;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn-primary { background: var(--accent); color: #000; box-shadow: var(--glow); }
+  .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+  .btn-danger { background: var(--danger); color: #fff; }
+  .btn-orange { background: var(--accent2); color: #000; box-shadow: var(--glow2); }
+
+  /* sensor bar */
+  .sensor-bar-wrap { margin-bottom: 8px; }
+  .sensor-bar-label {
+    display: flex; justify-content: space-between;
+    font-size: 13px; margin-bottom: 4px;
+  }
+  .sensor-bar-track {
+    height: 6px; background: var(--border);
+    border-radius: 3px; overflow: hidden;
+  }
+  .sensor-bar-fill {
+    height: 100%; border-radius: 3px;
+    background: var(--accent);
+    transition: width 0.15s;
+  }
+
+  /* depth canvas */
+  #depth-canvas {
+    width: 100%; border-radius: 10px;
+    display: block; aspect-ratio: 3/4;
+    background: #000;
+  }
+  #edge-canvas {
+    width: 100%; border-radius: 10px;
+    display: block; background: #000;
+  }
+
+  /* crosshair */
+  .crosshair {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+  .crosshair::before, .crosshair::after {
+    content: ''; position: absolute;
+    background: rgba(0,212,255,0.8);
+  }
+  .crosshair::before { width: 30px; height: 1px; top: 0; left: -15px; }
+  .crosshair::after { width: 1px; height: 30px; left: 0; top: -15px; }
+
+  /* horizon line */
+  .horizon-indicator {
+    position: absolute; left: 0; right: 0;
+    height: 1px; background: rgba(255,107,53,0.6);
+    pointer-events: none; transition: top 0.1s;
+  }
+
+  /* slider */
+  input[type=range] {
+    width: 100%; height: 6px;
+    -webkit-appearance: none;
+    background: var(--border); border-radius: 3px;
+    margin: 8px 0;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+  }
+
+  /* info row */
+  .info-row {
+    display: flex; justify-content: space-between;
+    align-items: center; padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+  }
+  .info-row:last-child { border-bottom: none; }
+  .info-row-label { color: var(--text-dim); }
+  .info-row-val { font-family: 'Space Mono', monospace; font-size: 13px; }
+
+  /* status badge */
+  .status-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 10px; border-radius: 20px;
+    font-size: 12px; font-weight: 600;
+  }
+  .badge-ok { background: rgba(57,255,20,0.15); color: var(--accent3); border: 1px solid rgba(57,255,20,0.3); }
+  .badge-warn { background: rgba(255,214,0,0.15); color: var(--warn); border: 1px solid rgba(255,214,0,0.3); }
+  .badge-err { background: rgba(255,23,68,0.15); color: var(--danger); border: 1px solid rgba(255,23,68,0.3); }
+  .badge-info { background: rgba(0,212,255,0.15); color: var(--accent); border: 1px solid rgba(0,212,255,0.3); }
+
+  /* compass */
+  .compass-wrap {
+    display: flex; justify-content: center; margin: 12px 0;
+  }
+  .compass-ring {
+    width: 120px; height: 120px;
+    border: 2px solid var(--border);
+    border-radius: 50%; position: relative;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .compass-needle {
+    width: 4px; height: 50px;
+    position: absolute; top: 10px; left: 50%;
+    transform-origin: bottom center;
+    transform: translateX(-50%) rotate(0deg);
+    background: linear-gradient(to bottom, var(--danger) 50%, var(--text-dim) 50%);
+    border-radius: 2px;
+    transition: transform 0.2s;
+  }
+  .compass-center {
+    width: 10px; height: 10px;
+    background: var(--accent); border-radius: 50%;
+    position: absolute;
+  }
+
+  /* 3d tilt viz */
+  .tilt-viz {
+    perspective: 300px;
+    display: flex; justify-content: center;
+    margin: 12px 0;
+  }
+  .tilt-phone {
+    width: 60px; height: 110px;
+    background: var(--surface2);
+    border: 2px solid var(--accent);
+    border-radius: 10px;
+    transform-style: preserve-3d;
+    transition: transform 0.1s;
+    position: relative;
+  }
+  .tilt-phone::before {
+    content: '';
+    position: absolute; top: 8px; left: 50%;
+    transform: translateX(-50%);
+    width: 20px; height: 3px;
+    background: var(--border); border-radius: 2px;
+  }
+
+  /* notification */
+  .toast {
+    position: fixed; bottom: 80px; left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--surface2); border: 1px solid var(--accent);
+    color: var(--text); padding: 10px 20px;
+    border-radius: 10px; font-size: 14px;
+    z-index: 1000; transition: transform 0.3s;
+    white-space: nowrap;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* light meter */
+  .light-meter {
+    height: 30px; border-radius: 8px; overflow: hidden;
+    background: var(--border); position: relative;
+    margin: 8px 0;
+  }
+  .light-fill {
+    height: 100%; transition: width 0.2s;
+    background: linear-gradient(to right, #1a1a2e, #ffd600, #fff);
+  }
+
+  /* plane indicator */
+  .plane-card {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 10px 14px;
+    margin-bottom: 8px; display: flex;
+    align-items: center; justify-content: space-between;
+  }
+
+  /* xr canvas */
+  #xr-canvas {
+    width: 100%; border-radius: 10px;
+    display: block; background: #000;
+    aspect-ratio: 3/4;
+  }
+
+  /* animations */
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+  @keyframes scanline {
+    0% { transform: translateY(-100%); }
+    100% { transform: translateY(200%); }
+  }
+  .scanline {
+    position: absolute; left: 0; right: 0;
+    height: 2px; background: rgba(0,212,255,0.15);
+    animation: scanline 3s linear infinite;
+    pointer-events: none;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .spinner {
+    width: 32px; height: 32px; border-radius: 50%;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    animation: spin 1s linear infinite;
+  }
+
+  .input-row {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 10px;
+  }
+  .input-row label { font-size: 13px; color: var(--text-dim); flex-shrink: 0; }
+  .input-row input[type=number] {
+    flex: 1; background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px; padding: 8px 12px;
+    color: var(--text); font-family: 'Space Mono', monospace;
+    font-size: 14px;
+  }
+
+  .formula-box {
+    background: rgba(0,212,255,0.05);
+    border: 1px solid rgba(0,212,255,0.2);
+    border-radius: 8px; padding: 10px 14px;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px; color: var(--accent);
+    margin: 8px 0;
+  }
+
+  .method-tabs {
+    display: flex; gap: 6px; margin-bottom: 12px;
+  }
+  .method-tab {
+    flex: 1; padding: 8px 6px; border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface2); color: var(--text-dim);
+    font-size: 12px; cursor: pointer; text-align: center;
+    transition: all 0.2s; font-family: 'Rajdhani', sans-serif;
+    font-weight: 600;
+  }
+  .method-tab.active {
+    background: rgba(0,212,255,0.15);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .edge-controls {
+    display: flex; gap: 8px; margin-bottom: 10px;
+    align-items: center;
+  }
+  .edge-controls label { font-size: 12px; color: var(--text-dim); }
+
+  #ambient-bar-container {
+    display: flex; flex-direction: column; gap: 6px;
+  }
 </style>
 </head>
-
 <body>
 
-<div id="ui">
-<h3>🔍 AR Feature Scan</h3>
-<div id="features"></div>
-<button onclick="startAR()">▶ Start AR</button>
-<div id="log"></div>
+<!-- SPLASH -->
+<div id="splash">
+  <div class="splash-logo">◈ AR Toolkit v2.0</div>
+  <div class="splash-title">Sensor<span>&amp;</span>AR<br>Detective</div>
+  <div class="splash-badge">Portrait · Rear Camera · Real-time</div>
+
+  <div class="device-banner">
+    <div class="os-label">Detected Device</div>
+    <div class="os-name" id="splash-os">Detecting…</div>
+    <div class="os-note" id="splash-os-note">Checking capabilities…</div>
+  </div>
+
+  <div class="capability-grid" id="cap-grid">
+    <div class="cap-item"><span class="dot dot-checking" id="d-cam"></span> Rear Camera</div>
+    <div class="cap-item"><span class="dot dot-checking" id="d-gyro"></span> Gyroscope</div>
+    <div class="cap-item"><span class="dot dot-checking" id="d-accel"></span> Accelerometer</div>
+    <div class="cap-item"><span class="dot dot-checking" id="d-mag"></span> Magnetometer</div>
+    <div class="cap-item"><span class="dot dot-checking" id="d-baro"></span> Barometer</div>
+    <div class="cap-item"><span class="dot dot-checking" id="d-ambient"></span> Ambient Light</div>
+    <div class="cap-item"><span class="dot dot-checking" id="d-prox"></span> Proximity</div>
+    <div class="cap-item"><span class="dot dot-checking" id="d-webxr"></span> WebXR/ARCore</div>
+    <div class="cap-item"><span class="dot dot-checking" id="d-depth"></span> Depth Sensing</div>
+    <div class="cap-item"><span class="dot dot-checking" id="d-hittest"></span> Hit Test</div>
+  </div>
+
+  <button id="splash-btn" disabled>Checking…</button>
 </div>
 
-<canvas id="xr-canvas"></canvas>
+<!-- MAIN APP -->
+<div id="app">
+  <div class="top-bar">
+    <div class="top-bar-title">◈ AR Toolkit</div>
+    <div class="top-bar-os" id="app-os-badge">–</div>
+  </div>
+
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="switchTab('height')">📏 Height</button>
+    <button class="tab-btn" onclick="switchTab('distance')">📐 Distance</button>
+    <button class="tab-btn" onclick="switchTab('depth')">🌊 Depth</button>
+    <button class="tab-btn" onclick="switchTab('edges')">🔲 Objects</button>
+    <button class="tab-btn" onclick="switchTab('sensors')">📡 Sensors</button>
+    <button class="tab-btn" onclick="switchTab('light')">💡 Light</button>
+    <button class="tab-btn" onclick="switchTab('planes')">🟦 Planes</button>
+  </div>
+
+  <div class="pages">
+
+    <!-- ── HEIGHT PAGE ── -->
+    <div class="page active" id="page-height">
+      <div class="card">
+        <div class="card-title">📏 Camera Height From Ground</div>
+        <div class="method-tabs">
+          <div class="method-tab active" id="htab-sensor" onclick="setHeightMethod('sensor')">Sensor Tilt</div>
+          <div class="method-tab" id="htab-visual" onclick="setHeightMethod('visual')">Visual Aim</div>
+        </div>
+
+        <!-- Sensor method -->
+        <div id="h-sensor-method">
+          <div class="formula-box">h = sin(|tilt_from_vertical|) × arm_reach<br>OR: h ≈ holding_height (direct from pose)</div>
+          <div class="input-row">
+            <label>Your height (cm)</label>
+            <input type="number" id="user-height" value="170" min="100" max="220">
+          </div>
+          <div class="input-row">
+            <label>Hold offset (cm)</label>
+            <input type="number" id="hold-offset" value="30" min="0" max="80">
+          </div>
+          <p style="font-size:12px;color:var(--text-dim);margin-bottom:10px;">
+            Hold phone perpendicular to ground. Tilt sensor calculates camera height.
+          </p>
+        </div>
+
+        <!-- Visual method -->
+        <div id="h-visual-method" style="display:none">
+          <div class="formula-box">h = tan(elevation_angle) × D<br>Aim at ground → tilt = angle to horizon</div>
+          <p style="font-size:12px;color:var(--text-dim);margin-bottom:10px;">
+            Point phone camera at the ground intersection point. Orange line shows computed horizon.
+          </p>
+        </div>
+      </div>
+
+      <div class="camera-container" id="h-cam-container">
+        <video id="h-video" autoplay playsinline muted></video>
+        <canvas id="h-canvas"></canvas>
+        <div class="scanline"></div>
+        <div class="crosshair"></div>
+        <div class="horizon-indicator" id="h-horizon" style="top:50%"></div>
+        <div class="cam-overlay" id="h-cam-overlay">
+          <div class="spinner"></div>
+          <div>Tap "Start Camera" below</div>
+        </div>
+      </div>
+
+      <div class="metric-row">
+        <div class="metric-box accent-box">
+          <div class="metric-label">Camera Height</div>
+          <div class="metric-value big" id="h-height">–<span class="metric-unit">m</span></div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-label">Tilt Angle</div>
+          <div class="metric-value" id="h-tilt">–<span class="metric-unit">°</span></div>
+        </div>
+      </div>
+      <div class="metric-row">
+        <div class="metric-box">
+          <div class="metric-label">Beta (X-tilt)</div>
+          <div class="metric-value" id="h-beta">–<span class="metric-unit">°</span></div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-label">Gamma (Y-tilt)</div>
+          <div class="metric-value" id="h-gamma">–<span class="metric-unit">°</span></div>
+        </div>
+      </div>
+
+      <button class="btn btn-primary" id="h-cam-btn" onclick="toggleHeightCam()">▶ Start Camera</button>
+      <button class="btn btn-secondary" onclick="requestMotionPermission()">🔒 Request Sensor Permission (iOS)</button>
+
+      <div class="card" style="margin-top:4px">
+        <div class="card-title">Method Explanation</div>
+        <div class="info-row">
+          <span class="info-row-label">Phone perpendicular to ground?</span>
+          <span class="info-row-val" id="h-perp-check">–</span>
+        </div>
+        <div class="info-row">
+          <span class="info-row-label">Confidence</span>
+          <span class="info-row-val" id="h-confidence">–</span>
+        </div>
+        <div class="info-row">
+          <span class="info-row-label">Method Active</span>
+          <span class="info-row-val" id="h-method-active">–</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── DISTANCE PAGE ── -->
+    <div class="page" id="page-distance">
+      <div class="card">
+        <div class="card-title">📐 Distance to Objects</div>
+        <div class="method-tabs">
+          <div class="method-tab active" id="dtab-trig" onclick="setDistMethod('trig')">Trig</div>
+          <div class="method-tab" id="dtab-ref" onclick="setDistMethod('ref')">Ref Object</div>
+          <div class="method-tab" id="dtab-xr" onclick="setDistMethod('xr')">WebXR</div>
+        </div>
+
+        <!-- trig method -->
+        <div id="dist-trig">
+          <div class="formula-box">D = h / tan(depression_angle)<br>h = camera height, angle from horizontal</div>
+          <p style="font-size:12px;color:var(--text-dim);margin-bottom:10px;">
+            Hold phone level, point at base of object. Uses camera height + downward tilt angle.
+          </p>
+          <div class="input-row">
+            <label>Camera height (cm)</label>
+            <input type="number" id="d-cam-height" value="150" min="50" max="250">
+          </div>
+        </div>
+
+        <!-- ref object method -->
+        <div id="dist-ref" style="display:none">
+          <div class="formula-box">D = (f × H_real) / H_pixels<br>f = focal_length, H = object height</div>
+          <div class="input-row">
+            <label>Known object height (cm)</label>
+            <input type="number" id="d-ref-size" value="30" min="1" max="500">
+          </div>
+          <p style="font-size:12px;color:var(--text-dim);margin-bottom:4px;">
+            Tap the top and bottom of the object on screen to measure.
+          </p>
+          <div id="d-tap-status" style="font-size:13px;color:var(--warn);margin-bottom:8px;">Tap points: 0/2</div>
+        </div>
+
+        <!-- WebXR method -->
+        <div id="dist-xr" style="display:none">
+          <p style="font-size:12px;color:var(--text-dim);margin-bottom:8px;">
+            Uses WebXR hit-test to raycast against real surfaces (requires ARCore on Android Chrome).
+          </p>
+          <div class="info-row">
+            <span class="info-row-label">WebXR Status</span>
+            <span id="dist-xr-status">Checking…</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="camera-container" id="d-cam-container">
+        <video id="d-video" autoplay playsinline muted></video>
+        <canvas id="d-canvas"></canvas>
+        <div class="scanline"></div>
+        <div class="crosshair"></div>
+        <div class="horizon-indicator" id="d-horizon" style="top:50%"></div>
+        <div class="cam-overlay" id="d-cam-overlay">
+          <div class="spinner"></div>
+          <div>Tap "Start Camera" below</div>
+        </div>
+      </div>
+
+      <div class="metric-row">
+        <div class="metric-box accent-box">
+          <div class="metric-label">Distance</div>
+          <div class="metric-value big" id="dist-value">–<span class="metric-unit">m</span></div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-label">Depression°</div>
+          <div class="metric-value" id="dist-angle">–<span class="metric-unit">°</span></div>
+        </div>
+      </div>
+      <div class="metric-row">
+        <div class="metric-box">
+          <div class="metric-label">Tap Point 1</div>
+          <div class="metric-value" id="d-tap1" style="font-size:13px">–</div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-label">Tap Point 2</div>
+          <div class="metric-value" id="d-tap2" style="font-size:13px">–</div>
+        </div>
+      </div>
+
+      <button class="btn btn-primary" id="d-cam-btn" onclick="toggleDistCam()">▶ Start Camera</button>
+      <button class="btn btn-secondary" onclick="clearTapPoints()">✕ Clear Tap Points</button>
+    </div>
+
+    <!-- ── DEPTH PAGE ── -->
+    <div class="page" id="page-depth">
+      <div class="card">
+        <div class="card-title">🌊 Depth Estimation</div>
+        <div id="depth-xr-status">
+          <div class="info-row">
+            <span class="info-row-label">WebXR Depth Sensing</span>
+            <span id="depth-api-status" class="status-badge badge-warn">Checking…</span>
+          </div>
+          <div class="info-row">
+            <span class="info-row-label">ARCore Support</span>
+            <span id="depth-arcore-status" class="status-badge badge-warn">Checking…</span>
+          </div>
+        </div>
+        <p style="font-size:12px;color:var(--text-dim);margin-top:8px;">
+          WebXR Depth requires Chrome on ARCore-compatible Android. Falls back to edge/blur depth estimation on unsupported devices.
+        </p>
+      </div>
+
+      <canvas id="depth-canvas"></canvas>
+
+      <div class="metric-row" style="margin-top:10px">
+        <div class="metric-box accent-box">
+          <div class="metric-label">Center Depth</div>
+          <div class="metric-value big" id="depth-center">–<span class="metric-unit">m</span></div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-label">Min Depth</div>
+          <div class="metric-value" id="depth-min">–<span class="metric-unit">m</span></div>
+        </div>
+      </div>
+      <div class="metric-row">
+        <div class="metric-box">
+          <div class="metric-label">Max Depth</div>
+          <div class="metric-value" id="depth-max">–</div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-label">Mode</div>
+          <div class="metric-value" id="depth-mode" style="font-size:13px">–</div>
+        </div>
+      </div>
+
+      <button class="btn btn-primary" id="depth-btn" onclick="startDepth()">▶ Start Depth Sensing</button>
+      <button class="btn btn-secondary" onclick="stopDepth()">■ Stop</button>
+
+      <div class="card" style="margin-top:4px">
+        <div class="card-title">Depth Legend</div>
+        <div style="height:16px;border-radius:8px;background:linear-gradient(to right,#ff1744,#ffd600,#00d4ff,#1a237e);margin:8px 0;"></div>
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-dim);font-family:'Space Mono',monospace">
+          <span>Near (0m)</span><span>Mid</span><span>Far (&gt;5m)</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── EDGES/OBJECTS PAGE ── -->
+    <div class="page" id="page-edges">
+      <div class="card">
+        <div class="card-title">🔲 Object &amp; Edge Detection</div>
+        <div class="edge-controls">
+          <label>Threshold:</label>
+          <input type="range" id="edge-threshold" min="20" max="150" value="50" style="flex:1">
+          <span id="edge-thresh-val" style="font-family:'Space Mono',monospace;font-size:12px;color:var(--accent)">50</span>
+        </div>
+        <div class="method-tabs">
+          <div class="method-tab active" id="etab-edge" onclick="setEdgeMode('edge')">Edges</div>
+          <div class="method-tab" id="etab-diff" onclick="setEdgeMode('diff')">Motion</div>
+          <div class="method-tab" id="etab-luma" onclick="setEdgeMode('luma')">Luminance</div>
+          <div class="method-tab" id="etab-hsv" onclick="setEdgeMode('hsv')">Color Seg</div>
+        </div>
+      </div>
+
+      <div class="camera-container" id="e-cam-container">
+        <video id="e-video" autoplay playsinline muted style="display:none"></video>
+        <canvas id="edge-canvas"></canvas>
+        <div class="cam-overlay" id="e-cam-overlay">
+          <div class="spinner"></div>
+          <div>Tap "Start Camera" below</div>
+        </div>
+      </div>
+
+      <div class="metric-row">
+        <div class="metric-box accent-box">
+          <div class="metric-label">Edge Pixels</div>
+          <div class="metric-value" id="edge-pixels">–</div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-label">Motion Δ</div>
+          <div class="metric-value" id="edge-motion">–</div>
+        </div>
+      </div>
+      <div class="metric-row">
+        <div class="metric-box">
+          <div class="metric-label">Avg Brightness</div>
+          <div class="metric-value" id="edge-bright">–</div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-label">Dominant Hue</div>
+          <div class="metric-value" id="edge-hue">–</div>
+        </div>
+      </div>
+
+      <button class="btn btn-primary" id="e-cam-btn" onclick="toggleEdgeCam()">▶ Start Camera</button>
+    </div>
+
+    <!-- ── SENSORS PAGE ── -->
+    <div class="page" id="page-sensors">
+      <div class="card">
+        <div class="card-title">📡 All Sensors Live</div>
+
+        <div class="tilt-viz">
+          <div class="tilt-phone" id="tilt-phone-viz"></div>
+        </div>
+
+        <div class="compass-wrap">
+          <div class="compass-ring">
+            <div class="compass-needle" id="compass-needle"></div>
+            <div class="compass-center"></div>
+          </div>
+        </div>
+        <div style="text-align:center;font-family:'Space Mono',monospace;font-size:11px;color:var(--text-dim);margin-bottom:12px">
+          Heading: <span id="compass-heading">–</span>°
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Accelerometer (m/s²)</div>
+        <div class="sensor-bar-wrap">
+          <div class="sensor-bar-label"><span>X</span><span id="accel-x">–</span></div>
+          <div class="sensor-bar-track"><div class="sensor-bar-fill" id="bar-ax" style="width:50%;background:var(--danger)"></div></div>
+        </div>
+        <div class="sensor-bar-wrap">
+          <div class="sensor-bar-label"><span>Y</span><span id="accel-y">–</span></div>
+          <div class="sensor-bar-track"><div class="sensor-bar-fill" id="bar-ay" style="width:50%;background:var(--accent3)"></div></div>
+        </div>
+        <div class="sensor-bar-wrap">
+          <div class="sensor-bar-label"><span>Z</span><span id="accel-z">–</span></div>
+          <div class="sensor-bar-track"><div class="sensor-bar-fill" id="bar-az" style="width:50%;background:var(--accent)"></div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Gyroscope (°/s)</div>
+        <div class="sensor-bar-wrap">
+          <div class="sensor-bar-label"><span>Alpha (Z)</span><span id="gyro-a">–</span></div>
+          <div class="sensor-bar-track"><div class="sensor-bar-fill" id="bar-ga" style="width:50%;background:var(--danger)"></div></div>
+        </div>
+        <div class="sensor-bar-wrap">
+          <div class="sensor-bar-label"><span>Beta (X)</span><span id="gyro-b">–</span></div>
+          <div class="sensor-bar-track"><div class="sensor-bar-fill" id="bar-gb" style="width:50%;background:var(--accent3)"></div></div>
+        </div>
+        <div class="sensor-bar-wrap">
+          <div class="sensor-bar-label"><span>Gamma (Y)</span><span id="gyro-g">–</span></div>
+          <div class="sensor-bar-track"><div class="sensor-bar-fill" id="bar-gg" style="width:50%;background:var(--accent)"></div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Device Orientation</div>
+        <div class="info-row">
+          <span class="info-row-label">Alpha (compass)</span>
+          <span class="info-row-val" id="s-alpha">–</span>
+        </div>
+        <div class="info-row">
+          <span class="info-row-label">Beta (front-back tilt)</span>
+          <span class="info-row-val" id="s-beta">–</span>
+        </div>
+        <div class="info-row">
+          <span class="info-row-label">Gamma (left-right tilt)</span>
+          <span class="info-row-val" id="s-gamma">–</span>
+        </div>
+        <div class="info-row">
+          <span class="info-row-label">Absolute</span>
+          <span class="info-row-val" id="s-absolute">–</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Other Sensors</div>
+        <div class="info-row">
+          <span class="info-row-label">Barometer / Altitude</span>
+          <span class="info-row-val" id="s-baro">Not available</span>
+        </div>
+        <div class="info-row">
+          <span class="info-row-label">Ambient Light</span>
+          <span class="info-row-val" id="s-ambient">Not available</span>
+        </div>
+        <div class="info-row">
+          <span class="info-row-label">Proximity</span>
+          <span class="info-row-val" id="s-proximity">Not available</span>
+        </div>
+        <div class="info-row">
+          <span class="info-row-label">Magnetometer X</span>
+          <span class="info-row-val" id="s-mag">Not available</span>
+        </div>
+      </div>
+
+      <button class="btn btn-secondary" onclick="requestMotionPermission()">🔒 Request iOS Permission</button>
+    </div>
+
+    <!-- ── LIGHT PAGE ── -->
+    <div class="page" id="page-light">
+      <div class="card">
+        <div class="card-title">💡 Light &amp; Environment Estimation</div>
+        <p style="font-size:12px;color:var(--text-dim);margin-bottom:10px;">
+          Estimates ambient light from camera feed + device sensors.
+        </p>
+      </div>
+
+      <div class="camera-container" style="aspect-ratio:3/4">
+        <video id="l-video" autoplay playsinline muted></video>
+        <canvas id="l-canvas" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none"></canvas>
+        <div class="cam-overlay" id="l-cam-overlay">
+          <div class="spinner"></div>
+          <div>Tap "Start Camera" below</div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:10px">
+        <div class="card-title">Luminance</div>
+        <div class="light-meter">
+          <div class="light-fill" id="light-fill-bar" style="width:0%"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-dim)">
+          <span>Dark</span><span>Medium</span><span>Bright</span>
+        </div>
+      </div>
+
+      <div class="metric-row">
+        <div class="metric-box accent-box">
+          <div class="metric-label">Lux (estimated)</div>
+          <div class="metric-value big" id="lux-val">–</div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-label">Color Temp</div>
+          <div class="metric-value" id="color-temp">–<span class="metric-unit">K</span></div>
+        </div>
+      </div>
+      <div class="metric-row">
+        <div class="metric-box">
+          <div class="metric-label">Avg R</div>
+          <div class="metric-value" id="avg-r" style="color:#ff5252">–</div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-label">Avg G</div>
+          <div class="metric-value" id="avg-g" style="color:#69f0ae">–</div>
+        </div>
+      </div>
+      <div class="metric-row">
+        <div class="metric-box">
+          <div class="metric-label">Avg B</div>
+          <div class="metric-value" id="avg-b" style="color:#40c4ff">–</div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-label">Condition</div>
+          <div class="metric-value" id="light-cond" style="font-size:13px">–</div>
+        </div>
+      </div>
+
+      <button class="btn btn-primary" id="l-cam-btn" onclick="toggleLightCam()">▶ Start Camera</button>
+
+      <div class="card">
+        <div class="card-title">Device Sensor Light</div>
+        <div id="ambient-bar-container">
+          <div class="info-row">
+            <span class="info-row-label">Ambient Light Sensor</span>
+            <span class="info-row-val" id="ambient-sensor-val">Not available</span>
+          </div>
+          <div class="info-row">
+            <span class="info-row-label">Sensor API</span>
+            <span id="ambient-api-status" class="status-badge badge-warn">Checking…</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PLANES PAGE ── -->
+    <div class="page" id="page-planes">
+      <div class="card">
+        <div class="card-title">🟦 Plane &amp; Surface Detection</div>
+        <div class="info-row">
+          <span class="info-row-label">WebXR AR Mode</span>
+          <span id="planes-xr-status" class="status-badge badge-warn">Checking…</span>
+        </div>
+        <div class="info-row">
+          <span class="info-row-label">Plane Detection Feature</span>
+          <span id="planes-pd-status" class="status-badge badge-warn">Checking…</span>
+        </div>
+        <p style="font-size:12px;color:var(--text-dim);margin-top:8px;">
+          Requires ARCore on Android Chrome. On iOS Safari, WebXR AR is not fully supported. Falls back to visual floor line detection.
+        </p>
+      </div>
+
+      <canvas id="xr-canvas"></canvas>
+
+      <div class="card" style="margin-top:10px">
+        <div class="card-title">Detected Planes</div>
+        <div id="planes-list">
+          <div style="color:var(--text-dim);font-size:13px;padding:8px 0">No planes detected yet. Start WebXR session below.</div>
+        </div>
+      </div>
+
+      <div class="metric-row">
+        <div class="metric-box accent-box">
+          <div class="metric-label">Planes Found</div>
+          <div class="metric-value big" id="plane-count">0</div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-label">Floor Y</div>
+          <div class="metric-value" id="plane-floor-y">–<span class="metric-unit">m</span></div>
+        </div>
+      </div>
+
+      <button class="btn btn-primary" id="planes-start-btn" onclick="startPlanesXR()">▶ Start WebXR Plane Detection</button>
+      <button class="btn btn-secondary" onclick="startVisualFloor()">🎥 Visual Floor Detection (Fallback)</button>
+      <button class="btn btn-danger" onclick="stopPlanesXR()">■ Stop</button>
+
+      <div class="card" style="margin-top:4px">
+        <div class="card-title">Floor Height Estimation</div>
+        <div class="info-row">
+          <span class="info-row-label">Estimated camera height (from planes)</span>
+          <span class="info-row-val" id="plane-cam-height">–</span>
+        </div>
+        <div class="info-row">
+          <span class="info-row-label">Ground plane confidence</span>
+          <span class="info-row-val" id="plane-confidence">–</span>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /pages -->
+</div><!-- /app -->
+
+<div class="toast" id="toast"></div>
 
 <script>
-const FEATURES = [
-  "hit-test",
-  "anchors",
-  "plane-detection",
-  "light-estimation",
-  "depth-sensing",
-  "dom-overlay"
-];
+// ═══════════════════════════════════════════
+// GLOBAL STATE
+// ═══════════════════════════════════════════
+const state = {
+  os: 'unknown',
+  isAndroid: false,
+  isIOS: false,
+  caps: {},
+  sensors: {
+    alpha: 0, beta: 0, gamma: 0,
+    ax: 0, ay: 0, az: 0,
+    rr: 0, rb: 0, rg: 0
+  },
+  heightMethod: 'sensor',
+  distMethod: 'trig',
+  edgeMode: 'edge',
+  hCamActive: false,
+  dCamActive: false,
+  eCamActive: false,
+  lCamActive: false,
+  motionGranted: false,
+  tapPoints: [],
+  edgeThreshold: 50,
+  prevFrame: null,
+  xrSession: null,
+  xrRefSpace: null,
+};
 
-let featureSupport = {};
-let xrSession, gl, refSpace, viewerSpace;
-let hitTestSource = null;
+// ═══════════════════════════════════════════
+// DEVICE DETECTION
+// ═══════════════════════════════════════════
+function detectDevice() {
+  const ua = navigator.userAgent;
+  state.isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
+  state.isAndroid = /Android/.test(ua);
+  state.os = state.isIOS ? 'iOS' : state.isAndroid ? 'Android' : 'Unknown';
 
-function log(msg){
-  const el = document.getElementById("log");
-  el.innerText = msg + "\n" + el.innerText;
+  const osEl = document.getElementById('splash-os');
+  const noteEl = document.getElementById('splash-os-note');
+  if (state.isIOS) {
+    osEl.textContent = '📱 iPhone / iOS';
+    osEl.style.color = 'var(--accent)';
+    noteEl.textContent = 'Safari · Motion requires permission · WebXR limited';
+  } else if (state.isAndroid) {
+    osEl.textContent = '🤖 Android';
+    osEl.style.color = 'var(--accent3)';
+    noteEl.textContent = 'Chrome recommended · ARCore supported · Full WebXR';
+  } else {
+    osEl.textContent = '💻 Desktop / Other';
+    osEl.style.color = 'var(--warn)';
+    noteEl.textContent = 'Limited sensor support · Camera may work';
+  }
+  document.getElementById('app-os-badge').textContent = state.os;
 }
 
-// -------- FEATURE DETECTION ----------
-async function detectFeatures(){
-  const container = document.getElementById("features");
+// ═══════════════════════════════════════════
+// CAPABILITY DETECTION
+// ═══════════════════════════════════════════
+async function detectCapabilities() {
+  const set = (id, status) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.className = 'dot dot-' + (status === true ? 'yes' : status === false ? 'no' : 'partial');
+  };
 
-  if(!navigator.xr){
-    container.innerHTML = "<span class='no'>❌ WebXR not supported</span>";
-    return;
+  // Camera
+  try {
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    const hasCam = devices.some(d => d.kind === 'videoinput');
+    state.caps.camera = hasCam;
+    set('d-cam', hasCam);
+  } catch { set('d-cam', false); }
+
+  // Gyroscope
+  state.caps.gyro = typeof DeviceOrientationEvent !== 'undefined';
+  set('d-gyro', state.caps.gyro ? 'partial' : false);
+
+  // Accelerometer
+  state.caps.accel = typeof DeviceMotionEvent !== 'undefined';
+  set('d-accel', state.caps.accel ? 'partial' : false);
+
+  // Magnetometer - check via Generic Sensor API
+  if (typeof Magnetometer !== 'undefined') {
+    try {
+      const m = new Magnetometer();
+      state.caps.mag = true;
+      set('d-mag', true);
+    } catch { set('d-mag', false); state.caps.mag = false; }
+  } else {
+    // DeviceOrientation absolute gives magnetometer-like data
+    state.caps.mag = typeof DeviceOrientationAbsoluteEvent !== 'undefined';
+    set('d-mag', state.caps.mag ? 'partial' : false);
   }
 
-  const supported = await navigator.xr.isSessionSupported("immersive-ar");
-  if(!supported){
-    container.innerHTML = "<span class='no'>❌ AR not supported</span>";
-    return;
+  // Barometer
+  if (typeof Barometer !== 'undefined' || typeof RelativePressureSensor !== 'undefined') {
+    state.caps.baro = true;
+    set('d-baro', 'partial');
+  } else {
+    state.caps.baro = false;
+    set('d-baro', false);
   }
 
-  for(const f of FEATURES){
-    try{
-      await navigator.xr.requestSession("immersive-ar",{requiredFeatures:[f]});
-      featureSupport[f] = true;
-    }catch{
-      featureSupport[f] = false;
+  // Ambient Light
+  if (typeof AmbientLightSensor !== 'undefined') {
+    try {
+      const a = new AmbientLightSensor();
+      state.caps.ambient = true;
+      set('d-ambient', 'partial');
+    } catch { set('d-ambient', false); state.caps.ambient = false; }
+  } else {
+    // some devices fire devicelight event
+    state.caps.ambient = typeof window.ondevicelight !== 'undefined';
+    set('d-ambient', state.caps.ambient ? 'partial' : false);
+  }
+
+  // Proximity
+  state.caps.proximity = typeof DeviceProximitySensor !== 'undefined' || 'ondeviceproximity' in window;
+  set('d-prox', state.caps.proximity ? 'partial' : false);
+
+  // WebXR
+  if (navigator.xr) {
+    try {
+      const arSupported = await navigator.xr.isSessionSupported('immersive-ar');
+      state.caps.webxr = true;
+      state.caps.ar = arSupported;
+      set('d-webxr', arSupported ? true : 'partial');
+    } catch { set('d-webxr', false); state.caps.webxr = false; }
+  } else {
+    set('d-webxr', false); state.caps.webxr = false;
+  }
+
+  // Depth sensing
+  state.caps.depth = state.caps.ar; // requires AR session
+  set('d-depth', state.caps.depth ? 'partial' : false);
+
+  // Hit test
+  state.caps.hittest = state.caps.ar;
+  set('d-hittest', state.caps.hittest ? 'partial' : false);
+
+  // Update XR status badges
+  updateXRStatusBadges();
+}
+
+function updateXRStatusBadges() {
+  const arOk = state.caps.ar;
+  const badge = (id, ok, yesText, noText) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.className = 'status-badge ' + (ok ? 'badge-ok' : 'badge-err');
+    el.textContent = ok ? yesText : noText;
+  };
+  badge('depth-api-status', arOk, '✓ Available', '✗ Not available');
+  badge('depth-arcore-status', state.isAndroid && arOk, '✓ ARCore', '✗ No ARCore');
+  badge('planes-xr-status', arOk, '✓ Supported', '✗ Not supported');
+  badge('planes-pd-status', arOk, '✓ Available', '✗ Not available');
+  if (document.getElementById('dist-xr-status')) {
+    document.getElementById('dist-xr-status').innerHTML =
+      '<span class="status-badge ' + (arOk ? 'badge-ok' : 'badge-err') + '">' +
+      (arOk ? '✓ ARCore Ready' : '✗ Not available') + '</span>';
+  }
+}
+
+// ═══════════════════════════════════════════
+// SENSOR LISTENERS
+// ═══════════════════════════════════════════
+function startSensorListeners() {
+  window.addEventListener('deviceorientation', (e) => {
+    state.sensors.alpha = e.alpha || 0;
+    state.sensors.beta  = e.beta  || 0;
+    state.sensors.gamma = e.gamma || 0;
+    updateSensorUI(e);
+  }, true);
+
+  window.addEventListener('deviceorientationabsolute', (e) => {
+    if (e.absolute && e.alpha !== null) {
+      state.sensors.alpha = e.alpha;
+      updateCompass(e.alpha);
+    }
+  }, true);
+
+  window.addEventListener('devicemotion', (e) => {
+    const a = e.accelerationIncludingGravity;
+    if (a) {
+      state.sensors.ax = a.x || 0;
+      state.sensors.ay = a.y || 0;
+      state.sensors.az = a.z || 0;
+    }
+    const r = e.rotationRate;
+    if (r) {
+      state.sensors.rr = r.alpha || 0;
+      state.sensors.rb = r.beta  || 0;
+      state.sensors.rg = r.gamma || 0;
+    }
+    updateMotionUI();
+  }, true);
+
+  // Generic Sensor API
+  if (typeof AmbientLightSensor !== 'undefined') {
+    try {
+      const als = new AmbientLightSensor();
+      als.onreading = () => {
+        document.getElementById('s-ambient').textContent = als.illuminance.toFixed(1) + ' lx';
+        document.getElementById('ambient-sensor-val').textContent = als.illuminance.toFixed(1) + ' lx';
+      };
+      als.start();
+    } catch(e) {}
+  }
+
+  // Barometer
+  if (typeof AbsolutePressureSensor !== 'undefined') {
+    try {
+      const bar = new AbsolutePressureSensor({ frequency: 1 });
+      bar.onreading = () => {
+        const alt = 44330 * (1 - Math.pow(bar.pressure / 1013.25, 0.1903));
+        document.getElementById('s-baro').textContent = bar.pressure.toFixed(1) + ' hPa (~' + alt.toFixed(0) + 'm alt)';
+      };
+      bar.start();
+    } catch(e) {}
+  }
+
+  // Proximity
+  if ('ondeviceproximity' in window) {
+    window.addEventListener('deviceproximity', (e) => {
+      document.getElementById('s-proximity').textContent = e.value + 'cm (max:' + e.max + ')';
+    });
+  }
+}
+
+function updateSensorUI(e) {
+  const a = e.alpha?.toFixed(1) ?? '–';
+  const b = e.beta?.toFixed(1) ?? '–';
+  const g = e.gamma?.toFixed(1) ?? '–';
+  setText('s-alpha', a + '°');
+  setText('s-beta', b + '°');
+  setText('s-gamma', g + '°');
+  setText('s-absolute', e.absolute ? 'Yes' : 'No');
+  setText('gyro-a', a + '°');
+  setText('gyro-b', b + '°');
+  setText('gyro-g', g + '°');
+  updateBar('bar-ga', e.alpha, 0, 360, 'var(--danger)');
+  updateBar('bar-gb', (e.beta || 0) + 90, 0, 180, 'var(--accent3)');
+  updateBar('bar-gg', (e.gamma || 0) + 90, 0, 180, 'var(--accent)');
+  updateTiltViz(e.beta, e.gamma);
+  updateCompass(e.alpha);
+  updateHeightFromSensor(e.beta, e.gamma);
+  updateDistanceFromSensor(e.beta);
+}
+
+function updateMotionUI() {
+  const s = state.sensors;
+  setText('accel-x', s.ax?.toFixed(2) ?? '–');
+  setText('accel-y', s.ay?.toFixed(2) ?? '–');
+  setText('accel-z', s.az?.toFixed(2) ?? '–');
+  updateBar('bar-ax', s.ax + 10, 0, 20, 'var(--danger)');
+  updateBar('bar-ay', s.ay + 10, 0, 20, 'var(--accent3)');
+  updateBar('bar-az', s.az + 10, 0, 20, 'var(--accent)');
+  setText('s-mag', `ax:${s.ax?.toFixed(1)} ay:${s.ay?.toFixed(1)} az:${s.az?.toFixed(1)}`);
+}
+
+function updateTiltViz(beta, gamma) {
+  if (beta == null) return;
+  const el = document.getElementById('tilt-phone-viz');
+  const rx = Math.max(-60, Math.min(60, beta));
+  const ry = Math.max(-60, Math.min(60, gamma || 0));
+  el.style.transform = `rotateX(${-rx}deg) rotateY(${ry}deg)`;
+}
+
+function updateCompass(alpha) {
+  if (alpha == null) return;
+  const needle = document.getElementById('compass-needle');
+  needle.style.transform = `translateX(-50%) rotate(${alpha}deg)`;
+  setText('compass-heading', alpha.toFixed(0));
+}
+
+function updateBar(id, val, min, max, color) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const pct = Math.max(0, Math.min(100, ((val - min) / (max - min)) * 100));
+  el.style.width = pct + '%';
+  el.style.background = color;
+}
+
+// ═══════════════════════════════════════════
+// HEIGHT ESTIMATION
+// ═══════════════════════════════════════════
+let hStream = null, hAnimFrame = null;
+
+async function toggleHeightCam() {
+  if (state.hCamActive) {
+    stopHeightCam(); return;
+  }
+  try {
+    hStream = await getRearCamera();
+    const video = document.getElementById('h-video');
+    video.srcObject = hStream;
+    await video.play();
+    document.getElementById('h-cam-overlay').style.display = 'none';
+    document.getElementById('h-cam-btn').textContent = '■ Stop Camera';
+    state.hCamActive = true;
+    runHeightOverlay();
+  } catch(e) { showToast('Camera error: ' + e.message); }
+}
+
+function stopHeightCam() {
+  if (hStream) { hStream.getTracks().forEach(t => t.stop()); hStream = null; }
+  document.getElementById('h-cam-overlay').style.display = 'flex';
+  document.getElementById('h-cam-btn').textContent = '▶ Start Camera';
+  state.hCamActive = false;
+  if (hAnimFrame) cancelAnimationFrame(hAnimFrame);
+}
+
+function runHeightOverlay() {
+  const video = document.getElementById('h-video');
+  const canvas = document.getElementById('h-canvas');
+  const ctx = canvas.getContext('2d');
+  function draw() {
+    if (!state.hCamActive) return;
+    canvas.width = video.videoWidth || canvas.offsetWidth;
+    canvas.height = video.videoHeight || canvas.offsetHeight;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // draw grid lines
+    ctx.strokeStyle = 'rgba(0,212,255,0.1)';
+    ctx.lineWidth = 1;
+    for (let i = 1; i < 5; i++) {
+      ctx.beginPath();
+      ctx.moveTo(0, canvas.height * i / 5);
+      ctx.lineTo(canvas.width, canvas.height * i / 5);
+      ctx.stroke();
+    }
+
+    // horizon line based on tilt
+    const beta = state.sensors.beta;
+    const horizonFrac = 0.5 - (beta / 90) * 0.5;
+    const horizonY = Math.max(0, Math.min(1, horizonFrac));
+    const hEl = document.getElementById('h-horizon');
+    hEl.style.top = (horizonY * 100) + '%';
+
+    ctx.strokeStyle = 'rgba(255,107,53,0.7)';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([8, 4]);
+    ctx.beginPath();
+    ctx.moveTo(0, canvas.height * horizonY);
+    ctx.lineTo(canvas.width, canvas.height * horizonY);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // label
+    ctx.fillStyle = 'rgba(255,107,53,0.9)';
+    ctx.font = '11px Space Mono, monospace';
+    ctx.fillText('HORIZON', 8, canvas.height * horizonY - 6);
+
+    hAnimFrame = requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+function setHeightMethod(m) {
+  state.heightMethod = m;
+  document.getElementById('h-sensor-method').style.display = m === 'sensor' ? 'block' : 'none';
+  document.getElementById('h-visual-method').style.display = m === 'visual' ? 'block' : 'none';
+  document.getElementById('htab-sensor').classList.toggle('active', m === 'sensor');
+  document.getElementById('htab-visual').classList.toggle('active', m === 'visual');
+}
+
+function updateHeightFromSensor(beta, gamma) {
+  if (!document.getElementById('page-height').classList.contains('active') &&
+      !document.getElementById('page-sensors').classList.contains('active')) return;
+  if (beta == null) return;
+
+  const userH = parseFloat(document.getElementById('user-height')?.value || 170);
+  const holdOff = parseFloat(document.getElementById('hold-offset')?.value || 30);
+  // beta: 0 = flat, 90 = upright portrait
+  // When phone is perpendicular to ground in portrait: beta ≈ 90
+  const betaRad = (beta * Math.PI) / 180;
+  const gammaRad = ((gamma || 0) * Math.PI) / 180;
+  const isPerp = Math.abs(beta) > 70 && Math.abs(beta) < 110;
+
+  // Sensor method: camera height = holding height
+  // When phone is perfectly vertical, camera is at roughly user_height - hold_offset
+  // Tilt from vertical = |90 - beta|
+  const tiltFromVertical = Math.abs(90 - Math.abs(beta));
+  const cameraHeightCm = (userH - holdOff) * Math.cos(tiltFromVertical * Math.PI / 180);
+  const hM = (cameraHeightCm / 100).toFixed(2);
+
+  // Visual method: using depression angle to ground
+  let visualH = null;
+  if (state.heightMethod === 'visual' && beta < 0) {
+    const depression = Math.abs(90 + beta); // angle below horizontal
+    if (depression > 1) {
+      visualH = 1.5; // placeholder - needs known distance
     }
   }
 
-  container.innerHTML = "";
-  for(const f in featureSupport){
-    const d = document.createElement("div");
-    d.className = featureSupport[f] ? "ok":"no";
-    d.textContent = (featureSupport[f]?"✅ ":"❌ ")+f;
-    container.appendChild(d);
-  }
+  const displayH = state.heightMethod === 'sensor' ? hM : (visualH?.toFixed(2) ?? '?');
+  setText('h-height', displayH + 'm');
+  setText('h-tilt', tiltFromVertical.toFixed(1) + '°');
+  setText('h-beta', beta.toFixed(1) + '°');
+  setText('h-gamma', (gamma || 0).toFixed(1) + '°');
+  setText('h-perp-check', isPerp ? '✓ Yes' : '✗ Tilt phone upright');
+  const conf = isPerp ? Math.round(100 - tiltFromVertical * 2) : Math.round(50 - tiltFromVertical);
+  setText('h-confidence', Math.max(0, conf) + '%');
+  setText('h-method-active', state.heightMethod === 'sensor' ? 'Sensor Trig' : 'Visual Aim');
 }
 
-// -------- START AR ----------
-async function startAR(){
+// ═══════════════════════════════════════════
+// DISTANCE ESTIMATION
+// ═══════════════════════════════════════════
+let dStream = null, dAnimFrame = null;
 
-  try{
-    xrSession = await navigator.xr.requestSession("immersive-ar",{
-      requiredFeatures:["hit-test"],
-      optionalFeatures:[
-        "anchors",
-        "plane-detection",
-        "light-estimation",
-        "depth-sensing",
-        "dom-overlay"
-      ],
-      domOverlay:{root:document.body}
-    });
-
-    const canvas = document.getElementById("xr-canvas");
-    gl = canvas.getContext("webgl",{xrCompatible:true});
-
-    await xrSession.updateRenderState({
-      baseLayer: new XRWebGLLayer(xrSession, gl)
-    });
-
-    refSpace = await xrSession.requestReferenceSpace("local");
-    viewerSpace = await xrSession.requestReferenceSpace("viewer");
-
-    // HIT TEST INIT
-    hitTestSource = await xrSession.requestHitTestSource({
-      space: viewerSpace
-    });
-
-    xrSession.requestAnimationFrame(onXRFrame);
-
-  }catch(e){
-    log("❌ AR failed: "+e.message);
-  }
+async function toggleDistCam() {
+  if (state.dCamActive) { stopDistCam(); return; }
+  try {
+    dStream = await getRearCamera();
+    const video = document.getElementById('d-video');
+    video.srcObject = dStream;
+    await video.play();
+    document.getElementById('d-cam-overlay').style.display = 'none';
+    document.getElementById('d-cam-btn').textContent = '■ Stop Camera';
+    state.dCamActive = true;
+    setupDistTap();
+    runDistOverlay();
+  } catch(e) { showToast('Camera error: ' + e.message); }
 }
 
-// -------- XR LOOP ----------
-function onXRFrame(t, frame){
-  xrSession.requestAnimationFrame(onXRFrame);
+function stopDistCam() {
+  if (dStream) { dStream.getTracks().forEach(t => t.stop()); dStream = null; }
+  document.getElementById('d-cam-overlay').style.display = 'flex';
+  document.getElementById('d-cam-btn').textContent = '▶ Start Camera';
+  state.dCamActive = false;
+}
 
-  const pose = frame.getViewerPose(refSpace);
-  if(!pose) return;
+function runDistOverlay() {
+  const video = document.getElementById('d-video');
+  const canvas = document.getElementById('d-canvas');
+  const ctx = canvas.getContext('2d');
+  function draw() {
+    if (!state.dCamActive) return;
+    canvas.width = video.videoWidth || canvas.offsetWidth;
+    canvas.height = video.videoHeight || canvas.offsetHeight;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // draw tap points
+    state.tapPoints.forEach((pt, i) => {
+      ctx.beginPath();
+      ctx.arc(pt.x * canvas.width, pt.y * canvas.height, 10, 0, Math.PI * 2);
+      ctx.strokeStyle = i === 0 ? 'var(--accent)' : 'var(--accent2)';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.fillStyle = i === 0 ? 'var(--accent)' : 'var(--accent2)';
+      ctx.font = '12px Space Mono';
+      ctx.fillText('P' + (i + 1), pt.x * canvas.width + 14, pt.y * canvas.height + 4);
+    });
+    if (state.tapPoints.length === 2) {
+      ctx.strokeStyle = 'rgba(0,212,255,0.5)';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      ctx.moveTo(state.tapPoints[0].x * canvas.width, state.tapPoints[0].y * canvas.height);
+      ctx.lineTo(state.tapPoints[1].x * canvas.width, state.tapPoints[1].y * canvas.height);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+    dAnimFrame = requestAnimationFrame(draw);
+  }
+  draw();
+}
 
-  const pos = pose.transform.position;
+function setupDistTap() {
+  const canvas = document.getElementById('d-canvas');
+  canvas.style.pointerEvents = 'auto';
+  canvas.onclick = (e) => {
+    if (state.distMethod !== 'ref') return;
+    const rect = canvas.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width;
+    const y = (e.clientY - rect.top) / rect.height;
+    if (state.tapPoints.length >= 2) state.tapPoints = [];
+    state.tapPoints.push({ x, y });
+    const idx = state.tapPoints.length - 1;
+    setText('d-tap' + (idx + 1), `(${(x * 100).toFixed(0)}%, ${(y * 100).toFixed(0)}%)`);
+    setText('d-tap-status', 'Tap points: ' + state.tapPoints.length + '/2');
+    if (state.tapPoints.length === 2) calcRefDistance();
+  };
+}
 
-  // CAMERA POSITION
-  log(`📍 Camera Y: ${pos.y.toFixed(2)}m`);
+function calcRefDistance() {
+  const [p1, p2] = state.tapPoints;
+  const video = document.getElementById('d-video');
+  const pixelHeight = Math.abs(p2.y - p1.y) * (video.videoHeight || 480);
+  const fovV = 60 * Math.PI / 180;
+  const focalLen = (video.videoHeight || 480) / (2 * Math.tan(fovV / 2));
+  const realH = parseFloat(document.getElementById('d-ref-size')?.value || 30) / 100;
+  const dist = (focalLen * realH) / pixelHeight;
+  setText('dist-value', dist.toFixed(2) + 'm');
+}
 
-  // HIT TEST (GROUND / OBJECT)
-  const hits = frame.getHitTestResults(hitTestSource);
-  if(hits.length){
-    const hitPose = hits[0].getPose(refSpace);
-    const h = hitPose.transform.position;
-
-    const distance = Math.sqrt(
-      (pos.x-h.x)**2 +
-      (pos.y-h.y)**2 +
-      (pos.z-h.z)**2
-    );
-
-    const height = pos.y - h.y;
-
-    log(`🟢 Surface detected`);
-    log(`📏 Distance: ${distance.toFixed(2)}m`);
-    log(`📐 Height: ${height.toFixed(2)}m`);
+function updateDistanceFromSensor(beta) {
+  if (beta == null) return;
+  if (state.distMethod !== 'trig') return;
+  const camH = parseFloat(document.getElementById('d-cam-height')?.value || 150) / 100;
+  // depression angle = how much below horizontal
+  const depression = -(90 - Math.abs(beta)); // negative means pointing down
+  const horizAngle = beta; // angle from vertical
+  // When phone is held portrait, beta~90 = level. Beta<90 = pointing down
+  const depressionDeg = 90 - Math.abs(beta);
+  if (depressionDeg > 1 && depressionDeg < 89) {
+    const depressionRad = depressionDeg * Math.PI / 180;
+    const dist = camH / Math.tan(depressionRad);
+    setText('dist-value', dist.toFixed(2) + 'm');
+    setText('dist-angle', depressionDeg.toFixed(1) + '°');
+    updateHorizonLine('d-horizon', beta);
   } else {
-    log("⚠️ scanning...");
+    setText('dist-value', '–');
+    setText('dist-angle', depressionDeg.toFixed(1) + '°');
   }
+}
 
-  // DEPTH SENSING
-  if(frame.getDepthInformation){
-    try{
-      const depth = frame.getDepthInformation(pose.views[0]);
-      if(depth){
-        log("🌊 Depth sensing active");
+function updateHorizonLine(id, beta) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const frac = 0.5 - (beta / 90) * 0.5;
+  el.style.top = (Math.max(0, Math.min(1, frac)) * 100) + '%';
+}
+
+function clearTapPoints() {
+  state.tapPoints = [];
+  setText('d-tap1', '–'); setText('d-tap2', '–');
+  setText('d-tap-status', 'Tap points: 0/2');
+  setText('dist-value', '–');
+}
+
+function setDistMethod(m) {
+  state.distMethod = m;
+  ['trig','ref','xr'].forEach(k => {
+    document.getElementById('dist-' + k).style.display = k === m ? 'block' : 'none';
+    document.getElementById('dtab-' + k).classList.toggle('active', k === m);
+  });
+}
+
+// ═══════════════════════════════════════════
+// DEPTH SENSING
+// ═══════════════════════════════════════════
+let depthXRSession = null, depthStream = null, depthVideo = null, depthAnimFrame = null;
+let depthActive = false;
+
+async function startDepth() {
+  if (depthActive) return;
+  if (state.caps.ar) {
+    await startWebXRDepth();
+  } else {
+    await startFallbackDepth();
+  }
+}
+
+async function startWebXRDepth() {
+  try {
+    depthXRSession = await navigator.xr.requestSession('immersive-ar', {
+      requiredFeatures: ['depth-sensing'],
+      depthSensing: {
+        usagePreference: ['cpu-optimized', 'gpu-optimized'],
+        dataFormatPreference: ['luminance-alpha', 'float32']
       }
-    }catch{}
-  }
+    });
+    setText('depth-mode', 'WebXR Depth');
+    depthActive = true;
+    showToast('WebXR depth session started!');
+    depthXRSession.addEventListener('end', () => { depthActive = false; });
 
-  // PLANE DETECTION
-  if(frame.detectedPlanes){
-    log(`🟦 Planes: ${frame.detectedPlanes.size}`);
-  }
+    const canvas = document.getElementById('depth-canvas');
+    const gl = canvas.getContext('webgl', { xrCompatible: true });
+    await gl.makeXRCompatible?.();
+    depthXRSession.updateRenderState({ baseLayer: new XRWebGLLayer(depthXRSession, gl) });
 
-  // LIGHT ESTIMATION
-  if(frame.getLightEstimate){
-    try{
-      const light = frame.getLightEstimate();
-      if(light) log("💡 Light OK");
-    }catch{}
+    const refSpace = await depthXRSession.requestReferenceSpace('local');
+    function onXRFrame(t, frame) {
+      if (!depthActive) return;
+      depthXRSession.requestAnimationFrame(onXRFrame);
+      const pose = frame.getViewerPose(refSpace);
+      if (!pose) return;
+      for (const view of pose.views) {
+        const depthData = frame.getDepthInformation(view);
+        if (depthData) renderXRDepth(depthData, canvas);
+      }
+    }
+    depthXRSession.requestAnimationFrame(onXRFrame);
+  } catch(e) {
+    showToast('WebXR depth failed: ' + e.message + '. Using fallback.');
+    await startFallbackDepth();
   }
-
-  drawOverlay(pos);
 }
 
-// -------- SIMPLE OVERLAY ----------
-function drawOverlay(pos){
-  const canvas = document.getElementById("xr-canvas");
-  const ctx = canvas.getContext("2d");
+function renderXRDepth(depthData, canvas) {
+  const ctx = canvas.getContext('2d');
+  const w = depthData.width, h = depthData.height;
+  canvas.width = w; canvas.height = h;
+  const imgData = ctx.createImageData(w, h);
+  let minD = Infinity, maxD = 0;
 
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
+  for (let i = 0; i < w * h; i++) {
+    const x = i % w, y = Math.floor(i / w);
+    const d = depthData.getDepthInMeters(x, y);
+    if (d < minD) minD = d;
+    if (d > maxD) maxD = d;
+  }
 
-  ctx.clearRect(0,0,canvas.width,canvas.height);
+  for (let i = 0; i < w * h; i++) {
+    const x = i % w, y = Math.floor(i / w);
+    const d = depthData.getDepthInMeters(x, y);
+    const norm = Math.max(0, Math.min(1, (d - minD) / (maxD - minD)));
+    const [r, g, b] = depthColor(norm);
+    imgData.data[i * 4] = r;
+    imgData.data[i * 4 + 1] = g;
+    imgData.data[i * 4 + 2] = b;
+    imgData.data[i * 4 + 3] = 255;
+  }
+  ctx.putImageData(imgData, 0, 0);
 
-  // crosshair
-  ctx.strokeStyle = "lime";
-  ctx.beginPath();
-  ctx.moveTo(canvas.width/2-20, canvas.height/2);
-  ctx.lineTo(canvas.width/2+20, canvas.height/2);
-  ctx.moveTo(canvas.width/2, canvas.height/2-20);
-  ctx.lineTo(canvas.width/2, canvas.height/2+20);
-  ctx.stroke();
-
-  ctx.fillText(`Y: ${pos.y.toFixed(2)}m`,20,20);
+  const cx = Math.floor(w / 2), cy = Math.floor(h / 2);
+  const centerDepth = depthData.getDepthInMeters(cx, cy);
+  setText('depth-center', centerDepth.toFixed(2) + 'm');
+  setText('depth-min', minD.toFixed(2) + 'm');
+  setText('depth-max', maxD.toFixed(2) + 'm');
 }
 
+async function startFallbackDepth() {
+  try {
+    depthStream = await getRearCamera(true);
+    depthVideo = document.createElement('video');
+    depthVideo.srcObject = depthStream;
+    depthVideo.autoplay = true; depthVideo.playsInline = true; depthVideo.muted = true;
+    await depthVideo.play();
+    depthActive = true;
+    setText('depth-mode', 'Visual Est.');
+    runFallbackDepth();
+  } catch(e) { showToast('Cannot start depth: ' + e.message); }
+}
+
+function runFallbackDepth() {
+  const canvas = document.getElementById('depth-canvas');
+  const ctx = canvas.getContext('2d');
+  const tmp = document.createElement('canvas');
+  const tCtx = tmp.getContext('2d');
+
+  function draw() {
+    if (!depthActive) return;
+    const w = depthVideo.videoWidth || 320;
+    const h = depthVideo.videoHeight || 240;
+    tmp.width = w; tmp.height = h;
+    tCtx.drawImage(depthVideo, 0, 0, w, h);
+    const frame = tCtx.getImageData(0, 0, w, h);
+
+    // Blur-based depth estimation: less sharp = farther
+    // Edge magnitude as proxy for depth (edges = near, smooth = far)
+    const dW = Math.floor(w / 4), dH = Math.floor(h / 4);
+    canvas.width = dW; canvas.height = dH;
+    const imgData = ctx.createImageData(dW, dH);
+
+    for (let py = 0; py < dH; py++) {
+      for (let px = 0; px < dW; px++) {
+        const sx = Math.floor(px * w / dW);
+        const sy = Math.floor(py * h / dH);
+        // Sobel-like edge = "closeness"
+        const edge = getSobelAt(frame, sx, sy, w, h);
+        const norm = Math.min(1, edge / 200);
+        const [r, g, b] = depthColor(1 - norm); // edges = near = low normalized
+        const i = (py * dW + px) * 4;
+        imgData.data[i] = r;
+        imgData.data[i+1] = g;
+        imgData.data[i+2] = b;
+        imgData.data[i+3] = 255;
+      }
+    }
+    ctx.putImageData(imgData, 0, 0);
+
+    // rough estimate: high edge center = close, low = far
+    const cx = Math.floor(dW / 2), cy = Math.floor(dH / 2);
+    const cSx = Math.floor(w / 2), cSy = Math.floor(h / 2);
+    const edgeC = getSobelAt(frame, cSx, cSy, w, h);
+    const estDist = Math.max(0.3, 5 - edgeC / 40);
+    setText('depth-center', '~' + estDist.toFixed(1) + 'm');
+    setText('depth-min', '~0.3m');
+    setText('depth-max', '~5m+');
+
+    depthAnimFrame = requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+function getSobelAt(img, x, y, w, h) {
+  const gx = (r, dx, dy) => {
+    const nx = Math.max(0, Math.min(w-1, x+dx));
+    const ny = Math.max(0, Math.min(h-1, y+dy));
+    const i = (ny * w + nx) * 4;
+    return (img.data[i] + img.data[i+1] + img.data[i+2]) / 3;
+  };
+  const Gx = -gx(0,-1,-1) + gx(0,1,-1) - 2*gx(0,-1,0) + 2*gx(0,1,0) - gx(0,-1,1) + gx(0,1,1);
+  const Gy = -gx(0,-1,-1) - 2*gx(0,0,-1) - gx(0,1,-1) + gx(0,-1,1) + 2*gx(0,0,1) + gx(0,1,1);
+  return Math.sqrt(Gx*Gx + Gy*Gy);
+}
+
+function depthColor(norm) {
+  // near=red, mid=yellow, far=cyan/blue
+  if (norm < 0.25) return [255, Math.round(norm*4*255), 0];
+  if (norm < 0.5)  return [Math.round((1-(norm-0.25)*4)*255), 255, 0];
+  if (norm < 0.75) return [0, Math.round((1-(norm-0.5)*4)*255), Math.round((norm-0.5)*4*255)];
+  return [0, 0, Math.round(50 + (1-norm)*205)];
+}
+
+function stopDepth() {
+  depthActive = false;
+  if (depthXRSession) { depthXRSession.end(); depthXRSession = null; }
+  if (depthStream) { depthStream.getTracks().forEach(t => t.stop()); depthStream = null; }
+  if (depthAnimFrame) cancelAnimationFrame(depthAnimFrame);
+  showToast('Depth stopped.');
+}
+
+// ═══════════════════════════════════════════
+// EDGE / OBJECT DETECTION
+// ═══════════════════════════════════════════
+let eStream = null, eAnimFrame = null;
+
+async function toggleEdgeCam() {
+  if (state.eCamActive) {
+    if (eStream) { eStream.getTracks().forEach(t => t.stop()); eStream = null; }
+    document.getElementById('e-cam-overlay').style.display = 'flex';
+    document.getElementById('e-cam-btn').textContent = '▶ Start Camera';
+    state.eCamActive = false;
+    if (eAnimFrame) cancelAnimationFrame(eAnimFrame);
+    return;
+  }
+  try {
+    eStream = await getRearCamera(true);
+    const video = document.getElementById('e-video');
+    video.srcObject = eStream;
+    await video.play();
+    document.getElementById('e-cam-overlay').style.display = 'none';
+    document.getElementById('e-cam-btn').textContent = '■ Stop Camera';
+    state.eCamActive = true;
+    runEdgeDetection();
+  } catch(e) { showToast('Camera error: ' + e.message); }
+}
+
+function setEdgeMode(m) {
+  state.edgeMode = m;
+  ['edge','diff','luma','hsv'].forEach(k => {
+    document.getElementById('etab-' + k).classList.toggle('active', k === m);
+  });
+}
+
+function runEdgeDetection() {
+  const video = document.getElementById('e-video');
+  const canvas = document.getElementById('edge-canvas');
+  const ctx = canvas.getContext('2d');
+  const tmp = document.createElement('canvas');
+  const tCtx = tmp.getContext('2d');
+  let prevData = null;
+
+  document.getElementById('edge-threshold').oninput = function() {
+    state.edgeThreshold = parseInt(this.value);
+    document.getElementById('edge-thresh-val').textContent = this.value;
+  };
+
+  function draw() {
+    if (!state.eCamActive) return;
+    const vw = video.videoWidth || 320, vh = video.videoHeight || 240;
+    // downscale for performance
+    const scale = 0.4;
+    const w = Math.floor(vw * scale), h = Math.floor(vh * scale);
+    tmp.width = w; tmp.height = h;
+    tCtx.drawImage(video, 0, 0, w, h);
+    const frame = tCtx.getImageData(0, 0, w, h);
+
+    canvas.width = w; canvas.height = h;
+    const out = ctx.createImageData(w, h);
+
+    let edgePx = 0, sumBright = 0, motionDelta = 0;
+    let hueHist = new Array(36).fill(0);
+
+    for (let y = 1; y < h - 1; y++) {
+      for (let x = 1; x < w - 1; x++) {
+        const i = (y * w + x) * 4;
+        const r = frame.data[i], g = frame.data[i+1], b = frame.data[i+2];
+        const luma = 0.299*r + 0.587*g + 0.114*b;
+        sumBright += luma;
+
+        // HSV hue
+        const mx = Math.max(r,g,b), mn = Math.min(r,g,b);
+        if (mx > 30) {
+          let hue = 0;
+          if (mx === r) hue = ((g - b) / (mx - mn)) % 6;
+          else if (mx === g) hue = (b - r) / (mx - mn) + 2;
+          else hue = (r - g) / (mx - mn) + 4;
+          hue = Math.round((hue * 60 + 360) % 360 / 10);
+          hueHist[Math.min(35, Math.max(0, hue))]++;
+        }
+
+        let rv = 0, gv = 0, bv = 0;
+
+        if (state.edgeMode === 'edge') {
+          const edge = getSobelAt(frame, x, y, w, h);
+          const t = state.edgeThreshold;
+          if (edge > t) {
+            rv = 0; gv = 212; bv = 255; edgePx++;
+          } else {
+            rv = Math.floor(r * 0.15); gv = Math.floor(g * 0.15); bv = Math.floor(b * 0.15);
+          }
+        } else if (state.edgeMode === 'diff') {
+          if (prevData) {
+            const d = Math.abs(luma - (0.299*prevData[i]+0.587*prevData[i+1]+0.114*prevData[i+2]));
+            motionDelta += d;
+            const v = Math.min(255, d * 5);
+            rv = v; gv = 0; bv = Math.floor(255 - v);
+          } else { rv = r * 0.3; gv = g * 0.3; bv = b * 0.3; }
+        } else if (state.edgeMode === 'luma') {
+          const v = Math.floor(luma);
+          rv = v; gv = v; bv = v;
+        } else if (state.edgeMode === 'hsv') {
+          // color segmentation
+          rv = r; gv = g; bv = b;
+          if (luma < 40) { rv = 0; gv = 0; bv = 0; }
+          else if (luma > 200) { rv = 255; gv = 255; bv = 255; }
+        }
+
+        out.data[i] = rv; out.data[i+1] = gv; out.data[i+2] = bv; out.data[i+3] = 255;
+      }
+    }
+    ctx.putImageData(out, 0, 0);
+    prevData = new Uint8ClampedArray(frame.data);
+
+    setText('edge-pixels', edgePx.toLocaleString());
+    setText('edge-motion', (motionDelta / (w * h)).toFixed(1));
+    setText('edge-bright', (sumBright / (w * h)).toFixed(0));
+    const domHue = hueHist.indexOf(Math.max(...hueHist)) * 10;
+    setText('edge-hue', domHue + '°');
+
+    eAnimFrame = requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+// ═══════════════════════════════════════════
+// LIGHT ESTIMATION
+// ═══════════════════════════════════════════
+let lStream = null, lAnimFrame = null;
+
+async function toggleLightCam() {
+  if (state.lCamActive) {
+    if (lStream) { lStream.getTracks().forEach(t => t.stop()); lStream = null; }
+    document.getElementById('l-cam-overlay').style.display = 'flex';
+    document.getElementById('l-cam-btn').textContent = '▶ Start Camera';
+    state.lCamActive = false;
+    if (lAnimFrame) cancelAnimationFrame(lAnimFrame);
+    return;
+  }
+  try {
+    lStream = await getRearCamera();
+    const video = document.getElementById('l-video');
+    video.srcObject = lStream;
+    await video.play();
+    document.getElementById('l-cam-overlay').style.display = 'none';
+    document.getElementById('l-cam-btn').textContent = '■ Stop Camera';
+    state.lCamActive = true;
+    runLightAnalysis();
+  } catch(e) { showToast('Camera error: ' + e.message); }
+}
+
+function runLightAnalysis() {
+  const video = document.getElementById('l-video');
+  const canvas = document.getElementById('l-canvas');
+  const ctx = canvas.getContext('2d');
+  const tmp = document.createElement('canvas');
+  const tCtx = tmp.getContext('2d');
+
+  function draw() {
+    if (!state.lCamActive) return;
+    const w = 80, h = 60;
+    tmp.width = w; tmp.height = h;
+    tCtx.drawImage(video, 0, 0, w, h);
+    const frame = tCtx.getImageData(0, 0, w, h);
+    let sumR = 0, sumG = 0, sumB = 0;
+    const n = w * h;
+    for (let i = 0; i < n * 4; i += 4) {
+      sumR += frame.data[i];
+      sumG += frame.data[i+1];
+      sumB += frame.data[i+2];
+    }
+    const avgR = sumR / n, avgG = sumG / n, avgB = sumB / n;
+    const luma = 0.299*avgR + 0.587*avgG + 0.114*avgB;
+    const lux = Math.round(luma * luma / 10); // rough approximation
+    const colorTemp = estimateColorTemp(avgR, avgG, avgB);
+
+    // Update UI
+    setText('avg-r', Math.round(avgR));
+    setText('avg-g', Math.round(avgG));
+    setText('avg-b', Math.round(avgB));
+    setText('lux-val', lux.toLocaleString());
+    setText('color-temp', Math.round(colorTemp));
+    document.getElementById('light-fill-bar').style.width = Math.min(100, luma * 100 / 200) + '%';
+
+    let cond = 'Indoor';
+    if (lux > 10000) cond = '☀️ Bright Sun';
+    else if (lux > 1000) cond = '🌤 Overcast';
+    else if (lux > 100) cond = '💡 Office';
+    else if (lux > 10) cond = '🌆 Dim';
+    else cond = '🌑 Dark';
+    setText('light-cond', cond);
+
+    // overlay on main canvas
+    canvas.width = video.videoWidth || 300;
+    canvas.height = video.videoHeight || 400;
+    ctx.fillStyle = 'rgba(0,212,255,0.05)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    lAnimFrame = requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+function estimateColorTemp(r, g, b) {
+  // McCamy's approximation using chromaticity
+  const total = r + g + b;
+  if (total === 0) return 6500;
+  const x = r / total, y = g / total;
+  const n = (x - 0.3320) / (0.1858 - y);
+  return Math.round(449 * n*n*n + 3525 * n*n + 6823.3 * n + 5520.33);
+}
+
+// ═══════════════════════════════════════════
+// WEBXR PLANE DETECTION
+// ═══════════════════════════════════════════
+let planesXRSession = null;
+
+async function startPlanesXR() {
+  if (!state.caps.ar) {
+    showToast('WebXR AR not available on this device/browser');
+    return;
+  }
+  try {
+    planesXRSession = await navigator.xr.requestSession('immersive-ar', {
+      requiredFeatures: ['plane-detection', 'local-floor'],
+      optionalFeatures: ['dom-overlay'],
+      domOverlay: { root: document.getElementById('page-planes') }
+    });
+
+    const canvas = document.getElementById('xr-canvas');
+    const gl = canvas.getContext('webgl', { xrCompatible: true });
+    await gl.makeXRCompatible?.();
+    planesXRSession.updateRenderState({ baseLayer: new XRWebGLLayer(planesXRSession, gl) });
+
+    const refSpace = await planesXRSession.requestReferenceSpace('local-floor');
+    state.xrRefSpace = refSpace;
+
+    showToast('WebXR plane detection started!');
+
+    function onFrame(t, frame) {
+      planesXRSession.requestAnimationFrame(onFrame);
+      if (frame.detectedPlanes) {
+        const planes = [];
+        frame.detectedPlanes.forEach(plane => {
+          const pose = frame.getPose(plane.planeSpace, refSpace);
+          if (pose) {
+            const y = pose.transform.position.y;
+            planes.push({ orientation: plane.orientation, y });
+          }
+        });
+        updatePlanesUI(planes);
+      }
+    }
+    planesXRSession.requestAnimationFrame(onFrame);
+    planesXRSession.addEventListener('end', () => {
+      showToast('XR session ended');
+      planesXRSession = null;
+    });
+  } catch(e) {
+    showToast('WebXR planes failed: ' + e.message);
+  }
+}
+
+function updatePlanesUI(planes) {
+  setText('plane-count', planes.length);
+  const list = document.getElementById('planes-list');
+  if (planes.length === 0) {
+    list.innerHTML = '<div style="color:var(--text-dim);font-size:13px;padding:8px 0">No planes detected yet…</div>';
+    return;
+  }
+  list.innerHTML = '';
+  let floorY = null;
+  planes.forEach((p, i) => {
+    const div = document.createElement('div');
+    div.className = 'plane-card';
+    div.innerHTML = `
+      <div>
+        <div style="font-size:13px;font-weight:600">Plane #${i+1}</div>
+        <div style="font-size:11px;color:var(--text-dim)">${p.orientation}</div>
+      </div>
+      <div class="status-badge badge-info">Y: ${p.y?.toFixed(2)}m</div>
+    `;
+    list.appendChild(div);
+    if (p.orientation === 'horizontal' && (floorY === null || p.y < floorY)) floorY = p.y;
+  });
+  if (floorY !== null) {
+    setText('plane-floor-y', floorY.toFixed(2) + 'm');
+    const camH = Math.abs(floorY).toFixed(2);
+    setText('plane-cam-height', camH + 'm above floor');
+    setText('plane-confidence', 'High (WebXR)');
+  }
+}
+
+async function startVisualFloor() {
+  showToast('Visual floor detection: use Height tab for best results');
+}
+
+function stopPlanesXR() {
+  if (planesXRSession) { planesXRSession.end(); planesXRSession = null; }
+}
+
+// ═══════════════════════════════════════════
+// UTILITIES
+// ═══════════════════════════════════════════
+async function getRearCamera(hires = false) {
+  const constraints = {
+    video: {
+      facingMode: { exact: 'environment' },
+      width: hires ? { ideal: 1280 } : { ideal: 640 },
+      height: hires ? { ideal: 960 } : { ideal: 480 }
+    }
+  };
+  try {
+    return await navigator.mediaDevices.getUserMedia(constraints);
+  } catch {
+    // fallback without exact
+    return await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'environment' }
+    });
+  }
+}
+
+async function requestMotionPermission() {
+  if (typeof DeviceOrientationEvent?.requestPermission === 'function') {
+    try {
+      const r = await DeviceOrientationEvent.requestPermission();
+      showToast(r === 'granted' ? '✓ Motion permission granted!' : '✗ Permission denied');
+      if (r === 'granted') {
+        state.motionGranted = true;
+        startSensorListeners();
+      }
+    } catch(e) { showToast('Error: ' + e.message); }
+  } else {
+    showToast('No permission needed (Android) — sensors auto-active');
+    startSensorListeners();
+  }
+}
+
+function setText(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = val;
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function switchTab(name) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+
+// ═══════════════════════════════════════════
 // INIT
-detectFeatures();
+// ═══════════════════════════════════════════
+async function init() {
+  detectDevice();
+  await detectCapabilities();
 
+  // Try starting sensors right away (Android doesn't need permission)
+  if (!state.isIOS) {
+    startSensorListeners();
+  }
+
+  document.getElementById('splash-btn').disabled = false;
+  document.getElementById('splash-btn').textContent = '▶ Launch AR Toolkit';
+  document.getElementById('splash-btn').onclick = launchApp;
+}
+
+function launchApp() {
+  document.getElementById('splash').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+  // iOS: prompt for sensor permission on first tap
+  if (state.isIOS) {
+    requestMotionPermission();
+  }
+  showToast('Welcome! Use the tabs above to explore AR features.');
+}
+
+window.addEventListener('DOMContentLoaded', init);
 </script>
 </body>
 </html>

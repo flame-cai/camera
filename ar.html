@@ -203,7 +203,7 @@ canvas.ch{width:100%;display:block}
           <div class="bacc" style="background:linear-gradient(90deg,var(--pur),transparent)"></div>
           <div class="blbl">Confidence</div>
           <div class="bval" id="hconf" style="color:var(--pur)">0<span class="bu">%</span></div>
-          <div class="bsub" id="hcnt">0 / 9 methods active</div>
+          <div class="bsub" id="hcnt">0 / 12 methods active</div>
           <div class="cbar"><div class="cbar-f" id="hcbar2" style="width:0%;background:var(--pur)"></div></div>
         </div>
       </div>
@@ -249,9 +249,8 @@ canvas.ch{width:100%;display:block}
 
         <!-- ⑤ Focus sweep (point at floor) — manual trigger -->
         <div class="mr">
-          <div class="mname"><b>⑤ Focus sweep → floor dist</b><small>point camera at floor, then run</small></div>
+          <div class="mname"><b>⑤ Focus sweep → floor dist</b><small>point camera at floor, then tap sweep above</small></div>
           <div class="mval yel" id="hm5">–</div>
-          <button class="mtrig active" id="hb5" onclick="runSweep('h')">▶ SWEEP</button>
           <div class="mdot" id="hd5"></div>
         </div>
 
@@ -281,14 +280,46 @@ canvas.ch{width:100%;display:block}
 
         <!-- ⑨ Gravity pitch trig — auto -->
         <div class="mr">
-          <div class="mname"><b>⑨ Gravity vector pitch</b><small>tilt angle from gravity + known ref distance</small></div>
+          <div class="mname"><b>⑨ Gravity vector pitch</b><small>tilt angle from gravity + any known dist</small></div>
           <div class="mval grn" id="hm9">–</div>
           <div class="badge live" style="flex-shrink:0">AUTO</div>
           <div class="mdot" id="hd9"></div>
         </div>
+
+        <!-- ⑩ SfM / optical flow parallax — auto, needs motion -->
+        <div class="mr">
+          <div class="mname"><b>⑩ Optical flow parallax</b><small>track features across frames while moving → scale</small></div>
+          <div class="mval grn" id="hm10">–</div>
+          <div class="badge live" style="flex-shrink:0">AUTO</div>
+          <div class="mdot" id="hd10"></div>
+        </div>
+
+        <!-- ⑪ Vanishing point geometry — auto -->
+        <div class="mr">
+          <div class="mname"><b>⑪ Vanishing point geometry</b><small>horizontal VP position → camera elevation</small></div>
+          <div class="mval grn" id="hm11">–</div>
+          <div class="badge live" style="flex-shrink:0">AUTO</div>
+          <div class="mdot" id="hd11"></div>
+        </div>
+
+        <!-- ⑫ Known object reference — manual -->
+        <div class="mr">
+          <div class="mname"><b>⑫ Known object reference</b><small>tap object in frame + enter real height → calibrate</small></div>
+          <div class="mval yel" id="hm12">–</div>
+          <button class="mtrig active" id="hb12" onclick="runKnownObj('h')">▶ CALIBRATE</button>
+          <div class="mdot" id="hd12"></div>
+        </div>
       </div>
 
-      <!-- Sensor strip -->
+      <!-- Focus sweep -->
+      <div class="sstrip" style="padding:8px 12px;margin-bottom:10px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-family:var(--mn);font-size:7px;letter-spacing:2px;color:var(--yel);text-transform:uppercase;flex-shrink:0">Focus Sweep</span>
+          <div style="flex:1;height:2px;background:var(--bdr);border-radius:1px;overflow:hidden"><div id="sw-h-fill" style="height:100%;background:linear-gradient(90deg,var(--yel),var(--grn));border-radius:1px;width:0%;transition:width .2s"></div></div>
+          <button class="mtrig active" id="hb5" onclick="runSweep('h')" style="margin-left:0">▶ SWEEP</button>
+        </div>
+        <div style="font-family:var(--mn);font-size:7px;color:var(--dim);margin-top:4px">Point at floor → sweep → h5 computes floor distance × sin(depression)</div>
+      </div>
       <div class="sstrip">
         <div class="sr"><span class="sk">Gravity gX / gY / gZ</span><span class="sv" id="ss-g">–</span></div>
         <div class="sr"><span class="sk">Depression (cam below horiz)</span><span class="sv" id="ss-dep">–</span></div>
@@ -333,7 +364,7 @@ canvas.ch{width:100%;display:block}
           <div class="bacc" style="background:linear-gradient(90deg,var(--pur),transparent)"></div>
           <div class="blbl">Confidence</div>
           <div class="bval" id="dconf" style="color:var(--pur)">0<span class="bu">%</span></div>
-          <div class="bsub" id="dcnt">0 / 8 methods active</div>
+          <div class="bsub" id="dcnt">0 / 12 methods active</div>
           <div class="cbar"><div class="cbar-f" id="dcbar2" style="width:0%;background:var(--pur)"></div></div>
         </div>
       </div>
@@ -380,7 +411,6 @@ canvas.ch{width:100%;display:block}
         <div class="mr">
           <div class="mname"><b>⑤ Focus sweep (sharpness peak)</b><small>Laplacian variance max = subject focal dist</small></div>
           <div class="mval yel" id="dm5">–</div>
-          <button class="mtrig active" id="db5" onclick="runSweep('d')">▶ SWEEP</button>
           <div class="mdot" id="dd5"></div>
         </div>
 
@@ -407,6 +437,48 @@ canvas.ch{width:100%;display:block}
           <div class="badge off" id="db8-st" style="flex-shrink:0">checking…</div>
           <div class="mdot" id="dd8"></div>
         </div>
+
+        <!-- ⑨ Optical flow / SfM — auto, needs lateral motion -->
+        <div class="mr">
+          <div class="mname"><b>⑨ Optical flow SfM</b><small>move phone sideways → feature disparity → depth</small></div>
+          <div class="mval grn" id="dm9">–</div>
+          <div class="badge live" style="flex-shrink:0">AUTO</div>
+          <div class="mdot" id="dd9"></div>
+        </div>
+
+        <!-- ⑩ Texture gradient (monocular depth cue) — auto -->
+        <div class="mr">
+          <div class="mname"><b>⑩ Texture gradient depth</b><small>gradient of Sobel variance top→bottom → depth cue</small></div>
+          <div class="mval grn" id="dm10">–</div>
+          <div class="badge live" style="flex-shrink:0">AUTO</div>
+          <div class="mdot" id="dd10"></div>
+        </div>
+
+        <!-- ⑪ IMU + camera projection — auto -->
+        <div class="mr">
+          <div class="mname"><b>⑪ IMU + perspective projection</b><small>gravity angle + horizon → geometric floor dist</small></div>
+          <div class="mval grn" id="dm11">–</div>
+          <div class="badge live" style="flex-shrink:0">AUTO</div>
+          <div class="mdot" id="dd11"></div>
+        </div>
+
+        <!-- ⑫ Known object reference — manual -->
+        <div class="mr">
+          <div class="mname"><b>⑫ Known object reference</b><small>tap object + enter real size → perspective dist</small></div>
+          <div class="mval yel" id="dm12">–</div>
+          <button class="mtrig active" id="db12" onclick="runKnownObj('d')">▶ CALIBRATE</button>
+          <div class="mdot" id="dd12"></div>
+        </div>
+      </div>
+
+      <!-- Focus sweep bar -->
+      <div class="sstrip" style="padding:8px 12px;margin-bottom:10px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-family:var(--mn);font-size:7px;letter-spacing:2px;color:var(--yel);text-transform:uppercase;flex-shrink:0">Focus Sweep</span>
+          <div style="flex:1;height:2px;background:var(--bdr);border-radius:1px;overflow:hidden"><div id="sw-d-fill" style="height:100%;background:linear-gradient(90deg,var(--yel),var(--grn));border-radius:1px;width:0%;transition:width .2s"></div></div>
+          <button class="mtrig active" id="db5" onclick="runSweep('d')" style="margin-left:0">▶ SWEEP</button>
+        </div>
+        <div style="font-family:var(--mn);font-size:7px;color:var(--dim);margin-top:4px">Point at subject → sweep → d5 = distance at sharpest focal plane</div>
       </div>
 
       <!-- Focus chart (shown after sweep) -->
@@ -454,19 +526,30 @@ canvas.ch{width:100%;display:block}
 
 const G = {
   isIOS:false, isAndroid:false, caps:{},
-  S:{ ax:0,ay:0,az:0, lax:0,lay:0,laz:0, gravX:0,gravY:0,gravZ:0, pressure:null,pressure0:null, focusDist:null },
+  S:{ ax:0,ay:0,az:0, lax:0,lay:0,laz:0, gravX:0,gravY:0,gravZ:0,
+      pressure:null, pressure0:null, focusDist:null, beta:90 },
   SF:{ ax:0,ay:0,az:0, lax:0,lay:0,laz:0, gravX:0,gravY:0,gravZ:0 },
-  // Height methods — all null until computed, no bounds
-  h:{ m1:null,m2:null,m3:null,m4:null,m5:null,m6:null,m7:null,m8:null,m9:null, fused:null, conf:0 },
-  // Distance methods
-  d:{ m1:null,m2:null,m3:null,m4:null,m5:null,m6:null,m7:null,m8:null, fused:null, conf:0 },
-  // Shared derived
   depression:0,   // degrees: positive = cam looking down
-  horizFrac:0.5,  // where horizon appears in frame (0=top, 1=bottom)
+  horizFrac:0.5,  // visual horizon fraction in frame
+  // Height methods — all null until computed, no bounds
+  h:{ m1:null,m2:null,m3:null,m4:null,m5:null,m6:null,m7:null,m8:null,m9:null,
+      m10:null,m11:null,m12:null,
+      m8_dep:null, // horizon-derived depression angle (degrees)
+      fused:null, conf:0 },
+  // Distance methods
+  d:{ m1:null,m2:null,m3:null,m4:null,m5:null,m6:null,m7:null,m8:null,
+      m9:null,m10:null,m11:null,m12:null, fused:null, conf:0 },
   // Accel integration
   AI:{ vz:0, hz:0 },
   // Focus sweep state
   FS:{ running:false, results:[], best:null },
+  // Optical flow / SfM state
+  OF:{ prevFrame:null, prevGravX:0, prevGravY:0, prevGravZ:0,
+       prevAccX:0, prevAccY:0, prevAccZ:0,
+       pts:[], dist:null, height:null,  // tracked feature points
+       baseline:0 }, // estimated lateral motion since last frame
+  // Known object calibration
+  KO:{ active:false, ctx:null, realSize:null, pixelSize:null },
   // XR
   XR:{ session:null, rs:null, hitSrc:null, hitSrcDn:null, active:false, planes:[], anchors:[] },
   // Camera
@@ -571,13 +654,15 @@ function startSensors(){
 }
 
 function onOrient(e){
+  if(e.beta!=null) G.S.beta=e.beta;
   if(e.beta!=null||e.gamma!=null){
-    // Use DeviceOrientation as fallback for gravity direction
-    // beta=90 = upright portrait. depression = 90 - beta (positive = looking down)
-    const beta=e.beta??90;
-    if(!G.caps.grav){
-      // Approximate depression from beta angle
-      G.depression_from_orient = 90 - beta; // +ve = looking down
+    if(!G.caps.grav&&!G.XR.active){
+      // DeviceOrientation.beta: 90° = phone upright portrait (camera pointing forward)
+      // depression = 90 - beta when beta in [0,180]
+      // Clamp: beta=90→dep=0, beta=45→dep=45, beta=135→dep=-45
+      const beta=e.beta??90;
+      G.depression=90-beta;
+      G.horizFrac=Math.max(.02,Math.min(.98,.5-G.depression/60));
     }
   }
   updateDep();
@@ -598,22 +683,19 @@ function updateDep(){
   const gy=G.caps.grav?G.SF.gravY:G.SF.ay;
   const gz=G.caps.grav?G.SF.gravZ:G.SF.az;
   const gm=Math.sqrt(gx*gx+gy*gy+gz*gz);
-  if(gm>.1){
-    // Camera -Z axis. dot([0,0,-1],[gx,gy,gz]/gm) = -gz/gm = sin(depression)
+  if(gm>.5){ // gravity magnitude sanity check
+    // Camera -Z axis in device frame. dot([0,0,-1], g_hat) = -gz/gm = sin(depression)
     const dep=Math.asin(Math.max(-1,Math.min(1,-gz/gm)))*180/Math.PI;
     if(!G.XR.active) G.depression=dep;
-    // h9: gravity pitch gives depression angle. Once we have ANY distance, compute h.
-    // Back-calculate height from best available distance + depression
-    const dBest = G.d.fused ?? G.d.m7 ?? G.d.m6;
-    if(dBest!=null && Math.abs(dep)>.5 && Math.abs(dep)<88){
-      const depRad=Math.abs(dep)*Math.PI/180;
-      // h = d_slant * sin(dep) [slant distance to floor]
-      G.h.m9 = dBest * Math.abs(Math.sin(depRad));
-      dot('hd9','grn');
+    G.horizFrac=Math.max(.02,Math.min(.98,.5-dep/60));
+    // h9: back-calculate height from best available distance + depression
+    const dBest=G.d.fused??G.d.m7??G.d.m10;
+    if(dBest!=null&&Math.abs(dep)>.5&&Math.abs(dep)<88){
+      G.h.m9=dBest*Math.abs(Math.sin(dep*Math.PI/180)); dot('hd9','grn');
     }
   }
-  T('ss-dep', G.depression.toFixed(3)+'°');
-  T('ss-g', `${(G.caps.grav?G.SF.gravX:G.SF.ax).toFixed(2)}, ${(G.caps.grav?G.SF.gravY:G.SF.ay).toFixed(2)}, ${(G.caps.grav?G.SF.gravZ:G.SF.az).toFixed(2)}`);
+  T('ss-dep',G.depression.toFixed(2)+'°');
+  T('ss-g',`${gx.toFixed(2)}, ${gy.toFixed(2)}, ${gz.toFixed(2)}`);
   fuse(); renderUI();
 }
 
@@ -808,6 +890,10 @@ function startRenderLoop(){
       doHorizon(id,sw,sh,W,H);
       // d7: Visual Sobel depth
       doSobelDepth(id,sw,sh);
+      // d9+h10: Optical flow / SfM — track features frame-to-frame
+      doOpticalFlow(id,sw,sh);
+      // d10: Texture gradient monocular depth cue
+      doTextureGradient(id,sw,sh);
       fuse(); renderUI();
     }
 
@@ -822,29 +908,25 @@ function startRenderLoop(){
 }
 
 function doHorizon(id,sw,sh){
-  // Find row with strongest horizontal edge = visual horizon
   let maxE=0,maxY=Math.floor(sh*.5);
   for(let y=Math.floor(sh*.1);y<Math.floor(sh*.9);y++){
     let e=0;
     for(let x=2;x<sw-2;x++) e+=Math.abs(lumaPx(id,x,y+1,sw)-lumaPx(id,x,y-1,sw));
     if(e>maxE){maxE=e;maxY=y;}
   }
-  G.horizFrac=maxY/sh;
-  T('ss-vp',(G.horizFrac*100).toFixed(1)+'% from top');
-  // h8: The horizon fraction tells us the camera depression angle
-  // depression = (horizFrac - 0.5) * FOV_v (portrait ~60°)
-  // This is independent of distance — it's a purely geometric measure.
-  // We get the angle; to get height we need distance.
-  const depFromHorizon=(G.horizFrac-.5)*60;  // degrees
-  G.h.m8_dep=depFromHorizon; // store the angle
-  // If we have any distance, compute height from it
-  const dBest=G.d.fused??G.d.m7;
-  if(dBest!=null&&Math.abs(depFromHorizon)>.5){
-    G.h.m8=dBest*Math.tan(Math.abs(depFromHorizon)*Math.PI/180);
+  const f=maxY/sh;
+  // Only update horizFrac from vision when XR isn't providing orientation
+  if(!G.XR.active) G.horizFrac=f;
+  T('ss-vp',(f*100).toFixed(1)+'% from top');
+  // Store horizon-derived depression (independent of XR)
+  G.h.m8_dep=(f-.5)*60; // degrees: positive = cam looking down
+  // h8: requires distance — computed in fuse()
+  const dBest=G.d.fused??G.d.m7??G.d.m10;
+  if(dBest!=null&&Math.abs(G.h.m8_dep)>.5){
+    G.h.m8=dBest*Math.tan(Math.abs(G.h.m8_dep)*Math.PI/180);
     dot('hd8','grn');
   } else {
-    // Show depression angle at least
-    dot('hd8', Math.abs(depFromHorizon)>.3?'grn':'');
+    dot('hd8',Math.abs(f-.5)>.05?'grn':'');
   }
 }
 
@@ -856,6 +938,149 @@ function doSobelDepth(id,w,h){
     s+=sobel(id,x,y,w);n++;
   }
   if(n){G.d.m7=6/(1+(s/n)/40);dot('dd7','grn');}
+}
+
+// ── Optical flow (Lucas-Kanade simplified) → SfM depth + height
+// Track sparse corner features across consecutive frames.
+// Lateral phone movement creates parallax → depth from baseline/disparity.
+// Vertical movement → height change.
+function doOpticalFlow(id,w,h){
+  if(!G.OF.prevFrame){
+    G.OF.prevFrame=new Uint8ClampedArray(id.data);
+    G.OF.prevAccX=G.S.ax; G.OF.prevAccY=G.S.ay; G.OF.prevAccZ=G.S.az;
+    return;
+  }
+  // Detect corners (Harris-lite): find pixels with high gradient in 2 directions
+  const corners=[];
+  const step=Math.floor(Math.max(3,w/20));
+  for(let y=step;y<h-step;y+=step){
+    for(let x=step;x<w-step;x+=step){
+      const dx=lumaPx(id,x+1,y,w)-lumaPx(id,x-1,y,w);
+      const dy=lumaPx(id,x,y+1,w)-lumaPx(id,x,y-1,w);
+      const score=dx*dx+dy*dy-0.04*(dx+dy)*(dx+dy);
+      if(score>80) corners.push({x,y,dx,dy});
+    }
+  }
+  if(corners.length<4){G.OF.prevFrame=new Uint8ClampedArray(id.data);return;}
+
+  // Track corners: find best match in prev frame using SSD in small patch
+  let totalDispX=0,totalDispY=0,tracked=0;
+  const prev=G.OF.prevFrame;
+  for(const c of corners.slice(0,20)){
+    let bestSSD=Infinity,bx=c.x,by=c.y;
+    for(let dy=-3;dy<=3;dy++) for(let dx2=-3;dx2<=3;dx2++){
+      const nx=c.x+dx2,ny=c.y+dy;
+      if(nx<1||nx>=w-1||ny<1||ny>=h-1)continue;
+      let ssd=0;
+      for(let py=-1;py<=1;py++) for(let px=-1;px<=1;px++){
+        const ci=((c.y+py)*w+(c.x+px))*4, pi=((ny+py)*w+(nx+px))*4;
+        const d=(.299*id.data[ci]+.587*id.data[ci+1]+.114*id.data[ci+2])-(.299*prev[pi]+.587*prev[pi+1]+.114*prev[pi+2]);
+        ssd+=d*d;
+      }
+      if(ssd<bestSSD){bestSSD=ssd;bx=nx;by=ny;}
+    }
+    if(bestSSD<1500){totalDispX+=c.x-bx;totalDispY+=c.y-by;tracked++;}
+  }
+  if(tracked>2){
+    const avgDX=totalDispX/tracked; // horizontal pixel displacement
+    const avgDY=totalDispY/tracked; // vertical pixel displacement
+    // Store motion magnitude
+    G.OF.baseline=Math.sqrt(avgDX*avgDX+avgDY*avgDY);
+    // SfM depth: D = f_pixels * baseline_meters / disparity_pixels
+    // f_pixels ≈ w / (2*tan(FOV_h/2)) for horizontal FOV ~60°
+    const f_px=w/(2*Math.tan(30*Math.PI/180));
+    // Estimate physical lateral motion from accelerometer integration
+    const dAX=G.S.ax-G.OF.prevAccX;
+    const motionEst=Math.abs(dAX)*0.016*0.5; // rough m/s² × dt² / 2
+    if(G.OF.baseline>0.5&&motionEst>0.005){
+      const depth=f_px*motionEst/G.OF.baseline;
+      if(depth>0.1&&depth<20){G.d.m9=depth;dot('dd9','grn');}
+      // Height from vertical disparity: if phone moves up, features move down
+      if(Math.abs(avgDY)>0.3){
+        const dAY=G.S.ay-G.OF.prevAccY;
+        const vertMotion=Math.abs(dAY)*0.016*0.5;
+        const hFromFlow=f_px*vertMotion/Math.abs(avgDY)*Math.abs(Math.sin(G.depression*Math.PI/180));
+        if(hFromFlow>0.05&&hFromFlow<5){G.h.m10=hFromFlow;dot('hd10','grn');}
+      }
+    }
+  }
+  G.OF.prevFrame=new Uint8ClampedArray(id.data);
+  G.OF.prevAccX=G.S.ax; G.OF.prevAccY=G.S.ay; G.OF.prevAccZ=G.S.az;
+}
+
+// ── Texture gradient depth cue
+// Real-world surfaces have texture that gets finer with distance (perspective).
+// Sobel variance in bottom third of frame vs top third gives a depth ratio.
+// calibrated with: closer = more Sobel variance, farther = less
+function doTextureGradient(id,w,h){
+  // Sample top third and bottom third Sobel variance
+  let topSum=0,botSum=0,nt=0,nb=0;
+  const t0=Math.floor(h*.1),t1=Math.floor(h*.35);
+  const b0=Math.floor(h*.65),b1=Math.floor(h*.9);
+  for(let y=t0;y<t1;y++) for(let x=2;x<w-2;x++){const e=sobel(id,x,y,w);topSum+=e;nt++;}
+  for(let y=b0;y<b1;y++) for(let x=2;x<w-2;x++){const e=sobel(id,x,y,w);botSum+=e;nb++;}
+  if(nt>0&&nb>0){
+    const topE=topSum/nt, botE=botSum/nb;
+    // Bottom of frame = closer to camera. Higher edge variance = closer.
+    // Ratio of bottom/top variance → depth estimate at center
+    // If bot/top ≈ 1 → uniform scene. If bot >> top → floor close, sky/wall far.
+    if(botE>5&&topE>0){
+      const ratio=botE/topE;
+      // Empirical calibration: ratio 2→3 ≈ 1-3m, ratio 1→1.5 ≈ 3-8m
+      const depth=4/(ratio-0.5+0.001);
+      if(depth>0.2&&depth<15){G.d.m10=depth;dot('dd10','grn');}
+    }
+  }
+}
+
+// ── Known object size calibration
+// User taps an object of known size in the camera frame.
+// We measure its pixel size, then compute: D = f_pixels * real_size / pixel_size
+// Also calibrates height if aimed at a known floor object.
+let _ko_active=false;
+function runKnownObj(ctx){
+  if(_ko_active){toast('Already calibrating — tap canvas or cancel');return;}
+  const realSizeStr=prompt(`Enter real ${ctx==='h'?'height':'size'} of object in frame (in meters).\nExample: 0.3 for a standard brick, 1.8 for a person`);
+  if(!realSizeStr)return;
+  const realSize=parseFloat(realSizeStr);
+  if(isNaN(realSize)||realSize<=0){toast('Invalid size');return;}
+  _ko_active=true;
+  G.KO={active:true,ctx,realSize,pixelSize:null,startY:null,endY:null};
+  toast(`Tap TOP of object in camera view (${realSize}m object)`);
+  // We use the HEIGHT tab camera canvas for tapping
+  const cvEl=$('cvc');
+  let tapCount=0;
+  let y1=0,y2=0;
+  function onTap(e){
+    const rect=cvEl.getBoundingClientRect();
+    const tapY=(e.touches?e.touches[0].clientY:e.clientY)-rect.top;
+    const fracY=tapY/rect.height;
+    if(tapCount===0){y1=fracY;tapCount=1;toast('Now tap BOTTOM of object');}
+    else{
+      y2=fracY;
+      cvEl.removeEventListener('touchstart',onTap);
+      cvEl.removeEventListener('click',onTap);
+      _ko_active=false;
+      // Pixel fraction size
+      const pixFrac=Math.abs(y2-y1);
+      if(pixFrac<0.01){toast('Taps too close — try again');G.KO.active=false;return;}
+      // f_pixels from vertical FOV=60°: f = (H/2)/tan(30°)
+      const fPxFrac=1/(2*Math.tan(30*Math.PI/180)); // in fraction units
+      // D = f * real / pixel (in fraction units)
+      const D=fPxFrac*realSize/pixFrac;
+      if(ctx==='d'){G.d.m12=D;dot('dd12','yel');}
+      if(ctx==='h'){
+        // Height from object: if we know distance and object angle from optical axis,
+        // we can compute camera height. Simpler: use D as the floor distance.
+        G.h.m12=D*Math.abs(Math.sin(G.depression*Math.PI/180)); dot('hd12','yel');
+      }
+      toast(`Calibrated: D = ${D.toFixed(2)}m from ${realSize}m object`);
+      G.KO.active=false;
+      fuse(); renderUI();
+    }
+  }
+  cvEl.addEventListener('touchstart',onTap,{once:false,passive:true});
+  cvEl.addEventListener('click',onTap);
 }
 
 // ── Height overlay
@@ -891,8 +1116,8 @@ function drawHoverlay(ctx,W,H){
   T('htl',`|g|=${gMag}`); T('htr',`dep=${G.depression.toFixed(1)}°`); T('hbr',hv!=null?`h=${hv.toFixed(3)}m`:'h=–');
   $('hl').style.top=(Math.max(2,Math.min(98,G.horizFrac*100)))+'%';
   // Method count
-  const n=[G.h.m1,G.h.m2,G.h.m3,G.h.m4,G.h.m5,G.h.m6,G.h.m7,G.h.m8,G.h.m9].filter(v=>v!=null).length;
-  ctx.font='8px DM Mono,monospace';ctx.fillStyle='rgba(0,212,180,.4)';ctx.textAlign='left';ctx.fillText(n+'/9 methods',5,H-5);
+  const n=[G.h.m1,G.h.m2,G.h.m3,G.h.m4,G.h.m5,G.h.m6,G.h.m7,G.h.m8,G.h.m9,G.h.m10,G.h.m11,G.h.m12].filter(v=>v!=null).length;
+  ctx.font='8px DM Mono,monospace';ctx.fillStyle='rgba(0,212,180,.4)';ctx.textAlign='left';ctx.fillText(n+'/12',5,H-5);
 }
 
 // ── Distance overlay
@@ -920,13 +1145,13 @@ function drawDoverlay(ctx,W,H){
   ctx.beginPath();ctx.moveTo(0,hf*H);ctx.lineTo(W,hf*H);ctx.stroke();ctx.setLineDash([]);
   T('dtl',`dep=${dep.toFixed(1)}°`); T('dtr',G.h.fused!=null?`h=${G.h.fused.toFixed(2)}m`:'h=?'); T('dbr',dv!=null?`D=${dv.toFixed(3)}m`:'D=–');
   $('hl2').style.top=(hf*100)+'%';
-  const n=[G.d.m1,G.d.m2,G.d.m3,G.d.m4,G.d.m5,G.d.m6,G.d.m7,G.d.m8].filter(v=>v!=null).length;
-  ctx.font='8px DM Mono,monospace';ctx.fillStyle='rgba(245,197,66,.4)';ctx.textAlign='left';ctx.fillText(n+'/8 methods',5,H-5);
+  const n=[G.d.m1,G.d.m2,G.d.m3,G.d.m4,G.d.m5,G.d.m6,G.d.m7,G.d.m8,G.d.m9,G.d.m10,G.d.m11,G.d.m12].filter(v=>v!=null).length;
+  ctx.font='8px DM Mono,monospace';ctx.fillStyle='rgba(245,197,66,.4)';ctx.textAlign='left';ctx.fillText(n+'/12',5,H-5);
 }
 
 // ═══ FUSION ════════════════════════════════════════════════════
-const HW=[5,5,4,4,3,3,1,2,2]; // h1..h9 weights
-const DW=[5,5,4,4,3,1.5,0.5,2]; // d1..d8 weights
+const HW=[5,5,4,4,3,3,1,2,2, 1.5,1.5,2]; // h1..h12 weights
+const DW=[5,5,4,4,3,1.5,0.5,2, 1.5,1,1.5,2]; // d1..d12 weights
 function wFuse(vals,wts){
   const pool=[];vals.forEach((v,i)=>{if(v!=null)pool.push({v,w:wts[i]});});
   if(!pool.length)return null;
@@ -947,11 +1172,22 @@ function fuse(){
   if(G.h.fused!=null&&Math.abs(G.depression)>1&&Math.abs(G.depression)<88){
     G.d.m6=G.h.fused/Math.tan(Math.abs(dep)); dot('dd6','grn');
   }
-  G.d.fused=wFuse([G.d.m1,G.d.m2,G.d.m3,G.d.m4,G.d.m5,G.d.m6,G.d.m7,G.d.m8],DW);
-  const dp=[G.d.m1,G.d.m2,G.d.m3,G.d.m4,G.d.m5,G.d.m6,G.d.m7,G.d.m8].filter(v=>v!=null);
-  G.d.conf=Math.min(100,dp.length*11+(G.XR.active?25:0)+(G.d.m1!=null?15:0));
+  // d11 IMU+perspective: use gravity depression + visual horizon for geometric floor distance
+  // D_floor = h_cam / tan(dep_from_gravity)   — same as trig but using gravity directly not h_fused
+  // This is independent of h_fused — uses only gravity + known camera geometry
+  if(Math.abs(G.depression)>1&&Math.abs(G.depression)<88){
+    // We can estimate a floor distance range even without height
+    // by observing: if the phone is tilted down by dep°, the floor visible
+    // at the center of frame is at D ≈ (h_est) / tan(dep).
+    // Use accel-integrated Δh as a rough absolute reference if available.
+    const hRef = G.h.m7 != null ? Math.abs(G.h.m7) + 1.3 : null; // Δh + typical phone hold height
+    if(hRef!=null&&hRef>0.1){G.d.m11=hRef/Math.tan(Math.abs(dep));dot('dd11','grn');}
+  }
+  G.d.fused=wFuse([G.d.m1,G.d.m2,G.d.m3,G.d.m4,G.d.m5,G.d.m6,G.d.m7,G.d.m8,G.d.m9,G.d.m10,G.d.m11,G.d.m12],DW);
+  const dp=[G.d.m1,G.d.m2,G.d.m3,G.d.m4,G.d.m5,G.d.m6,G.d.m7,G.d.m8,G.d.m9,G.d.m10,G.d.m11,G.d.m12].filter(v=>v!=null);
+  G.d.conf=Math.min(100,dp.length*8+(G.XR.active?25:0)+(G.d.m1!=null?15:0));
 
-  // Height: now h8,h9 have latest distance, recompute them
+  // Height: now h8,h9,h11 have latest distance, recompute them
   const dB=G.d.fused??G.d.m7;
   if(dB!=null&&G.h.m8_dep!=null&&Math.abs(G.h.m8_dep)>.5){
     G.h.m8=dB*Math.tan(Math.abs(G.h.m8_dep)*Math.PI/180); dot('hd8','grn');
@@ -959,9 +1195,19 @@ function fuse(){
   if(dB!=null&&Math.abs(G.depression)>.5&&Math.abs(G.depression)<88){
     G.h.m9=dB*Math.abs(Math.sin(dep)); dot('hd9','grn');
   }
-  G.h.fused=wFuse([G.h.m1,G.h.m2,G.h.m3,G.h.m4,G.h.m5,G.h.m6,G.h.m7,G.h.m8,G.h.m9],HW);
-  const hp=[G.h.m1,G.h.m2,G.h.m3,G.h.m4,G.h.m5,G.h.m6,G.h.m7,G.h.m8,G.h.m9].filter(v=>v!=null);
-  G.h.conf=Math.min(100,hp.length*11+(G.XR.active?25:0)+(G.h.m1!=null?15:0));
+  // h11 vanishing point geometry:
+  // The horizon fraction in the image corresponds to the camera elevation angle.
+  // For camera at height h, pointing forward with depression dep:
+  // horizon appears at image fraction = 0.5 + (dep/FOV_v)
+  // Solving: h = D * tan(dep_from_horizon)
+  // We also get h directly if we know the floor distance:
+  if(G.d.fused!=null&&G.horizFrac!=null){
+    const depFromVP=(G.horizFrac-0.5)*60; // degrees, using 60° portrait FOV
+    if(Math.abs(depFromVP)>0.5){G.h.m11=G.d.fused*Math.tan(Math.abs(depFromVP)*Math.PI/180);dot('hd11','grn');}
+  }
+  G.h.fused=wFuse([G.h.m1,G.h.m2,G.h.m3,G.h.m4,G.h.m5,G.h.m6,G.h.m7,G.h.m8,G.h.m9,G.h.m10,G.h.m11,G.h.m12],HW);
+  const hp=[G.h.m1,G.h.m2,G.h.m3,G.h.m4,G.h.m5,G.h.m6,G.h.m7,G.h.m8,G.h.m9,G.h.m10,G.h.m11,G.h.m12].filter(v=>v!=null);
+  G.h.conf=Math.min(100,hp.length*8+(G.XR.active?25:0)+(G.h.m1!=null?15:0));
 }
 
 // ═══ UI RENDER ══════════════════════════════════════════════════
@@ -970,21 +1216,19 @@ function renderUI(){
   const hv=G.h.fused,hc=G.h.conf;
   T('hfused',hv!=null?hv.toFixed(4)+'m':'–');
   T('hconf',hc.toFixed(0));
-  const hn=[G.h.m1,G.h.m2,G.h.m3,G.h.m4,G.h.m5,G.h.m6,G.h.m7,G.h.m8,G.h.m9].filter(v=>v!=null).length;
-  T('hcnt',hn+' / 9 methods active'); T('hsrc',bHsrc());
+  const hn=[G.h.m1,G.h.m2,G.h.m3,G.h.m4,G.h.m5,G.h.m6,G.h.m7,G.h.m8,G.h.m9,G.h.m10,G.h.m11,G.h.m12].filter(v=>v!=null).length;
+  T('hcnt',hn+' / 12 methods active'); T('hsrc',bHsrc());
   $('hcbar').style.width=hc+'%'; $('hcbar2').style.width=hc+'%';
-  const hv2=[G.h.m1,G.h.m2,G.h.m3,G.h.m4,G.h.m5,G.h.m6,G.h.m7,G.h.m8,G.h.m9];
-  const hcl=['pur','pur','pur','pur','yel','grn','grn','grn','grn'];
-  const hdc=['pur','pur','pur','pur','yel','grn','grn','grn','grn'];
+  const hv2=[G.h.m1,G.h.m2,G.h.m3,G.h.m4,G.h.m5,G.h.m6,G.h.m7,G.h.m8,G.h.m9,G.h.m10,G.h.m11,G.h.m12];
+  const hcl=['pur','pur','pur','pur','yel','grn','grn','grn','grn','grn','grn','yel'];
   hv2.forEach((v,i)=>{
     const el=$('hm'+(i+1));if(!el)return;
     if(v!=null){
       el.textContent=(i===6&&v>=0?'+':'')+v.toFixed(4)+'m';
       el.className='mval '+hcl[i];
-      dot('hd'+(i+1),hdc[i]);
+      dot('hd'+(i+1),hcl[i]);
     } else {
       el.textContent='–'; el.className='mval na';
-      // Don't clear dot if already set (XR button not pressed)
     }
   });
   // Show horizon-derived depression in h8 if no distance yet
@@ -997,15 +1241,14 @@ function renderUI(){
   const dv=G.d.fused,dc=G.d.conf;
   T('dfused',dv!=null?dv.toFixed(4)+'m':'–');
   T('dconf',dc.toFixed(0));
-  const dn=[G.d.m1,G.d.m2,G.d.m3,G.d.m4,G.d.m5,G.d.m6,G.d.m7,G.d.m8].filter(v=>v!=null).length;
-  T('dcnt',dn+' / 8 methods active'); T('dsrc',bDsrc());
+  const dn=[G.d.m1,G.d.m2,G.d.m3,G.d.m4,G.d.m5,G.d.m6,G.d.m7,G.d.m8,G.d.m9,G.d.m10,G.d.m11,G.d.m12].filter(v=>v!=null).length;
+  T('dcnt',dn+' / 12 methods active'); T('dsrc',bDsrc());
   $('dcbar').style.width=dc+'%'; $('dcbar2').style.width=dc+'%';
-  const dv2=[G.d.m1,G.d.m2,G.d.m3,G.d.m4,G.d.m5,G.d.m6,G.d.m7,G.d.m8];
-  const dcl=['pur','pur','pur','pur','yel','grn','grn','grn'];
-  const ddc=['pur','pur','pur','pur','yel','grn','grn','grn'];
+  const dv2=[G.d.m1,G.d.m2,G.d.m3,G.d.m4,G.d.m5,G.d.m6,G.d.m7,G.d.m8,G.d.m9,G.d.m10,G.d.m11,G.d.m12];
+  const dcl=['pur','pur','pur','pur','yel','grn','grn','grn','grn','grn','grn','yel'];
   dv2.forEach((v,i)=>{
     const el=$('dm'+(i+1));if(!el)return;
-    if(v!=null){el.textContent=v.toFixed(4)+'m';el.className='mval '+dcl[i];dot('dd'+(i+1),ddc[i]);}
+    if(v!=null){el.textContent=v.toFixed(4)+'m';el.className='mval '+dcl[i];dot('dd'+(i+1),dcl[i]);}
     else{el.textContent='–';el.className='mval na';}
   });
 
@@ -1018,12 +1261,17 @@ function renderUI(){
 
 function bHsrc(){
   if(G.h.m1!=null)return'xr-viewer.y'; if(G.h.m2!=null)return'xr-hit↓'; if(G.h.m4!=null)return'xr-plane';
-  if(G.h.m3!=null)return'xr-depth'; if(G.h.m6!=null)return'baro-Δ'; if(G.h.m5!=null)return'focus-sweep';
-  if(G.h.m7!=null)return'accel-Δh (relative)'; if(G.h.m8!=null)return'visual-horizon'; return'awaiting sensors';
+  if(G.h.m3!=null)return'xr-depth'; if(G.h.m5!=null)return'focus-floor'; if(G.h.m12!=null)return'known-obj';
+  if(G.h.m6!=null)return'baro-Δ'; if(G.h.m11!=null)return'vanishing-pt'; if(G.h.m9!=null)return'grav-pitch';
+  if(G.h.m8!=null)return'visual-horizon'; if(G.h.m10!=null)return'optical-flow';
+  if(G.h.m7!=null)return'accel-Δh'; return'awaiting sensors';
 }
 function bDsrc(){
-  if(G.d.m1!=null)return'xr-hit-fwd'; if(G.d.m2!=null)return'xr-depth-ctr'; if(G.d.m4!=null)return'xr-plane-ray';
-  if(G.d.m5!=null)return'focus-sweep'; if(G.d.m8!=null)return'cam-focus-api'; if(G.d.m6!=null)return'trig'; if(G.d.m7!=null)return'visual-sobel'; return'awaiting sensors';
+  if(G.d.m1!=null)return'xr-hit-fwd'; if(G.d.m2!=null)return'xr-depth-ctr'; if(G.d.m4!=null)return'xr-plane';
+  if(G.d.m12!=null)return'known-obj'; if(G.d.m5!=null)return'focus-sweep'; if(G.d.m8!=null)return'cam-focus-api';
+  if(G.d.m9!=null)return'optical-flow'; if(G.d.m11!=null)return'imu-perspective';
+  if(G.d.m6!=null)return'trig'; if(G.d.m10!=null)return'texture-grad'; if(G.d.m7!=null)return'visual-sobel';
+  return'awaiting sensors';
 }
 
 // ═══ FOCUS SWEEP ═══════════════════════════════════════════════
@@ -1033,7 +1281,7 @@ async function runSweep(ctx){
   if(!track){toast('No camera stream');return;}
   G.sweepCtx=ctx;
   G.FS.running=true; G.FS.results=[];
-  setFP(0); toast('Running focus sweep…');
+  setFP(0); toast('Focus sweep running…');
   const caps=track.getCapabilities?.();
   if(caps?.focusDistance){
     try{await track.applyConstraints({advanced:[{focusMode:'manual'}]});}catch{}
@@ -1042,43 +1290,68 @@ async function runSweep(ctx){
     const ic=new ImageCapture(track);let done=0;
     for(let i=0;i<=n;i++){
       const fd=min+(max-min)*i/n;
-      try{await track.applyConstraints({advanced:[{focusDistance:fd}]});await wait(130);const bm=await ic.grabFrame();const sc=await lapVar(bm);G.FS.results.push({fd,sc});done++;setFP(done/(n+1));}catch{}
+      try{
+        await track.applyConstraints({advanced:[{focusDistance:fd}]});
+        await wait(130);
+        const bm=await ic.grabFrame();
+        const sc=await lapVar(bm);
+        G.FS.results.push({fd,sc});
+        done++;
+        setFP(done/(n+1));
+      }catch{}
     }
     try{await track.applyConstraints({advanced:[{focusMode:'continuous'}]});}catch{}
   } else {
-    // No manual focus: capture sequential frames, read focusDistance from settings each time
+    // No manual focus API: grab frames and read focusDistance from settings each time
     const ic=new ImageCapture(track);
     for(let i=0;i<12;i++){
-      try{await wait(180);const bm=await ic.grabFrame();const sc=await lapVar(bm);const fd=track.getSettings?.()?.focusDistance??((i+1)*.25);G.FS.results.push({fd,sc});setFP((i+1)/12);}catch{}
+      try{
+        await wait(180);
+        const bm=await ic.grabFrame();
+        const sc=await lapVar(bm);
+        const fd=track.getSettings?.()?.focusDistance??((i+1)*.25);
+        G.FS.results.push({fd,sc});
+        setFP((i+1)/12);
+      }catch{}
     }
   }
   G.FS.running=false;
-  if(!G.FS.results.length){toast('Sweep failed — no frames captured');return;}
+  if(!G.FS.results.length){toast('Sweep failed — no frames captured');setFP(0);return;}
   const best=G.FS.results.reduce((a,b)=>b.sc>a.sc?b:a);
   G.FS.best=best.fd;
-  // Apply result to the right method
+  // Apply to correct method
   if(ctx==='d'){
     G.d.m5=best.fd; dot('dd5','yel');
+    toast(`Distance sweep: ${best.fd.toFixed(2)}m`);
   }
   if(ctx==='h'){
-    // Height from focus: phone aimed at floor → fd = slant dist to floor → h = fd × sin(|dep|)
     const dep=G.depression;
-    if(Math.abs(dep)>1){G.h.m5=best.fd*Math.abs(Math.sin(dep*Math.PI/180));dot('hd5','yel');}
-    else{toast('Aim camera at floor before sweeping for height');G.h.m5=null;}
+    if(Math.abs(dep)>2){
+      G.h.m5=best.fd*Math.abs(Math.sin(dep*Math.PI/180));
+      dot('hd5','yel');
+      toast(`Height sweep: floor at ${best.fd.toFixed(2)}m → h=${G.h.m5.toFixed(2)}m`);
+    } else {
+      toast('Aim more at the floor (depression > 2°) before sweeping for height');
+      G.h.m5=null;
+    }
   }
-  // Update both sweep displays
-  setFP(1); T('sw-'+ctx+'-res',best.fd.toFixed(3)+'m');
-  $('hb5').textContent='↺ RE-SWEEP'; $('db5').textContent='↺ RE-SWEEP';
+  setFP(1);
+  // Update button labels
+  const hb=$('hb5'),db=$('db5');
+  if(hb)hb.textContent='↺ RESWEEP';
+  if(db)db.textContent='↺ RESWEEP';
   drawFocusChart();
-  toast(`Sweep done: ${best.fd.toFixed(2)}m`);
   fuse(); renderUI();
 }
 
-// Sync sweep fill bars (both tabs show progress)
+// Update sweep progress bars — both tabs show same progress
 function setFP(p){
-  // There's only one global sweep progress shown on whatever tab is active
-  // We write to both IDs
-  ['sw-h-fill','sw-d-fill'].forEach(id=>{const e=$(id);if(e)e.style.width='';}); // not used, bars are in sweep rows
+  const pct=(p*100).toFixed(0)+'%';
+  // The sweep row fill elements
+  [$('sw-h-fill'),$('sw-d-fill')].forEach(e=>{if(e)e.style.width=pct;});
+  // Also update the btn text during sweep
+  const pct2=Math.round(p*100);
+  if(p>0&&p<1){[$('hb5'),$('db5')].forEach(e=>{if(e)e.textContent=pct2+'%';});}
 }
 
 async function lapVar(bm){

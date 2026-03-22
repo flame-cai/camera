@@ -209,50 +209,33 @@ canvas.spk{width:100%;display:block}
       <div class="ii-right"><div class="ii-st" id="ii-xr-st"><span class="spin">⟳</span></div></div>
     </div>
 
-    <!-- DA2-Small — primary fast model -->
+    <!-- DA2-Small — primary model -->
     <div class="ii" id="ii-da2s">
       <div class="ii-ico">🧠</div>
       <div class="ii-body">
-        <div class="ii-title">Depth Anything V2-Small  <span style="font-family:var(--mn);font-size:7px;color:var(--dim)">~25MB · fast</span></div>
-        <div class="ii-sub" id="ii-da2s-sub">Primary ML model · relative → metric via calibration · ~5fps mobile</div>
-        <div class="prog-wrap"><div class="prog-bar"><div class="pf" id="pf-da2s" style="background:var(--blu)"></div></div><div class="prog-pct" id="pp-da2s">0%</div></div>
+        <div class="ii-title">Depth Anything V2-Small  <span style="font-family:var(--mn);font-size:7px;color:var(--dim)">~25 MB · required</span></div>
+        <div class="ii-sub" id="ii-da2s-sub">ML depth estimation · relative → calibrated metric · ~5 fps on mobile</div>
+        <div class="prog-wrap">
+          <div class="prog-bar"><div class="pf" id="pf-da2s" style="background:linear-gradient(90deg,var(--pur),var(--blu))"></div></div>
+          <div class="prog-pct" id="pp-da2s">0%</div>
+        </div>
         <button class="retry" onclick="loadModel('da2s')">↺ Retry</button>
       </div>
       <div class="ii-right"><div class="ii-st" id="ii-da2s-st"><span class="spin">⟳</span></div></div>
     </div>
 
-    <!-- DA2-Base — better accuracy -->
-    <div class="ii" id="ii-da2b">
-      <div class="ii-ico">🧠</div>
-      <div class="ii-body">
-        <div class="ii-title">Depth Anything V2-Base  <span style="font-family:var(--mn);font-size:7px;color:var(--dim)">~100MB · accurate</span></div>
-        <div class="ii-sub" id="ii-da2b-sub">Higher accuracy · ~3fps mobile · runs after Small loads</div>
-        <div class="prog-wrap"><div class="prog-bar"><div class="pf" id="pf-da2b" style="background:var(--blu)"></div></div><div class="prog-pct" id="pp-da2b">0%</div></div>
-        <button class="retry" onclick="loadModel('da2b')">↺ Retry</button>
-      </div>
-      <div class="ii-right"><div class="ii-st" id="ii-da2b-st"><span class="spin">⟳</span></div></div>
-    </div>
-
-    <!-- DA V1 small — fallback -->
-    <div class="ii" id="ii-da1s">
-      <div class="ii-ico">🧠</div>
-      <div class="ii-body">
-        <div class="ii-title">Depth Anything V1-Small  <span style="font-family:var(--mn);font-size:7px;color:var(--dim)">~15MB · lightest</span></div>
-        <div class="ii-sub" id="ii-da1s-sub">Fallback / cross-check · lightest model · fast on old phones</div>
-        <div class="prog-wrap"><div class="prog-bar"><div class="pf" id="pf-da1s" style="background:var(--grn)"></div></div><div class="prog-pct" id="pp-da1s">0%</div></div>
-        <button class="retry" onclick="loadModel('da1s')">↺ Retry</button>
-      </div>
-      <div class="ii-right"><div class="ii-st" id="ii-da1s-st"><span class="spin">⟳</span></div></div>
-    </div>
-
-    <!-- DepthPro — optional heavy -->
+    <!-- DepthPro — optional, heavy -->
     <div class="ii" id="ii-dpr">
       <div class="ii-ico">🔬</div>
       <div class="ii-body">
-        <div class="ii-title">Apple DepthPro  <span style="font-family:var(--mn);font-size:7px;color:var(--red)">~300MB · metric · heavy</span></div>
-        <div class="ii-sub" id="ii-dpr-sub">Zero-shot metric depth · absolute metres · skip on low-RAM devices</div>
-        <div class="prog-wrap"><div class="prog-bar"><div class="pf" id="pf-dpr" style="background:var(--ora)"></div></div><div class="prog-pct" id="pp-dpr">0%</div></div>
+        <div class="ii-title">Apple DepthPro  <span style="font-family:var(--mn);font-size:7px;color:var(--ora)">~300 MB · optional</span></div>
+        <div class="ii-sub" id="ii-dpr-sub">Zero-shot METRIC depth — outputs real metres, no calibration needed.<br>Skip on low-RAM phones (&lt;4 GB). Improves H6, D5, D6 significantly.</div>
+        <div class="prog-wrap">
+          <div class="prog-bar"><div class="pf" id="pf-dpr" style="background:linear-gradient(90deg,var(--ora),var(--yel))"></div></div>
+          <div class="prog-pct" id="pp-dpr">0%</div>
+        </div>
         <button class="retry" onclick="loadModel('dpr')">↺ Retry</button>
+        <button id="dpr-skip-btn" onclick="skipDPR()" style="font-family:var(--mn);font-size:8px;padding:2px 8px;background:none;border:1px solid rgba(58,80,112,.6);border-radius:4px;color:var(--dim);cursor:pointer;display:inline-block;margin-top:4px;margin-left:4px">⊘ Skip</button>
       </div>
       <div class="ii-right"><div class="ii-st" id="ii-dpr-st"><span class="spin">⟳</span></div></div>
     </div>
@@ -338,10 +321,8 @@ canvas.spk{width:100%;display:block}
         <div class="dr"><span class="dk">D active</span><span class="dv g" id="lv-dcnt">0/7</span></div>
         <div class="dr"><span class="dk">Confidence H / D</span><span class="dv" id="lv-conf">–/–</span></div>
         <div class="dr"><span class="dk">Depression angle</span><span class="dv" id="lv-dep">–°</span></div>
-        <div class="dr"><span class="dk">DA2-Small S</span><span class="dv b" id="lv-s1">uncal</span></div>
-        <div class="dr"><span class="dk">DA2-Base S</span><span class="dv b" id="lv-s2">uncal</span></div>
-        <div class="dr"><span class="dk">DA1-Small S</span><span class="dv g" id="lv-s3">uncal</span></div>
-        <div class="dr"><span class="dk">DepthPro center</span><span class="dv o" id="lv-dpr">–</span></div>
+        <div class="dr"><span class="dk">DA2-Small scale S</span><span class="dv b" id="lv-s1">uncal — needs XR or baro anchor</span></div>
+        <div class="dr"><span class="dk">DepthPro center depth</span><span class="dv o" id="lv-dpr">– (metric, no cal needed)</span></div>
         <div class="dr"><span class="dk">XR session</span><span class="dv p" id="lv-xr">inactive</span></div>
       </div>
       <div class="spkw"><div class="spk-lbl">height history</div><canvas class="spk" id="spk-h" height="28"></canvas></div>
@@ -491,8 +472,6 @@ canvas.spk{width:100%;display:block}
       <div class="lb"><div><div class="lb-n" id="h6-n" style="color:var(--blu)">–</div><div class="lb-u">m</div></div><div class="lb-r"><div class="lb-st" id="h6-st" style="color:var(--dim)">loading ML…</div><div class="lb-cb"><div class="lb-cbf" id="h6-cb" style="width:0%;background:var(--blu)"></div></div><div class="lb-src" id="h6-src">–</div></div></div>
       <div class="dcard">
         <div class="dr"><span class="dk">DA2-Small</span><span class="dv b" id="h6-da2s">–</span></div>
-        <div class="dr"><span class="dk">DA2-Base</span><span class="dv b" id="h6-da2b">–</span></div>
-        <div class="dr"><span class="dk">DA1-Small</span><span class="dv g" id="h6-da1s">–</span></div>
         <div class="dr"><span class="dk">DepthPro (metric)</span><span class="dv o" id="h6-dpr">–</span></div>
         <div class="dr"><span class="dk">best value used</span><span class="dv" id="h6-best">–</span></div>
         <div class="dr"><span class="dk">inference times</span><span class="dv" id="h6-inf">–</span></div>
@@ -643,12 +622,8 @@ canvas.spk{width:100%;display:block}
       <div class="lb"><div><div class="lb-n" id="d5-n" style="color:var(--blu)">–</div><div class="lb-u">m</div></div><div class="lb-r"><div class="lb-st" id="d5-st" style="color:var(--dim)">–</div><div class="lb-cb"><div class="lb-cbf" id="d5-cb" style="width:0%;background:var(--blu)"></div></div><div class="lb-src" id="d5-src">–</div></div></div>
       <div class="dcard">
         <div class="dr"><span class="dk">DA2-Small</span><span class="dv b" id="d5-da2s">–</span></div>
-        <div class="dr"><span class="dk">DA2-Base</span><span class="dv b" id="d5-da2b">–</span></div>
-        <div class="dr"><span class="dk">DA1-Small</span><span class="dv g" id="d5-da1s">–</span></div>
         <div class="dr"><span class="dk">DepthPro (metric)</span><span class="dv o" id="d5-dpr">–</span></div>
         <div class="dr"><span class="dk">DA2-Small S</span><span class="dv" id="d5-s1">–</span></div>
-        <div class="dr"><span class="dk">DA2-Base S</span><span class="dv" id="d5-s2">–</span></div>
-        <div class="dr"><span class="dk">DA1-Small S</span><span class="dv" id="d5-s3">–</span></div>
         <div class="dr"><span class="dk">fusion weight</span><span class="dv">3</span></div>
       </div>
     </div>
@@ -677,8 +652,6 @@ canvas.spk{width:100%;display:block}
       <div class="dcard">
         <div class="dr"><span class="dk">tap point</span><span class="dv b" id="d6-xy">–</span></div>
         <div class="dr"><span class="dk">DA2-Small at tap</span><span class="dv b" id="d6-da2s">–</span></div>
-        <div class="dr"><span class="dk">DA2-Base at tap</span><span class="dv b" id="d6-da2b">–</span></div>
-        <div class="dr"><span class="dk">DA1-Small at tap</span><span class="dv g" id="d6-da1s">–</span></div>
         <div class="dr"><span class="dk">DepthPro at tap</span><span class="dv o" id="d6-dpr">–</span></div>
       </div>
     </div>
@@ -736,8 +709,8 @@ canvas.spk{width:100%;display:block}
 //
 //  ML MODELS:
 //    da2s  Depth Anything V2-Small  ~25MB  relative
-//    da2b  Depth Anything V2-Base   ~100MB relative
-//    da1s  Depth Anything V1-Small  ~15MB  relative (fallback)
+//    da2s  Depth Anything V2-Small  ~25MB  relative → calibrated metric
+//    dpr   Apple DepthPro            ~300MB METRIC direct (optional)
 //    dpr   Apple DepthPro           ~300MB METRIC  (optional)
 // ═════════════════════════════════════════════════════════
 
@@ -758,8 +731,6 @@ const G={
       hasDepth:false,hasPlanes:false,gl:null,fb:null},
   M:{
     da2s:{pipe:null,raw:null,w:0,h:0,S:null,Sh:[],infer:0,ctr:null,fl:null},
-    da2b:{pipe:null,raw:null,w:0,h:0,S:null,Sh:[],infer:0,ctr:null,fl:null},
-    da1s:{pipe:null,raw:null,w:0,h:0,S:null,Sh:[],infer:0,ctr:null,fl:null},
     dpr: {pipe:null,raw:null,w:0,h:0,infer:0,ctr:null,fl:null}, // metric
   },
   tap:{x:-1,y:-1},
@@ -783,11 +754,10 @@ async function initAll(){
   await initCam();
   initSensors();
   await checkXR();
-  // Load models in sequence: small fast ones first
+  // DA2-Small loads first (required, ~25MB)
   await loadModel('da2s');
-  loadModel('da1s'); // background
-  loadModel('da2b'); // background
-  loadModel('dpr');  // background, optional heavy
+  // DepthPro loads in background (optional, ~300MB, user can skip)
+  loadModel('dpr');
   $('launch').disabled=false;
 }
 
@@ -902,16 +872,24 @@ window.checkXR=async function(){
 
 // ═══ ML MODELS ══════════════════════════════════════════
 const MCFG={
-  da2s:{id:'onnx-community/depth-anything-v2-small',metric:false},
-  da2b:{id:'onnx-community/depth-anything-v2-base', metric:false},
-  da1s:{id:'Xenova/depth-anything-small-hf',        metric:false},
-  dpr: {id:'onnx-community/DepthPro-ONNX',          metric:true, useAuto:true},
+  da2s:{id:'onnx-community/depth-anything-v2-small', metric:false},
+  dpr: {id:'onnx-community/DepthPro-ONNX',           metric:true, useAuto:true},
+};
+
+let dprSkipped=false;
+window.skipDPR=function(){
+  dprSkipped=true;
+  setII('ii-dpr','skip','⊘ skipped by user','DepthPro skipped — DA2-Small will be calibrated via XR/baro instead');
+  const btn=$('dpr-skip-btn');if(btn)btn.style.display='none';
 };
 
 window.loadModel=async function(key){
   const cfg=MCFG[key];if(!cfg)return;
+  if(key==='dpr'&&dprSkipped)return;
   const iiId='ii-'+key;
   setII(iiId,'loading','loading');
+  // Hide skip button once loading starts
+  if(key==='dpr'){const b=$('dpr-skip-btn');if(b)b.style.display='none';}
   try{
     const{pipeline,env,AutoModelForDepthEstimation,AutoProcessor,RawImage}=
       await import('https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.3.3/dist/transformers.min.js');
@@ -969,7 +947,7 @@ function startLoop(key){
           procML(key,raw,w,h,metric);
         }catch(e){console.warn(key,e.message);}
       }
-      await new Promise(r=>setTimeout(r,key==='da2s'?200:key==='da1s'?250:500));
+      await new Promise(r=>setTimeout(r,key==='da2s'?200:600));
     }
     looping[key]=false;
   })();
@@ -995,52 +973,43 @@ function procML(key,raw,w,h,metric){
 }
 
 function calibS(key,raw,w,h){
+  if(key!=='da2s')return; // only relative-depth models need scale calibration
   const m=G.M[key];
   const cx=Math.floor(w/2),cy=Math.floor(h/2);
   const cv=raw[cy*w+cx];if(cv<.01)return;
   let anchor=null;
+  // Priority: XR hit-fwd > XR depth-center > XR height+dep > baro > DepthPro center
   if(G.d.m1!=null)anchor=G.d.m1;
   else if(G.d.m2!=null)anchor=G.d.m2;
   else if(G.h.m1!=null&&Math.abs(G.dep)>2)anchor=G.h.m1/Math.abs(Math.sin(G.dep*Math.PI/180));
   else if(G.h.m5!=null&&Math.abs(G.h.m5)>.1)anchor=Math.abs(G.h.m5)+1.3;
-  else if(G.M.dpr.ctr&&G.M.dpr.ctr>0.1)anchor=G.M.dpr.ctr;
+  else if(G.M.dpr.ctr&&G.M.dpr.ctr>0.1)anchor=G.M.dpr.ctr; // DepthPro is metric → can calibrate DA2
   if(!anchor||anchor<.05)return;
   m.Sh.push(anchor*cv);if(m.Sh.length>40)m.Sh.shift();
   const s=[...m.Sh].sort((a,b)=>a-b);m.S=s[Math.floor(s.length/2)];
 }
 
 function updateMLVals(){
-  // H6 — floor region best estimate
-  const hCands=[];
-  for(const [k,m] of Object.entries(G.M)){
-    const metric=MCFG[k].metric;
-    if(metric){if(m.fl&&m.fl>0)hCands.push({v:m.fl,w:4,k});}
-    else if(m.S&&m.fl&&m.fl>.01)hCands.push({v:m.S/m.fl,w:k==='da2b'?3:2,k});
-  }
-  if(hCands.length){const ws=hCands.reduce((s,x)=>s+x.w,0);G.h.m6=hCands.reduce((s,x)=>s+x.v*x.w,0)/ws;}
-  // D5 — center
-  const dCands=[];
-  for(const [k,m] of Object.entries(G.M)){
-    const metric=MCFG[k].metric;
-    if(metric){if(m.ctr&&m.ctr>0)dCands.push({v:m.ctr,w:4,k});}
-    else if(m.S&&m.ctr&&m.ctr>.01)dCands.push({v:m.S/m.ctr,w:k==='da2b'?3:2,k});
-  }
-  if(dCands.length){const ws=dCands.reduce((s,x)=>s+x.w,0);G.d.m5=dCands.reduce((s,x)=>s+x.v*x.w,0)/ws;}
-  // D6 — tap
+  const da2s=G.M.da2s, dpr=G.M.dpr;
+  // H6: prefer DepthPro floor (metric), fallback DA2-Small calibrated
+  if(dpr.fl&&dpr.fl>0)          G.h.m6=dpr.fl;
+  else if(da2s.S&&da2s.fl>.01)  G.h.m6=da2s.S/da2s.fl;
+  // D5: prefer DepthPro center, fallback DA2-Small
+  if(dpr.ctr&&dpr.ctr>0)        G.d.m5=dpr.ctr;
+  else if(da2s.S&&da2s.ctr>.01) G.d.m5=da2s.S/da2s.ctr;
+  // D6: tap — read both models
   if(G.tap.x>=0){
-    const tapC=[];
+    const tapVals=[];
     for(const [k,m] of Object.entries(G.M)){
       if(!m.raw)continue;
       const tx=Math.floor(G.tap.x*m.w),ty=Math.floor(G.tap.y*m.h);
       const tv=m.raw[Math.max(0,Math.min(m.raw.length-1,ty*m.w+tx))];
-      const metric=MCFG[k].metric;
-      let v=null;
-      if(metric&&tv>0)v=tv;
-      else if(m.S&&tv>.01)v=m.S/tv;
+      const met=MCFG[k].metric;
+      const v=met?(tv>0?tv:null):(m.S&&tv>.01?m.S/tv:null);
       T('d6-'+k,v?v.toFixed(3)+'m':'–');
-      if(v)tapC.push({v,w:metric?4:2});
+      if(v)tapVals.push({v,w:met?4:2});
     }
-    if(tapC.length){const ws=tapC.reduce((s,x)=>s+x.w,0);G.d.m6=tapC.reduce((s,x)=>s+x.v*x.w,0)/ws;}
+    if(tapVals.length){const ws=tapVals.reduce((s,x)=>s+x.w,0);G.d.m6=tapVals.reduce((s,x)=>s+x.v*x.w,0)/ws;}
   }
 }
 
@@ -1289,9 +1258,8 @@ function renderUI(){
   const dA=[G.d.m1,G.d.m2,G.d.m3,G.d.m4,G.d.m5,G.d.m6,G.d.m7].filter(v=>v!=null).length;
   T('lv-hcnt',hA+'/7');T('lv-dcnt',dA+'/7');
   T('lv-conf',G.h.conf+'%/'+G.d.conf+'%');T('lv-dep',G.dep.toFixed(2)+'°');
-  T('lv-s1',G.M.da2s.S?G.M.da2s.S.toFixed(5):'uncal');T('lv-s2',G.M.da2b.S?G.M.da2b.S.toFixed(5):'uncal');
-  T('lv-s3',G.M.da1s.S?G.M.da1s.S.toFixed(5):'uncal');
-  T('lv-dpr',G.M.dpr.ctr?G.M.dpr.ctr.toFixed(3)+'m':'–');
+  T('lv-s1',G.M.da2s.S?'S='+G.M.da2s.S.toFixed(5)+' (n='+G.M.da2s.Sh.length+')':'uncal — needs XR or baro');
+  T('lv-dpr',G.M.dpr.ctr?G.M.dpr.ctr.toFixed(3)+'m (metric direct)':'–');
 
   // Method live blocks
   const upd=(pre,val,conf,col)=>{
@@ -1309,22 +1277,20 @@ function renderUI(){
 
   // H6 detail
   const fm=v=>v!=null?v.toFixed(3)+'m':'–';
-  T('h6-da2s',G.M.da2s.S&&G.M.da2s.fl?fm(G.M.da2s.S/G.M.da2s.fl):'–');
-  T('h6-da2b',G.M.da2b.S&&G.M.da2b.fl?fm(G.M.da2b.S/G.M.da2b.fl):'–');
-  T('h6-da1s',G.M.da1s.S&&G.M.da1s.fl?fm(G.M.da1s.S/G.M.da1s.fl):'–');
-  T('h6-dpr',fm(G.M.dpr.fl));T('h6-best',hSrc());
-  T('h6-inf',Object.entries(G.M).filter(([,m])=>m.infer).map(([k,m])=>k+':'+m.infer.toFixed(0)+'ms').join(' '));
-  T('h6-scal',Object.entries(G.M).filter(([k])=>!MCFG[k].metric&&G.M[k].S).map(([k,m])=>k+'='+m.S.toFixed(4)).join(' ')||'none yet');
-  T('h6-st',G.h.m6?'live ·  '+Object.values(G.M).filter(m=>m.fl!=null).length+' models':'needs calibration');
-  T('h6-src','best of 3+models');
+  T('h6-da2s',G.M.da2s.S&&G.M.da2s.fl?fm(G.M.da2s.S/G.M.da2s.fl):'uncal');
+  T('h6-dpr',fm(G.M.dpr.fl));
+  T('h6-best',G.M.dpr.fl?'DepthPro (metric)':G.M.da2s.S?'DA2-Small (calibrated)':'–');
+  T('h6-inf',Object.entries(G.M).filter(([,m])=>m.infer).map(([k,m])=>k+': '+m.infer.toFixed(0)+'ms').join('  '));
+  T('h6-scal',G.M.da2s.S?'S='+G.M.da2s.S.toFixed(5)+' (n='+G.M.da2s.Sh.length+')':'none yet — start XR or baro');
+  T('h6-st',G.h.m6?'live — '+(G.M.dpr.fl?'DepthPro metric':'DA2-Small calibrated'):'needs calibration');
+  T('h6-src',G.M.dpr.fl?'DepthPro (metric)':'DA2-Small + scale S');
 
   // D5 detail
-  T('d5-da2s',G.M.da2s.S&&G.M.da2s.ctr?fm(G.M.da2s.S/G.M.da2s.ctr):'–');
-  T('d5-da2b',G.M.da2b.S&&G.M.da2b.ctr?fm(G.M.da2b.S/G.M.da2b.ctr):'–');
-  T('d5-da1s',G.M.da1s.S&&G.M.da1s.ctr?fm(G.M.da1s.S/G.M.da1s.ctr):'–');
+  T('d5-da2s',G.M.da2s.S&&G.M.da2s.ctr?fm(G.M.da2s.S/G.M.da2s.ctr):'uncal');
   T('d5-dpr',fm(G.M.dpr.ctr));
-  T('d5-s1',G.M.da2s.S?G.M.da2s.S.toFixed(5):'uncal');T('d5-s2',G.M.da2b.S?G.M.da2b.S.toFixed(5):'uncal');T('d5-s3',G.M.da1s.S?G.M.da1s.S.toFixed(5):'uncal');
-  T('d5-st',G.d.m5?'live':'needs calibration');T('d5-src','best of 3+ models');
+  T('d5-s1',G.M.da2s.S?'S='+G.M.da2s.S.toFixed(5):'uncal');
+  T('d5-st',G.d.m5?'live — '+(G.M.dpr.ctr?'DepthPro metric':'DA2-Small calibrated'):'needs calibration');
+  T('d5-src',G.M.dpr.ctr?'DepthPro (metric)':'DA2-Small + scale S');
   T('d5-hud',G.d.m5?'D5='+G.d.m5.toFixed(3)+'m':'D5=–');
 
   // H7/D7 detail
@@ -1359,9 +1325,7 @@ function jetCol(v){
 }
 function getBest(){
   if(G.M.dpr.raw)return G.M.dpr;
-  if(G.M.da2b.raw)return G.M.da2b;
   if(G.M.da2s.raw)return G.M.da2s;
-  if(G.M.da1s.raw)return G.M.da1s;
   return null;
 }
 const _dtmp=document.createElement('canvas');
@@ -1445,7 +1409,8 @@ function drawLive(){
   if(hv!=null){const hl=Math.max(11,Math.min(H-11,hy-11));rr2(ctx,cx-58,hl-10,116,14,3);ctx.fillStyle='rgba(5,16,30,.92)';ctx.fill();ctx.fillStyle=G.h.conf>50?'#00c9a7':'#f0c030';ctx.font='bold 9px DM Mono,monospace';ctx.textAlign='center';ctx.fillText('h = '+hv.toFixed(3)+' m  ('+G.h.conf+'%)  '+hSrc(),cx,hl);}
   // Source badges
   const bs=[];if(xrOn)bs.push({t:'XR',c:'#8b6eff'});
-  ['da2s','da2b','da1s','dpr'].forEach(k=>{if(G.M[k].raw)bs.push({t:k,c:k==='dpr'?'#ff8040':'#38b6ff'});});
+  if(G.M.dpr.raw)bs.push({t:'DepthPro',c:'#ff8040'});
+  if(G.M.da2s.raw)bs.push({t:'DA2-S',c:'#38b6ff'});
   if(G.h.m5!=null)bs.push({t:'BARO',c:'#00c9a7'});
   let bx=5;bs.forEach(b=>{ctx.font='bold 7px DM Mono,monospace';const tw=ctx.measureText(b.t).width+8;rr2(ctx,bx,H-16,tw,12,3);ctx.fillStyle=b.c+'20';ctx.fill();ctx.strokeStyle=b.c+'55';ctx.lineWidth=1;ctx.stroke();ctx.fillStyle=b.c;ctx.textAlign='left';ctx.fillText(b.t,bx+4,H-8);bx+=tw+3;});
   T('hud0-tl','|g|='+(Math.sqrt(G.SF.ax**2+G.SF.ay**2+G.SF.az**2)).toFixed(1));

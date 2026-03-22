@@ -5,217 +5,160 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>AR·SENSE</title>
+<title>AR·SENSE v7</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Barlow:wght@400;600;700&display=swap');
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}
-html,body{height:100%;background:#060f1c;color:#c5daf0;font-family:'Barlow',sans-serif;overflow:hidden}
+html,body{height:100%;background:#05101e;color:#bfd8f5;font-family:'Barlow',sans-serif;overflow:hidden}
 :root{
-  --bg:#060f1c;--c1:#0a1626;--c2:#0d1e30;--bdr:#13253a;
-  --grn:#00c9a7;--yel:#f0c030;--red:#f05050;--pur:#8b6eff;--blu:#38b6ff;
-  --dim:#284060;--fg:#c5daf0;--mn:'DM Mono',monospace;
+  --bg:#05101e;--c1:#091829;--c2:#0c1f30;--bdr:#102236;
+  --grn:#00c9a7;--yel:#f0c030;--red:#f05050;--pur:#8b6eff;--blu:#38b6ff;--ora:#ff7c42;
+  --dim:#243d5a;--fg:#bfd8f5;--mn:'DM Mono',monospace;
   --st:env(safe-area-inset-top,0px);--sb:env(safe-area-inset-bottom,0px);
 }
 
-/* ══ SPLASH ══════════════════════════════════ */
-#splash{
-  position:fixed;inset:0;z-index:99;background:var(--bg);
-  display:flex;flex-direction:column;align-items:center;
-  overflow-y:auto;-webkit-overflow-scrolling:touch;
-  padding:calc(var(--st)+14px) 14px calc(var(--sb)+16px);gap:9px;
-}
-.sp-logo{font-family:var(--mn);font-size:22px;font-weight:500;color:var(--grn);letter-spacing:6px;margin-top:2px}
+/* ═══ SPLASH ═══════════════════════════════ */
+#splash{position:fixed;inset:0;z-index:99;background:var(--bg);display:flex;flex-direction:column;align-items:center;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:calc(var(--st)+12px) 13px calc(var(--sb)+14px);gap:8px}
+.sp-logo{font-family:var(--mn);font-size:21px;font-weight:500;color:var(--grn);letter-spacing:6px;margin-top:2px}
 .sp-tag{font-family:var(--mn);font-size:7px;letter-spacing:3px;color:var(--dim);text-transform:uppercase}
-
-/* init steps list */
 .init-list{width:100%;display:flex;flex-direction:column;gap:5px}
-.init-item{
-  background:var(--c1);border:1px solid var(--bdr);border-radius:9px;
-  padding:10px 12px;display:flex;align-items:center;gap:10px;
-}
-.init-item.ok{border-color:rgba(0,201,167,.2)}
-.init-item.fail{border-color:rgba(240,80,80,.2)}
-.init-item.loading{border-color:rgba(56,182,255,.2)}
-.init-item.skip{opacity:.5}
-.init-icon{font-size:16px;flex-shrink:0;width:22px;text-align:center}
-.init-body{flex:1;min-width:0}
-.init-title{font-size:11px;font-weight:700}
-.init-sub{font-family:var(--mn);font-size:8px;color:var(--dim);margin-top:2px}
-.init-status{font-family:var(--mn);font-size:8px;flex-shrink:0;text-align:right}
-.init-item.ok .init-status{color:var(--grn)}
-.init-item.fail .init-status{color:var(--red)}
-.init-item.loading .init-status{color:var(--blu)}
-.init-item.skip .init-status{color:var(--dim)}
-/* retry btn inside init item */
-.retry-btn{
-  font-family:var(--mn);font-size:8px;padding:3px 9px;
-  background:none;border:1px solid rgba(240,192,48,.3);border-radius:4px;
-  color:var(--yel);cursor:pointer;margin-top:4px;display:none;
-}
-.init-item.fail .retry-btn{display:inline-block}
+.ii{background:var(--c1);border:1px solid var(--bdr);border-radius:9px;padding:9px 11px;display:flex;align-items:flex-start;gap:9px}
+.ii.ok{border-color:rgba(0,201,167,.2)}.ii.fail{border-color:rgba(240,80,80,.2)}.ii.loading{border-color:rgba(56,182,255,.2)}.ii.skip{opacity:.5}
+.ii-icon{font-size:15px;flex-shrink:0;width:20px;text-align:center;margin-top:1px}
+.ii-body{flex:1;min-width:0}
+.ii-title{font-size:11px;font-weight:700}
+.ii-sub{font-family:var(--mn);font-size:7px;color:var(--dim);margin-top:1px;line-height:1.5}
+.ii-right{flex-shrink:0;text-align:right;min-width:64px}
+.ii-st{font-family:var(--mn);font-size:8px}
+.ii.ok .ii-st{color:var(--grn)}.ii.fail .ii-st{color:var(--red)}.ii.loading .ii-st{color:var(--blu)}.ii.skip .ii-st{color:var(--dim)}
+.retry-btn{font-family:var(--mn);font-size:8px;padding:2px 8px;background:none;border:1px solid rgba(240,192,48,.3);border-radius:4px;color:var(--yel);cursor:pointer;display:none;margin-top:3px}
+.ii.fail .retry-btn{display:inline-block}
 .retry-btn:active{opacity:.6}
-/* ML progress bar */
-.ml-bar-wrap{margin-top:5px;display:none}
-.init-item.loading .ml-bar-wrap{display:block}
-.ml-bar{height:2px;background:var(--bdr);border-radius:1px;overflow:hidden}
-.ml-bar-fill{height:100%;background:linear-gradient(90deg,var(--pur),var(--blu),var(--grn));border-radius:1px;transition:width .2s;width:0%}
-.ml-bar-pct{font-family:var(--mn);font-size:7px;color:var(--dim);margin-top:2px}
+.prog-wrap{margin-top:4px;display:none}
+.ii.loading .prog-wrap{display:block}
+.prog-bar{height:2px;background:var(--bdr);border-radius:1px;overflow:hidden}
+.prog-fill{height:100%;border-radius:1px;transition:width .2s;width:0%}
+.prog-pct{font-family:var(--mn);font-size:7px;color:var(--dim);margin-top:2px}
+.note-box{width:100%;background:rgba(56,182,255,.05);border:1px solid rgba(56,182,255,.15);border-radius:8px;padding:9px 12px;font-size:9px;color:var(--blu);line-height:1.7}
+#launch{width:100%;padding:13px;background:var(--grn);color:#000;border:none;border-radius:10px;font-family:var(--mn);font-size:13px;font-weight:500;letter-spacing:3px;cursor:pointer}
+#launch:disabled{opacity:.3;cursor:not-allowed}
+#launch:active{opacity:.75}
 
-#launch-btn{
-  width:100%;padding:13px;background:var(--grn);color:#000;
-  border:none;border-radius:10px;font-family:var(--mn);
-  font-size:13px;font-weight:500;letter-spacing:3px;cursor:pointer;
-}
-#launch-btn:disabled{opacity:.3;cursor:not-allowed}
-#launch-btn:active{opacity:.75}
-
-/* ══ APP ════════════════════════════════════ */
+/* ═══ APP ═══════════════════════════════════ */
 #app{display:none;flex-direction:column;height:100dvh;height:100vh;overflow:hidden;padding-top:var(--st)}
-
-/* top bar */
-.topbar{height:40px;background:var(--c1);border-bottom:1px solid var(--bdr);display:flex;align-items:center;padding:0 11px;gap:6px;flex-shrink:0}
+.topbar{height:40px;background:var(--c1);border-bottom:1px solid var(--bdr);display:flex;align-items:center;padding:0 10px;gap:6px;flex-shrink:0}
 .t-logo{font-family:var(--mn);font-size:11px;font-weight:500;letter-spacing:4px;color:var(--grn)}
 .t-sep{width:1px;height:11px;background:var(--bdr)}
-.t-pill{font-family:var(--mn);font-size:7px;padding:1px 6px;border-radius:8px;border:1px solid var(--bdr);color:var(--dim);background:var(--c2)}
-.t-pill.xr{color:var(--pur);border-color:rgba(139,110,255,.3);background:rgba(139,110,255,.07)}
-.t-pill.ml{color:var(--blu);border-color:rgba(56,182,255,.3);background:rgba(56,182,255,.07)}
-.t-pill.baro{color:var(--grn);border-color:rgba(0,201,167,.3);background:rgba(0,201,167,.07)}
+.t-pill{font-family:var(--mn);font-size:7px;padding:1px 5px;border-radius:7px;border:1px solid var(--bdr);color:var(--dim);background:var(--c2)}
+.t-pill.on-xr{color:var(--pur);border-color:rgba(139,110,255,.3);background:rgba(139,110,255,.07)}
+.t-pill.on-baro{color:var(--grn);border-color:rgba(0,201,167,.3);background:rgba(0,201,167,.07)}
 .t-r{margin-left:auto;display:flex;align-items:center;gap:4px}
 .ldot{width:5px;height:5px;background:var(--red);border-radius:50%;animation:blink .6s infinite}
 
 /* scrollable tab bar */
-.tabbar{
-  height:36px;background:var(--c1);border-bottom:1px solid var(--bdr);
-  display:flex;flex-shrink:0;overflow-x:auto;-webkit-overflow-scrolling:touch;
-  scrollbar-width:none;
-}
+.tabbar{height:34px;background:var(--c1);border-bottom:1px solid var(--bdr);display:flex;flex-shrink:0;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
 .tabbar::-webkit-scrollbar{display:none}
-.tb{
-  flex-shrink:0;padding:0 13px;height:36px;
-  font-family:var(--mn);font-size:8px;font-weight:500;
-  color:var(--dim);background:none;border:none;
-  border-bottom:2px solid transparent;cursor:pointer;
-  white-space:nowrap;letter-spacing:.5px;
-}
+.tb{flex-shrink:0;padding:0 10px;height:34px;font-family:var(--mn);font-size:8px;font-weight:500;color:var(--dim);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap}
 .tb.on{color:var(--grn);border-bottom-color:var(--grn)}
-.tb.xr-tab.on{color:var(--pur);border-bottom-color:var(--pur)}
-.tb.ml-tab.on{color:var(--blu);border-bottom-color:var(--blu)}
+.tb.xrt.on{color:var(--pur);border-bottom-color:var(--pur)}
+.tb.mlt.on{color:var(--blu);border-bottom-color:var(--blu)}
 
-/* pages */
 .pages{flex:1;min-height:0;position:relative}
-.pg{position:absolute;inset:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:9px 11px calc(9px + var(--sb));display:none}
+.pg{position:absolute;inset:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:8px 10px calc(8px + var(--sb));display:none}
 .pg.on{display:block}
 
-/* ══ CAMERA ══════════════════════════════════ */
-.cambox{
-  position:relative;width:100%;border-radius:10px;
-  overflow:hidden;background:#000;margin-bottom:9px;
-  /* Fixed aspect ratio — NO fullscreen */
-}
-.cambox::after{content:'';display:block;padding-top:75%} /* 4:3 */
+/* ═══ CAMERA BOX — fixed aspect ratio, never fullscreen ═══ */
+.cambox{position:relative;width:100%;border-radius:9px;overflow:hidden;background:#000;margin-bottom:8px}
+.cambox::after{content:'';display:block;padding-top:75%}  /* 4:3, locked */
 .cambox video,.cambox canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .cambox canvas{pointer-events:none}
-.cam-nocam{
-  position:absolute;inset:0;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;gap:5px;
-  color:var(--dim);font-size:11px;background:var(--bg);
-}
-.cam-nocam.gone{display:none}
-.scanl{position:absolute;left:0;right:0;height:1px;
-  background:linear-gradient(90deg,transparent,rgba(0,201,167,.3),transparent);
-  animation:scan 3s linear infinite;pointer-events:none}
+.nocam{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;color:var(--dim);font-size:11px;background:var(--bg)}
+.nocam.gone{display:none}
+.scanl{position:absolute;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(0,201,167,.3),transparent);animation:scan 3s linear infinite;pointer-events:none}
 @keyframes scan{0%{top:0}100%{top:100%}}
-.brk{position:absolute;width:11px;height:11px;pointer-events:none}
-.brk.tl{top:5px;left:5px;border-top:2px solid var(--grn);border-left:2px solid var(--grn)}
-.brk.tr{top:5px;right:5px;border-top:2px solid var(--grn);border-right:2px solid var(--grn)}
-.brk.bl{bottom:5px;left:5px;border-bottom:2px solid var(--grn);border-left:2px solid var(--grn)}
-.brk.br2{bottom:5px;right:5px;border-bottom:2px solid var(--grn);border-right:2px solid var(--grn)}
-.horiz-line{position:absolute;left:0;right:0;height:1px;pointer-events:none;transition:top .08s}
-.horiz-line::after{content:'';display:block;height:1px;background:linear-gradient(90deg,transparent 4%,rgba(240,80,80,.5) 20%,rgba(240,80,80,.5) 80%,transparent 96%)}
-.hud{position:absolute;font-family:var(--mn);font-size:8px;color:var(--grn);background:rgba(6,15,28,.88);padding:2px 5px;border-radius:3px;line-height:1.4}
-.hud.tl{top:5px;left:5px}.hud.tr{top:5px;right:5px}.hud.br{bottom:5px;right:5px}
+.brk{position:absolute;width:10px;height:10px;pointer-events:none}
+.brk.tl{top:4px;left:4px;border-top:2px solid var(--grn);border-left:2px solid var(--grn)}
+.brk.tr{top:4px;right:4px;border-top:2px solid var(--grn);border-right:2px solid var(--grn)}
+.brk.bl{bottom:4px;left:4px;border-bottom:2px solid var(--grn);border-left:2px solid var(--grn)}
+.brk.br2{bottom:4px;right:4px;border-bottom:2px solid var(--grn);border-right:2px solid var(--grn)}
+.hz{position:absolute;left:0;right:0;height:1px;pointer-events:none;transition:top .1s}
+.hz::after{content:'';display:block;height:1px;background:linear-gradient(90deg,transparent 5%,rgba(240,80,80,.5) 25%,rgba(240,80,80,.5) 75%,transparent 95%)}
+.hud{position:absolute;font-family:var(--mn);font-size:8px;color:var(--grn);background:rgba(5,16,30,.88);padding:2px 5px;border-radius:3px;line-height:1.4}
+.hud.tl{top:4px;left:4px}.hud.tr{top:4px;right:4px}.hud.br{bottom:4px;right:4px}
+/* depth canvas overlay (colourized) */
+.depth-ov{position:absolute;inset:0;width:100%;height:100%;opacity:.62;mix-blend-mode:lighten;pointer-events:none}
 
-/* ══ CARDS ═══════════════════════════════════ */
-.crow{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:9px}
-.bcard{background:var(--c1);border:1px solid var(--bdr);border-radius:10px;padding:10px 11px;position:relative;overflow:hidden}
-.bc-accent{position:absolute;top:0;left:0;right:0;height:2px;border-radius:10px 10px 0 0}
+/* ═══ CARDS ══════════════════════════════════ */
+.crow{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:8px}
+.bcard{background:var(--c1);border:1px solid var(--bdr);border-radius:9px;padding:10px 11px;position:relative;overflow:hidden}
+.bc-acc{position:absolute;top:0;left:0;right:0;height:2px;border-radius:9px 9px 0 0}
 .bc-lbl{font-family:var(--mn);font-size:7px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;margin-bottom:4px}
-.bc-num{font-family:var(--mn);font-size:26px;font-weight:500;line-height:1}
+.bc-num{font-family:var(--mn);font-size:24px;font-weight:500;line-height:1}
 .bc-u{font-size:9px;color:var(--dim);margin-left:1px}
 .bc-src{font-family:var(--mn);font-size:7px;color:var(--dim);margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.conf-bar{height:2px;background:var(--bdr);border-radius:1px;margin-top:5px;overflow:hidden}
-.conf-fill{height:100%;border-radius:1px;transition:width .3s}
+.cbar{height:2px;background:var(--bdr);border-radius:1px;margin-top:4px;overflow:hidden}
+.cbf{height:100%;border-radius:1px;transition:width .3s}
 
-/* ══ METHOD PAGE LAYOUT ══════════════════════ */
-.method-page .method-header{
-  background:var(--c1);border:1px solid var(--bdr);border-radius:10px;
-  padding:12px 13px;margin-bottom:9px;
-}
-.mh-top{display:flex;align-items:center;gap:8px;margin-bottom:6px}
-.mh-badge{
-  font-family:var(--mn);font-size:8px;padding:2px 8px;
-  border-radius:6px;border:1px solid;flex-shrink:0;
-}
-.mh-title{font-size:14px;font-weight:700;flex:1}
-.mh-desc{font-size:10px;color:var(--dim);line-height:1.6;margin-bottom:8px}
-.mh-formula{
-  font-family:var(--mn);font-size:9px;color:var(--grn);
-  background:rgba(0,201,167,.06);border:1px solid rgba(0,201,167,.12);
-  border-radius:6px;padding:7px 10px;line-height:1.8;
-}
-/* live value block */
-.live-block{
-  background:var(--c1);border:1px solid var(--bdr);border-radius:10px;
-  padding:12px 13px;margin-bottom:9px;display:flex;align-items:center;gap:12px;
-}
-.lb-num{font-family:var(--mn);font-size:36px;font-weight:500;flex-shrink:0}
-.lb-u{font-size:13px;color:var(--dim)}
-.lb-right{flex:1;min-width:0}
-.lb-status{font-family:var(--mn);font-size:8px;margin-bottom:4px}
-.lb-conf-wrap{height:3px;background:var(--bdr);border-radius:2px;overflow:hidden}
-.lb-conf-fill{height:100%;border-radius:2px;transition:width .3s}
-.lb-src{font-family:var(--mn);font-size:7px;color:var(--dim);margin-top:4px}
+/* live block per-method */
+.lb{background:var(--c1);border:1px solid var(--bdr);border-radius:9px;padding:11px 12px;display:flex;align-items:center;gap:11px;margin-bottom:8px}
+.lb-n{font-family:var(--mn);font-size:33px;font-weight:500;flex-shrink:0;min-width:80px}
+.lb-u{font-family:var(--mn);font-size:10px;color:var(--dim);margin-top:1px}
+.lb-r{flex:1;min-width:0}
+.lb-st{font-family:var(--mn);font-size:8px;margin-bottom:4px}
+.lb-cbar{height:3px;background:var(--bdr);border-radius:2px;overflow:hidden}
+.lb-cbf{height:100%;border-radius:2px;transition:width .3s}
+.lb-src{font-family:var(--mn);font-size:7px;color:var(--dim);margin-top:3px}
+
+/* method header */
+.mhdr{background:var(--c1);border:1px solid var(--bdr);border-radius:9px;padding:11px 12px;margin-bottom:8px}
+.mhdr-top{display:flex;align-items:center;gap:7px;margin-bottom:5px}
+.mh-badge{font-family:var(--mn);font-size:7px;padding:2px 7px;border-radius:5px;border:1px solid;flex-shrink:0}
+.mh-title{font-size:13px;font-weight:700;flex:1}
+.mh-desc{font-size:9px;color:var(--dim);line-height:1.65;margin-bottom:7px}
+.mh-formula{font-family:var(--mn);font-size:8px;color:var(--grn);background:rgba(0,201,167,.05);border:1px solid rgba(0,201,167,.1);border-radius:5px;padding:6px 9px;line-height:1.8}
+
 /* data rows */
-.data-card{background:var(--c1);border:1px solid var(--bdr);border-radius:10px;overflow:hidden;margin-bottom:9px}
-.data-row{display:flex;align-items:center;justify-content:space-between;padding:7px 12px;border-bottom:1px solid rgba(19,37,58,.6);font-size:9px}
-.data-row:last-child{border:none}
+.dcard{background:var(--c1);border:1px solid var(--bdr);border-radius:9px;overflow:hidden;margin-bottom:8px}
+.dr{display:flex;align-items:center;justify-content:space-between;padding:6px 11px;border-bottom:1px solid rgba(16,34,54,.7);font-size:9px}
+.dr:last-child{border:none}
 .dk{color:var(--dim)}.dv{font-family:var(--mn);font-size:9px;color:var(--fg)}
-.dv.ok{color:var(--grn)}.dv.err{color:var(--red)}.dv.warn{color:var(--yel)}.dv.ml{color:var(--blu)}.dv.xr{color:var(--pur)}
-/* status badge */
-.status-badge{
-  display:inline-flex;align-items:center;gap:4px;
-  font-family:var(--mn);font-size:7px;padding:3px 8px;
-  border-radius:6px;border:1px solid;margin-bottom:9px;
-}
-.sb-dot{width:5px;height:5px;border-radius:50%}
-/* depth canvas for ML tab */
-.depth-canvas-wrap{
-  position:relative;width:100%;border-radius:10px;
-  overflow:hidden;background:#000;margin-bottom:9px;
-}
-.depth-canvas-wrap::after{content:'';display:block;padding-top:75%}
-.depth-canvas-wrap canvas{position:absolute;inset:0;width:100%;height:100%}
-/* tap instruction */
-.tap-hint{
-  font-family:var(--mn);font-size:8px;color:var(--blu);
-  text-align:center;padding:5px 0 8px;
-}
-/* sparkline wrapper */
-.spk-wrap{background:var(--c1);border:1px solid var(--bdr);border-radius:8px;padding:8px 10px;margin-bottom:9px}
+.dv.g{color:var(--grn)}.dv.p{color:var(--pur)}.dv.b{color:var(--blu)}.dv.y{color:var(--yel)}.dv.r{color:var(--red)}
+
+/* ML model selector */
+.model-sel{background:var(--c1);border:1px solid var(--bdr);border-radius:9px;overflow:hidden;margin-bottom:8px}
+.ms-row{display:flex;align-items:center;justify-content:space-between;padding:7px 11px;border-bottom:1px solid rgba(16,34,54,.7);cursor:pointer}
+.ms-row:last-child{border:none}
+.ms-row:active{background:rgba(56,182,255,.05)}
+.ms-name{font-family:var(--mn);font-size:8px;font-weight:500}
+.ms-desc{font-family:var(--mn);font-size:7px;color:var(--dim);margin-top:1px}
+.ms-right{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.ms-tag{font-family:var(--mn);font-size:7px;padding:2px 6px;border-radius:5px;border:1px solid}
+.ms-status{font-family:var(--mn);font-size:8px}
+
+/* sparkline */
+.spkw{background:var(--c1);border:1px solid var(--bdr);border-radius:8px;padding:7px 10px;margin-bottom:8px}
 .spk-lbl{font-family:var(--mn);font-size:7px;color:var(--dim);letter-spacing:2px;text-transform:uppercase;margin-bottom:4px}
 canvas.spk{width:100%;display:block}
 
-/* ══ TOAST ═══════════════════════════════════ */
-#toast{
-  position:fixed;bottom:calc(var(--sb)+10px);left:50%;
-  transform:translateX(-50%) translateY(60px);
-  background:var(--c2);border:1px solid rgba(0,201,167,.2);
-  color:var(--fg);padding:7px 14px;border-radius:8px;font-size:10px;
-  z-index:999;transition:transform .2s;white-space:nowrap;max-width:90vw;pointer-events:none;
-}
+/* XR mode banner */
+.xr-banner{background:rgba(139,110,255,.07);border:1px solid rgba(139,110,255,.2);border-radius:9px;padding:10px 12px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.xr-banner-t{font-size:10px;font-weight:700;color:var(--pur)}
+.xr-banner-s{font-family:var(--mn);font-size:7px;color:var(--dim);margin-top:2px;line-height:1.5}
+.xr-go-btn{font-family:var(--mn);font-size:8px;padding:5px 10px;border:1px solid rgba(139,110,255,.35);border-radius:6px;background:rgba(139,110,255,.1);color:var(--pur);cursor:pointer;flex-shrink:0}
+.xr-go-btn:active{opacity:.7}
+.xr-go-btn.active{background:rgba(0,201,167,.08);color:var(--grn);border-color:rgba(0,201,167,.25)}
+.xr-go-btn.na{opacity:.4;cursor:not-allowed}
+
+/* toast */
+#toast{position:fixed;bottom:calc(var(--sb)+10px);left:50%;transform:translateX(-50%) translateY(60px);background:var(--c2);border:1px solid rgba(0,201,167,.2);color:var(--fg);padding:6px 13px;border-radius:8px;font-size:10px;z-index:999;transition:transform .2s;white-space:nowrap;max-width:90vw;pointer-events:none}
 #toast.show{transform:translateX(-50%) translateY(0)}
 
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.15}}
+/* legend */
+.legend{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:7px}
+.leg{display:flex;align-items:center;gap:3px;font-family:var(--mn);font-size:7px;color:var(--dim)}
+.leg-d{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.1}}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.1}}
 @keyframes spin{to{transform:rotate(360deg)}}
 .spin{display:inline-block;animation:spin .8s linear infinite}
@@ -223,526 +166,450 @@ canvas.spk{width:100%;display:block}
 </head>
 <body>
 
-<!-- ══════════════════════════════════════════
-     SPLASH — loads everything before launch
-══════════════════════════════════════════ -->
+<!-- ═══════════════ SPLASH ═══════════════ -->
 <div id="splash">
-  <div class="sp-tag">Accurate · Reliable · ML-Powered</div>
+  <div class="sp-tag">All ML Models · Reliable Methods · No Fullscreen</div>
   <div class="sp-logo">AR · SENSE</div>
+
+  <div class="note-box">
+    ⚠️ <strong>XR note:</strong> WebXR <code>immersive-ar</code> always goes fullscreen by browser spec — it cannot be avoided. XR methods (H1–H4, D1–D4) are available as an <strong>optional mode</strong> button after launch. All sensor + ML methods work <strong>without XR</strong>, without fullscreen, on every device.
+  </div>
 
   <div class="init-list">
 
     <!-- Camera -->
-    <div class="init-item" id="init-cam">
-      <div class="init-icon">📷</div>
-      <div class="init-body">
-        <div class="init-title">Camera</div>
-        <div class="init-sub">Rear camera · environment mode</div>
-        <button class="retry-btn" onclick="initCamera()">↺ Retry</button>
+    <div class="ii" id="ii-cam">
+      <div class="ii-icon">📷</div>
+      <div class="ii-body">
+        <div class="ii-title">Camera</div>
+        <div class="ii-sub">Rear-facing · getUserMedia · live feed for all tabs</div>
+        <button class="retry-btn" onclick="initCam()">↺ Retry</button>
       </div>
-      <div class="init-status" id="init-cam-st"><span class="spin">⟳</span></div>
+      <div class="ii-right">
+        <div class="ii-st" id="ii-cam-st"><span class="spin">⟳</span></div>
+      </div>
     </div>
 
     <!-- Sensors -->
-    <div class="init-item" id="init-sens">
-      <div class="init-icon">📡</div>
-      <div class="init-body">
-        <div class="init-title">Motion Sensors</div>
-        <div class="init-sub">Accelerometer · gravity · barometer</div>
+    <div class="ii" id="ii-sens">
+      <div class="ii-icon">📡</div>
+      <div class="ii-body">
+        <div class="ii-title">Motion Sensors</div>
+        <div class="ii-sub">DeviceMotion · GravitySensor · AbsolutePressureSensor</div>
         <button class="retry-btn" onclick="initSensors()">↺ Retry</button>
       </div>
-      <div class="init-status" id="init-sens-st"><span class="spin">⟳</span></div>
+      <div class="ii-right">
+        <div class="ii-st" id="ii-sens-st"><span class="spin">⟳</span></div>
+      </div>
     </div>
 
-    <!-- WebXR -->
-    <div class="init-item" id="init-xr">
-      <div class="init-icon">🔮</div>
-      <div class="init-body">
-        <div class="init-title">WebXR  (H1–H4, D1–D4)</div>
-        <div class="init-sub">ARCore/ARKit · inline session · no fullscreen</div>
-        <button class="retry-btn" onclick="initXR()">↺ Retry</button>
+    <!-- DA2-Small -->
+    <div class="ii" id="ii-da2s">
+      <div class="ii-icon">🧠</div>
+      <div class="ii-body">
+        <div class="ii-title">Depth Anything V2-Small  <span style="font-family:var(--mn);font-size:7px;color:var(--dim)">(~25MB · fast · relative)</span></div>
+        <div class="ii-sub" id="ii-da2s-sub">Relative depth · calibrated to metric · real-time ~5fps</div>
+        <div class="prog-wrap"><div class="prog-bar"><div class="prog-fill" id="pf-da2s" style="background:var(--blu)"></div></div><div class="prog-pct" id="pp-da2s">0%</div></div>
+        <button class="retry-btn" onclick="loadModel('da2s')">↺ Retry</button>
       </div>
-      <div class="init-status" id="init-xr-st"><span class="spin">⟳</span></div>
+      <div class="ii-right"><div class="ii-st" id="ii-da2s-st"><span class="spin">⟳</span></div></div>
     </div>
 
-    <!-- ML Model -->
-    <div class="init-item" id="init-ml">
-      <div class="init-icon">🧠</div>
-      <div class="init-body">
-        <div class="init-title">Depth Anything V2  (H6, D5, D6)</div>
-        <div class="init-sub" id="init-ml-sub">Downloading model (~25 MB)…</div>
-        <div class="ml-bar-wrap">
-          <div class="ml-bar"><div class="ml-bar-fill" id="ml-fill"></div></div>
-          <div class="ml-bar-pct" id="ml-pct">0%</div>
-        </div>
-        <button class="retry-btn" onclick="initML()">↺ Retry</button>
+    <!-- DA2-Base -->
+    <div class="ii" id="ii-da2b">
+      <div class="ii-icon">🧠</div>
+      <div class="ii-body">
+        <div class="ii-title">Depth Anything V2-Base  <span style="font-family:var(--mn);font-size:7px;color:var(--dim)">(~100MB · accurate · relative)</span></div>
+        <div class="ii-sub" id="ii-da2b-sub">Better accuracy than Small · same calibration approach</div>
+        <div class="prog-wrap"><div class="prog-bar"><div class="prog-fill" id="pf-da2b" style="background:var(--blu)"></div></div><div class="prog-pct" id="pp-da2b">0%</div></div>
+        <button class="retry-btn" onclick="loadModel('da2b')">↺ Retry</button>
       </div>
-      <div class="init-status" id="init-ml-st"><span class="spin">⟳</span></div>
+      <div class="ii-right"><div class="ii-st" id="ii-da2b-st"><span class="spin">⟳</span></div></div>
+    </div>
+
+    <!-- DepthPro -->
+    <div class="ii" id="ii-dpr">
+      <div class="ii-icon">🔬</div>
+      <div class="ii-body">
+        <div class="ii-title">Apple DepthPro  <span style="font-family:var(--mn);font-size:7px;color:var(--dim)">(~300MB · metric · no calibration)</span></div>
+        <div class="ii-sub" id="ii-dpr-sub">Zero-shot metric depth · absolute metres · no XR needed</div>
+        <div class="prog-wrap"><div class="prog-bar"><div class="prog-fill" id="pf-dpr" style="background:var(--ora)"></div></div><div class="prog-pct" id="pp-dpr">0%</div></div>
+        <button class="retry-btn" onclick="loadModel('dpr')">↺ Retry</button>
+      </div>
+      <div class="ii-right"><div class="ii-st" id="ii-dpr-st"><span class="spin">⟳</span></div></div>
+    </div>
+
+    <!-- ZoeDepth -->
+    <div class="ii" id="ii-zoe">
+      <div class="ii-icon">🔭</div>
+      <div class="ii-body">
+        <div class="ii-title">ZoeDepth-NYU  <span style="font-family:var(--mn);font-size:7px;color:var(--dim)">(~350MB · metric · indoor)</span></div>
+        <div class="ii-sub" id="ii-zoe-sub">Metric depth for indoor scenes · NYU Depth trained</div>
+        <div class="prog-wrap"><div class="prog-bar"><div class="prog-fill" id="pf-zoe" style="background:var(--yel)"></div></div><div class="prog-pct" id="pp-zoe">0%</div></div>
+        <button class="retry-btn" onclick="loadModel('zoe')">↺ Retry</button>
+      </div>
+      <div class="ii-right"><div class="ii-st" id="ii-zoe-st"><span class="spin">⟳</span></div></div>
     </div>
 
   </div>
 
-  <button id="launch-btn" disabled onclick="launch()">LAUNCH</button>
+  <button id="launch" disabled onclick="doLaunch()">LAUNCH</button>
 </div>
 
-<!-- ══════════════════════════════════════════
-     APP
-══════════════════════════════════════════ -->
+<!-- ═══════════════ APP ═══════════════════ -->
 <div id="app">
-
-  <!-- Top bar -->
   <div class="topbar">
     <span class="t-logo">AR·SENSE</span>
     <span class="t-sep"></span>
-    <span class="t-pill" id="pill-os">–</span>
+    <span class="t-pill" id="p-os">–</span>
     <div class="t-r">
-      <span class="t-pill" id="pill-xr">XR–</span>
-      <span class="t-pill" id="pill-ml">ML–</span>
-      <div style="display:flex;align-items:center;gap:3px">
-        <div class="ldot"></div>
-        <span style="font-family:var(--mn);font-size:7px;color:var(--red)">LIVE</span>
-      </div>
+      <span class="t-pill" id="p-xr">XR–</span>
+      <span class="t-pill" id="p-ml">ML–</span>
+      <span class="t-pill" id="p-baro">BARO–</span>
+      <div style="display:flex;align-items:center;gap:3px"><div class="ldot"></div><span style="font-family:var(--mn);font-size:7px;color:var(--red)">LIVE</span></div>
     </div>
   </div>
 
-  <!-- Scrollable tab bar -->
+  <!-- 15 tabs: LIVE + 7 H methods + 7 D methods -->
   <div class="tabbar">
-    <button class="tb on"       data-pg="live">LIVE</button>
-    <button class="tb xr-tab"  data-pg="h1">H1·XR-floor</button>
-    <button class="tb xr-tab"  data-pg="h2">H2·XR-hit↓</button>
-    <button class="tb xr-tab"  data-pg="h3">H3·XR-plane</button>
-    <button class="tb xr-tab"  data-pg="h4">H4·XR-depth</button>
-    <button class="tb"         data-pg="h5">H5·Baro</button>
-    <button class="tb ml-tab"  data-pg="h6">H6·ML-depth</button>
-    <button class="tb"         data-pg="h7">H7·Trig</button>
-    <button class="tb xr-tab"  data-pg="d1">D1·XR-hit→</button>
-    <button class="tb xr-tab"  data-pg="d2">D2·XR-depth</button>
-    <button class="tb xr-tab"  data-pg="d3">D3·XR-grid</button>
-    <button class="tb xr-tab"  data-pg="d4">D4·XR-plane</button>
-    <button class="tb ml-tab"  data-pg="d5">D5·ML-ctr</button>
-    <button class="tb ml-tab"  data-pg="d6">D6·ML-tap</button>
-    <button class="tb"         data-pg="d7">D7·Trig</button>
+    <button class="tb on"    data-pg="live">LIVE</button>
+    <button class="tb xrt"  data-pg="h1">H1·XR-floor</button>
+    <button class="tb xrt"  data-pg="h2">H2·XR-hit↓</button>
+    <button class="tb xrt"  data-pg="h3">H3·XR-plane</button>
+    <button class="tb xrt"  data-pg="h4">H4·XR-depth</button>
+    <button class="tb"      data-pg="h5">H5·Baro</button>
+    <button class="tb mlt"  data-pg="h6">H6·ML-depth</button>
+    <button class="tb"      data-pg="h7">H7·Trig</button>
+    <button class="tb xrt"  data-pg="d1">D1·XR-hit→</button>
+    <button class="tb xrt"  data-pg="d2">D2·XR-depth</button>
+    <button class="tb xrt"  data-pg="d3">D3·XR-grid</button>
+    <button class="tb xrt"  data-pg="d4">D4·XR-plane</button>
+    <button class="tb mlt"  data-pg="d5">D5·ML-ctr</button>
+    <button class="tb mlt"  data-pg="d6">D6·ML-tap</button>
+    <button class="tb"      data-pg="d7">D7·Trig</button>
   </div>
 
   <div class="pages">
 
-    <!-- ══ LIVE ══════════════════════════════ -->
+    <!-- ════ LIVE ════ -->
     <div class="pg on" id="pg-live">
       <div class="cambox">
         <video id="vid" autoplay playsinline muted></video>
-        <canvas id="cv-live"></canvas>
+        <canvas id="cv0-d"></canvas><!-- depth overlay -->
+        <canvas id="cv0-a"></canvas><!-- annotation -->
         <div class="scanl"></div>
-        <div class="brk tl"></div><div class="brk tr"></div>
-        <div class="brk bl"></div><div class="brk br2"></div>
-        <div class="horiz-line" id="horiz"></div>
-        <div class="hud tl" id="hud-tl">–</div>
-        <div class="hud tr" id="hud-tr">–</div>
-        <div class="hud br" id="hud-br">–</div>
-        <div class="cam-nocam" id="cam-ph"><div>📷</div><div>Starting…</div></div>
+        <div class="brk tl"></div><div class="brk tr"></div><div class="brk bl"></div><div class="brk br2"></div>
+        <div class="hz" id="hz0" style="top:50%"></div>
+        <div class="hud tl" id="hud0-tl">–</div>
+        <div class="hud tr" id="hud0-tr">–</div>
+        <div class="hud br" id="hud0-br">–</div>
+        <div class="nocam" id="nocam"><div>📷</div><div>Starting…</div></div>
       </div>
       <div class="crow">
         <div class="bcard" style="border-color:rgba(0,201,167,.2)">
-          <div class="bc-accent" style="background:linear-gradient(90deg,var(--grn),transparent)"></div>
+          <div class="bc-acc" style="background:linear-gradient(90deg,var(--grn),transparent)"></div>
           <div class="bc-lbl">Height</div>
           <div class="bc-num" id="lv-h" style="color:var(--grn)">–<span class="bc-u">m</span></div>
           <div class="bc-src" id="lv-h-src">awaiting…</div>
-          <div class="conf-bar"><div class="conf-fill" id="lv-h-bar" style="width:0%;background:var(--grn)"></div></div>
+          <div class="cbar"><div class="cbf" id="lv-h-bar" style="width:0%;background:var(--grn)"></div></div>
         </div>
         <div class="bcard" style="border-color:rgba(240,192,48,.2)">
-          <div class="bc-accent" style="background:linear-gradient(90deg,var(--yel),transparent)"></div>
+          <div class="bc-acc" style="background:linear-gradient(90deg,var(--yel),transparent)"></div>
           <div class="bc-lbl">Distance</div>
           <div class="bc-num" id="lv-d" style="color:var(--yel)">–<span class="bc-u">m</span></div>
           <div class="bc-src" id="lv-d-src">point camera…</div>
-          <div class="conf-bar"><div class="conf-fill" id="lv-d-bar" style="width:0%;background:var(--yel)"></div></div>
+          <div class="cbar"><div class="cbf" id="lv-d-bar" style="width:0%;background:var(--yel)"></div></div>
         </div>
       </div>
-      <div class="spk-wrap"><div class="spk-lbl">height history</div><canvas class="spk" id="spk-h" height="30"></canvas></div>
-      <div class="spk-wrap"><div class="spk-lbl">distance history</div><canvas class="spk" id="spk-d" height="30"></canvas></div>
-      <div class="data-card">
-        <div class="data-row"><span class="dk">Active height methods</span><span class="dv" id="lv-hcnt">0/7</span></div>
-        <div class="data-row"><span class="dk">Active dist methods</span><span class="dv" id="lv-dcnt">0/7</span></div>
-        <div class="data-row"><span class="dk">Height confidence</span><span class="dv ok" id="lv-hconf">0%</span></div>
-        <div class="data-row"><span class="dk">Dist confidence</span><span class="dv ok" id="lv-dconf">0%</span></div>
-        <div class="data-row"><span class="dk">ML scale factor</span><span class="dv ml" id="lv-scale">uncalibrated</span></div>
-        <div class="data-row"><span class="dk">Depression angle</span><span class="dv" id="lv-dep">–°</span></div>
+      <div class="dcard">
+        <div class="dr"><span class="dk">Active H methods</span><span class="dv g" id="lv-hcnt">0/7</span></div>
+        <div class="dr"><span class="dk">Active D methods</span><span class="dv g" id="lv-dcnt">0/7</span></div>
+        <div class="dr"><span class="dk">Confidence H / D</span><span class="dv" id="lv-conf">–/–</span></div>
+        <div class="dr"><span class="dk">Depression angle</span><span class="dv" id="lv-dep">–°</span></div>
+        <div class="dr"><span class="dk">DA2-Small scale S</span><span class="dv b" id="lv-s1">uncal</span></div>
+        <div class="dr"><span class="dk">DA2-Base scale S</span><span class="dv b" id="lv-s2">uncal</span></div>
+        <div class="dr"><span class="dk">DepthPro (metric)</span><span class="dv b" id="lv-dpr">–</span></div>
+        <div class="dr"><span class="dk">ZoeDepth (metric)</span><span class="dv y" id="lv-zoe">–</span></div>
+        <div class="dr"><span class="dk">XR session</span><span class="dv p" id="lv-xr">inactive</span></div>
       </div>
-    </div>
-
-    <!-- ══ H1 ══════════════════════════════ -->
-    <div class="pg method-page" id="pg-h1">
-      <div class="method-header">
-        <div class="mh-top">
-          <span class="mh-badge" style="color:var(--pur);border-color:rgba(139,110,255,.3);background:rgba(139,110,255,.07)">XR · SLAM</span>
-          <div class="mh-title">H1 · XR local-floor viewer.y</div>
-        </div>
-        <div class="mh-desc">WebXR requests a <code>local-floor</code> reference space where Y=0 is the detected floor level. The viewer pose Y coordinate is then the direct height of the camera above the floor. Uses ARCore (Android) or ARKit (iOS) SLAM — no assumptions, no calibration needed.</div>
-        <div class="mh-formula">height = viewerPose.transform.position.y<br>accuracy: ±2 cm  ·  updates: 60 fps<br>requires: immersive-ar session + floor surface visible</div>
-      </div>
-      <div class="live-block" id="lb-h1">
+      <div class="xr-banner">
         <div>
-          <div class="lb-num" id="h1-num" style="color:var(--pur)">–</div>
-          <div style="font-family:var(--mn);font-size:10px;color:var(--dim)">metres</div>
+          <div class="xr-banner-t">WebXR (H1–H4, D1–D4)</div>
+          <div class="xr-banner-s">Requires immersive-ar → goes fullscreen by browser spec.<br>Press to start. Press again to exit &amp; return to normal view.</div>
         </div>
-        <div class="lb-right">
-          <div class="lb-status" id="h1-status" style="color:var(--dim)">XR not started</div>
-          <div class="lb-conf-wrap"><div class="lb-conf-fill" id="h1-conf" style="width:0%;background:var(--pur)"></div></div>
-          <div class="lb-src" id="h1-src">–</div>
-        </div>
+        <button class="xr-go-btn" id="xr-btn" onclick="toggleXR()">START XR</button>
       </div>
-      <div class="data-card">
-        <div class="data-row"><span class="dk">XR session</span><span class="dv xr" id="h1-xr-st">–</span></div>
-        <div class="data-row"><span class="dk">local-floor ref space</span><span class="dv" id="h1-rs">–</span></div>
-        <div class="data-row"><span class="dk">raw viewer.y</span><span class="dv" id="h1-raw">–</span></div>
-        <div class="data-row"><span class="dk">fusion weight</span><span class="dv">5 (highest)</span></div>
+      <div class="spkw"><div class="spk-lbl">height history</div><canvas class="spk" id="spk-h" height="28"></canvas></div>
+      <div class="spkw"><div class="spk-lbl">distance history</div><canvas class="spk" id="spk-d" height="28"></canvas></div>
+    </div>
+
+    <!-- ════ H1 — XR floor ════ -->
+    <div class="pg" id="pg-h1">
+      <div class="xr-banner"><div><div class="xr-banner-t">H1 requires WebXR</div><div class="xr-banner-s">immersive-ar → will go fullscreen. Camera returns when you press exit.</div></div><button class="xr-go-btn" id="xr-btn-h1" onclick="toggleXR()">START XR</button></div>
+      <div class="mhdr">
+        <div class="mhdr-top"><span class="mh-badge" style="color:var(--pur);border-color:rgba(139,110,255,.3);background:rgba(139,110,255,.07)">XR · SLAM</span><div class="mh-title">H1 · XR local-floor viewer.y</div></div>
+        <div class="mh-desc">WebXR <code>local-floor</code> reference space sets Y=0 at the detected floor. The viewer pose Y is then the direct camera height above floor. Uses ARCore/ARKit SLAM — continuous tracking, sub-centimetre accuracy.</div>
+        <div class="mh-formula">height = viewerPose.transform.position.y<br>accuracy: ±2 cm · 60 fps · requires floor surface visible</div>
+      </div>
+      <div class="lb"><div><div class="lb-n" id="h1-n" style="color:var(--pur)">–</div><div class="lb-u">m</div></div><div class="lb-r"><div class="lb-st" id="h1-st" style="color:var(--dim)">XR not started</div><div class="lb-cbar"><div class="lb-cbf" id="h1-cb" style="width:0%;background:var(--pur)"></div></div><div class="lb-src" id="h1-src">–</div></div></div>
+      <div class="dcard">
+        <div class="dr"><span class="dk">raw viewer.y</span><span class="dv p" id="h1-raw">–</span></div>
+        <div class="dr"><span class="dk">local-floor ref</span><span class="dv" id="h1-rs">–</span></div>
+        <div class="dr"><span class="dk">XR session</span><span class="dv p" id="h1-xrst">–</span></div>
+        <div class="dr"><span class="dk">fusion weight</span><span class="dv">5</span></div>
       </div>
     </div>
 
-    <!-- ══ H2 ══════════════════════════════ -->
-    <div class="pg method-page" id="pg-h2">
-      <div class="method-header">
-        <div class="mh-top">
-          <span class="mh-badge" style="color:var(--pur);border-color:rgba(139,110,255,.3);background:rgba(139,110,255,.07)">XR · Hit-Test</span>
-          <div class="mh-title">H2 · XR hit-test downward</div>
-        </div>
-        <div class="mh-desc">Casts a ray straight down [0, −1, 0] from the viewer position. WebXR finds the nearest detected surface below (the floor) and returns its 3D position. Height = viewer.y − hit.y. Independent from H1 — uses hit-test not the reference space calibration.</div>
-        <div class="mh-formula">height = viewerPose.y − hitResult.transform.position.y<br>accuracy: ±3 cm  ·  requires: visible floor with features</div>
+    <!-- ════ H2 — XR hit down ════ -->
+    <div class="pg" id="pg-h2">
+      <div class="xr-banner"><div><div class="xr-banner-t">H2 requires WebXR</div><div class="xr-banner-s">immersive-ar → will go fullscreen.</div></div><button class="xr-go-btn" id="xr-btn-h2" onclick="toggleXR()">START XR</button></div>
+      <div class="mhdr">
+        <div class="mhdr-top"><span class="mh-badge" style="color:var(--pur);border-color:rgba(139,110,255,.3);background:rgba(139,110,255,.07)">XR · Hit-Test</span><div class="mh-title">H2 · XR hit-test downward ray</div></div>
+        <div class="mh-desc">Casts ray [0,−1,0] downward from viewer. The detected floor hit point gives its Y. Height = viewer.y − hit.y. Independent from H1 — uses plane detection raycasting not the reference space.</div>
+        <div class="mh-formula">height = viewerPose.y − hitResult.y  ·  accuracy: ±3 cm</div>
       </div>
-      <div class="live-block">
-        <div><div class="lb-num" id="h2-num" style="color:var(--pur)">–</div><div style="font-family:var(--mn);font-size:10px;color:var(--dim)">metres</div></div>
-        <div class="lb-right">
-          <div class="lb-status" id="h2-status" style="color:var(--dim)">XR not started</div>
-          <div class="lb-conf-wrap"><div class="lb-conf-fill" id="h2-conf" style="width:0%;background:var(--pur)"></div></div>
-          <div class="lb-src" id="h2-src">–</div>
-        </div>
-      </div>
-      <div class="data-card">
-        <div class="data-row"><span class="dk">hit-test source (down)</span><span class="dv xr" id="h2-hit-st">–</span></div>
-        <div class="data-row"><span class="dk">viewer.y</span><span class="dv" id="h2-vy">–</span></div>
-        <div class="data-row"><span class="dk">hit.y</span><span class="dv" id="h2-hy">–</span></div>
-        <div class="data-row"><span class="dk">fusion weight</span><span class="dv">5</span></div>
+      <div class="lb"><div><div class="lb-n" id="h2-n" style="color:var(--pur)">–</div><div class="lb-u">m</div></div><div class="lb-r"><div class="lb-st" id="h2-st" style="color:var(--dim)">XR not started</div><div class="lb-cbar"><div class="lb-cbf" id="h2-cb" style="width:0%;background:var(--pur)"></div></div><div class="lb-src" id="h2-src">–</div></div></div>
+      <div class="dcard">
+        <div class="dr"><span class="dk">viewer.y</span><span class="dv" id="h2-vy">–</span></div>
+        <div class="dr"><span class="dk">hit.y</span><span class="dv" id="h2-hy">–</span></div>
+        <div class="dr"><span class="dk">fusion weight</span><span class="dv">5</span></div>
       </div>
     </div>
 
-    <!-- ══ H3 ══════════════════════════════ -->
-    <div class="pg method-page" id="pg-h3">
-      <div class="method-header">
-        <div class="mh-top">
-          <span class="mh-badge" style="color:var(--pur);border-color:rgba(139,110,255,.3);background:rgba(139,110,255,.07)">XR · Planes</span>
-          <div class="mh-title">H3 · XR plane detection</div>
-        </div>
-        <div class="mh-desc">WebXR continuously detects flat surfaces (planes) in the environment. We pick the lowest horizontal plane — the floor — and measure viewer.y minus its Y coordinate. More stable than hit-test because planes are tracked over time and filtered by ARCore/ARKit.</div>
-        <div class="mh-formula">height = viewerPose.y − lowestHorizontalPlane.y<br>accuracy: ±2 cm  ·  requires: plane-detection feature</div>
+    <!-- ════ H3 — XR plane ════ -->
+    <div class="pg" id="pg-h3">
+      <div class="xr-banner"><div><div class="xr-banner-t">H3 requires WebXR</div></div><button class="xr-go-btn" id="xr-btn-h3" onclick="toggleXR()">START XR</button></div>
+      <div class="mhdr">
+        <div class="mhdr-top"><span class="mh-badge" style="color:var(--pur);border-color:rgba(139,110,255,.3);background:rgba(139,110,255,.07)">XR · Planes</span><div class="mh-title">H3 · XR plane detection floor</div></div>
+        <div class="mh-desc">WebXR detects horizontal planes. We pick the lowest one (floor). Height = viewer.y − floorPlane.y. More stable than hit-test because planes are filtered and tracked over multiple frames by ARCore/ARKit.</div>
+        <div class="mh-formula">height = viewerPose.y − lowestHorizontalPlane.y  ·  ±2 cm</div>
       </div>
-      <div class="live-block">
-        <div><div class="lb-num" id="h3-num" style="color:var(--pur)">–</div><div style="font-family:var(--mn);font-size:10px;color:var(--dim)">metres</div></div>
-        <div class="lb-right">
-          <div class="lb-status" id="h3-status" style="color:var(--dim)">XR not started</div>
-          <div class="lb-conf-wrap"><div class="lb-conf-fill" id="h3-conf" style="width:0%;background:var(--pur)"></div></div>
-          <div class="lb-src" id="h3-src">–</div>
-        </div>
-      </div>
-      <div class="data-card">
-        <div class="data-row"><span class="dk">planes detected</span><span class="dv xr" id="h3-planes">–</span></div>
-        <div class="data-row"><span class="dk">floor plane Y</span><span class="dv" id="h3-floory">–</span></div>
-        <div class="data-row"><span class="dk">viewer Y</span><span class="dv" id="h3-viewy">–</span></div>
-        <div class="data-row"><span class="dk">fusion weight</span><span class="dv">4</span></div>
+      <div class="lb"><div><div class="lb-n" id="h3-n" style="color:var(--pur)">–</div><div class="lb-u">m</div></div><div class="lb-r"><div class="lb-st" id="h3-st" style="color:var(--dim)">XR not started</div><div class="lb-cbar"><div class="lb-cbf" id="h3-cb" style="width:0%;background:var(--pur)"></div></div><div class="lb-src" id="h3-src">–</div></div></div>
+      <div class="dcard">
+        <div class="dr"><span class="dk">planes detected</span><span class="dv p" id="h3-plcnt">–</span></div>
+        <div class="dr"><span class="dk">floor plane Y</span><span class="dv" id="h3-fy">–</span></div>
+        <div class="dr"><span class="dk">viewer Y</span><span class="dv" id="h3-vy">–</span></div>
+        <div class="dr"><span class="dk">fusion weight</span><span class="dv">4</span></div>
       </div>
     </div>
 
-    <!-- ══ H4 ══════════════════════════════ -->
-    <div class="pg method-page" id="pg-h4">
-      <div class="method-header">
-        <div class="mh-top">
-          <span class="mh-badge" style="color:var(--pur);border-color:rgba(139,110,255,.3);background:rgba(139,110,255,.07)">XR · Depth</span>
-          <div class="mh-title">H4 · XR hardware depth buffer</div>
-        </div>
-        <div class="mh-desc">On devices with hardware depth (ToF sensor or structured light), WebXR exposes a per-pixel depth map via the depth-sensing feature. We sample the bottom 15% rows of the frame (the floor region when camera tilts forward) and average them, then apply a cos(30°) correction for the viewing angle.</div>
-        <div class="mh-formula">height = avg(depth[y > 0.85]) × cos(30°)<br>accuracy: ±1 cm  ·  requires: depth-sensing feature (Android flagship)</div>
+    <!-- ════ H4 — XR depth ════ -->
+    <div class="pg" id="pg-h4">
+      <div class="xr-banner"><div><div class="xr-banner-t">H4 requires WebXR + hardware depth</div></div><button class="xr-go-btn" id="xr-btn-h4" onclick="toggleXR()">START XR</button></div>
+      <div class="mhdr">
+        <div class="mhdr-top"><span class="mh-badge" style="color:var(--pur);border-color:rgba(139,110,255,.3);background:rgba(139,110,255,.07)">XR · Depth Buffer</span><div class="mh-title">H4 · XR hardware depth bottom rows</div></div>
+        <div class="mh-desc">On Android phones with ToF or structured-light depth sensors, WebXR exposes a hardware depth map. We average the bottom 15% of frame rows (floor region when camera tilts forward) and apply a cos(30°) angle correction.</div>
+        <div class="mh-formula">height = avg(depth[y>0.85]) × cos(30°)  ·  ±1 cm  ·  ToF/structured-light only</div>
       </div>
-      <div class="live-block">
-        <div><div class="lb-num" id="h4-num" style="color:var(--pur)">–</div><div style="font-family:var(--mn);font-size:10px;color:var(--dim)">metres</div></div>
-        <div class="lb-right">
-          <div class="lb-status" id="h4-status" style="color:var(--dim)">XR not started</div>
-          <div class="lb-conf-wrap"><div class="lb-conf-fill" id="h4-conf" style="width:0%;background:var(--pur)"></div></div>
-          <div class="lb-src" id="h4-src">–</div>
-        </div>
-      </div>
-      <div class="data-card">
-        <div class="data-row"><span class="dk">depth-sensing available</span><span class="dv xr" id="h4-dep-av">–</span></div>
-        <div class="data-row"><span class="dk">floor region avg depth</span><span class="dv" id="h4-avg">–</span></div>
-        <div class="data-row"><span class="dk">samples (bottom 15%)</span><span class="dv" id="h4-n">–</span></div>
-        <div class="data-row"><span class="dk">fusion weight</span><span class="dv">4</span></div>
+      <div class="lb"><div><div class="lb-n" id="h4-n" style="color:var(--pur)">–</div><div class="lb-u">m</div></div><div class="lb-r"><div class="lb-st" id="h4-st" style="color:var(--dim)">XR not started</div><div class="lb-cbar"><div class="lb-cbf" id="h4-cb" style="width:0%;background:var(--pur)"></div></div><div class="lb-src" id="h4-src">–</div></div></div>
+      <div class="dcard">
+        <div class="dr"><span class="dk">depth-sensing</span><span class="dv" id="h4-av">–</span></div>
+        <div class="dr"><span class="dk">floor avg depth</span><span class="dv" id="h4-avg">–</span></div>
+        <div class="dr"><span class="dk">samples</span><span class="dv" id="h4-n2">–</span></div>
+        <div class="dr"><span class="dk">fusion weight</span><span class="dv">4</span></div>
       </div>
     </div>
 
-    <!-- ══ H5 ══════════════════════════════ -->
-    <div class="pg method-page" id="pg-h5">
-      <div class="method-header">
-        <div class="mh-top">
-          <span class="mh-badge" style="color:var(--grn);border-color:rgba(0,201,167,.3);background:rgba(0,201,167,.07)">Sensor · Baro</span>
-          <div class="mh-title">H5 · Barometric pressure Δ altitude</div>
-        </div>
-        <div class="mh-desc">The AbsolutePressureSensor API exposes raw atmospheric pressure. Using the International Standard Atmosphere hypsometric formula, we convert pressure difference from launch to altitude change in metres. Accurate to ±0.5 m for relative changes. Available on Android Chrome (not iOS Safari).</div>
-        <div class="mh-formula">Δh = 44330 × (1 − (P / P₀)^0.1903)<br>accuracy: ±0.5 m relative  ·  auto when available</div>
+    <!-- ════ H5 — Barometer ════ -->
+    <div class="pg" id="pg-h5">
+      <div class="mhdr">
+        <div class="mhdr-top"><span class="mh-badge" style="color:var(--grn);border-color:rgba(0,201,167,.25);background:rgba(0,201,167,.06)">Sensor · Auto</span><div class="mh-title">H5 · Barometric Δ altitude</div></div>
+        <div class="mh-desc">AbsolutePressureSensor gives raw hPa. Using the ISA hypsometric formula, pressure difference from launch = altitude change in metres. ±0.5 m accuracy. Auto-running on Android Chrome; not available on iOS Safari.</div>
+        <div class="mh-formula">Δh = 44330 × (1 − (P/P₀)^0.1903)<br>auto · Android Chrome only · ±0.5 m</div>
       </div>
-      <div class="live-block">
-        <div><div class="lb-num" id="h5-num" style="color:var(--grn)">–</div><div style="font-family:var(--mn);font-size:10px;color:var(--dim)">metres Δ</div></div>
-        <div class="lb-right">
-          <div class="lb-status" id="h5-status" style="color:var(--dim)">checking…</div>
-          <div class="lb-conf-wrap"><div class="lb-conf-fill" id="h5-conf" style="width:0%;background:var(--grn)"></div></div>
-          <div class="lb-src" id="h5-src">–</div>
-        </div>
-      </div>
-      <div class="data-card">
-        <div class="data-row"><span class="dk">AbsolutePressureSensor</span><span class="dv" id="h5-api">–</span></div>
-        <div class="data-row"><span class="dk">current P (hPa)</span><span class="dv" id="h5-p">–</span></div>
-        <div class="data-row"><span class="dk">launch P₀ (hPa)</span><span class="dv" id="h5-p0">–</span></div>
-        <div class="data-row"><span class="dk">fusion weight</span><span class="dv">2</span></div>
+      <div class="lb"><div><div class="lb-n" id="h5-n" style="color:var(--grn)">–</div><div class="lb-u">m Δ</div></div><div class="lb-r"><div class="lb-st" id="h5-st" style="color:var(--dim)">checking…</div><div class="lb-cbar"><div class="lb-cbf" id="h5-cb" style="width:0%;background:var(--grn)"></div></div><div class="lb-src" id="h5-src">–</div></div></div>
+      <div class="dcard">
+        <div class="dr"><span class="dk">API available</span><span class="dv" id="h5-api">–</span></div>
+        <div class="dr"><span class="dk">P current (hPa)</span><span class="dv" id="h5-p">–</span></div>
+        <div class="dr"><span class="dk">P₀ at launch (hPa)</span><span class="dv" id="h5-p0">–</span></div>
+        <div class="dr"><span class="dk">fusion weight</span><span class="dv">2</span></div>
       </div>
     </div>
 
-    <!-- ══ H6 ══════════════════════════════ -->
-    <div class="pg method-page" id="pg-h6">
-      <div class="method-header">
-        <div class="mh-top">
-          <span class="mh-badge" style="color:var(--blu);border-color:rgba(56,182,255,.3);background:rgba(56,182,255,.07)">ML · Depth Anything V2</span>
-          <div class="mh-title">H6 · ML depth — floor region</div>
-        </div>
-        <div class="mh-desc">Depth Anything V2-Small runs entirely in the browser (WebGPU or WASM) with no backend. It outputs a relative disparity map — higher values = closer. We average the bottom 15% rows (floor region) to get floor disparity, then multiply by the calibrated scale factor S to get metric height. S is auto-calibrated whenever an XR or barometric anchor is available.</div>
-        <div class="mh-formula">height = S / floorAvgDisparity<br>S = metricAnchor × anchorDisparity  (rolling median, n=30)<br>accuracy: ~5–15%  ·  works WITHOUT XR</div>
+    <!-- ════ H6 — ML depth ════ -->
+    <div class="pg" id="pg-h6">
+      <div class="mhdr">
+        <div class="mhdr-top"><span class="mh-badge" style="color:var(--blu);border-color:rgba(56,182,255,.25);background:rgba(56,182,255,.06)">ML · All Models</span><div class="mh-title">H6 · ML depth — floor region average</div></div>
+        <div class="mh-desc">All 4 ML models run in parallel. Each produces a depth map. Floor region (bottom 15% of frame) is averaged to give floor depth, converted to height. DepthPro and ZoeDepth give metric directly. DA2 models use a scale factor S calibrated from any metric anchor (XR or barometer).</div>
+        <div class="mh-formula">h = S / floorAvgDisparity  (DA2 models)<br>h = floorAvgDepth (DepthPro / ZoeDepth — metric direct)</div>
       </div>
-      <div class="live-block">
-        <div><div class="lb-num" id="h6-num" style="color:var(--blu)">–</div><div style="font-family:var(--mn);font-size:10px;color:var(--dim)">metres</div></div>
-        <div class="lb-right">
-          <div class="lb-status" id="h6-status" style="color:var(--dim)">ML not loaded</div>
-          <div class="lb-conf-wrap"><div class="lb-conf-fill" id="h6-conf" style="width:0%;background:var(--blu)"></div></div>
-          <div class="lb-src" id="h6-src">–</div>
-        </div>
+      <!-- live camera with depth overlay on this tab -->
+      <div class="cambox">
+        <video id="vid-h6" autoplay playsinline muted></video>
+        <canvas id="cv-h6-d" class="depth-ov"></canvas>
+        <canvas id="cv-h6-a"></canvas>
+        <div class="brk tl"></div><div class="brk tr"></div><div class="brk bl"></div><div class="brk br2"></div>
+        <div class="hud br" id="h6-hud">H6=–</div>
       </div>
-      <!-- Depth map visualisation -->
-      <div class="depth-canvas-wrap" id="h6-cam-wrap">
-        <canvas id="cv-h6-depth"></canvas>
-        <canvas id="cv-h6-ann"></canvas>
+      <div class="legend">
+        <div class="leg"><div class="leg-d" style="background:#ff2200"></div>close</div>
+        <div class="leg"><div class="leg-d" style="background:#ff8800"></div>near</div>
+        <div class="leg"><div class="leg-d" style="background:#ffff00"></div>mid</div>
+        <div class="leg"><div class="leg-d" style="background:#00ff88"></div>far</div>
+        <div class="leg"><div class="leg-d" style="background:#0044ff"></div>v.far</div>
       </div>
-      <div class="data-card">
-        <div class="data-row"><span class="dk">ML model</span><span class="dv ml" id="h6-model">–</span></div>
-        <div class="data-row"><span class="dk">floor disparity (avg)</span><span class="dv ml" id="h6-disp">–</span></div>
-        <div class="data-row"><span class="dk">scale factor S</span><span class="dv ml" id="h6-scale">uncalibrated</span></div>
-        <div class="data-row"><span class="dk">inference time</span><span class="dv" id="h6-inf">–</span></div>
-        <div class="data-row"><span class="dk">calibration source</span><span class="dv" id="h6-cal-src">–</span></div>
-        <div class="data-row"><span class="dk">fusion weight</span><span class="dv">3</span></div>
-      </div>
-    </div>
-
-    <!-- ══ H7 ══════════════════════════════ -->
-    <div class="pg method-page" id="pg-h7">
-      <div class="method-header">
-        <div class="mh-top">
-          <span class="mh-badge" style="color:var(--grn);border-color:rgba(0,201,167,.2);background:rgba(0,201,167,.06)">Derived · Trig</span>
-          <div class="mh-title">H7 · Trigonometric  h = D · sin(|dep|)</div>
-        </div>
-        <div class="mh-desc">When we know the slant distance D to the floor (from any D method) and the camera's depression angle (from gravity sensor), we can compute height geometrically. This acts as a cross-check against the sensor-based methods. Depression angle is derived from the raw gravity vector — no calibration needed.</div>
-        <div class="mh-formula">h = D_fused × |sin(depression_rad)|<br>depression = asin(−gz / |g|)  from gravity vector<br>accuracy: depends on D accuracy · fusion weight: 1.5</div>
-      </div>
-      <div class="live-block">
-        <div><div class="lb-num" id="h7-num" style="color:var(--grn)">–</div><div style="font-family:var(--mn);font-size:10px;color:var(--dim)">metres</div></div>
-        <div class="lb-right">
-          <div class="lb-status" id="h7-status" style="color:var(--dim)">needs D + depression</div>
-          <div class="lb-conf-wrap"><div class="lb-conf-fill" id="h7-conf" style="width:0%;background:var(--grn)"></div></div>
-          <div class="lb-src" id="h7-src">–</div>
-        </div>
-      </div>
-      <div class="data-card">
-        <div class="data-row"><span class="dk">fused distance D</span><span class="dv" id="h7-d">–</span></div>
-        <div class="data-row"><span class="dk">depression angle</span><span class="dv" id="h7-dep">–</span></div>
-        <div class="data-row"><span class="dk">sin(|depression|)</span><span class="dv" id="h7-sin">–</span></div>
-        <div class="data-row"><span class="dk">gravity vector (x,y,z)</span><span class="dv" id="h7-grav">–</span></div>
+      <div class="lb"><div><div class="lb-n" id="h6-n" style="color:var(--blu)">–</div><div class="lb-u">m</div></div><div class="lb-r"><div class="lb-st" id="h6-st" style="color:var(--dim)">–</div><div class="lb-cbar"><div class="lb-cbf" id="h6-cb" style="width:0%;background:var(--blu)"></div></div><div class="lb-src" id="h6-src">–</div></div></div>
+      <div class="dcard">
+        <div class="dr"><span class="dk">DA2-Small</span><span class="dv b" id="h6-da2s">–</span></div>
+        <div class="dr"><span class="dk">DA2-Base</span><span class="dv b" id="h6-da2b">–</span></div>
+        <div class="dr"><span class="dk">DepthPro (metric)</span><span class="dv b" id="h6-dpr">–</span></div>
+        <div class="dr"><span class="dk">ZoeDepth (metric)</span><span class="dv y" id="h6-zoe">–</span></div>
+        <div class="dr"><span class="dk">best source</span><span class="dv" id="h6-best">–</span></div>
+        <div class="dr"><span class="dk">inference times</span><span class="dv" id="h6-inf">–</span></div>
+        <div class="dr"><span class="dk">fusion weight</span><span class="dv">3</span></div>
       </div>
     </div>
 
-    <!-- ══ D1 ══════════════════════════════ -->
-    <div class="pg method-page" id="pg-d1">
-      <div class="method-header">
-        <div class="mh-top">
-          <span class="mh-badge" style="color:var(--pur);border-color:rgba(139,110,255,.3);background:rgba(139,110,255,.07)">XR · Hit-Test</span>
-          <div class="mh-title">D1 · XR hit-test forward</div>
-        </div>
-        <div class="mh-desc">Casts a ray from the viewer in the camera's forward direction [0, 0, −1]. The hit point is where the ray intersects the nearest detected surface. We compute 3D Euclidean distance from viewer to hit point. This is the highest-accuracy distance method — directly uses ARCore/ARKit spatial understanding.</div>
-        <div class="mh-formula">D = √((vx−hx)²+(vy−hy)²+(vz−hz)²)<br>accuracy: ±1 cm  ·  requires: visible surface ahead</div>
+    <!-- ════ H7 — Trig ════ -->
+    <div class="pg" id="pg-h7">
+      <div class="mhdr">
+        <div class="mhdr-top"><span class="mh-badge" style="color:var(--grn);border-color:rgba(0,201,167,.2);background:rgba(0,201,167,.05)">Derived · Auto</span><div class="mh-title">H7 · Trigonometric  h = D·sin(|dep|)</div></div>
+        <div class="mh-desc">Cross-check method. Uses fused distance D and camera depression angle from gravity to compute height geometrically. Depression = asin(−gz / |g|) from gravity vector — no assumptions about phone orientation.</div>
+        <div class="mh-formula">h = D_fused × |sin(asin(−gz/|g|))|  ·  fusion weight: 1.5</div>
       </div>
-      <div class="live-block">
-        <div><div class="lb-num" id="d1-num" style="color:var(--pur)">–</div><div style="font-family:var(--mn);font-size:10px;color:var(--dim)">metres</div></div>
-        <div class="lb-right">
-          <div class="lb-status" id="d1-status" style="color:var(--dim)">XR not started</div>
-          <div class="lb-conf-wrap"><div class="lb-conf-fill" id="d1-conf" style="width:0%;background:var(--pur)"></div></div>
-          <div class="lb-src" id="d1-src">–</div>
-        </div>
-      </div>
-      <div class="data-card">
-        <div class="data-row"><span class="dk">hit-test source (fwd)</span><span class="dv xr" id="d1-hit-st">–</span></div>
-        <div class="data-row"><span class="dk">viewer position</span><span class="dv" id="d1-vpos">–</span></div>
-        <div class="data-row"><span class="dk">hit position</span><span class="dv" id="d1-hpos">–</span></div>
-        <div class="data-row"><span class="dk">fusion weight</span><span class="dv">5 (highest)</span></div>
+      <div class="lb"><div><div class="lb-n" id="h7-n" style="color:var(--grn)">–</div><div class="lb-u">m</div></div><div class="lb-r"><div class="lb-st" id="h7-st" style="color:var(--dim)">needs D + gravity</div><div class="lb-cbar"><div class="lb-cbf" id="h7-cb" style="width:0%;background:var(--grn)"></div></div><div class="lb-src" id="h7-src">–</div></div></div>
+      <div class="dcard">
+        <div class="dr"><span class="dk">fused D</span><span class="dv" id="h7-d">–</span></div>
+        <div class="dr"><span class="dk">depression</span><span class="dv" id="h7-dep">–</span></div>
+        <div class="dr"><span class="dk">gravity (gx,gy,gz)</span><span class="dv" id="h7-grav">–</span></div>
+        <div class="dr"><span class="dk">sin(|dep|)</span><span class="dv" id="h7-sin">–</span></div>
       </div>
     </div>
 
-    <!-- ══ D2 ══════════════════════════════ -->
-    <div class="pg method-page" id="pg-d2">
-      <div class="method-header">
-        <div class="mh-top">
-          <span class="mh-badge" style="color:var(--pur);border-color:rgba(139,110,255,.3);background:rgba(139,110,255,.07)">XR · Depth</span>
-          <div class="mh-title">D2 · XR depth  center pixel</div>
-        </div>
-        <div class="mh-desc">WebXR depth-sensing gives a hardware depth map from ToF or structured light sensors. getDepthInMeters(0.5, 0.5) reads the exact metric depth at the center of the frame — the object the camera is pointing at. Most accurate when hardware depth is available.</div>
-        <div class="mh-formula">D = depthInfo.getDepthInMeters(0.5, 0.5)<br>accuracy: ±1 cm  ·  requires: depth-sensing hardware</div>
+    <!-- ════ D1 — XR hit forward ════ -->
+    <div class="pg" id="pg-d1">
+      <div class="xr-banner"><div><div class="xr-banner-t">D1 requires WebXR</div></div><button class="xr-go-btn" id="xr-btn-d1" onclick="toggleXR()">START XR</button></div>
+      <div class="mhdr">
+        <div class="mhdr-top"><span class="mh-badge" style="color:var(--pur);border-color:rgba(139,110,255,.3);background:rgba(139,110,255,.07)">XR · Hit-Test</span><div class="mh-title">D1 · XR hit-test forward</div></div>
+        <div class="mh-desc">Camera forward ray [0,0,−1] hits the nearest real surface. 3D Euclidean distance from viewer to hit point. Most accurate distance method available — directly uses ARCore/ARKit world model.</div>
+        <div class="mh-formula">D = √((vx−hx)²+(vy−hy)²+(vz−hz)²)  ·  ±1 cm</div>
       </div>
-      <div class="live-block">
-        <div><div class="lb-num" id="d2-num" style="color:var(--pur)">–</div><div style="font-family:var(--mn);font-size:10px;color:var(--dim)">metres</div></div>
-        <div class="lb-right">
-          <div class="lb-status" id="d2-status" style="color:var(--dim)">XR not started</div>
-          <div class="lb-conf-wrap"><div class="lb-conf-fill" id="d2-conf" style="width:0%;background:var(--pur)"></div></div>
-          <div class="lb-src" id="d2-src">–</div>
-        </div>
-      </div>
-      <div class="data-card">
-        <div class="data-row"><span class="dk">depth buffer available</span><span class="dv xr" id="d2-av">–</span></div>
-        <div class="data-row"><span class="dk">center pixel depth</span><span class="dv" id="d2-raw">–</span></div>
-        <div class="data-row"><span class="dk">fusion weight</span><span class="dv">5</span></div>
+      <div class="lb"><div><div class="lb-n" id="d1-n" style="color:var(--pur)">–</div><div class="lb-u">m</div></div><div class="lb-r"><div class="lb-st" id="d1-st" style="color:var(--dim)">XR not started</div><div class="lb-cbar"><div class="lb-cbf" id="d1-cb" style="width:0%;background:var(--pur)"></div></div><div class="lb-src" id="d1-src">–</div></div></div>
+      <div class="dcard">
+        <div class="dr"><span class="dk">viewer pos</span><span class="dv" id="d1-vp">–</span></div>
+        <div class="dr"><span class="dk">hit pos</span><span class="dv" id="d1-hp">–</span></div>
+        <div class="dr"><span class="dk">fusion weight</span><span class="dv">5</span></div>
       </div>
     </div>
 
-    <!-- ══ D3 ══════════════════════════════ -->
-    <div class="pg method-page" id="pg-d3">
-      <div class="method-header">
-        <div class="mh-top">
-          <span class="mh-badge" style="color:var(--pur);border-color:rgba(139,110,255,.3);background:rgba(139,110,255,.07)">XR · Depth Grid</span>
-          <div class="mh-title">D3 · XR depth  5×5 grid minimum</div>
-        </div>
-        <div class="mh-desc">Samples a 5×5 grid of depth values in the central 40% of the frame and takes the minimum (nearest surface). More robust than single center pixel — handles cases where the nearest object is slightly off-center. The minimum gives the closest surface the camera is looking at.</div>
-        <div class="mh-formula">D = min(depth[x∈0.3..0.7, y∈0.3..0.7])<br>accuracy: ±1 cm  ·  requires: depth-sensing hardware</div>
+    <!-- ════ D2 — XR depth center ════ -->
+    <div class="pg" id="pg-d2">
+      <div class="xr-banner"><div><div class="xr-banner-t">D2 requires XR depth-sensing hardware</div></div><button class="xr-go-btn" id="xr-btn-d2" onclick="toggleXR()">START XR</button></div>
+      <div class="mhdr">
+        <div class="mhdr-top"><span class="mh-badge" style="color:var(--pur);border-color:rgba(139,110,255,.3);background:rgba(139,110,255,.07)">XR · Depth</span><div class="mh-title">D2 · XR depth center pixel</div></div>
+        <div class="mh-desc">Hardware depth map from ToF or structured light. getDepthInMeters(0.5,0.5) gives exact metric depth at frame center. Highest accuracy when hardware depth is available.</div>
+        <div class="mh-formula">D = depthInfo.getDepthInMeters(0.5, 0.5)  ·  ±1 cm</div>
       </div>
-      <div class="live-block">
-        <div><div class="lb-num" id="d3-num" style="color:var(--pur)">–</div><div style="font-family:var(--mn);font-size:10px;color:var(--dim)">metres</div></div>
-        <div class="lb-right">
-          <div class="lb-status" id="d3-status" style="color:var(--dim)">XR not started</div>
-          <div class="lb-conf-wrap"><div class="lb-conf-fill" id="d3-conf" style="width:0%;background:var(--pur)"></div></div>
-          <div class="lb-src" id="d3-src">–</div>
-        </div>
-      </div>
-      <div class="data-card">
-        <div class="data-row"><span class="dk">grid min (nearest)</span><span class="dv" id="d3-min">–</span></div>
-        <div class="data-row"><span class="dk">grid max (farthest)</span><span class="dv" id="d3-max">–</span></div>
-        <div class="data-row"><span class="dk">samples taken</span><span class="dv">25</span></div>
-        <div class="data-row"><span class="dk">fusion weight</span><span class="dv">5</span></div>
+      <div class="lb"><div><div class="lb-n" id="d2-n" style="color:var(--pur)">–</div><div class="lb-u">m</div></div><div class="lb-r"><div class="lb-st" id="d2-st" style="color:var(--dim)">XR not started</div><div class="lb-cbar"><div class="lb-cbf" id="d2-cb" style="width:0%;background:var(--pur)"></div></div><div class="lb-src" id="d2-src">–</div></div></div>
+      <div class="dcard">
+        <div class="dr"><span class="dk">depth-sensing</span><span class="dv" id="d2-av">–</span></div>
+        <div class="dr"><span class="dk">center depth</span><span class="dv" id="d2-raw">–</span></div>
+        <div class="dr"><span class="dk">fusion weight</span><span class="dv">5</span></div>
       </div>
     </div>
 
-    <!-- ══ D4 ══════════════════════════════ -->
-    <div class="pg method-page" id="pg-d4">
-      <div class="method-header">
-        <div class="mh-top">
-          <span class="mh-badge" style="color:var(--pur);border-color:rgba(139,110,255,.3);background:rgba(139,110,255,.07)">XR · Planes</span>
-          <div class="mh-title">D4 · XR plane ray intersection</div>
-        </div>
-        <div class="mh-desc">Intersects the camera's forward ray with the detected floor plane. Gives the floor distance — how far the spot on the floor that the camera is pointing at is from the camera. Combined with height (H1–H3), this is geometrically exact.</div>
-        <div class="mh-formula">D_floor = √(h² + (h/tan|dep|)²) = h / sin|dep|<br>accuracy: ±2 cm  ·  requires: plane-detection + floor visible</div>
+    <!-- ════ D3 — XR depth grid ════ -->
+    <div class="pg" id="pg-d3">
+      <div class="xr-banner"><div><div class="xr-banner-t">D3 requires XR depth-sensing hardware</div></div><button class="xr-go-btn" id="xr-btn-d3" onclick="toggleXR()">START XR</button></div>
+      <div class="mhdr">
+        <div class="mhdr-top"><span class="mh-badge" style="color:var(--pur);border-color:rgba(139,110,255,.3);background:rgba(139,110,255,.07)">XR · Depth Grid</span><div class="mh-title">D3 · XR depth 5×5 grid minimum</div></div>
+        <div class="mh-desc">Samples 25 depth values in the central 40% of the frame. Takes the minimum (nearest surface in region). More robust than single center pixel — handles off-center subjects.</div>
+        <div class="mh-formula">D = min(depth[x∈0.3..0.7, y∈0.3..0.7])  ·  ±1 cm</div>
       </div>
-      <div class="live-block">
-        <div><div class="lb-num" id="d4-num" style="color:var(--pur)">–</div><div style="font-family:var(--mn);font-size:10px;color:var(--dim)">metres</div></div>
-        <div class="lb-right">
-          <div class="lb-status" id="d4-status" style="color:var(--dim)">XR not started</div>
-          <div class="lb-conf-wrap"><div class="lb-conf-fill" id="d4-conf" style="width:0%;background:var(--pur)"></div></div>
-          <div class="lb-src" id="d4-src">–</div>
-        </div>
-      </div>
-      <div class="data-card">
-        <div class="data-row"><span class="dk">floor plane detected</span><span class="dv xr" id="d4-pl">–</span></div>
-        <div class="data-row"><span class="dk">height used (H_fused)</span><span class="dv" id="d4-h">–</span></div>
-        <div class="data-row"><span class="dk">depression angle</span><span class="dv" id="d4-dep">–</span></div>
-        <div class="data-row"><span class="dk">fusion weight</span><span class="dv">4</span></div>
+      <div class="lb"><div><div class="lb-n" id="d3-n" style="color:var(--pur)">–</div><div class="lb-u">m</div></div><div class="lb-r"><div class="lb-st" id="d3-st" style="color:var(--dim)">XR not started</div><div class="lb-cbar"><div class="lb-cbf" id="d3-cb" style="width:0%;background:var(--pur)"></div></div><div class="lb-src" id="d3-src">–</div></div></div>
+      <div class="dcard">
+        <div class="dr"><span class="dk">grid min</span><span class="dv" id="d3-min">–</span></div>
+        <div class="dr"><span class="dk">grid max</span><span class="dv" id="d3-max">–</span></div>
+        <div class="dr"><span class="dk">fusion weight</span><span class="dv">5</span></div>
       </div>
     </div>
 
-    <!-- ══ D5 ══════════════════════════════ -->
-    <div class="pg method-page" id="pg-d5">
-      <div class="method-header">
-        <div class="mh-top">
-          <span class="mh-badge" style="color:var(--blu);border-color:rgba(56,182,255,.3);background:rgba(56,182,255,.07)">ML · Depth Anything V2</span>
-          <div class="mh-title">D5 · ML depth  center pixel (calibrated)</div>
-        </div>
-        <div class="mh-desc">Uses the same Depth Anything V2 model as H6. Reads the disparity value at the frame center — the object the camera points at — and converts to metric distance using the scale factor S. Works on any device without XR. Accuracy improves as more XR calibration frames accumulate.</div>
-        <div class="mh-formula">D = S / centerDisparity<br>accuracy: ~5–15%  ·  no XR needed after calibration</div>
+    <!-- ════ D4 — XR plane ray ════ -->
+    <div class="pg" id="pg-d4">
+      <div class="xr-banner"><div><div class="xr-banner-t">D4 requires XR plane detection</div></div><button class="xr-go-btn" id="xr-btn-d4" onclick="toggleXR()">START XR</button></div>
+      <div class="mhdr">
+        <div class="mhdr-top"><span class="mh-badge" style="color:var(--pur);border-color:rgba(139,110,255,.3);background:rgba(139,110,255,.07)">XR · Planes</span><div class="mh-title">D4 · XR plane ray intersection</div></div>
+        <div class="mh-desc">Intersects camera forward ray with detected floor plane. Gives the slant distance to the floor point the camera is aimed at. Combined with height (H1–H3) for geometric precision.</div>
+        <div class="mh-formula">D = h / sin(|depression|)  via floor plane  ·  ±2 cm</div>
       </div>
-      <div class="live-block">
-        <div><div class="lb-num" id="d5-num" style="color:var(--blu)">–</div><div style="font-family:var(--mn);font-size:10px;color:var(--dim)">metres</div></div>
-        <div class="lb-right">
-          <div class="lb-status" id="d5-status" style="color:var(--dim)">ML not loaded</div>
-          <div class="lb-conf-wrap"><div class="lb-conf-fill" id="d5-conf" style="width:0%;background:var(--blu)"></div></div>
-          <div class="lb-src" id="d5-src">–</div>
-        </div>
-      </div>
-      <div class="data-card">
-        <div class="data-row"><span class="dk">center disparity</span><span class="dv ml" id="d5-disp">–</span></div>
-        <div class="data-row"><span class="dk">scale factor S</span><span class="dv ml" id="d5-scale">–</span></div>
-        <div class="data-row"><span class="dk">calibration frames</span><span class="dv" id="d5-nframes">–</span></div>
-        <div class="data-row"><span class="dk">fusion weight</span><span class="dv">3</span></div>
+      <div class="lb"><div><div class="lb-n" id="d4-n" style="color:var(--pur)">–</div><div class="lb-u">m</div></div><div class="lb-r"><div class="lb-st" id="d4-st" style="color:var(--dim)">XR not started</div><div class="lb-cbar"><div class="lb-cbf" id="d4-cb" style="width:0%;background:var(--pur)"></div></div><div class="lb-src" id="d4-src">–</div></div></div>
+      <div class="dcard">
+        <div class="dr"><span class="dk">floor plane</span><span class="dv" id="d4-pl">–</span></div>
+        <div class="dr"><span class="dk">H_fused used</span><span class="dv" id="d4-h">–</span></div>
+        <div class="dr"><span class="dk">depression</span><span class="dv" id="d4-dep">–</span></div>
+        <div class="dr"><span class="dk">fusion weight</span><span class="dv">4</span></div>
       </div>
     </div>
 
-    <!-- ══ D6 ══════════════════════════════ -->
-    <div class="pg method-page" id="pg-d6">
-      <div class="method-header">
-        <div class="mh-top">
-          <span class="mh-badge" style="color:var(--blu);border-color:rgba(56,182,255,.3);background:rgba(56,182,255,.07)">ML · Tap-Measure</span>
-          <div class="mh-title">D6 · ML tap-to-measure any object</div>
-        </div>
-        <div class="mh-desc">Tap any point in the depth map visualisation below. The ML model's disparity value at that pixel is converted to metric distance using scale S. This lets you measure any object in the scene — not just what the center crosshair is pointing at.</div>
-        <div class="mh-formula">D_tap = S / tapPixelDisparity<br>tap any object in the depth view below</div>
+    <!-- ════ D5 — ML center ════ -->
+    <div class="pg" id="pg-d5">
+      <div class="mhdr">
+        <div class="mhdr-top"><span class="mh-badge" style="color:var(--blu);border-color:rgba(56,182,255,.25);background:rgba(56,182,255,.06)">ML · All Models</span><div class="mh-title">D5 · ML depth — center pixel (all models)</div></div>
+        <div class="mh-desc">All 4 ML models measure depth at the frame center — the object being pointed at. DepthPro &amp; ZoeDepth give metric metres directly. DA2-Small and DA2-Base produce relative disparity scaled by S (auto-calibrated from any XR or baro anchor).</div>
+        <div class="mh-formula">D = centerDepth (DepthPro/ZoeDepth)<br>D = S / centerDisparity (DA2 models, needs calibration)</div>
       </div>
-      <div class="live-block">
-        <div><div class="lb-num" id="d6-num" style="color:var(--blu)">–</div><div style="font-family:var(--mn);font-size:10px;color:var(--dim)">metres</div></div>
-        <div class="lb-right">
-          <div class="lb-status" id="d6-status" style="color:var(--dim)">tap an object below</div>
-          <div class="lb-conf-wrap"><div class="lb-conf-fill" id="d6-conf" style="width:0%;background:var(--blu)"></div></div>
-          <div class="lb-src" id="d6-src">–</div>
-        </div>
+      <div class="cambox">
+        <video id="vid-d5" autoplay playsinline muted></video>
+        <canvas id="cv-d5-d" class="depth-ov"></canvas>
+        <canvas id="cv-d5-a"></canvas>
+        <div class="brk tl"></div><div class="brk tr"></div><div class="brk bl"></div><div class="brk br2"></div>
+        <div class="hud br" id="d5-hud">D5=–</div>
       </div>
-      <div class="tap-hint">👆 Tap any object in the depth map to measure its distance</div>
-      <div class="depth-canvas-wrap" id="d6-cam-wrap">
-        <canvas id="cv-d6-depth"></canvas>
-        <canvas id="cv-d6-ann"></canvas>
+      <div class="legend">
+        <div class="leg"><div class="leg-d" style="background:#ff2200"></div>close</div>
+        <div class="leg"><div class="leg-d" style="background:#ffff00"></div>mid</div>
+        <div class="leg"><div class="leg-d" style="background:#0044ff"></div>far</div>
       </div>
-      <div class="data-card">
-        <div class="data-row"><span class="dk">tap point (x, y)</span><span class="dv ml" id="d6-tapxy">–</span></div>
-        <div class="data-row"><span class="dk">tap disparity</span><span class="dv ml" id="d6-tapd">–</span></div>
-        <div class="data-row"><span class="dk">scale factor S</span><span class="dv ml" id="d6-scale">–</span></div>
-        <div class="data-row"><span class="dk">fusion weight</span><span class="dv">3</span></div>
+      <div class="lb"><div><div class="lb-n" id="d5-n" style="color:var(--blu)">–</div><div class="lb-u">m</div></div><div class="lb-r"><div class="lb-st" id="d5-st" style="color:var(--dim)">–</div><div class="lb-cbar"><div class="lb-cbf" id="d5-cb" style="width:0%;background:var(--blu)"></div></div><div class="lb-src" id="d5-src">–</div></div></div>
+      <div class="dcard">
+        <div class="dr"><span class="dk">DA2-Small</span><span class="dv b" id="d5-da2s">–</span></div>
+        <div class="dr"><span class="dk">DA2-Base</span><span class="dv b" id="d5-da2b">–</span></div>
+        <div class="dr"><span class="dk">DepthPro (metric)</span><span class="dv b" id="d5-dpr">–</span></div>
+        <div class="dr"><span class="dk">ZoeDepth (metric)</span><span class="dv y" id="d5-zoe">–</span></div>
+        <div class="dr"><span class="dk">DA2-Small S</span><span class="dv" id="d5-s1">–</span></div>
+        <div class="dr"><span class="dk">DA2-Base S</span><span class="dv" id="d5-s2">–</span></div>
+        <div class="dr"><span class="dk">fusion weight</span><span class="dv">3</span></div>
       </div>
     </div>
 
-    <!-- ══ D7 ══════════════════════════════ -->
-    <div class="pg method-page" id="pg-d7">
-      <div class="method-header">
-        <div class="mh-top">
-          <span class="mh-badge" style="color:var(--grn);border-color:rgba(0,201,167,.2);background:rgba(0,201,167,.06)">Derived · Trig</span>
-          <div class="mh-title">D7 · Trigonometric  D = h / tan(|dep|)</div>
-        </div>
-        <div class="mh-desc">When camera height h is known (from H1–H6) and the camera is tilted down by depression angle dep, the horizontal floor distance to the point the camera is aimed at is h/tan(dep). This is a derived sanity-check method — it depends on h being accurate.</div>
-        <div class="mh-formula">D_floor = h_fused / tan(|depression_rad|)<br>depression = asin(−gz / |g|)  from gravity vector<br>accuracy: depends on H accuracy · fusion weight: 1.5</div>
+    <!-- ════ D6 — ML tap ════ -->
+    <div class="pg" id="pg-d6">
+      <div class="mhdr">
+        <div class="mhdr-top"><span class="mh-badge" style="color:var(--blu);border-color:rgba(56,182,255,.25);background:rgba(56,182,255,.06)">ML · Tap-Measure</span><div class="mh-title">D6 · ML tap-to-measure any object</div></div>
+        <div class="mh-desc">Tap any point in the depth map below. All models read the depth value at your exact tap point. DepthPro and ZoeDepth give direct metric. DA2 models multiply by scale S. The best available model's result becomes D6.</div>
+        <div class="mh-formula">D_tap = depth at tapped pixel  ·  tap any object below</div>
       </div>
-      <div class="live-block">
-        <div><div class="lb-num" id="d7-num" style="color:var(--grn)">–</div><div style="font-family:var(--mn);font-size:10px;color:var(--dim)">metres</div></div>
-        <div class="lb-right">
-          <div class="lb-status" id="d7-status" style="color:var(--dim)">needs H + depression</div>
-          <div class="lb-conf-wrap"><div class="lb-conf-fill" id="d7-conf" style="width:0%;background:var(--grn)"></div></div>
-          <div class="lb-src" id="d7-src">–</div>
-        </div>
+      <div style="font-family:var(--mn);font-size:8px;color:var(--blu);text-align:center;padding:4px 0 7px">👆 Tap any object in the depth view to measure it</div>
+      <div class="cambox" id="d6-cam">
+        <video id="vid-d6" autoplay playsinline muted></video>
+        <canvas id="cv-d6-d" class="depth-ov"></canvas>
+        <canvas id="cv-d6-a"></canvas>
+        <div class="brk tl"></div><div class="brk tr"></div><div class="brk bl"></div><div class="brk br2"></div>
+        <div class="hud br" id="d6-hud">tap to measure</div>
       </div>
-      <div class="data-card">
-        <div class="data-row"><span class="dk">fused height H</span><span class="dv" id="d7-h">–</span></div>
-        <div class="data-row"><span class="dk">depression angle</span><span class="dv" id="d7-dep">–</span></div>
-        <div class="data-row"><span class="dk">tan(|depression|)</span><span class="dv" id="d7-tan">–</span></div>
-        <div class="data-row"><span class="dk">gravity vector (x,y,z)</span><span class="dv" id="d7-grav">–</span></div>
+      <div class="lb"><div><div class="lb-n" id="d6-n" style="color:var(--blu)">–</div><div class="lb-u">m</div></div><div class="lb-r"><div class="lb-st" id="d6-st" style="color:var(--dim)">tap an object</div><div class="lb-cbar"><div class="lb-cbf" id="d6-cb" style="width:0%;background:var(--blu)"></div></div><div class="lb-src" id="d6-src">–</div></div></div>
+      <div class="dcard">
+        <div class="dr"><span class="dk">tap point (x%, y%)</span><span class="dv b" id="d6-xy">–</span></div>
+        <div class="dr"><span class="dk">DA2-Small at tap</span><span class="dv" id="d6-da2s">–</span></div>
+        <div class="dr"><span class="dk">DA2-Base at tap</span><span class="dv" id="d6-da2b">–</span></div>
+        <div class="dr"><span class="dk">DepthPro at tap</span><span class="dv b" id="d6-dpr">–</span></div>
+        <div class="dr"><span class="dk">ZoeDepth at tap</span><span class="dv y" id="d6-zoe">–</span></div>
+      </div>
+    </div>
+
+    <!-- ════ D7 — Trig ════ -->
+    <div class="pg" id="pg-d7">
+      <div class="mhdr">
+        <div class="mhdr-top"><span class="mh-badge" style="color:var(--grn);border-color:rgba(0,201,167,.2);background:rgba(0,201,167,.05)">Derived · Auto</span><div class="mh-title">D7 · Trigonometric  D = h/tan(|dep|)</div></div>
+        <div class="mh-desc">Cross-check method. When camera height h is known and the phone is tilted down by depression angle dep, the floor distance to the aimed-at point is h/tan(dep). Valid whenever h is accurate.</div>
+        <div class="mh-formula">D = h_fused / tan(|depression_rad|)  ·  fusion weight: 1.5</div>
+      </div>
+      <div class="lb"><div><div class="lb-n" id="d7-n" style="color:var(--grn)">–</div><div class="lb-u">m</div></div><div class="lb-r"><div class="lb-st" id="d7-st" style="color:var(--dim)">needs H + gravity</div><div class="lb-cbar"><div class="lb-cbf" id="d7-cb" style="width:0%;background:var(--grn)"></div></div><div class="lb-src" id="d7-src">–</div></div></div>
+      <div class="dcard">
+        <div class="dr"><span class="dk">fused H</span><span class="dv" id="d7-h">–</span></div>
+        <div class="dr"><span class="dk">depression</span><span class="dv" id="d7-dep">–</span></div>
+        <div class="dr"><span class="dk">gravity</span><span class="dv" id="d7-grav">–</span></div>
+        <div class="dr"><span class="dk">tan(|dep|)</span><span class="dv" id="d7-tan">–</span></div>
       </div>
     </div>
 
@@ -752,822 +619,680 @@ canvas.spk{width:100%;display:block}
 
 <script type="module">
 'use strict';
-// ════════════════════════════════════════════════════════════════
-//  AR·SENSE — Complete method implementation
-//  XR: uses inline session for pose data; camera stays as <video>
-//  No immersive-ar → no fullscreen
-// ════════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════
+//  AR·SENSE v7 — all ML models + sensors, no forced fullscreen
+//
+//  ML MODELS (all run in browser via transformers.js):
+//    da2s  Depth Anything V2-Small  ~25MB  relative → calibrated
+//    da2b  Depth Anything V2-Base   ~100MB relative → calibrated
+//    dpr   Apple DepthPro           ~300MB METRIC (metres, no calibration)
+//    zoe   ZoeDepth-NYU             ~350MB METRIC (metres, indoor)
+//
+//  HEIGHT METHODS (7):
+//    H1 XR local-floor viewer.y      ±2cm  XR required
+//    H2 XR hit-test downward         ±3cm  XR required
+//    H3 XR plane detection floor     ±2cm  XR required
+//    H4 XR hardware depth buf        ±1cm  XR+depth required
+//    H5 Barometric Δ pressure        ±0.5m Android auto
+//    H6 ML floor region avg          ~5-15% all 4 models
+//    H7 Trig h=D·sin(|dep|)          derived
+//
+//  DISTANCE METHODS (7):
+//    D1 XR hit-test forward          ±1cm  XR required
+//    D2 XR depth center pixel        ±1cm  XR+depth required
+//    D3 XR depth 5×5 grid min        ±1cm  XR+depth required
+//    D4 XR plane ray intersection    ±2cm  XR required
+//    D5 ML center pixel (all models) ~5-15% all 4 models
+//    D6 ML tap-to-measure            ~5-15% user taps
+//    D7 Trig D=h/tan(|dep|)          derived
+//
+//  FULLSCREEN NOTE:
+//    immersive-ar ALWAYS goes fullscreen — this is a browser spec
+//    requirement that cannot be circumvented. XR is an opt-in
+//    button. All non-XR methods work without fullscreen.
+// ══════════════════════════════════════════════════════════
 
-const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-const IS_ANDROID = /Android/.test(navigator.userAgent);
+const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent)&&!window.MSStream;
+const IS_AND = /Android/.test(navigator.userAgent);
 
-// ─── Global state ────────────────────────────────────────────────
+// ─── State ───────────────────────────────────────────────
 const G = {
-  // sensor
-  SF: { ax:0,ay:0,az:0, gx:0,gy:0,gz:0 },
-  depression: 0,
-  horizFrac: 0.5,
-  // height method values
-  h: { m1:null,m2:null,m3:null,m4:null,m5:null,m6:null,m7:null, fused:null, conf:0 },
-  // distance method values
-  d: { m1:null,m2:null,m3:null,m4:null,m5:null,m6:null,m7:null, fused:null, conf:0 },
-  // baro
-  baro: { p:null, p0:null },
-  // XR
-  XR: {
-    active:false, session:null, rsFloor:null, rsViewer:null,
-    hitFwd:null, hitDn:null,
-    hasDepth:false, hasPlanes:false,
-    planeCount:0, floorY:null, viewerY:null,
-    depthAvg:null, depthN:0,
-    d2raw:null, d3min:null, d3max:null,
-    viewerPos:null, hitFwdPos:null,
+  SF: {ax:0,ay:0,az:0, gx:0,gy:0,gz:0},
+  dep: 0, hFrac: 0.5,
+  baro: {p:null, p0:null},
+  h: {m1:null,m2:null,m3:null,m4:null,m5:null,m6:null,m7:null, fused:null, conf:0},
+  d: {m1:null,m2:null,m3:null,m4:null,m5:null,m6:null,m7:null, fused:null, conf:0},
+  XR: {ok:false, session:null, rsF:null, rsV:null, hitF:null, hitD:null,
+       hasDepth:false, hasPlanes:false, planeCnt:0},
+  // Per-model depth maps and results
+  M: {
+    da2s: {pipe:null, raw:null, w:0, h:0, S:null, Sh:[], infer:0, center:null, floor:null},
+    da2b: {pipe:null, raw:null, w:0, h:0, S:null, Sh:[], infer:0, center:null, floor:null},
+    dpr:  {pipe:null, raw:null, w:0, h:0, infer:0, center:null, floor:null},  // metric
+    zoe:  {pipe:null, raw:null, w:0, h:0, infer:0, center:null, floor:null},  // metric
   },
-  // ML
-  ML: {
-    loaded:false, pipe:null,
-    raw:null, w:0, h:0,
-    scale:null, scaleHist:[], calSrc:'–',
-    inferMs:0,
-    centerDisp:null, floorDisp:null,
-  },
-  // tap
-  tap: { x:-1, y:-1, disp:null },
-  // camera
-  stream: null, vidW:0, vidH:0,
-  // history
-  Hh:[], Hd:[],
+  tap: {x:-1, y:-1},
+  stream: null, Hh:[], Hd:[],
 };
 
-const $ = id => document.getElementById(id);
-const T = (id, v) => { const e=$(id); if(e) e.textContent=v; };
-const LP = (n,o,a=0.1) => o+a*(n-o);
+const $=id=>document.getElementById(id);
+const T=(id,v)=>{const e=$(id);if(e)e.textContent=v;};
+const LP=(n,o,a=0.1)=>o+a*(n-o);
 
 let _tt;
-function toast(m,d=2800){
-  const e=$('toast'); e.textContent=m; e.classList.add('show');
-  clearTimeout(_tt); _tt=setTimeout(()=>e.classList.remove('show'),d);
-}
+function toast(m,d=2800){const e=$('toast');e.textContent=m;e.classList.add('show');clearTimeout(_tt);_tt=setTimeout(()=>e.classList.remove('show'),d);}
 
-function setInit(id, state, status, sub=''){
+function setII(id, state, st, sub=''){
   const el=$(id); if(!el)return;
-  el.className='init-item '+state;
-  T(id+'-st', state==='loading'?'<span class="spin">⟳</span>':status);
-  $(id+'-st').innerHTML = state==='loading'?`<span class="spin">⟳</span> ${status}`:status;
-  if(sub){ const s=el.querySelector('.init-sub'); if(s)s.textContent=sub; }
+  el.className='ii '+state;
+  const stEl=$(id+'-st');
+  if(stEl) stEl.textContent = state==='loading'?'…':st;
+  if(sub){ const s=el.querySelector('.ii-sub'); if(s)s.textContent=sub; }
 }
 
-// ════════════════════════════════════════════════════════════════
-//  SPLASH INIT — all loading happens here
-// ════════════════════════════════════════════════════════════════
-let camOk=false, sensOk=false, xrChecked=false, mlOk=false;
-
+// ─── SPLASH INIT ─────────────────────────────────────────
 async function initAll(){
-  await initCamera();
-  await initSensors();
-  await initXR();
-  await initML();
-  checkLaunchReady();
+  await initCam();
+  initSensors();
+  checkXRCap();
+  // Load all ML models in parallel
+  await Promise.allSettled([loadModel('da2s'),loadModel('da2b'),loadModel('dpr'),loadModel('zoe')]);
+  $('launch').disabled=false;
 }
 
-function checkLaunchReady(){
-  // Can launch if camera is OK (minimum requirement)
-  if(camOk){
-    $('launch-btn').disabled=false;
-  }
-}
-
-// ─── Camera ─────────────────────────────────────────────────────
-window.initCamera = async function(){
-  setInit('init-cam','loading','requesting…');
+window.initCam = async function(){
+  setII('ii-cam','loading','loading');
   try{
-    G.stream = await navigator.mediaDevices.getUserMedia({
-      video:{ facingMode:{ideal:'environment'}, width:{ideal:1280}, height:{ideal:720} }
+    G.stream=await navigator.mediaDevices.getUserMedia({
+      video:{facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:720}}
     });
-    // Attach to all video elements
-    document.querySelectorAll('video').forEach(v=>{ v.srcObject=G.stream; v.play().catch(()=>{}); });
-    $('cam-ph').classList.add('gone');
-    camOk=true;
-    setInit('init-cam','ok','✓ ready','');
-    checkLaunchReady();
-  } catch(e){
-    camOk=false;
-    setInit('init-cam','fail','✗ '+e.message,'Check camera permissions');
+    document.querySelectorAll('video').forEach(v=>{v.srcObject=G.stream;v.play().catch(()=>{});});
+    $('nocam').classList.add('gone');
+    setII('ii-cam','ok','✓ ready');
+  }catch(e){
+    setII('ii-cam','fail','✗ '+e.message.slice(0,30),'Check camera permissions');
   }
 };
 
-// ─── Sensors ────────────────────────────────────────────────────
-window.initSensors = async function(){
-  setInit('init-sens','loading','starting…');
+function initSensors(){
+  setII('ii-sens','loading','starting');
   let got=[];
-
-  if(IS_IOS && typeof DeviceOrientationEvent?.requestPermission==='function'){
-    try{ await DeviceOrientationEvent.requestPermission(); }catch{}
+  if(IS_IOS&&typeof DeviceOrientationEvent?.requestPermission==='function'){
+    document.addEventListener('click',()=>DeviceOrientationEvent.requestPermission().catch(()=>{}),{once:true});
   }
-
   if(typeof DeviceMotionEvent!=='undefined'){
-    window.addEventListener('devicemotion',onMotion,true);
-    got.push('motion');
+    window.addEventListener('devicemotion',onMotion,true); got.push('motion');
   }
   if(typeof GravitySensor!=='undefined'){
-    try{
-      const gs=new GravitySensor({frequency:30});
-      gs.onreading=()=>{
-        G.SF.gx=LP(gs.x,G.SF.gx,0.08);
-        G.SF.gy=LP(gs.y,G.SF.gy,0.08);
-        G.SF.gz=LP(gs.z,G.SF.gz,0.08);
-        updateDep();
-      };
-      gs.start(); got.push('gravity');
-    }catch{}
+    try{const gs=new GravitySensor({frequency:30});gs.onreading=()=>{G.SF.gx=LP(gs.x,G.SF.gx,.08);G.SF.gy=LP(gs.y,G.SF.gy,.08);G.SF.gz=LP(gs.z,G.SF.gz,.08);updateDep();};gs.start();got.push('gravity');}catch{}
   }
   if(typeof AbsolutePressureSensor!=='undefined'){
     try{
       const b=new AbsolutePressureSensor({frequency:1});
       b.onreading=()=>{
-        const p=b.pressure;
-        if(G.baro.p0===null) G.baro.p0=p;
-        G.baro.p=p;
-        G.h.m5=44330*(1-Math.pow(p/G.baro.p0,0.1903));
-        T('h5-p',p.toFixed(2));
-        if(G.baro.p0) T('h5-p0',G.baro.p0.toFixed(2));
-        T('h5-api','✓ active');
-        $('h5-api').className='dv ok';
-        setInit('init-sens','ok','✓ sensors + baro');
-        fuseTick();
+        if(G.baro.p0===null)G.baro.p0=b.pressure;
+        G.baro.p=b.pressure;
+        G.h.m5=44330*(1-Math.pow(b.pressure/G.baro.p0,0.1903));
+        T('h5-p',b.pressure.toFixed(2)); T('h5-p0',G.baro.p0.toFixed(2));
+        T('h5-api','✓'); $('h5-api').className='dv g';
+        $('p-baro').textContent='BARO✓'; $('p-baro').className='t-pill on-baro';
+        setII('ii-sens','ok','✓ +baro');
+        tick();
       };
       b.start(); got.push('baro');
     }catch{}
   }
-
-  await new Promise(r=>setTimeout(r,400));
-  sensOk=got.length>0;
-  if(got.includes('baro')) setInit('init-sens','ok','✓ '+got.join(' + '));
-  else if(sensOk) setInit('init-sens','ok','✓ '+got.join(' + '));
-  else setInit('init-sens','fail','✗ no sensors','Limited accuracy');
-  checkLaunchReady();
-};
+  setTimeout(()=>{
+    if(got.length) setII('ii-sens','ok','✓ '+got.join('+'));
+    else setII('ii-sens','fail','no sensors','Gravity/trig methods won\'t work');
+  },600);
+}
 
 function onMotion(e){
   const a=e.accelerationIncludingGravity;
-  if(a?.x!=null){
-    G.SF.ax=LP(a.x,G.SF.ax); G.SF.ay=LP(a.y,G.SF.ay); G.SF.az=LP(a.z,G.SF.az);
-    if(!G.SF.gx) updateDep(); // use accel as gravity proxy if no GravitySensor
-  }
+  if(a?.x!=null){G.SF.ax=LP(a.x,G.SF.ax);G.SF.ay=LP(a.y,G.SF.ay);G.SF.az=LP(a.z,G.SF.az);}
+  if(!G.SF.gx)updateDep();
 }
 function updateDep(){
-  const gx=G.SF.gx||G.SF.ax, gy=G.SF.gy||G.SF.ay, gz=G.SF.gz||G.SF.az;
+  const gx=G.SF.gx||G.SF.ax,gy=G.SF.gy||G.SF.ay,gz=G.SF.gz||G.SF.az;
   const gm=Math.sqrt(gx*gx+gy*gy+gz*gz);
-  if(gm>0.5&&!G.XR.active){
-    G.depression=Math.asin(Math.max(-1,Math.min(1,-gz/gm)))*180/Math.PI;
-    G.horizFrac=Math.max(0.02,Math.min(0.98,0.5-G.depression/60));
+  if(gm>0.5&&!G.XR.session){
+    G.dep=Math.asin(Math.max(-1,Math.min(1,-gz/gm)))*180/Math.PI;
+    G.hFrac=Math.max(.02,Math.min(.98,.5-G.dep/60));
   }
-  fuseTick();
+  tick();
 }
 
-// ─── WebXR — INLINE session (no fullscreen) ──────────────────────
-window.initXR = async function(){
-  setInit('init-xr','loading','checking support…');
-  if(!navigator.xr){
-    xrChecked=true;
-    setInit('init-xr','skip','✗ not supported','H1-H4, D1-D4 unavailable');
-    return;
+// ─── XR capability check ─────────────────────────────────
+async function checkXRCap(){
+  if(!navigator.xr){G.XR.ok=false;return;}
+  try{G.XR.ok=await navigator.xr.isSessionSupported('immersive-ar');}catch{}
+  if(!G.XR.ok){
+    $('xr-btn').textContent='NO XR'; $('xr-btn').className='xr-go-btn na'; $('xr-btn').disabled=true;
+    document.querySelectorAll('[id^=xr-btn-]').forEach(b=>{b.textContent='NO XR';b.className='xr-go-btn na';b.disabled=true;});
   }
-  // Try inline first (no fullscreen), then immersive-ar with dom-overlay
-  let supported=false;
-  try{ supported=await navigator.xr.isSessionSupported('immersive-ar'); }catch{}
-  if(!supported){
-    xrChecked=true;
-    setInit('init-xr','skip','✗ immersive-ar not supported');
-    return;
-  }
-  // Don't actually start the session yet — start on launch so we have the
-  // user gesture. Just flag it's available.
-  xrChecked=true;
-  G.caps_xr=true;
-  G.caps_depth=IS_ANDROID&&/Chrome/.test(navigator.userAgent);
-  G.caps_planes=G.caps_depth;
-  setInit('init-xr','ok','✓ available — starts on launch');
-  checkLaunchReady();
+  G.XR.hasDepth=IS_AND&&/Chrome/.test(navigator.userAgent);
+  G.XR.hasPlanes=G.XR.hasDepth;
+}
+
+// ─── ML model loading ────────────────────────────────────
+const MODEL_CFGS={
+  da2s:{id:'onnx-community/depth-anything-v2-small',task:'depth-estimation',metric:false,color:getComputedStyle(document.documentElement).getPropertyValue('--blu').trim()},
+  da2b:{id:'onnx-community/depth-anything-v2-base',task:'depth-estimation',metric:false,color:'#38b6ff'},
+  dpr: {id:'onnx-community/DepthPro-ONNX',task:'depth-estimation',metric:true,color:'#ff7c42',
+        useAutoModel:true},
+  zoe: {id:'Xenova/zoedepth-nyu',task:'depth-estimation',metric:true,color:'#f0c030'},
 };
 
-async function startXRSession(){
-  if(!G.caps_xr||G.XR.session) return;
-  const init={
-    requiredFeatures:['local-floor','hit-test'],
-    optionalFeatures:['plane-detection','depth-sensing','anchors'],
-  };
-  // dom-overlay: our HTML overlays the XR camera view; prevents fullscreen takeover
-  try{ init.domOverlay={root:document.getElementById('app')}; }catch{}
-  if(G.caps_depth) init.depthSensing={usagePreference:['cpu-optimized'],dataFormatPreference:['luminance-alpha']};
+window.loadModel=async function(key){
+  const cfg=MODEL_CFGS[key]; if(!cfg)return;
+  const iiId='ii-'+key;
+  setII(iiId,'loading','loading');
   try{
-    const sess=await navigator.xr.requestSession('immersive-ar',init);
-    G.XR.session=sess; G.XR.active=true;
-    $('pill-xr').textContent='XR●'; $('pill-xr').className='t-pill xr';
-    T('si-xr-st','active');
-
-    G.XR.rsFloor=await sess.requestReferenceSpace('local-floor');
-    G.XR.rsViewer=await sess.requestReferenceSpace('viewer');
-    G.XR.hitFwd=await sess.requestHitTestSource({space:G.XR.rsViewer,entityTypes:['plane','point','mesh']}).catch(()=>null);
-    G.XR.hitDn=await sess.requestHitTestSource({space:G.XR.rsViewer,entityTypes:['plane']}).catch(()=>null);
-
-    // Minimal GL layer (required by spec but we don't render anything)
-    const oc=document.createElement('canvas');
-    const gl=oc.getContext('webgl');
-    if(gl){ try{await gl.makeXRCompatible?.();}catch{} sess.updateRenderState({baseLayer:new XRWebGLLayer(sess,gl)}); }
-
-    sess.addEventListener('end',()=>{
-      G.XR.active=false;
-      $('pill-xr').textContent='XR–'; $('pill-xr').className='t-pill';
-      ['h1','h2','h3','h4','d1','d2','d3','d4'].forEach(k=>G.h['m'+k[1]]===null);
-    });
-    sess.requestAnimationFrame(xrTick);
-    toast('WebXR active');
-    ['h1','h2','h3','h4'].forEach(k=>{ T(k+'-xr-st','active'); T(k+'-status','XR live'); });
-    ['d1','d2','d3','d4'].forEach(k=>{ T(k+'-hit-st','active'); T(k+'-status','XR live'); });
-  } catch(e){
-    G.XR.active=false;
-    toast('XR failed: '+e.message,4000);
-  }
-}
-
-function xrTick(t,frame){
-  if(!G.XR.active)return;
-  G.XR.session.requestAnimationFrame(xrTick);
-  const rs=G.XR.rsFloor;
-  try{
-    const vp=frame.getViewerPose(rs);
-    if(vp){
-      const pos=vp.transform.position;
-      G.XR.viewerY=pos.y; G.XR.viewerPos={x:pos.x,y:pos.y,z:pos.z};
-
-      // H1
-      G.h.m1=pos.y;
-      T('h1-raw',pos.y.toFixed(4)+'m'); T('h1-rs','local-floor'); T('h1-xr-st','active');
-      T('h1-status','live'); T('h1-src','XR SLAM');
-
-      // Depression from XR quaternion
-      const{x:qx,y:qy,z:qz,w:qw}=vp.transform.orientation;
-      G.depression=-Math.asin(Math.max(-1,Math.min(1,2*(qy*qz-qw*qx))))*180/Math.PI;
-      G.horizFrac=Math.max(0.02,Math.min(0.98,0.5-G.depression/60));
-
-      // H2 / D1 — hit-test forward
-      if(G.XR.hitFwd){
-        const hits=frame.getHitTestResults(G.XR.hitFwd);
-        if(hits.length>0){
-          const hp=hits[0].getPose(rs);
-          if(hp){
-            const h=hp.transform.position;
-            G.XR.hitFwdPos={x:h.x,y:h.y,z:h.z};
-            const D=Math.sqrt((pos.x-h.x)**2+(pos.y-h.y)**2+(pos.z-h.z)**2);
-            G.d.m1=D;
-            T('d1-vpos',`${pos.x.toFixed(2)},${pos.y.toFixed(2)},${pos.z.toFixed(2)}`);
-            T('d1-hpos',`${h.x.toFixed(2)},${h.y.toFixed(2)},${h.z.toFixed(2)}`);
-            T('d1-hit-st','active'); T('d1-status','live'); T('d1-src','XR SLAM');
-          }
-        }
-      }
-      if(G.XR.hitDn){
-        const hits=frame.getHitTestResults(G.XR.hitDn);
-        if(hits.length>0){
-          const hp=hits[0].getPose(rs);
-          if(hp){
-            G.h.m2=pos.y-hp.transform.position.y;
-            T('h2-vy',pos.y.toFixed(4)); T('h2-hy',hp.transform.position.y.toFixed(4));
-            T('h2-hit-st','active'); T('h2-status','live'); T('h2-src','XR hit-test');
-          }
-        }
-      }
-      // H3 / D4 — planes
-      if(frame.detectedPlanes){
-        const planes=[];
-        frame.detectedPlanes.forEach(pl=>{
-          try{ const pose=frame.getPose(pl.planeSpace,rs); if(pose) planes.push({o:pl.orientation,y:pose.transform.position.y}); }catch{}
-        });
-        G.XR.planeCount=planes.length;
-        T('h3-planes',planes.length+' detected');
-        const horiz=planes.filter(p=>p.o==='horizontal').sort((a,b)=>a.y-b.y);
-        if(horiz.length>0){
-          G.XR.floorY=horiz[0].y;
-          G.h.m3=pos.y-horiz[0].y;
-          T('h3-floory',horiz[0].y.toFixed(4)); T('h3-viewy',pos.y.toFixed(4));
-          T('h3-status','live'); T('h3-src','XR planes');
-          // D4
-          const dRad=G.depression*Math.PI/180, dY=G.h.m3;
-          if(dY>0&&Math.abs(G.depression)>0.5){
-            G.d.m4=Math.sqrt((dY/Math.tan(Math.abs(dRad)))**2+dY**2);
-            T('d4-pl','yes'); T('d4-h',(G.h.fused||G.h.m3).toFixed(3));
-            T('d4-dep',G.depression.toFixed(2)+'°'); T('d4-status','live'); T('d4-src','XR plane×ray');
-          }
-        }
-      }
-      // H4 / D2 / D3 — depth sensing
-      if(G.caps_depth){
-        for(const view of vp.views){
-          try{
-            const di=frame.getDepthInformation?.(view); if(!di)continue;
-            T('h4-dep-av','yes'); $('h4-dep-av').className='dv ok';
-            T('d2-av','yes'); $('d2-av').className='dv ok';
-            // D2: center pixel
-            const dc=di.getDepthInMeters(0.5,0.5);
-            if(dc>0){ G.d.m2=dc; G.XR.d2raw=dc; T('d2-raw',dc.toFixed(4)+'m'); T('d2-status','live'); }
-            // D3: 5×5 grid
-            let mn=Infinity,mx=0;
-            for(let gx=.3;gx<=.7;gx+=.1)for(let gy=.3;gy<=.7;gy+=.1){
-              try{ const v=di.getDepthInMeters(gx,gy); if(v>0){if(v<mn)mn=v;if(v>mx)mx=v;} }catch{}
-            }
-            if(mn<Infinity){ G.d.m3=mn; T('d3-min',mn.toFixed(4)+'m'); T('d3-max',mx.toFixed(4)+'m'); T('d3-status','live'); }
-            // H4: bottom rows
-            let fs=0,fn=0;
-            for(let bx=.2;bx<=.8;bx+=.1)for(let by=.85;by<=.98;by+=.04){
-              try{ const v=di.getDepthInMeters(bx,by); if(v>0){fs+=v;fn++;} }catch{}
-            }
-            if(fn>0){
-              G.h.m4=(fs/fn)*Math.cos(30*Math.PI/180); G.XR.depthAvg=fs/fn; G.XR.depthN=fn;
-              T('h4-avg',(fs/fn).toFixed(4)+'m'); T('h4-n',fn); T('h4-status','live');
-            }
-          }catch{}
-        }
-      }
-      calibrateML();
-    }
-  }catch(err){ console.warn('xrTick',err); }
-  fuseTick();
-}
-
-// ─── ML: Depth Anything V2 ────────────────────────────────────────
-window.initML = async function(){
-  setInit('init-ml','loading','loading…');
-  $('init-ml').querySelector('.ml-bar-wrap').style.display='block';
-  try{
-    const{pipeline,env}=await import('https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.3.3/dist/transformers.min.js');
+    const{pipeline,env,AutoModelForDepthEstimation,AutoProcessor,RawImage}=
+      await import('https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.3.3/dist/transformers.min.js');
     env.allowLocalModels=false;
     const device=navigator.gpu?'webgpu':'wasm';
-    T('init-ml-sub',`Downloading model (${device.toUpperCase()})…`);
-    G.ML.pipe=await pipeline('depth-estimation','onnx-community/depth-anything-v2-small',{
-      device,
-      progress_callback:(info)=>{
-        if(info.status==='progress'&&info.total){
-          const pct=Math.round(info.loaded/info.total*100);
-          $('ml-fill').style.width=pct+'%';
-          T('ml-pct',pct+'%');
-          T('init-ml-sub',(info.file||'weights')+' — '+pct+'%');
-        }
+    const prog=(info)=>{
+      if(info.status==='progress'&&info.total){
+        const pct=Math.round(info.loaded/info.total*100);
+        const fill=$('pf-'+key); if(fill)fill.style.width=pct+'%';
+        T('pp-'+key,pct+'%');
+        T(iiId+'-sub',(info.file||'').split('/').pop()+' — '+pct+'%');
       }
-    });
-    G.ML.loaded=true;
-    mlOk=true;
-    setInit('init-ml','ok','✓ ready  ('+device.toUpperCase()+')','Depth Anything V2-Small');
-    $('pill-ml').textContent='ML●'; $('pill-ml').className='t-pill ml';
-    T('h6-model','depth-anything-v2-small  ('+device.toUpperCase()+')'); $('h6-model').className='dv ml';
-    checkLaunchReady();
-    startMLLoop();
+    };
+    if(cfg.useAutoModel){
+      // DepthPro uses AutoModel API
+      const processor=await AutoProcessor.from_pretrained(cfg.id,{progress_callback:prog});
+      const model=await AutoModelForDepthEstimation.from_pretrained(cfg.id,{dtype:'q4',device,progress_callback:prog});
+      G.M[key].pipe={type:'auto',processor,model,RawImage};
+    } else {
+      G.M[key].pipe=await pipeline(cfg.task,cfg.id,{device,progress_callback:prog});
+    }
+    setII(iiId,'ok','✓ '+device.toUpperCase());
+    if($('p-ml').textContent==='ML–'){$('p-ml').textContent='ML✓';$('p-ml').className='t-pill on-xr';}
+    startModelLoop(key);
   }catch(e){
-    mlOk=false;
-    setInit('init-ml','fail','✗ '+e.message,'Retry to try again');
+    setII(iiId,'fail','✗ '+e.message.slice(0,40));
   }
 };
 
-let mlLooping=false;
-function startMLLoop(){
-  if(mlLooping||!G.ML.loaded)return;
-  mlLooping=true;
+// ─── Per-model inference loop ────────────────────────────
+const looping={};
+function startModelLoop(key){
+  if(looping[key])return; looping[key]=true;
+  const m=G.M[key];
   (async()=>{
     const vid=$('vid');
-    while(G.ML.loaded){
+    while(m.pipe){
       if(vid.readyState>=2&&vid.videoWidth>0){
         try{
           const t0=performance.now();
-          const result=await G.ML.pipe(vid);
-          G.ML.inferMs=performance.now()-t0;
-          if(result?.depth) processMLDepth(result.depth);
-        }catch{}
+          let raw,w,h;
+          if(m.pipe.type==='auto'){
+            // DepthPro
+            const{processor,model,RawImage}=m.pipe;
+            const img=await RawImage.fromBlob(await vidToBlob(vid));
+            const inputs=await processor(img);
+            const{predicted_depth}=await model(inputs);
+            raw=new Float32Array(predicted_depth.data);
+            w=predicted_depth.dims[predicted_depth.dims.length-1];
+            h=predicted_depth.dims[predicted_depth.dims.length-2];
+          } else {
+            const result=await m.pipe(vid);
+            if(!result?.depth)continue;
+            const dep=result.depth;
+            raw=dep.data instanceof Float32Array?dep.data:(()=>{const f=new Float32Array(dep.data.length);for(let i=0;i<dep.data.length;i++)f[i]=dep.data[i]/255;return f;})();
+            w=dep.width; h=dep.height;
+          }
+          m.raw=raw; m.w=w; m.h=h; m.infer=performance.now()-t0;
+          processModelOutput(key,raw,w,h);
+        }catch(e){console.warn(key,e.message);}
       }
-      await new Promise(r=>setTimeout(r,200));
+      await new Promise(r=>setTimeout(r,key==='da2b'||key==='dpr'||key==='zoe'?500:200));
     }
-    mlLooping=false;
+    looping[key]=false;
   })();
 }
 
-function processMLDepth(dep){
-  const{data,width,height}=dep;
-  const n=data.length;
-  // Normalise to float 0..1
-  let raw;
-  if(data instanceof Float32Array){ raw=data; }
-  else{ raw=new Float32Array(n); for(let i=0;i<n;i++) raw[i]=data[i]/255; }
-  G.ML.raw=raw; G.ML.w=width; G.ML.h=height;
+async function vidToBlob(vid){
+  const c=document.createElement('canvas');
+  c.width=vid.videoWidth; c.height=vid.videoHeight;
+  c.getContext('2d').drawImage(vid,0,0);
+  return new Promise(r=>c.toBlob(r,'image/jpeg',.8));
+}
 
-  // Center pixel disparity
-  const cx=Math.floor(width/2), cy=Math.floor(height/2);
-  G.ML.centerDisp=raw[cy*width+cx];
+function processModelOutput(key,raw,w,h){
+  const m=G.M[key];
+  const cx=Math.floor(w/2),cy=Math.floor(h/2);
+  const cval=raw[cy*w+cx];
+  let fs=0,fn=0;
+  const ys=Math.floor(h*.85);
+  for(let y=ys;y<h;y++)for(let x=0;x<w;x++){fs+=raw[y*w+x];fn++;}
+  const fval=fn>0?fs/fn:null;
 
-  // Floor region (bottom 15%)
-  let fs=0,fn=0,ys=Math.floor(height*0.85);
-  for(let y=ys;y<height;y++) for(let x=0;x<width;x++){fs+=raw[y*width+x];fn++;}
-  G.ML.floorDisp=fn>0?fs/fn:null;
+  const metric=MODEL_CFGS[key].metric;
+  if(metric){
+    // DepthPro and ZoeDepth: raw values ARE metric metres
+    m.center=cval>0?cval:null;
+    m.floor=fval&&fval>0?fval:null;
+  } else {
+    // DA2: relative disparity, 1=near 0=far, need scale S
+    m.center=cval;
+    m.floor=fval;
+    calibrateScale(key,raw,w,h);
+  }
 
-  // Apply scale
-  if(G.ML.scale!==null){
-    if(G.ML.centerDisp>0.01){ G.d.m5=G.ML.scale/G.ML.centerDisp; }
-    if(G.ML.floorDisp&&G.ML.floorDisp>0.01){ G.h.m6=G.ML.scale/G.ML.floorDisp; }
-    // Tap
-    if(G.tap.x>=0){
-      const tx=Math.floor(G.tap.x*width), ty=Math.floor(G.tap.y*height);
-      const ti=Math.max(0,Math.min(n-1,ty*width+tx));
-      G.tap.disp=raw[ti];
-      if(G.tap.disp>0.01) G.d.m6=G.ML.scale/G.tap.disp;
+  renderDepthOverlay(key,raw,w,h);
+  updateMLValues();
+  tick();
+}
+
+function calibrateScale(key,raw,w,h){
+  const m=G.M[key];
+  if(!raw)return;
+  const cx=Math.floor(w/2),cy=Math.floor(h/2);
+  const cval=raw[cy*w+cx];
+  if(cval<0.01)return;
+  let anchor=null,src='';
+  if(G.d.m1!=null){anchor=G.d.m1;src='XR-hit';}
+  else if(G.d.m2!=null){anchor=G.d.m2;src='XR-dep';}
+  else if(G.h.m1!=null&&Math.abs(G.dep)>2){anchor=G.h.m1/Math.abs(Math.sin(G.dep*Math.PI/180));src='XR-h+dep';}
+  else if(G.h.m5!=null&&Math.abs(G.h.m5)>.1){anchor=Math.abs(G.h.m5)+1.3;src='baro';}
+  // Use metric ML as calibrator if available
+  const dprC=G.M.dpr?.center; const zoeC=G.M.zoe?.center;
+  if(!anchor&&dprC&&dprC>0.1){anchor=dprC;src='DepthPro';}
+  if(!anchor&&zoeC&&zoeC>0.1){anchor=zoeC;src='ZoeDepth';}
+  if(!anchor)return;
+  m.Sh.push(anchor*cval);
+  if(m.Sh.length>40)m.Sh.shift();
+  const sorted=[...m.Sh].sort((a,b)=>a-b);
+  m.S=sorted[Math.floor(sorted.length/2)];
+}
+
+function updateMLValues(){
+  // H6 and D5: pick best available ML value
+  const candidates_h=[], candidates_d=[];
+  for(const [k,m] of Object.entries(G.M)){
+    const metric=MODEL_CFGS[k].metric;
+    if(metric){
+      if(m.floor&&m.floor>0) candidates_h.push({v:m.floor,w:k==='dpr'?4:3});
+      if(m.center&&m.center>0) candidates_d.push({v:m.center,w:k==='dpr'?4:3});
+    } else if(m.S){
+      if(m.floor&&m.floor>0.01) candidates_h.push({v:m.S/m.floor,w:2});
+      if(m.center&&m.center>0.01) candidates_d.push({v:m.S/m.center,w:2});
     }
   }
-
-  // Update method tabs
-  const S=G.ML.scale;
-  T('h6-disp',G.ML.floorDisp?G.ML.floorDisp.toFixed(4):'–');
-  T('h6-scale',S?S.toFixed(5):'uncalibrated');
-  T('h6-inf',G.ML.inferMs.toFixed(0)+'ms ('+(1000/G.ML.inferMs).toFixed(1)+' fps)');
-  T('h6-status',G.h.m6?'live':'needs calibration');
-  T('d5-disp',G.ML.centerDisp.toFixed(4));
-  T('d5-scale',S?S.toFixed(5):'uncalibrated');
-  T('d5-nframes',G.ML.scaleHist.length);
-  T('d5-status',G.d.m5?'live':'needs calibration');
+  if(candidates_h.length){
+    const ws=candidates_h.reduce((s,x)=>s+x.w,0);
+    G.h.m6=candidates_h.reduce((s,x)=>s+x.v*x.w,0)/ws;
+  }
+  if(candidates_d.length){
+    const ws=candidates_d.reduce((s,x)=>s+x.w,0);
+    G.d.m5=candidates_d.reduce((s,x)=>s+x.v*x.w,0)/ws;
+  }
+  // D6 tap
   if(G.tap.x>=0){
-    T('d6-tapxy',`(${(G.tap.x*100).toFixed(0)}%, ${(G.tap.y*100).toFixed(0)}%)`);
-    T('d6-tapd',G.tap.disp?G.tap.disp.toFixed(4):'–');
-    T('d6-scale',S?S.toFixed(5):'–');
-    T('d6-status',G.d.m6?G.d.m6.toFixed(3)+'m':'needs calibration');
+    const tapCands=[];
+    for(const [k,m] of Object.entries(G.M)){
+      if(!m.raw)continue;
+      const tx=Math.floor(G.tap.x*m.w),ty=Math.floor(G.tap.y*m.h);
+      const tval=m.raw[Math.max(0,Math.min(m.raw.length-1,ty*m.w+tx))];
+      const metric=MODEL_CFGS[k].metric;
+      let v=null;
+      if(metric&&tval>0) v=tval;
+      else if(m.S&&tval>0.01) v=m.S/tval;
+      if(v) tapCands.push({v,w:MODEL_CFGS[k].metric?4:2,k});
+      // Update per-model tap display
+      T('d6-'+k, v?v.toFixed(3)+'m':'–');
+    }
+    if(tapCands.length){
+      const ws=tapCands.reduce((s,x)=>s+x.w,0);
+      G.d.m6=tapCands.reduce((s,x)=>s+x.v*x.w,0)/ws;
+    }
   }
-
-  // Render depth visualisations
-  renderDepthCanvas('cv-h6-depth','cv-h6-ann',raw,width,height);
-  renderDepthCanvas('cv-d6-depth','cv-d6-ann',raw,width,height,true);
-  fuseTick();
 }
 
-function calibrateML(){
-  if(!G.ML.loaded||!G.ML.raw||!G.ML.centerDisp||G.ML.centerDisp<0.01)return;
-  let anchor=null, src='–';
-  if(G.d.m1!=null){anchor=G.d.m1;src='XR hit-fwd';}
-  else if(G.d.m2!=null){anchor=G.d.m2;src='XR depth-ctr';}
-  else if(G.h.m1!=null&&Math.abs(G.depression)>2){
-    anchor=G.h.m1/Math.abs(Math.sin(G.depression*Math.PI/180)); src='XR height+dep';
+// ─── XR session ──────────────────────────────────────────
+let xrActive=false;
+window.toggleXR=async function(){
+  if(xrActive){
+    if(G.XR.session){try{await G.XR.session.end();}catch{}}
+    return;
   }
-  else if(G.h.m5!=null&&Math.abs(G.h.m5)>0.1){
-    anchor=Math.abs(G.h.m5)+1.3; src='baro+offset';
+  if(!G.XR.ok){toast('WebXR not supported');return;}
+  toast('Starting WebXR — screen will go fullscreen briefly');
+  const init={
+    requiredFeatures:['local-floor','hit-test'],
+    optionalFeatures:['plane-detection','depth-sensing'],
+  };
+  if(G.XR.hasDepth) init.depthSensing={usagePreference:['cpu-optimized'],dataFormatPreference:['luminance-alpha']};
+  try{
+    G.XR.session=await navigator.xr.requestSession('immersive-ar',init);
+    xrActive=true;
+    $('p-xr').textContent='XR●'; $('p-xr').className='t-pill on-xr';
+    document.querySelectorAll('[id^=xr-btn]').forEach(b=>{b.textContent='STOP XR';b.className='xr-go-btn active';});
+    T('lv-xr','active');
+    G.XR.rsF=await G.XR.session.requestReferenceSpace('local-floor');
+    G.XR.rsV=await G.XR.session.requestReferenceSpace('viewer');
+    G.XR.hitF=await G.XR.session.requestHitTestSource({space:G.XR.rsV,entityTypes:['plane','point','mesh']}).catch(()=>null);
+    G.XR.hitD=await G.XR.session.requestHitTestSource({space:G.XR.rsV,entityTypes:['plane']}).catch(()=>null);
+    const oc=document.createElement('canvas'),gl=oc.getContext('webgl');
+    if(gl){try{await gl.makeXRCompatible?.();}catch{}G.XR.session.updateRenderState({baseLayer:new XRWebGLLayer(G.XR.session,gl)});}
+    G.XR.session.addEventListener('end',()=>{
+      xrActive=false; G.XR.session=null;
+      $('p-xr').textContent='XR–'; $('p-xr').className='t-pill';
+      document.querySelectorAll('[id^=xr-btn]').forEach(b=>{b.textContent='START XR';b.className='xr-go-btn';});
+      T('lv-xr','ended');
+      ['m1','m2','m3','m4'].forEach(k=>{G.h[k]=null;G.d[k]=null;});
+    });
+    G.XR.session.requestAnimationFrame(xrTick);
+  }catch(e){
+    xrActive=false; G.XR.session=null;
+    toast('XR failed: '+e.message,4000);
   }
-  if(!anchor||anchor<0.05)return;
-  const newS=anchor*G.ML.centerDisp;
-  G.ML.scaleHist.push(newS);
-  if(G.ML.scaleHist.length>30) G.ML.scaleHist.shift();
-  const sorted=[...G.ML.scaleHist].sort((a,b)=>a-b);
-  G.ML.scale=sorted[Math.floor(sorted.length/2)];
-  G.ML.calSrc=src;
-  T('lv-scale','S='+G.ML.scale.toFixed(5)+'  src:'+src);
-  T('h6-cal-src',src);
-  T('h6-scale',G.ML.scale.toFixed(5)); $('h6-scale').className='dv ml';
-  T('fi-scale-src',src);
+};
+
+function xrTick(t,frame){
+  if(!xrActive)return;
+  G.XR.session.requestAnimationFrame(xrTick);
+  try{
+    const vp=frame.getViewerPose(G.XR.rsF);
+    if(vp){
+      const pos=vp.transform.position;
+      G.h.m1=pos.y; T('h1-raw',pos.y.toFixed(4)); T('h1-rs','local-floor'); T('h1-st','live'); T('h1-xrst','active');
+      const{x:qx,y:qy,z:qz,w:qw}=vp.transform.orientation;
+      G.dep=-Math.asin(Math.max(-1,Math.min(1,2*(qy*qz-qw*qx))))*180/Math.PI;
+      G.hFrac=Math.max(.02,Math.min(.98,.5-G.dep/60));
+      // D1
+      if(G.XR.hitF){
+        const hits=frame.getHitTestResults(G.XR.hitF);
+        if(hits.length>0){const hp=hits[0].getPose(G.XR.rsF);if(hp){const h=hp.transform.position;G.d.m1=Math.sqrt((pos.x-h.x)**2+(pos.y-h.y)**2+(pos.z-h.z)**2);T('d1-vp',`${pos.x.toFixed(2)},${pos.y.toFixed(2)},${pos.z.toFixed(2)}`);T('d1-hp',`${h.x.toFixed(2)},${h.y.toFixed(2)},${h.z.toFixed(2)}`);T('d1-st','live');}}
+      }
+      // H2
+      if(G.XR.hitD){
+        const hits=frame.getHitTestResults(G.XR.hitD);
+        if(hits.length>0){const hp=hits[0].getPose(G.XR.rsF);if(hp){G.h.m2=pos.y-hp.transform.position.y;T('h2-vy',pos.y.toFixed(4));T('h2-hy',hp.transform.position.y.toFixed(4));T('h2-st','live');}}
+      }
+      // H3/D4 planes
+      if(frame.detectedPlanes){
+        const planes=[];
+        frame.detectedPlanes.forEach(pl=>{try{const pose=frame.getPose(pl.planeSpace,G.XR.rsF);if(pose)planes.push({o:pl.orientation,y:pose.transform.position.y});}catch{}});
+        G.XR.planeCnt=planes.length; T('h3-plcnt',planes.length);
+        const horiz=planes.filter(p=>p.o==='horizontal').sort((a,b)=>a.y-b.y);
+        if(horiz.length>0){G.h.m3=pos.y-horiz[0].y;T('h3-fy',horiz[0].y.toFixed(4));T('h3-vy',pos.y.toFixed(4));T('h3-st','live');const dRad=G.dep*Math.PI/180,dY=G.h.m3;if(dY>0&&Math.abs(G.dep)>.5){G.d.m4=Math.sqrt((dY/Math.tan(Math.abs(dRad)))**2+dY**2);T('d4-pl','yes');T('d4-st','live');}}
+      }
+      // H4/D2/D3 depth
+      if(G.XR.hasDepth){
+        for(const view of vp.views){try{const di=frame.getDepthInformation?.(view);if(!di)continue;T('h4-av','yes (hardware depth)');$('h4-av').className='dv g';T('d2-av','yes');$('d2-av').className='dv g';const dc=di.getDepthInMeters(.5,.5);if(dc>0){G.d.m2=dc;T('d2-raw',dc.toFixed(4)+'m');T('d2-st','live');}let mn=Infinity,mx=0;for(let gx=.3;gx<=.7;gx+=.1)for(let gy=.3;gy<=.7;gy+=.1){try{const v=di.getDepthInMeters(gx,gy);if(v>0){if(v<mn)mn=v;if(v>mx)mx=v;}}catch{}}if(mn<Infinity){G.d.m3=mn;T('d3-min',mn.toFixed(4)+'m');T('d3-max',mx.toFixed(4)+'m');T('d3-st','live');}let fs=0,fn=0;for(let bx=.2;bx<=.8;bx+=.1)for(let by=.85;by<=.98;by+=.04){try{const v=di.getDepthInMeters(bx,by);if(v>0){fs+=v;fn++;}}catch{}}if(fn>0){G.h.m4=(fs/fn)*Math.cos(30*Math.PI/180);T('h4-avg',(fs/fn).toFixed(4)+'m');T('h4-n2',fn);T('h4-st','live');}}catch{}}
+      }
+    }
+  }catch(e){console.warn('xrTick',e);}
+  tick();
 }
 
-// ─── Fusion ──────────────────────────────────────────────────────
-const HW=[5,5,4,4,2,3,1.5];
-const DW=[5,5,5,4,3,3,1.5];
-
+// ─── Fusion ──────────────────────────────────────────────
+const HW=[5,5,4,4,2,3,1.5],DW=[5,5,5,4,3,3,1.5];
 function wFuse(vals,wts){
-  const pool=vals.map((v,i)=>({v,w:wts[i]})).filter(x=>x.v!=null&&isFinite(x.v));
+  const pool=vals.map((v,i)=>({v,w:wts[i]})).filter(x=>x.v!=null&&isFinite(x.v)&&x.v>0);
   if(!pool.length)return null;
-  const ws=pool.reduce((s,m)=>s+m.w,0);
-  const wm=pool.reduce((s,m)=>s+m.v*m.w,0)/ws;
+  const ws=pool.reduce((s,x)=>s+x.w,0),wm=pool.reduce((s,x)=>s+x.v*x.w,0)/ws;
   if(pool.length<3)return wm;
-  const std=Math.sqrt(pool.reduce((s,m)=>s+m.w*(m.v-wm)**2,0)/ws);
-  const cl=std>0.05?pool.filter(m=>Math.abs(m.v-wm)<2.5*std):pool;
-  const ws2=cl.reduce((s,m)=>s+m.w,0);
-  return cl.reduce((s,m)=>s+m.v*m.w,0)/ws2;
+  const std=Math.sqrt(pool.reduce((s,x)=>s+x.w*(x.v-wm)**2,0)/ws);
+  const cl=std>.05?pool.filter(x=>Math.abs(x.v-wm)<2.5*std):pool;
+  const ws2=cl.reduce((s,x)=>s+x.w,0);
+  return cl.reduce((s,x)=>s+x.v*x.w,0)/ws2;
 }
 
-function fuseTick(){
-  const dep=G.depression*Math.PI/180;
-  // D7 from height
-  if(G.h.fused!=null&&Math.abs(G.depression)>1&&Math.abs(G.depression)<88){
-    G.d.m7=G.h.fused/Math.tan(Math.abs(dep));
-  }
+function tick(){
+  const dep=G.dep*Math.PI/180;
+  // D7
+  if(G.h.fused!=null&&Math.abs(G.dep)>1&&Math.abs(G.dep)<88){G.d.m7=G.h.fused/Math.tan(Math.abs(dep));}
   G.d.fused=wFuse([G.d.m1,G.d.m2,G.d.m3,G.d.m4,G.d.m5,G.d.m6,G.d.m7],DW);
-  const dAct=[G.d.m1,G.d.m2,G.d.m3,G.d.m4,G.d.m5,G.d.m6,G.d.m7].filter(v=>v!=null).length;
-  G.d.conf=Math.min(100,dAct*12+(G.XR.active?28:0)+(G.ML.scale!=null?15:0));
-
-  // H7 from distance
-  if(G.d.fused!=null&&Math.abs(G.depression)>1&&Math.abs(G.depression)<88){
-    G.h.m7=G.d.fused*Math.abs(Math.sin(dep));
-  }
+  const dA=[G.d.m1,G.d.m2,G.d.m3,G.d.m4,G.d.m5,G.d.m6,G.d.m7].filter(v=>v!=null).length;
+  G.d.conf=Math.min(100,dA*12+(xrActive?28:0)+(G.M.dpr.center?20:0));
+  // H7
+  if(G.d.fused!=null&&Math.abs(G.dep)>1&&Math.abs(G.dep)<88){G.h.m7=G.d.fused*Math.abs(Math.sin(dep));}
   G.h.fused=wFuse([G.h.m1,G.h.m2,G.h.m3,G.h.m4,G.h.m5,G.h.m6,G.h.m7],HW);
-  const hAct=[G.h.m1,G.h.m2,G.h.m3,G.h.m4,G.h.m5,G.h.m6,G.h.m7].filter(v=>v!=null).length;
-  G.h.conf=Math.min(100,hAct*12+(G.XR.active?28:0)+(G.ML.scale!=null?15:0));
-
+  const hA=[G.h.m1,G.h.m2,G.h.m3,G.h.m4,G.h.m5,G.h.m6,G.h.m7].filter(v=>v!=null).length;
+  G.h.conf=Math.min(100,hA*12+(xrActive?28:0)+(G.M.dpr.center?20:0));
   renderUI();
 }
 
-// ─── Render ──────────────────────────────────────────────────────
+// ─── Render ──────────────────────────────────────────────
 function renderUI(){
-  const hv=G.h.fused, dv=G.d.fused;
-  // LIVE tab
-  T('lv-h', hv!=null?hv.toFixed(3)+'m':'–');
-  T('lv-d', dv!=null?dv.toFixed(3)+'m':'–');
-  $('lv-h-bar').style.width=G.h.conf+'%';
-  $('lv-d-bar').style.width=G.d.conf+'%';
+  const hv=G.h.fused,dv=G.d.fused;
+  // LIVE tab big numbers
+  T('lv-h',hv!=null?hv.toFixed(3)+'m':'–'); T('lv-d',dv!=null?dv.toFixed(3)+'m':'–');
+  $('lv-h-bar').style.width=G.h.conf+'%'; $('lv-d-bar').style.width=G.d.conf+'%';
   T('lv-h-src',hSrc()); T('lv-d-src',dSrc());
-  const hAct=[G.h.m1,G.h.m2,G.h.m3,G.h.m4,G.h.m5,G.h.m6,G.h.m7].filter(v=>v!=null).length;
-  const dAct=[G.d.m1,G.d.m2,G.d.m3,G.d.m4,G.d.m5,G.d.m6,G.d.m7].filter(v=>v!=null).length;
-  T('lv-hcnt',hAct+'/7'); T('lv-dcnt',dAct+'/7');
-  T('lv-hconf',G.h.conf+'%'); T('lv-dconf',G.d.conf+'%');
-  T('lv-dep',G.depression.toFixed(2)+'°');
-
+  const hA=[G.h.m1,G.h.m2,G.h.m3,G.h.m4,G.h.m5,G.h.m6,G.h.m7].filter(v=>v!=null).length;
+  const dA=[G.d.m1,G.d.m2,G.d.m3,G.d.m4,G.d.m5,G.d.m6,G.d.m7].filter(v=>v!=null).length;
+  T('lv-hcnt',hA+'/7'); T('lv-dcnt',dA+'/7');
+  T('lv-conf',G.h.conf+'%/'+G.d.conf+'%');
+  T('lv-dep',G.dep.toFixed(2)+'°');
+  T('lv-s1',G.M.da2s.S?G.M.da2s.S.toFixed(5):'uncal'); T('lv-s2',G.M.da2b.S?G.M.da2b.S.toFixed(5):'uncal');
+  T('lv-dpr',G.M.dpr.center?G.M.dpr.center.toFixed(3)+'m':'–'); T('lv-zoe',G.M.zoe.center?G.M.zoe.center.toFixed(3)+'m':'–');
   // Per-method live blocks
-  const updateLB=(key,val,conf,color)=>{
-    T(key+'-num',val!=null?val.toFixed(4):'–');
-    const s=$(key+'-conf'); if(s){s.style.width=(conf||0)+'%';s.style.background=color;}
+  const updLB=(pre,val,conf,col)=>{
+    T(pre+'-n',val!=null?val.toFixed(4):'–');
+    const cb=$(pre+'-cb');if(cb){cb.style.width=(val!=null?conf:0)+'%';cb.style.background=col;}
   };
-  updateLB('h1',G.h.m1,G.h.m1!=null?90:0,'var(--pur)');
-  updateLB('h2',G.h.m2,G.h.m2!=null?88:0,'var(--pur)');
-  updateLB('h3',G.h.m3,G.h.m3!=null?88:0,'var(--pur)');
-  updateLB('h4',G.h.m4,G.h.m4!=null?95:0,'var(--pur)');
-  updateLB('h5',G.h.m5,G.h.m5!=null?70:0,'var(--grn)');
-  updateLB('h6',G.h.m6,G.h.m6!=null?(G.ML.scale!=null?75:30):0,'var(--blu)');
-  updateLB('h7',G.h.m7,G.h.m7!=null?65:0,'var(--grn)');
-  updateLB('d1',G.d.m1,G.d.m1!=null?95:0,'var(--pur)');
-  updateLB('d2',G.d.m2,G.d.m2!=null?95:0,'var(--pur)');
-  updateLB('d3',G.d.m3,G.d.m3!=null?92:0,'var(--pur)');
-  updateLB('d4',G.d.m4,G.d.m4!=null?88:0,'var(--pur)');
-  updateLB('d5',G.d.m5,G.d.m5!=null?(G.ML.scale!=null?72:25):0,'var(--blu)');
-  updateLB('d6',G.d.m6,G.d.m6!=null?70:0,'var(--blu)');
-  updateLB('d7',G.d.m7,G.d.m7!=null?65:0,'var(--grn)');
-
-  // D7 / H7 detail rows
-  if(G.d.m7!=null){ T('d7-h',G.h.fused?G.h.fused.toFixed(4):'–'); T('d7-dep',G.depression.toFixed(2)+'°'); T('d7-tan',Math.tan(Math.abs(G.depression*Math.PI/180)).toFixed(4)); T('d7-grav',`${G.SF.gx.toFixed(2)},${G.SF.gy.toFixed(2)},${G.SF.gz.toFixed(2)}`); T('d7-status','live'); }
-  if(G.h.m7!=null){ T('h7-d',G.d.fused?G.d.fused.toFixed(4):'–'); T('h7-dep',G.depression.toFixed(2)+'°'); T('h7-sin',Math.abs(Math.sin(G.depression*Math.PI/180)).toFixed(4)); T('h7-grav',`${G.SF.gx.toFixed(2)},${G.SF.gy.toFixed(2)},${G.SF.gz.toFixed(2)}`); T('h7-status','live'); }
-
-  // H5 detail
-  if(G.baro.p){ T('h5-status',G.h.m5!=null?'live':'no change'); }
-
-  // Camera overlay
-  renderLiveOverlay();
-
+  updLB('h1',G.h.m1,90,'var(--pur)'); updLB('h2',G.h.m2,88,'var(--pur)'); updLB('h3',G.h.m3,88,'var(--pur)');
+  updLB('h4',G.h.m4,95,'var(--pur)'); updLB('h5',G.h.m5,70,'var(--grn)');
+  updLB('h6',G.h.m6,hv!=null?75:40,'var(--blu)'); updLB('h7',G.h.m7,60,'var(--grn)');
+  updLB('d1',G.d.m1,95,'var(--pur)'); updLB('d2',G.d.m2,95,'var(--pur)'); updLB('d3',G.d.m3,92,'var(--pur)');
+  updLB('d4',G.d.m4,88,'var(--pur)'); updLB('d5',G.d.m5,dv!=null?72:30,'var(--blu)');
+  updLB('d6',G.d.m6,68,'var(--blu)'); updLB('d7',G.d.m7,58,'var(--grn)');
+  // H6 tab detail
+  const fm=v=>v!=null?v.toFixed(3)+'m':'–';
+  const fms=m=>m.S?m.S+'/'+m.center.toFixed(4)+'='+( m.center>0.01?(m.S/m.center).toFixed(3):'-'):( m.center?m.center.toFixed(4)+' (uncal)':'–');
+  T('h6-da2s',G.M.da2s.S&&G.M.da2s.floor?(G.M.da2s.S/G.M.da2s.floor).toFixed(3)+'m':'–');
+  T('h6-da2b',G.M.da2b.S&&G.M.da2b.floor?(G.M.da2b.S/G.M.da2b.floor).toFixed(3)+'m':'–');
+  T('h6-dpr',fm(G.M.dpr.floor)); T('h6-zoe',fm(G.M.zoe.floor));
+  T('h6-best',hSrc()); T('h6-inf',Object.entries(G.M).filter(([,m])=>m.infer).map(([k,m])=>k+':'+m.infer.toFixed(0)+'ms').join(' '));
+  T('h6-st',G.h.m6?'live':'needs data'); T('h6-hud','H6='+fm(G.h.m6)); T('h6-src','best of 4 models');
+  // D5 tab detail
+  T('d5-da2s',G.M.da2s.S&&G.M.da2s.center?(G.M.da2s.S/G.M.da2s.center).toFixed(3)+'m':'–');
+  T('d5-da2b',G.M.da2b.S&&G.M.da2b.center?(G.M.da2b.S/G.M.da2b.center).toFixed(3)+'m':'–');
+  T('d5-dpr',fm(G.M.dpr.center)); T('d5-zoe',fm(G.M.zoe.center));
+  T('d5-s1',G.M.da2s.S?G.M.da2s.S.toFixed(5):'uncal'); T('d5-s2',G.M.da2b.S?G.M.da2b.S.toFixed(5):'uncal');
+  T('d5-st',G.d.m5?'live':'needs data'); T('d5-hud','D5='+fm(G.d.m5)); T('d5-src','best of 4 models');
+  // H7/D7
+  if(G.h.m7){T('h7-d',G.d.fused?G.d.fused.toFixed(4):'–');T('h7-dep',G.dep.toFixed(2)+'°');T('h7-grav',`${G.SF.gx.toFixed(2)},${G.SF.gy.toFixed(2)},${G.SF.gz.toFixed(2)}`);T('h7-sin',Math.abs(Math.sin(G.dep*Math.PI/180)).toFixed(4));T('h7-st','live');}
+  if(G.d.m7){T('d7-h',G.h.fused?G.h.fused.toFixed(4):'–');T('d7-dep',G.dep.toFixed(2)+'°');T('d7-grav',`${G.SF.gx.toFixed(2)},${G.SF.gy.toFixed(2)},${G.SF.gz.toFixed(2)}`);T('d7-tan',Math.tan(Math.abs(G.dep*Math.PI/180)).toFixed(4));T('d7-st','live');}
+  // H5
+  if(G.h.m5){T('h5-st','live');T('h5-src','barometric');$('h5-cb').style.width='70%';$('h5-cb').style.background='var(--grn)';}
+  // D6
+  T('d6-xy',G.tap.x>=0?`(${(G.tap.x*100).toFixed(0)}%, ${(G.tap.y*100).toFixed(0)}%)`:'–');
+  T('d6-hud',G.d.m6?'D₆='+G.d.m6.toFixed(3)+'m':'tap to measure');
+  T('d6-st',G.d.m6?G.d.m6.toFixed(3)+'m':'tap an object');
+  // D4 details
+  T('d4-h',G.h.fused?G.h.fused.toFixed(3):'–'); T('d4-dep',G.dep.toFixed(2)+'°');
+  // Overlay rendering
+  drawLiveOverlay();
   // History
-  G.Hh.push(hv??0); if(G.Hh.length>200)G.Hh.shift();
-  G.Hd.push(dv??0); if(G.Hd.length>200)G.Hd.shift();
-  if(G.Hh.length>3) sparkline('spk-h',G.Hh,'#00c9a7');
-  if(G.Hd.length>3) sparkline('spk-d',G.Hd,'#f0c030');
+  G.Hh.push(hv??0);if(G.Hh.length>200)G.Hh.shift();
+  G.Hd.push(dv??0);if(G.Hd.length>200)G.Hd.shift();
+  if(G.Hh.length>3)sparkline('spk-h',G.Hh,'#00c9a7');
+  if(G.Hd.length>3)sparkline('spk-d',G.Hd,'#f0c030');
 }
+function hSrc(){if(G.h.m1)return'H1·XR-floor';if(G.h.m2)return'H2·XR-hit↓';if(G.h.m3)return'H3·XR-plane';if(G.h.m4)return'H4·XR-depth';if(G.h.m5)return'H5·baro';if(G.h.m6){const ms=Object.entries(G.M).filter(([,m])=>MODEL_CFGS[Object.keys(MODEL_CFGS)[0]]&&m.floor!=null).map(([k])=>k).join('+');return'H6·ML('+ms+')';}if(G.h.m7)return'H7·trig';return'awaiting…';}
+function dSrc(){if(G.d.m1)return'D1·XR-hit→';if(G.d.m2)return'D2·XR-depth';if(G.d.m3)return'D3·XR-grid';if(G.d.m4)return'D4·XR-plane';if(G.d.m5)return'D5·ML';if(G.d.m6)return'D6·ML-tap';if(G.d.m7)return'D7·trig';return'start XR or ML…';}
 
-function hSrc(){
-  if(G.h.m1!=null)return'H1·XR-floor'; if(G.h.m2!=null)return'H2·XR-hit↓';
-  if(G.h.m3!=null)return'H3·XR-plane'; if(G.h.m4!=null)return'H4·XR-depth';
-  if(G.h.m5!=null)return'H5·barometric'; if(G.h.m6!=null)return'H6·ML-depth';
-  if(G.h.m7!=null)return'H7·trig'; return'awaiting sensors…';
-}
-function dSrc(){
-  if(G.d.m1!=null)return'D1·XR-hit→'; if(G.d.m2!=null)return'D2·XR-depth-ctr';
-  if(G.d.m3!=null)return'D3·XR-grid'; if(G.d.m4!=null)return'D4·XR-plane';
-  if(G.d.m5!=null)return'D5·ML-center'; if(G.d.m6!=null)return'D6·ML-tap';
-  if(G.d.m7!=null)return'D7·trig'; return'start XR or load ML…';
-}
-
-// ─── Live camera overlay ─────────────────────────────────────────
-function renderLiveOverlay(){
-  const cv=$('cv-live'), vid=$('vid');
-  const W=vid.videoWidth||0, H=vid.videoHeight||0;
-  if(!W)return;
-  cv.width=W; cv.height=H;
-  const ctx=cv.getContext('2d');
-  ctx.clearRect(0,0,W,H);
-  const cx=W/2, cy=H/2;
-  const dv=G.d.fused, hv=G.h.fused;
-
-  // Horizon
-  const hy=Math.max(2,Math.min(H-2,G.horizFrac*H));
-  const hg=ctx.createLinearGradient(0,0,W,0);
-  hg.addColorStop(0,'transparent'); hg.addColorStop(.25,'rgba(240,80,80,.5)');
-  hg.addColorStop(.75,'rgba(240,80,80,.5)'); hg.addColorStop(1,'transparent');
-  ctx.strokeStyle=hg; ctx.lineWidth=1; ctx.setLineDash([4,5]);
-  ctx.beginPath(); ctx.moveTo(0,hy); ctx.lineTo(W,hy); ctx.stroke();
-  ctx.setLineDash([]);
-  ctx.fillStyle='rgba(0,201,167,.025)'; ctx.fillRect(0,hy,W,H-hy);
-  $('horiz').style.top=(G.horizFrac*100)+'%';
-
-  // Distance rings
-  if(dv!=null){
-    const r=Math.max(10,Math.min(W*.44,200/dv));
-    // Outer guide rings
-    [r*1.5,r*0.6].forEach(rr=>{
-      ctx.beginPath(); ctx.arc(cx,cy,Math.max(5,rr),0,Math.PI*2);
-      ctx.strokeStyle='rgba(240,192,48,.2)'; ctx.lineWidth=.8; ctx.stroke();
-    });
-    // Main ring
-    ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2);
-    ctx.strokeStyle='#f0c030'; ctx.lineWidth=1.8; ctx.stroke();
-    // Cardinal ticks
-    ctx.strokeStyle='#f0c030'; ctx.lineWidth=1.8;
-    for(let a=0;a<Math.PI*2;a+=Math.PI/2){
-      ctx.beginPath(); ctx.moveTo(cx+Math.cos(a)*r,cy+Math.sin(a)*r);
-      ctx.lineTo(cx+Math.cos(a)*(r+5),cy+Math.sin(a)*(r+5)); ctx.stroke();
-    }
-    // Label
-    const ly=cy+r+16;
-    ctx.fillStyle='rgba(6,15,28,.92)';
-    rr2(ctx,cx-56,ly-10,112,15,4); ctx.fill();
-    ctx.fillStyle='#f0c030'; ctx.font='bold 10px DM Mono,monospace'; ctx.textAlign='center';
-    ctx.fillText('D = '+dv.toFixed(3)+' m  ('+dSrc().split('·')[0]+')',cx,ly);
-  } else {
-    // Crosshair
-    ctx.strokeStyle='rgba(0,201,167,.7)'; ctx.lineWidth=1.2;
-    ctx.beginPath(); ctx.moveTo(cx-10,cy); ctx.lineTo(cx+10,cy); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(cx,cy-10); ctx.lineTo(cx,cy+10); ctx.stroke();
-    ctx.beginPath(); ctx.arc(cx,cy,18,0,Math.PI*2); ctx.strokeStyle='rgba(0,201,167,.2)'; ctx.stroke();
-  }
-
-  // Height label above horizon
-  if(hv!=null){
-    const hly=Math.max(12,Math.min(H-12,hy-12));
-    ctx.fillStyle='rgba(6,15,28,.92)';
-    rr2(ctx,cx-60,hly-10,120,15,4); ctx.fill();
-    ctx.fillStyle=G.h.conf>50?'#00c9a7':'#f0c030';
-    ctx.font='bold 9px DM Mono,monospace'; ctx.textAlign='center';
-    ctx.fillText('h = '+hv.toFixed(3)+' m  ('+G.h.conf+'%)  '+hSrc().split('·')[0],cx,hly);
-  }
-
-  // Source badges
-  const badges=[];
-  if(G.XR.active) badges.push({t:'XR',c:'#8b6eff'});
-  if(G.ML.loaded&&G.ML.scale!=null) badges.push({t:'ML✓',c:'#38b6ff'});
-  else if(G.ML.loaded) badges.push({t:'ML~',c:'#38b6ff'});
-  if(G.h.m5!=null) badges.push({t:'BARO',c:'#00c9a7'});
-  let bx=6;
-  badges.forEach(b=>{
-    ctx.font='bold 8px DM Mono,monospace';
-    const tw=ctx.measureText(b.t).width+10;
-    ctx.fillStyle=b.c+'22'; ctx.strokeStyle=b.c+'66'; ctx.lineWidth=1;
-    rr2(ctx,bx,H-18,tw,13,3); ctx.fill(); ctx.stroke();
-    ctx.fillStyle=b.c; ctx.textAlign='left';
-    ctx.fillText(b.t,bx+5,H-8); bx+=tw+4;
-  });
-
-  T('hud-tl','|g|='+(Math.sqrt(G.SF.ax**2+G.SF.ay**2+G.SF.az**2)).toFixed(1));
-  T('hud-tr','dep='+G.depression.toFixed(1)+'°');
-  T('hud-br',(hv?'h='+hv.toFixed(2)+'m':'h=–')+' '+(dv?'D='+dv.toFixed(2)+'m':'D=–'));
-}
-
-// ─── Depth map colourizer (jet colourmap) ─────────────────────────
-function depthJet(v){
-  const x=Math.max(0,Math.min(1,v));
-  let r,g,b;
-  if(x<.25){r=0;g=x*4;b=1;}
-  else if(x<.5){r=0;g=1;b=1-(x-.25)*4;}
-  else if(x<.75){r=(x-.5)*4;g=1;b=0;}
-  else{r=1;g=1-(x-.75)*4;b=0;}
+// ─── Depth map color (jet colourmap) ─────────────────────
+function jetColor(v){
+  const x=Math.max(0,Math.min(1,v));let r,g,b;
+  if(x<.25){r=0;g=x*4;b=1;}else if(x<.5){r=0;g=1;b=1-(x-.25)*4;}else if(x<.75){r=(x-.5)*4;g=1;b=0;}else{r=1;g=1-(x-.75)*4;b=0;}
   return[r*255|0,g*255|0,b*255|0];
 }
 
-function renderDepthCanvas(dcvId,acvId,raw,mw,mh,tapEnable=false){
-  const dcv=$(dcvId); if(!dcv)return;
-  const vid=$('vid');
-  const W=vid.videoWidth||320, H=vid.videoHeight||240;
-  dcv.width=W; dcv.height=H;
-  const dctx=dcv.getContext('2d');
-  // Build image at model res
-  const tmp=document.createElement('canvas');
-  tmp.width=mw; tmp.height=mh;
-  const tc=tmp.getContext('2d');
-  const img=tc.createImageData(mw,mh);
-  let mn=1,mx=0;
-  for(let i=0;i<raw.length;i++){if(raw[i]<mn)mn=raw[i];if(raw[i]>mx)mx=raw[i];}
+// Best model for overlay (prefer metric, then largest S base)
+function getBestRaw(){
+  if(G.M.dpr.raw)return{raw:G.M.dpr.raw,w:G.M.dpr.w,h:G.M.dpr.h,metric:true};
+  if(G.M.zoe.raw)return{raw:G.M.zoe.raw,w:G.M.zoe.w,h:G.M.zoe.h,metric:true};
+  if(G.M.da2b.raw)return{raw:G.M.da2b.raw,w:G.M.da2b.w,h:G.M.da2b.h,metric:false};
+  if(G.M.da2s.raw)return{raw:G.M.da2s.raw,w:G.M.da2s.w,h:G.M.da2s.h,metric:false};
+  return null;
+}
+
+function renderDepthOverlay(key,raw,w,h){
+  // Render to all depth canvases that want this model
+  const canvasIds={da2s:[],da2b:[],dpr:['cv0-d','cv-h6-d','cv-d5-d','cv-d6-d'],zoe:[]};
+  const best=getBestRaw();
+  // Always render best model to all depth canvases
+  if(!best)return;
+  const targets=['cv0-d','cv-h6-d','cv-d5-d','cv-d6-d'];
+  const{raw:r,w:mw,h:mh}=best;
+  let mn=Infinity,mx=0;
+  for(let i=0;i<r.length;i++){if(r[i]<mn)mn=r[i];if(r[i]>mx)mx=r[i];}
   const rng=mx-mn||1;
-  for(let i=0;i<raw.length;i++){
-    const norm=(raw[i]-mn)/rng;
-    const[r,g,b]=depthJet(norm);
-    img.data[i*4]=r;img.data[i*4+1]=g;img.data[i*4+2]=b;img.data[i*4+3]=220;
-  }
+  const tmp=document.createElement('canvas');tmp.width=mw;tmp.height=mh;
+  const tc=tmp.getContext('2d');const img=tc.createImageData(mw,mh);
+  for(let i=0;i<r.length;i++){const norm=(r[i]-mn)/rng;const[R,G2,B]=jetColor(norm);img.data[i*4]=R;img.data[i*4+1]=G2;img.data[i*4+2]=B;img.data[i*4+3]=200;}
   tc.putImageData(img,0,0);
-  dctx.drawImage(tmp,0,0,W,H);
-
-  // Center crosshair
-  dctx.strokeStyle='#fff'; dctx.lineWidth=1.5;
-  dctx.beginPath(); dctx.moveTo(W/2-8,H/2); dctx.lineTo(W/2+8,H/2); dctx.stroke();
-  dctx.beginPath(); dctx.moveTo(W/2,H/2-8); dctx.lineTo(W/2,H/2+8); dctx.stroke();
-  dctx.beginPath(); dctx.arc(W/2,H/2,14,0,Math.PI*2); dctx.strokeStyle='rgba(255,255,255,.4)'; dctx.stroke();
-
-  // D5 center label
-  if(G.d.m5!=null&&G.ML.scale!=null){
-    dctx.fillStyle='rgba(6,15,28,.88)';
-    rr2(dctx,W/2-44,H/2-30,88,13,3); dctx.fill();
-    dctx.fillStyle='#f0c030'; dctx.font='bold 9px DM Mono,monospace'; dctx.textAlign='center';
-    dctx.fillText('D='+G.d.m5.toFixed(3)+'m',W/2,H/2-20);
-  }
-
-  // Tap marker
-  if(G.tap.x>=0&&tapEnable){
-    const tx=G.tap.x*W, ty=G.tap.y*H;
-    dctx.strokeStyle='#38b6ff'; dctx.lineWidth=2;
-    dctx.beginPath(); dctx.arc(tx,ty,12,0,Math.PI*2); dctx.stroke();
-    dctx.beginPath(); dctx.moveTo(tx-8,ty); dctx.lineTo(tx+8,ty); dctx.stroke();
-    dctx.beginPath(); dctx.moveTo(tx,ty-8); dctx.lineTo(tx,ty+8); dctx.stroke();
-    if(G.d.m6!=null){
-      dctx.fillStyle='rgba(6,15,28,.92)';
-      rr2(dctx,tx-44,ty-26,88,13,3); dctx.fill();
-      dctx.fillStyle='#38b6ff'; dctx.font='bold 9px DM Mono,monospace'; dctx.textAlign='center';
-      dctx.fillText('D₆='+G.d.m6.toFixed(3)+'m',tx,ty-16);
-    }
-  }
-
-  // Annotation canvas (same size, for H6 height label)
-  const acv=$(acvId); if(!acv)return;
-  acv.width=W; acv.height=H;
-  const actx=acv.getContext('2d');
-  actx.clearRect(0,0,W,H);
-  if(G.h.m6!=null){
-    actx.fillStyle='rgba(6,15,28,.88)';
-    rr2(actx,6,6,150,13,3); actx.fill();
-    actx.fillStyle='#38b6ff'; actx.font='bold 9px DM Mono,monospace'; actx.textAlign='left';
-    actx.fillText('H6='+G.h.m6.toFixed(3)+'m  floor avg',11,16);
-  }
-
-  // Enable tap on d6 canvas
-  if(tapEnable&&!dcv._tapAttached){
-    dcv._tapAttached=true;
-    const onTap=(e)=>{
-      const rect=dcv.getBoundingClientRect();
-      const cx2=(e.touches?e.touches[0].clientX:e.clientX)-rect.left;
-      const cy2=(e.touches?e.touches[0].clientY:e.clientY)-rect.top;
-      G.tap.x=cx2/rect.width; G.tap.y=cy2/rect.height;
-      toast('Measuring tap point…');
-    };
-    dcv.addEventListener('click',onTap);
-    dcv.addEventListener('touchstart',onTap,{passive:true});
-  }
-}
-
-// ─── Utils ────────────────────────────────────────────────────────
-function rr2(ctx,x,y,w,h,r){
-  ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.arcTo(x+w,y,x+w,y+r,r);
-  ctx.lineTo(x+w,y+h-r);ctx.arcTo(x+w,y+h,x+w-r,y+h,r);ctx.lineTo(x+r,y+h);
-  ctx.arcTo(x,y+h,x,y+h-r,r);ctx.lineTo(x,y+r);ctx.arcTo(x,y,x+r,y,r);ctx.closePath();
-}
-function sparkline(id,data,color){
-  const c=$(id); if(!c||data.length<2)return;
-  const W=c.offsetWidth||280, H=30; c.width=W; c.height=H;
-  const ctx=c.getContext('2d'); ctx.clearRect(0,0,W,H);
-  let mn=Infinity,mx=-Infinity; data.forEach(v=>{if(v<mn)mn=v;if(v>mx)mx=v;});
-  const rng=mx-mn||.001;
-  ctx.beginPath(); ctx.strokeStyle=color; ctx.lineWidth=1.4;
-  data.forEach((v,i)=>{
-    const x=i/(data.length-1)*W, y=H-((v-mn)/rng)*(H-4)-2;
-    i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+  targets.forEach(id=>{
+    const cv=$(id);if(!cv)return;
+    const vw=$('vid').videoWidth||320,vh=$('vid').videoHeight||240;
+    cv.width=vw;cv.height=vh;
+    const ctx=cv.getContext('2d');ctx.drawImage(tmp,0,0,vw,vh);
+    // Center crosshair on depth canvases
+    ctx.strokeStyle='rgba(255,255,255,.6)';ctx.lineWidth=1.2;
+    ctx.beginPath();ctx.moveTo(vw/2-7,vh/2);ctx.lineTo(vw/2+7,vh/2);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(vw/2,vh/2-7);ctx.lineTo(vw/2,vh/2+7);ctx.stroke();
+    ctx.beginPath();ctx.arc(vw/2,vh/2,13,0,Math.PI*2);ctx.strokeStyle='rgba(255,255,255,.25)';ctx.stroke();
   });
-  ctx.stroke(); ctx.lineTo(W,H); ctx.lineTo(0,H); ctx.closePath();
-  ctx.fillStyle=color+'15'; ctx.fill();
-  ctx.font='7px DM Mono,monospace'; ctx.fillStyle=color+'80';
-  ctx.textAlign='left'; ctx.fillText(mn.toFixed(3),2,H-2);
-  ctx.textAlign='right'; ctx.fillText(mx.toFixed(3),W-2,H-2);
 }
 
-// ─── Tabs ─────────────────────────────────────────────────────────
+// ─── Live annotation overlay ──────────────────────────────
+function drawLiveOverlay(){
+  const cv=$('cv0-a'),vid=$('vid');
+  if(!cv||!vid.videoWidth)return;
+  const W=vid.videoWidth,H=vid.videoHeight;
+  cv.width=W;cv.height=H;
+  const ctx=cv.getContext('2d');ctx.clearRect(0,0,W,H);
+  const cx=W/2,cy=H/2,hv=G.h.fused,dv=G.d.fused;
+  // Horizon
+  const hy=Math.max(2,Math.min(H-2,G.hFrac*H));
+  const hg=ctx.createLinearGradient(0,0,W,0);hg.addColorStop(0,'transparent');hg.addColorStop(.25,'rgba(240,80,80,.5)');hg.addColorStop(.75,'rgba(240,80,80,.5)');hg.addColorStop(1,'transparent');
+  ctx.strokeStyle=hg;ctx.lineWidth=1;ctx.setLineDash([4,5]);ctx.beginPath();ctx.moveTo(0,hy);ctx.lineTo(W,hy);ctx.stroke();ctx.setLineDash([]);
+  ctx.fillStyle='rgba(0,201,167,.02)';ctx.fillRect(0,hy,W,H-hy);
+  $('hz0').style.top=(G.hFrac*100)+'%';
+  // Distance rings
+  if(dv!=null){
+    const r=Math.max(10,Math.min(W*.44,200/dv));
+    [[r,.2,'rgba(240,192,48,.2)',.8],[r*1.4,.1,'rgba(240,192,48,.12)',.5]].forEach(([rr,_,col,lw])=>{
+      ctx.beginPath();ctx.arc(cx,cy,rr,0,Math.PI*2);ctx.strokeStyle=col;ctx.lineWidth=lw;ctx.stroke();
+    });
+    ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.strokeStyle='#f0c030';ctx.lineWidth=1.8;ctx.stroke();
+    for(let a=0;a<Math.PI*2;a+=Math.PI/2){ctx.beginPath();ctx.moveTo(cx+Math.cos(a)*r,cy+Math.sin(a)*r);ctx.lineTo(cx+Math.cos(a)*(r+5),cy+Math.sin(a)*(r+5));ctx.stroke();}
+    const ly=cy+r+15;rr2(ctx,cx-55,ly-10,110,14,3);ctx.fillStyle='rgba(5,16,30,.92)';ctx.fill();
+    ctx.fillStyle='#f0c030';ctx.font='bold 10px DM Mono,monospace';ctx.textAlign='center';ctx.fillText('D = '+dv.toFixed(3)+' m',cx,ly);
+  } else {
+    ctx.strokeStyle='rgba(0,201,167,.65)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(cx-9,cy);ctx.lineTo(cx+9,cy);ctx.stroke();ctx.beginPath();ctx.moveTo(cx,cy-9);ctx.lineTo(cx,cy+9);ctx.stroke();ctx.beginPath();ctx.arc(cx,cy,16,0,Math.PI*2);ctx.strokeStyle='rgba(0,201,167,.2)';ctx.stroke();
+  }
+  // Height label
+  if(hv!=null){const hl=Math.max(11,Math.min(H-11,hy-11));rr2(ctx,cx-58,hl-10,116,14,3);ctx.fillStyle='rgba(5,16,30,.92)';ctx.fill();ctx.fillStyle=G.h.conf>50?'#00c9a7':'#f0c030';ctx.font='bold 9px DM Mono,monospace';ctx.textAlign='center';ctx.fillText('h = '+hv.toFixed(3)+' m  ('+G.h.conf+'%)',cx,hl);}
+  // Source badges
+  const badges=[];if(xrActive)badges.push({t:'XR',c:'#8b6eff'});['da2s','da2b','dpr','zoe'].forEach(k=>{if(G.M[k].raw)badges.push({t:k==='dpr'?'DepthPro':k==='zoe'?'ZoeDepth':k,c:k==='zoe'?'#f0c030':'#38b6ff'});});if(G.h.m5!=null)badges.push({t:'BARO',c:'#00c9a7'});
+  let bx=5;badges.forEach(b=>{ctx.font='bold 7px DM Mono,monospace';const tw=ctx.measureText(b.t).width+9;rr2(ctx,bx,H-17,tw,12,3);ctx.fillStyle=b.c+'20';ctx.fill();ctx.strokeStyle=b.c+'55';ctx.lineWidth=1;ctx.stroke();ctx.fillStyle=b.c;ctx.textAlign='left';ctx.fillText(b.t,bx+4,H-9);bx+=tw+3;});
+  // Also draw tap on D6 canvas
+  drawD6Overlay();
+  T('hud0-tl','|g|='+(Math.sqrt(G.SF.ax**2+G.SF.ay**2+G.SF.az**2)).toFixed(1));
+  T('hud0-tr','dep='+G.dep.toFixed(1)+'°');
+  T('hud0-br',(hv?'h='+hv.toFixed(2)+'m':'h=–')+' '+(dv?'D='+dv.toFixed(2)+'m':'D=–'));
+}
+
+function drawD6Overlay(){
+  const cv=$('cv-d6-a');if(!cv)return;
+  const vid=$('vid');if(!vid.videoWidth)return;
+  const W=vid.videoWidth,H=vid.videoHeight;cv.width=W;cv.height=H;
+  const ctx=cv.getContext('2d');ctx.clearRect(0,0,W,H);
+  if(G.tap.x>=0){
+    const tx=G.tap.x*W,ty=G.tap.y*H;
+    ctx.strokeStyle='#38b6ff';ctx.lineWidth=2;ctx.beginPath();ctx.arc(tx,ty,13,0,Math.PI*2);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(tx-9,ty);ctx.lineTo(tx+9,ty);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(tx,ty-9);ctx.lineTo(tx,ty+9);ctx.stroke();
+    if(G.d.m6!=null){rr2(ctx,tx-44,ty-26,88,13,3);ctx.fillStyle='rgba(5,16,30,.92)';ctx.fill();ctx.fillStyle='#38b6ff';ctx.font='bold 9px DM Mono,monospace';ctx.textAlign='center';ctx.fillText('D₆='+G.d.m6.toFixed(3)+'m',tx,ty-16);}
+  }
+}
+
+// ─── Also draw per-method annotations on H6/D5 cameras ───
+function drawH6Overlay(){
+  const cv=$('cv-h6-a');if(!cv)return;
+  const vid=$('vid');if(!vid.videoWidth)return;
+  const W=vid.videoWidth,H=vid.videoHeight;cv.width=W;cv.height=H;
+  const ctx=cv.getContext('2d');ctx.clearRect(0,0,W,H);
+  // Floor region indicator (bottom 15%)
+  ctx.strokeStyle='rgba(0,201,167,.4)';ctx.setLineDash([3,4]);
+  ctx.beginPath();ctx.moveTo(0,H*.85);ctx.lineTo(W,H*.85);ctx.stroke();ctx.setLineDash([]);
+  ctx.fillStyle='rgba(0,201,167,.06)';ctx.fillRect(0,H*.85,W,H*.15);
+  if(G.h.m6!=null){rr2(ctx,4,H*.85+4,130,13,3);ctx.fillStyle='rgba(5,16,30,.9)';ctx.fill();ctx.fillStyle='#38b6ff';ctx.font='bold 8px DM Mono,monospace';ctx.textAlign='left';ctx.fillText('H6 floor avg = '+G.h.m6.toFixed(3)+'m',8,H*.85+13);}
+}
+function drawD5Overlay(){
+  const cv=$('cv-d5-a');if(!cv)return;
+  const vid=$('vid');if(!vid.videoWidth)return;
+  const W=vid.videoWidth,H=vid.videoHeight;cv.width=W;cv.height=H;
+  const ctx=cv.getContext('2d');ctx.clearRect(0,0,W,H);
+  // Center crosshair + D5 label
+  ctx.strokeStyle='rgba(56,182,255,.7)';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(W/2-9,H/2);ctx.lineTo(W/2+9,H/2);ctx.stroke();ctx.beginPath();ctx.moveTo(W/2,H/2-9);ctx.lineTo(W/2,H/2+9);ctx.stroke();ctx.beginPath();ctx.arc(W/2,H/2,16,0,Math.PI*2);ctx.strokeStyle='rgba(56,182,255,.3)';ctx.stroke();
+  if(G.d.m5!=null){rr2(ctx,W/2-44,H/2-28,88,13,3);ctx.fillStyle='rgba(5,16,30,.9)';ctx.fill();ctx.fillStyle='#38b6ff';ctx.font='bold 9px DM Mono,monospace';ctx.textAlign='center';ctx.fillText('D5='+G.d.m5.toFixed(3)+'m',W/2,H/2-18);}
+}
+
+// ─── Utils ────────────────────────────────────────────────
+function rr2(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.arcTo(x+w,y,x+w,y+r,r);ctx.lineTo(x+w,y+h-r);ctx.arcTo(x+w,y+h,x+w-r,y+h,r);ctx.lineTo(x+r,y+h);ctx.arcTo(x,y+h,x,y+h-r,r);ctx.lineTo(x,y+r);ctx.arcTo(x,y,x+r,y,r);ctx.closePath();}
+function sparkline(id,data,color){const c=$(id);if(!c||data.length<2)return;const W=c.offsetWidth||260,H=28;c.width=W;c.height=H;const ctx=c.getContext('2d');ctx.clearRect(0,0,W,H);let mn=Infinity,mx=-Infinity;data.forEach(v=>{if(v<mn)mn=v;if(v>mx)mx=v;});const rng=mx-mn||.001;ctx.beginPath();ctx.strokeStyle=color;ctx.lineWidth=1.3;data.forEach((v,i)=>{const x=i/(data.length-1)*W,y=H-((v-mn)/rng)*(H-4)-2;i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);});ctx.stroke();ctx.lineTo(W,H);ctx.lineTo(0,H);ctx.closePath();ctx.fillStyle=color+'12';ctx.fill();ctx.font='7px DM Mono,monospace';ctx.fillStyle=color+'80';ctx.textAlign='left';ctx.fillText(mn.toFixed(3),2,H-2);ctx.textAlign='right';ctx.fillText(mx.toFixed(3),W-2,H-2);}
+
+// ─── Tabs ─────────────────────────────────────────────────
 document.querySelectorAll('.tb').forEach(b=>b.addEventListener('click',function(){
   document.querySelectorAll('.tb').forEach(t=>t.classList.remove('on'));
   document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
   this.classList.add('on');
-  const pg=$('pg-'+this.dataset.pg); if(pg)pg.classList.add('on');
+  $('pg-'+this.dataset.pg)?.classList.add('on');
 }));
 
-// ─── Render loop ──────────────────────────────────────────────────
+// ─── Tap listeners on D6 canvases ────────────────────────
+['cv-d6-d','cv-d6-a','cv0-a'].forEach(id=>{
+  const el=$(id); if(!el)return;
+  const fn=(e)=>{
+    e.preventDefault?.();
+    const rect=el.getBoundingClientRect();
+    const cx=(e.touches?e.touches[0].clientX:e.clientX)-rect.left;
+    const cy2=(e.touches?e.touches[0].clientY:e.clientY)-rect.top;
+    G.tap.x=cx/rect.width; G.tap.y=cy2/rect.height;
+    toast('Measuring tap point…');
+    tick();
+  };
+  el.addEventListener('click',fn);
+  el.addEventListener('touchstart',fn,{passive:false});
+  // Make the d6 canvas receive pointer events
+  el.style.pointerEvents='all';
+});
+
+// ─── Render loop ──────────────────────────────────────────
 function startRenderLoop(){
-  const vid=$('vid'), cv=$('cv-live');
+  const vid=$('vid');
   function frame(){
     requestAnimationFrame(frame);
     if(!vid.videoWidth)return;
-    renderLiveOverlay();
+    drawLiveOverlay();
+    drawH6Overlay();
+    drawD5Overlay();
   }
   frame();
 }
 
-// ─── Launch ───────────────────────────────────────────────────────
-window.launch = async function(){
+// ─── Launch ───────────────────────────────────────────────
+window.doLaunch=function(){
   $('splash').style.display='none';
   $('app').style.display='flex';
-  $('pill-os').textContent=IS_IOS?'iOS':IS_ANDROID?'Android':'Desktop';
+  $('p-os').textContent=IS_IOS?'iOS':IS_AND?'Android':'Desktop';
   startRenderLoop();
-  // Start XR session now (needs user gesture — click counts)
-  if(G.caps_xr) startXRSession();
-  // ML loop already started if model loaded
-  if(G.ML.loaded) startMLLoop();
-  fuseTick();
+  tick();
 };
 
-// ─── DOMContentLoaded ─────────────────────────────────────────────
-window.addEventListener('DOMContentLoaded',()=>{
-  // iOS sensor permission fires on next user gesture, but we set up handler now
-  if(IS_IOS&&typeof DeviceOrientationEvent?.requestPermission==='function'){
-    document.addEventListener('click',()=>{
-      DeviceOrientationEvent.requestPermission().catch(()=>{});
-    },{once:true});
-  }
-  initAll();
-});
+// ─── Init ─────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded',()=>initAll());
 </script>
 </body>
 </html>

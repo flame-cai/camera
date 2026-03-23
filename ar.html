@@ -2,1485 +2,1003 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<title>AR·SENSE</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>3D Spatial Ranger</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Barlow:wght@400;600;700&display=swap');
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}
-html,body{height:100%;background:#05101e;color:#bfd8f5;font-family:'Barlow',sans-serif;overflow:hidden}
-:root{
-  --bg:#05101e;--c1:#091829;--c2:#0c1f30;--bdr:#102236;
-  --grn:#00c9a7;--yel:#f0c030;--red:#f05050;--pur:#8b6eff;--blu:#38b6ff;--ora:#ff8040;
-  --dim:#243d5a;--fg:#bfd8f5;--mn:'DM Mono',monospace;
-  --st:env(safe-area-inset-top,0px);--sb:env(safe-area-inset-bottom,0px);
-}
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Oxanium:wght@300;600;800&display=swap');
 
-/* ═══ SPLASH ═══════════════════════════════ */
-#splash{position:fixed;inset:0;z-index:99;background:var(--bg);display:flex;flex-direction:column;align-items:center;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:calc(var(--st)+12px) 13px calc(var(--sb)+14px);gap:8px}
-.sp-logo{font-family:var(--mn);font-size:22px;font-weight:500;color:var(--grn);letter-spacing:6px;margin-top:2px}
-.sp-tag{font-family:var(--mn);font-size:7px;letter-spacing:3px;color:var(--dim);text-transform:uppercase}
-.ii-list{width:100%;display:flex;flex-direction:column;gap:5px}
-.ii{background:var(--c1);border:1px solid var(--bdr);border-radius:9px;padding:9px 11px;display:flex;align-items:flex-start;gap:9px}
-.ii.ok{border-color:rgba(0,201,167,.2)}.ii.fail{border-color:rgba(240,80,80,.2)}.ii.loading{border-color:rgba(56,182,255,.18)}.ii.skip{opacity:.5}
-.ii-ico{font-size:15px;flex-shrink:0;width:20px;text-align:center;margin-top:1px}
-.ii-body{flex:1;min-width:0}
-.ii-title{font-size:11px;font-weight:700}
-.ii-sub{font-family:var(--mn);font-size:7px;color:var(--dim);margin-top:2px;line-height:1.5}
-.ii-right{flex-shrink:0;text-align:right;min-width:60px}
-.ii-st{font-family:var(--mn);font-size:8px}
-.ii.ok .ii-st{color:var(--grn)}.ii.fail .ii-st{color:var(--red)}.ii.loading .ii-st{color:var(--blu)}.ii.skip .ii-st{color:var(--dim)}
-.retry{font-family:var(--mn);font-size:8px;padding:2px 8px;background:none;border:1px solid rgba(240,192,48,.3);border-radius:4px;color:var(--yel);cursor:pointer;display:none;margin-top:4px}
-.ii.fail .retry{display:inline-block}
-.retry:active{opacity:.6}
-.prog-wrap{margin-top:4px;display:none}
-.ii.loading .prog-wrap{display:block}
-.prog-bar{height:2px;background:var(--bdr);border-radius:1px;overflow:hidden}
-.pf{height:100%;border-radius:1px;transition:width .2s;width:0%}
-.prog-pct{font-family:var(--mn);font-size:7px;color:var(--dim);margin-top:2px}
-#launch{width:100%;padding:12px;background:var(--grn);color:#000;border:none;border-radius:10px;font-family:var(--mn);font-size:13px;font-weight:500;letter-spacing:3px;cursor:pointer;margin-top:2px}
-#launch:disabled{opacity:.3;cursor:not-allowed}#launch:active{opacity:.75}
+  :root {
+    --bg: #030a0f;
+    --panel: rgba(0,255,180,0.04);
+    --border: rgba(0,255,180,0.18);
+    --accent: #00ffb4;
+    --accent2: #00c8ff;
+    --warn: #ff6b35;
+    --dim: rgba(0,255,180,0.45);
+    --text: #c8fff0;
+    --mono: 'Share Tech Mono', monospace;
+    --head: 'Oxanium', sans-serif;
+  }
 
-/* ═══ APP ═══════════════════════════════════ */
-#app{display:none;flex-direction:column;height:100dvh;height:100vh;overflow:hidden;padding-top:var(--st)}
-.topbar{height:39px;background:var(--c1);border-bottom:1px solid var(--bdr);display:flex;align-items:center;padding:0 10px;gap:5px;flex-shrink:0}
-.t-logo{font-family:var(--mn);font-size:11px;font-weight:500;letter-spacing:4px;color:var(--grn)}
-.t-sep{width:1px;height:11px;background:var(--bdr)}
-.pill{font-family:var(--mn);font-size:7px;padding:1px 5px;border-radius:7px;border:1px solid var(--bdr);color:var(--dim);background:var(--c2)}
-.pill.grn{color:var(--grn);border-color:rgba(0,201,167,.3);background:rgba(0,201,167,.07)}
-.pill.pur{color:var(--pur);border-color:rgba(139,110,255,.3);background:rgba(139,110,255,.07)}
-.pill.blu{color:var(--blu);border-color:rgba(56,182,255,.3);background:rgba(56,182,255,.07)}
-.t-r{margin-left:auto;display:flex;align-items:center;gap:4px}
-.ldot{width:5px;height:5px;background:var(--red);border-radius:50%;animation:blink .6s infinite}
+  * { box-sizing: border-box; margin: 0; padding: 0; }
 
-/* scrollable tab bar */
-.tabbar{height:33px;background:var(--c1);border-bottom:1px solid var(--bdr);display:flex;flex-shrink:0;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
-.tabbar::-webkit-scrollbar{display:none}
-.tb{flex-shrink:0;padding:0 10px;height:33px;font-family:var(--mn);font-size:8px;font-weight:500;color:var(--dim);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap}
-.tb.on{color:var(--grn);border-bottom-color:var(--grn)}
-.tb.xrt.on{color:var(--pur);border-bottom-color:var(--pur)}
-.tb.mlt.on{color:var(--blu);border-bottom-color:var(--blu)}
-.tb.snst.on{color:var(--yel);border-bottom-color:var(--yel)}
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--mono);
+    height: 100dvh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
 
-.pages{flex:1;min-height:0;position:relative}
-.pg{position:absolute;inset:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:8px 10px calc(8px + var(--sb));display:none}
-.pg.on{display:block}
+  #cam-wrap {
+    position: relative;
+    flex: 1;
+    overflow: hidden;
+    background: #000;
+  }
 
-/* ═══ CAMERA — FIXED ASPECT, NEVER FULLSCREEN ═══ */
-/* The key: .cambox never uses 100vh/100vw for dimensions.
-   XR camera bleed is hidden by GL clearing to white in the XR frame loop */
-.cambox{position:relative;width:100%;border-radius:9px;overflow:hidden;background:#000;margin-bottom:8px}
-.cambox::after{content:'';display:block;padding-top:75%}/* 4:3 locked */
-.cambox video,.cambox canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.cambox canvas{pointer-events:none}
-.cambox .dov{opacity:.6;mix-blend-mode:lighten}/* depth overlay */
-.nocam{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;color:var(--dim);font-size:11px;background:var(--bg)}
-.nocam.gone{display:none}
-.scanl{position:absolute;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(0,201,167,.3),transparent);animation:scan 3s linear infinite;pointer-events:none}
-@keyframes scan{0%{top:0}100%{top:100%}}
-.brk{position:absolute;width:10px;height:10px;pointer-events:none}
-.brk.tl{top:4px;left:4px;border-top:2px solid var(--grn);border-left:2px solid var(--grn)}
-.brk.tr{top:4px;right:4px;border-top:2px solid var(--grn);border-right:2px solid var(--grn)}
-.brk.bl{bottom:4px;left:4px;border-bottom:2px solid var(--grn);border-left:2px solid var(--grn)}
-.brk.br2{bottom:4px;right:4px;border-bottom:2px solid var(--grn);border-right:2px solid var(--grn)}
-.hz{position:absolute;left:0;right:0;height:1px;pointer-events:none;transition:top .1s}
-.hz::after{content:'';display:block;height:1px;background:linear-gradient(90deg,transparent 5%,rgba(240,80,80,.5) 25%,rgba(240,80,80,.5) 75%,transparent 95%)}
-.hud{position:absolute;font-family:var(--mn);font-size:8px;color:var(--grn);background:rgba(5,16,30,.88);padding:2px 5px;border-radius:3px;line-height:1.4}
-.hud.tl{top:4px;left:4px}.hud.tr{top:4px;right:4px}.hud.br{bottom:4px;right:4px}
+  #cam {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
 
-/* XR overlay banner — shows during XR to replace camera in tab (not fullscreen!) */
-.xr-overlay-notice{
-  display:none;position:absolute;inset:0;background:rgba(9,24,41,.97);
-  align-items:center;justify-content:center;flex-direction:column;gap:6px;
-  font-family:var(--mn);font-size:8px;color:var(--pur);text-align:center;
-  border-radius:9px;
-}
-.xr-overlay-notice.show{display:flex}
-.xr-overlay-notice .xr-big{font-size:13px;font-weight:500;letter-spacing:2px}
+  #canvas-overlay {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
 
-/* cards */
-.crow{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:8px}
-.bcard{background:var(--c1);border:1px solid var(--bdr);border-radius:9px;padding:10px 11px;position:relative;overflow:hidden}
-.bc-acc{position:absolute;top:0;left:0;right:0;height:2px;border-radius:9px 9px 0 0}
-.bc-lbl{font-family:var(--mn);font-size:7px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;margin-bottom:4px}
-.bc-num{font-family:var(--mn);font-size:24px;font-weight:500;line-height:1}
-.bc-u{font-size:9px;color:var(--dim);margin-left:1px}
-.bc-src{font-family:var(--mn);font-size:7px;color:var(--dim);margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.cbar{height:2px;background:var(--bdr);border-radius:1px;margin-top:4px;overflow:hidden}
-.cbf{height:100%;border-radius:1px;transition:width .3s}
+  /* HUD overlay */
+  .hud {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
 
-/* live block */
-.lb{background:var(--c1);border:1px solid var(--bdr);border-radius:9px;padding:10px 11px;display:flex;align-items:center;gap:10px;margin-bottom:8px}
-.lb-n{font-family:var(--mn);font-size:30px;font-weight:500;flex-shrink:0;min-width:75px}
-.lb-u{font-family:var(--mn);font-size:9px;color:var(--dim);margin-top:2px}
-.lb-r{flex:1;min-width:0}
-.lb-st{font-family:var(--mn);font-size:8px;margin-bottom:3px}
-.lb-cb{height:3px;background:var(--bdr);border-radius:2px;overflow:hidden}
-.lb-cbf{height:100%;border-radius:2px;transition:width .3s}
-.lb-src{font-family:var(--mn);font-size:7px;color:var(--dim);margin-top:3px}
+  /* Crosshair */
+  .crosshair {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 60px;
+    height: 60px;
+  }
+  .crosshair::before, .crosshair::after {
+    content: '';
+    position: absolute;
+    background: var(--accent);
+    opacity: 0.8;
+  }
+  .crosshair::before { width: 2px; height: 100%; left: 50%; transform: translateX(-50%); }
+  .crosshair::after  { height: 2px; width: 100%; top: 50%; transform: translateY(-50%); }
 
-/* method header */
-.mhdr{background:var(--c1);border:1px solid var(--bdr);border-radius:9px;padding:10px 11px;margin-bottom:8px}
-.mhdr-top{display:flex;align-items:center;gap:6px;margin-bottom:5px}
-.mh-b{font-family:var(--mn);font-size:7px;padding:2px 7px;border-radius:5px;border:1px solid;flex-shrink:0}
-.mh-t{font-size:13px;font-weight:700;flex:1}
-.mh-d{font-size:9px;color:var(--dim);line-height:1.65;margin-bottom:6px}
-.mh-f{font-family:var(--mn);font-size:8px;color:var(--grn);background:rgba(0,201,167,.05);border:1px solid rgba(0,201,167,.1);border-radius:5px;padding:6px 9px;line-height:1.8}
+  .crosshair-ring {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80px; height: 80px;
+    border: 1.5px solid var(--accent);
+    border-radius: 50%;
+    opacity: 0.5;
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:0.3;transform:translate(-50%,-50%) scale(1)} 50%{opacity:0.7;transform:translate(-50%,-50%) scale(1.08)} }
 
-/* data rows */
-.dcard{background:var(--c1);border:1px solid var(--bdr);border-radius:9px;overflow:hidden;margin-bottom:8px}
-.dr{display:flex;align-items:center;justify-content:space-between;padding:5px 11px;border-bottom:1px solid rgba(16,34,54,.7);font-size:9px}
-.dr:last-child{border:none}
-.dk{color:var(--dim)}.dv{font-family:var(--mn);font-size:9px;color:var(--fg)}
-.dv.g{color:var(--grn)}.dv.p{color:var(--pur)}.dv.b{color:var(--blu)}.dv.y{color:var(--yel)}.dv.r{color:var(--red)}.dv.o{color:var(--ora)}
+  /* Corner decorations */
+  .corner { position: absolute; width: 22px; height: 22px; border-color: var(--accent); border-style: solid; opacity: 0.6; }
+  .corner.tl { top: 12px; left: 12px; border-width: 2px 0 0 2px; }
+  .corner.tr { top: 12px; right: 12px; border-width: 2px 2px 0 0; }
+  .corner.bl { bottom: 12px; left: 12px; border-width: 0 0 2px 2px; }
+  .corner.br { bottom: 12px; right: 12px; border-width: 0 2px 2px 0; }
 
-/* XR button */
-.xr-btn{width:100%;padding:10px;border-radius:9px;font-family:var(--mn);font-size:11px;letter-spacing:2px;cursor:pointer;margin-bottom:8px;border:1px solid rgba(139,110,255,.25);background:rgba(139,110,255,.07);color:var(--pur);text-align:center}
-.xr-btn:active{opacity:.7}
-.xr-btn.active{border-color:rgba(240,80,80,.3);background:rgba(240,80,80,.07);color:var(--red)}
-.xr-btn.na{opacity:.35;cursor:not-allowed}
+  /* Scan line */
+  .scan-line {
+    position: absolute;
+    left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    opacity: 0.4;
+    animation: scan 3s linear infinite;
+  }
+  @keyframes scan { 0%{top:0%} 100%{top:100%} }
 
-/* notes */
-.note{background:rgba(56,182,255,.05);border:1px solid rgba(56,182,255,.12);border-radius:8px;padding:8px 11px;font-size:9px;color:var(--blu);line-height:1.7;margin-bottom:8px}
-.warn{background:rgba(240,192,48,.04);border:1px solid rgba(240,192,48,.12);border-radius:8px;padding:8px 11px;font-size:9px;color:var(--yel);line-height:1.7;margin-bottom:8px}
+  /* Big readout panel */
+  #readout {
+    background: linear-gradient(180deg, rgba(0,10,15,0.97) 0%, rgba(0,5,10,0.99) 100%);
+    border-top: 1px solid var(--border);
+    padding: 10px 14px 8px;
+    flex-shrink: 0;
+  }
 
-/* sparkline */
-.spkw{background:var(--c1);border:1px solid var(--bdr);border-radius:8px;padding:7px 10px;margin-bottom:8px}
-.spk-lbl{font-family:var(--mn);font-size:7px;color:var(--dim);letter-spacing:2px;text-transform:uppercase;margin-bottom:4px}
-canvas.spk{width:100%;display:block}
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
 
-/* depth legend */
-.legend{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:7px}
-.leg{display:flex;align-items:center;gap:3px;font-family:var(--mn);font-size:7px;color:var(--dim)}
-.leg-d{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+  .metric-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 10px;
+    position: relative;
+    overflow: hidden;
+  }
+  .metric-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent2), var(--accent));
+    opacity: 0.6;
+  }
 
-/* toast */
-#toast{position:fixed;bottom:calc(var(--sb)+10px);left:50%;transform:translateX(-50%) translateY(60px);background:var(--c2);border:1px solid rgba(0,201,167,.2);color:var(--fg);padding:6px 13px;border-radius:8px;font-size:10px;z-index:999;transition:transform .2s;white-space:nowrap;max-width:90vw;pointer-events:none}
-#toast.show{transform:translateX(-50%) translateY(0)}
+  .metric-label {
+    font-family: var(--head);
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin-bottom: 2px;
+  }
 
-/* sensor value pills inside data rows */
-.sv{font-family:var(--mn);font-size:8px;padding:1px 5px;border-radius:4px;border:1px solid}
+  .metric-value {
+    font-family: var(--head);
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--accent);
+    line-height: 1;
+    letter-spacing: -1px;
+  }
 
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.1}}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:.1}}
-@keyframes spin{to{transform:rotate(360deg)}}
-.spin{display:inline-block;animation:spin .8s linear infinite}
+  .metric-unit {
+    font-size: 12px;
+    color: var(--dim);
+    margin-left: 2px;
+    font-family: var(--mono);
+  }
+
+  .metric-sub {
+    font-size: 9px;
+    color: rgba(0,255,180,0.4);
+    margin-top: 2px;
+  }
+
+  /* Method status bar */
+  #methods-bar {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 6px;
+  }
+
+  .method-pill {
+    font-size: 9px;
+    font-family: var(--head);
+    font-weight: 600;
+    letter-spacing: 0.8px;
+    padding: 3px 7px;
+    border-radius: 20px;
+    border: 1px solid;
+    text-transform: uppercase;
+    transition: all 0.3s;
+  }
+  .method-pill.active   { border-color: var(--accent); color: var(--accent); background: rgba(0,255,180,0.08); }
+  .method-pill.inactive { border-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.25); }
+  .method-pill.error    { border-color: var(--warn); color: var(--warn); background: rgba(255,107,53,0.06); }
+
+  /* Confidence bars */
+  .conf-row { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+  .conf-label { font-size: 9px; width: 90px; color: var(--dim); flex-shrink: 0; }
+  .conf-bar-bg { flex: 1; height: 4px; background: rgba(255,255,255,0.06); border-radius: 2px; overflow: hidden; }
+  .conf-bar-fill { height: 100%; border-radius: 2px; background: linear-gradient(90deg, var(--accent2), var(--accent)); transition: width 0.5s ease; }
+  .conf-val { font-size: 9px; width: 28px; text-align: right; color: var(--accent); }
+
+  /* Status line */
+  #status-line {
+    font-size: 9px;
+    color: rgba(0,255,180,0.35);
+    text-align: center;
+    letter-spacing: 0.5px;
+    border-top: 1px solid rgba(0,255,180,0.06);
+    padding-top: 5px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  /* Permission screen */
+  #permission-screen {
+    position: fixed;
+    inset: 0;
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 30px;
+    z-index: 100;
+    text-align: center;
+  }
+  #permission-screen h1 {
+    font-family: var(--head);
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--accent);
+    margin-bottom: 10px;
+    letter-spacing: -1px;
+  }
+  #permission-screen p {
+    font-size: 13px;
+    color: var(--dim);
+    line-height: 1.6;
+    margin-bottom: 24px;
+    max-width: 300px;
+  }
+  #start-btn {
+    background: linear-gradient(135deg, var(--accent2), var(--accent));
+    color: #000;
+    border: none;
+    padding: 14px 36px;
+    font-family: var(--head);
+    font-weight: 800;
+    font-size: 14px;
+    letter-spacing: 2px;
+    border-radius: 50px;
+    cursor: pointer;
+    text-transform: uppercase;
+  }
+
+  .feature-list {
+    text-align: left;
+    font-size: 11px;
+    color: rgba(0,255,180,0.5);
+    line-height: 2;
+    margin-bottom: 20px;
+  }
+  .feature-list li { list-style: none; padding-left: 16px; position: relative; }
+  .feature-list li::before { content: '›'; position: absolute; left: 0; color: var(--accent2); }
+
+  #tilt-warn {
+    display: none;
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: rgba(255,107,53,0.12);
+    border-top: 1px solid var(--warn);
+    color: var(--warn);
+    text-align: center;
+    font-size: 11px;
+    padding: 8px;
+    z-index: 50;
+  }
+
+  .depth-canvas-wrap {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 100px;
+    height: 100px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    opacity: 0.7;
+    display: none;
+  }
+  #depth-canvas { width: 100%; height: 100%; }
+
+  .ticker {
+    display: inline-block;
+    animation: blink 1s step-end infinite;
+  }
+  @keyframes blink { 50%{opacity:0} }
 </style>
 </head>
 <body>
 
-<!-- ═══════════ SPLASH ═══════════ -->
-<div id="splash">
-  <div class="sp-tag">All Methods · All Sensors · All ML · No Fullscreen</div>
-  <div class="sp-logo">AR · SENSE</div>
-
-  <div class="ii-list">
-    <!-- Camera -->
-    <div class="ii" id="ii-cam">
-      <div class="ii-ico">📷</div>
-      <div class="ii-body">
-        <div class="ii-title">Camera  <span style="font-family:var(--mn);font-size:7px;color:var(--dim)">(required)</span></div>
-        <div class="ii-sub">Rear-facing · live feed for every tab</div>
-        <button class="retry" onclick="initCam()">↺ Retry</button>
-      </div>
-      <div class="ii-right"><div class="ii-st" id="ii-cam-st"><span class="spin">⟳</span></div></div>
-    </div>
-
-    <!-- Sensors -->
-    <div class="ii" id="ii-sens">
-      <div class="ii-ico">📡</div>
-      <div class="ii-body">
-        <div class="ii-title">Sensors  <span style="font-family:var(--mn);font-size:7px;color:var(--dim)">(motion + gravity + baro)</span></div>
-        <div class="ii-sub" id="ii-sens-sub">DeviceMotion · GravitySensor · AbsolutePressureSensor</div>
-        <button class="retry" onclick="initSensors()">↺ Retry</button>
-      </div>
-      <div class="ii-right"><div class="ii-st" id="ii-sens-st"><span class="spin">⟳</span></div></div>
-    </div>
-
-    <!-- WebXR capability check -->
-    <div class="ii" id="ii-xr">
-      <div class="ii-ico">🔮</div>
-      <div class="ii-body">
-        <div class="ii-title">WebXR  <span style="font-family:var(--mn);font-size:7px;color:var(--dim)">(H1–H4, D1–D4)</span></div>
-        <div class="ii-sub" id="ii-xr-sub">ARCore/ARKit · hit-test · plane-detection · depth-sensing<br><strong>Note:</strong> XR session opens in fullscreen briefly. Our UI covers it via GL trick + domOverlay.</div>
-        <button class="retry" onclick="checkXR()">↺ Retry</button>
-      </div>
-      <div class="ii-right"><div class="ii-st" id="ii-xr-st"><span class="spin">⟳</span></div></div>
-    </div>
-
-    <!-- DA2-Small — primary model -->
-    <div class="ii" id="ii-da2s">
-      <div class="ii-ico">🧠</div>
-      <div class="ii-body">
-        <div class="ii-title">Depth Anything V2-Small  <span style="font-family:var(--mn);font-size:7px;color:var(--dim)">~25 MB · required</span></div>
-        <div class="ii-sub" id="ii-da2s-sub">ML depth estimation · relative → calibrated metric · ~5 fps on mobile</div>
-        <div class="prog-wrap">
-          <div class="prog-bar"><div class="pf" id="pf-da2s" style="background:linear-gradient(90deg,var(--pur),var(--blu))"></div></div>
-          <div class="prog-pct" id="pp-da2s">0%</div>
-        </div>
-        <button class="retry" onclick="loadModel('da2s')">↺ Retry</button>
-      </div>
-      <div class="ii-right"><div class="ii-st" id="ii-da2s-st"><span class="spin">⟳</span></div></div>
-    </div>
-
-    <!-- DepthPro — optional, heavy -->
-    <div class="ii" id="ii-dpr">
-      <div class="ii-ico">🔬</div>
-      <div class="ii-body">
-        <div class="ii-title">Apple DepthPro  <span style="font-family:var(--mn);font-size:7px;color:var(--ora)">~300 MB · optional</span></div>
-        <div class="ii-sub" id="ii-dpr-sub">Zero-shot METRIC depth — outputs real metres, no calibration needed.<br>Skip on low-RAM phones (&lt;4 GB). Improves H6, D5, D6 significantly.</div>
-        <div class="prog-wrap">
-          <div class="prog-bar"><div class="pf" id="pf-dpr" style="background:linear-gradient(90deg,var(--ora),var(--yel))"></div></div>
-          <div class="prog-pct" id="pp-dpr">0%</div>
-        </div>
-        <button class="retry" onclick="loadModel('dpr')">↺ Retry</button>
-        <button id="dpr-skip-btn" onclick="skipDPR()" style="font-family:var(--mn);font-size:8px;padding:2px 8px;background:none;border:1px solid rgba(58,80,112,.6);border-radius:4px;color:var(--dim);cursor:pointer;display:inline-block;margin-top:4px;margin-left:4px">⊘ Skip</button>
-      </div>
-      <div class="ii-right"><div class="ii-st" id="ii-dpr-st"><span class="spin">⟳</span></div></div>
-    </div>
-
-  </div>
-
-  <button id="launch" disabled onclick="doLaunch()">LAUNCH</button>
+<!-- Permission screen -->
+<div id="permission-screen">
+  <h1>3D SPATIAL RANGER</h1>
+  <p>Real-time camera height & object distance measurement using all available device sensors and AI depth estimation.</p>
+  <ul class="feature-list">
+    <li>IMU / Gyroscope · Camera height via gravity vector</li>
+    <li>WebXR AR · World-anchored depth tracking</li>
+    <li>MiDaS Neural Depth · ML-based monocular depth</li>
+    <li>Focal length math · Geometric triangulation</li>
+    <li>Sensor fusion · Weighted multi-method average</li>
+  </ul>
+  <button id="start-btn">ACTIVATE SENSORS</button>
 </div>
 
-<!-- ═══════════ APP ═══════════════ -->
-<div id="app">
-  <div class="topbar">
-    <span class="t-logo">AR·SENSE</span>
-    <span class="t-sep"></span>
-    <span class="pill" id="p-os">–</span>
-    <div class="t-r">
-      <span class="pill" id="p-xr">XR–</span>
-      <span class="pill" id="p-ml">ML–</span>
-      <span class="pill" id="p-baro">BARO–</span>
-      <div style="display:flex;align-items:center;gap:3px"><div class="ldot"></div><span style="font-family:var(--mn);font-size:7px;color:var(--red)">LIVE</span></div>
+<!-- Main UI -->
+<div id="cam-wrap" style="display:none">
+  <video id="cam" autoplay playsinline muted></video>
+  <canvas id="canvas-overlay"></canvas>
+
+  <div class="depth-canvas-wrap" id="depth-wrap">
+    <canvas id="depth-canvas"></canvas>
+  </div>
+
+  <div class="hud">
+    <div class="crosshair-ring"></div>
+    <div class="crosshair"></div>
+    <div class="scan-line"></div>
+    <div class="corner tl"></div>
+    <div class="corner tr"></div>
+    <div class="corner bl"></div>
+    <div class="corner br"></div>
+  </div>
+</div>
+
+<div id="readout" style="display:none">
+  <div class="metrics-grid">
+    <div class="metric-card">
+      <div class="metric-label">Camera Height</div>
+      <div>
+        <span class="metric-value" id="height-val">--</span><span class="metric-unit">m</span>
+      </div>
+      <div class="metric-sub" id="height-sub">awaiting sensors</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Object Distance</div>
+      <div>
+        <span class="metric-value" id="dist-val">--</span><span class="metric-unit">m</span>
+      </div>
+      <div class="metric-sub" id="dist-sub">awaiting depth</div>
     </div>
   </div>
 
-  <!-- 15 tabs: LIVE + H1-H7 + D1-D7 -->
-  <div class="tabbar">
-    <button class="tb on"    data-pg="live">LIVE</button>
-    <button class="tb xrt"  data-pg="h1">H1·XR-floor</button>
-    <button class="tb xrt"  data-pg="h2">H2·XR-hit↓</button>
-    <button class="tb xrt"  data-pg="h3">H3·XR-plane</button>
-    <button class="tb xrt"  data-pg="h4">H4·XR-depth</button>
-    <button class="tb snst" data-pg="h5">H5·Baro</button>
-    <button class="tb mlt"  data-pg="h6">H6·ML-depth</button>
-    <button class="tb snst" data-pg="h7">H7·Trig</button>
-    <button class="tb xrt"  data-pg="d1">D1·XR-hit→</button>
-    <button class="tb xrt"  data-pg="d2">D2·XR-depth</button>
-    <button class="tb xrt"  data-pg="d3">D3·XR-grid</button>
-    <button class="tb xrt"  data-pg="d4">D4·XR-plane</button>
-    <button class="tb mlt"  data-pg="d5">D5·ML-ctr</button>
-    <button class="tb mlt"  data-pg="d6">D6·ML-tap</button>
-    <button class="tb snst" data-pg="d7">D7·Trig</button>
+  <div id="methods-bar">
+    <div class="method-pill inactive" id="pill-imu">IMU</div>
+    <div class="method-pill inactive" id="pill-xr">WebXR</div>
+    <div class="method-pill inactive" id="pill-midas">MiDaS</div>
+    <div class="method-pill inactive" id="pill-geo">Geometry</div>
+    <div class="method-pill inactive" id="pill-fusion">FUSION</div>
   </div>
 
-  <div class="pages">
+  <div class="conf-row">
+    <div class="conf-label">IMU Height</div>
+    <div class="conf-bar-bg"><div class="conf-bar-fill" id="conf-imu" style="width:0%"></div></div>
+    <div class="conf-val" id="cval-imu">0%</div>
+  </div>
+  <div class="conf-row">
+    <div class="conf-label">WebXR Depth</div>
+    <div class="conf-bar-bg"><div class="conf-bar-fill" id="conf-xr" style="width:0%"></div></div>
+    <div class="conf-val" id="cval-xr">0%</div>
+  </div>
+  <div class="conf-row">
+    <div class="conf-label">MiDaS Neural</div>
+    <div class="conf-bar-bg"><div class="conf-bar-fill" id="conf-midas" style="width:0%"></div></div>
+    <div class="conf-val" id="cval-midas">0%</div>
+  </div>
 
-    <!-- ══ LIVE ══ -->
-    <div class="pg on" id="pg-live">
-      <div class="cambox">
-        <video id="vid" autoplay playsinline muted></video>
-        <canvas id="cv0-d" class="dov"></canvas>
-        <canvas id="cv0-a"></canvas>
-        <div class="scanl"></div>
-        <div class="brk tl"></div><div class="brk tr"></div><div class="brk bl"></div><div class="brk br2"></div>
-        <div class="hz" id="hz0" style="top:50%"></div>
-        <div class="hud tl" id="hud0-tl">–</div>
-        <div class="hud tr" id="hud0-tr">–</div>
-        <div class="hud br" id="hud0-br">–</div>
-        <div class="nocam" id="nocam"><div>📷</div><div>Starting…</div></div>
-        <div class="xr-overlay-notice" id="xr-notice-live">
-          <div class="xr-big">WebXR ACTIVE</div>
-          <div>Camera feed replaced by XR session<br>XR reading pose + planes + depth<br>HTML visible via domOverlay</div>
-          <button onclick="stopXR()" style="margin-top:8px;font-family:var(--mn);font-size:9px;padding:5px 12px;background:rgba(240,80,80,.1);border:1px solid rgba(240,80,80,.3);border-radius:5px;color:var(--red);cursor:pointer">STOP XR</button>
-        </div>
-      </div>
-      <div class="crow">
-        <div class="bcard" style="border-color:rgba(0,201,167,.2)">
-          <div class="bc-acc" style="background:linear-gradient(90deg,var(--grn),transparent)"></div>
-          <div class="bc-lbl">Camera Height</div>
-          <div class="bc-num" id="lv-h" style="color:var(--grn)">–<span class="bc-u">m</span></div>
-          <div class="bc-src" id="lv-h-src">awaiting…</div>
-          <div class="cbar"><div class="cbf" id="lv-h-bar" style="width:0%;background:var(--grn)"></div></div>
-        </div>
-        <div class="bcard" style="border-color:rgba(240,192,48,.2)">
-          <div class="bc-acc" style="background:linear-gradient(90deg,var(--yel),transparent)"></div>
-          <div class="bc-lbl">Object Distance</div>
-          <div class="bc-num" id="lv-d" style="color:var(--yel)">–<span class="bc-u">m</span></div>
-          <div class="bc-src" id="lv-d-src">point camera…</div>
-          <div class="cbar"><div class="cbf" id="lv-d-bar" style="width:0%;background:var(--yel)"></div></div>
-        </div>
-      </div>
-      <button class="xr-btn" id="xr-main-btn" onclick="toggleXR()">▶ START WebXR  (H1–H4, D1–D4)</button>
-      <div class="dcard">
-        <div class="dr"><span class="dk">H active</span><span class="dv g" id="lv-hcnt">0/7</span></div>
-        <div class="dr"><span class="dk">D active</span><span class="dv g" id="lv-dcnt">0/7</span></div>
-        <div class="dr"><span class="dk">Confidence H / D</span><span class="dv" id="lv-conf">–/–</span></div>
-        <div class="dr"><span class="dk">Depression angle</span><span class="dv" id="lv-dep">–°</span></div>
-        <div class="dr"><span class="dk">DA2-Small scale S</span><span class="dv b" id="lv-s1">uncal — needs XR or baro anchor</span></div>
-        <div class="dr"><span class="dk">DepthPro center depth</span><span class="dv o" id="lv-dpr">– (metric, no cal needed)</span></div>
-        <div class="dr"><span class="dk">XR session</span><span class="dv p" id="lv-xr">inactive</span></div>
-      </div>
-      <div class="spkw"><div class="spk-lbl">height history</div><canvas class="spk" id="spk-h" height="28"></canvas></div>
-      <div class="spkw"><div class="spk-lbl">distance history</div><canvas class="spk" id="spk-d" height="28"></canvas></div>
-    </div>
+  <div id="status-line">INITIALIZING<span class="ticker">_</span></div>
+</div>
 
-    <!-- ══ H1 XR floor ══ -->
-    <div class="pg" id="pg-h1">
-      <div class="cambox">
-        <video id="vid-h1" autoplay playsinline muted></video>
-        <canvas id="cv-h1-a"></canvas>
-        <div class="brk tl"></div><div class="brk tr"></div><div class="brk bl"></div><div class="brk br2"></div>
-        <div class="hud br" id="h1-hud">H1=–</div>
-        <div class="xr-overlay-notice" id="xr-notice-h1">
-          <div class="xr-big">XR ACTIVE</div><div style="font-family:var(--mn);font-size:8px">Reading local-floor viewer.y</div>
-        </div>
-      </div>
-      <div class="mhdr">
-        <div class="mhdr-top"><span class="mh-b" style="color:var(--pur);border-color:rgba(139,110,255,.3);background:rgba(139,110,255,.07)">XR · SLAM</span><div class="mh-t">H1 · XR local-floor viewer.y</div></div>
-        <div class="mh-d">WebXR <code>local-floor</code> sets Y=0 at the detected floor. The viewer pose Y is the camera's height above floor. Uses ARCore/ARKit SLAM — continuous tracking, sub-cm accuracy. Most reliable height method when available.</div>
-        <div class="mh-f">height = viewerPose.transform.position.y<br>accuracy: ±2 cm · 60 fps · ARCore/ARKit required</div>
-      </div>
-      <button class="xr-btn" onclick="toggleXR()" id="xr-btn-h1">▶ START XR</button>
-      <div class="lb"><div><div class="lb-n" id="h1-n" style="color:var(--pur)">–</div><div class="lb-u">m</div></div><div class="lb-r"><div class="lb-st" id="h1-st" style="color:var(--dim)">XR not started</div><div class="lb-cb"><div class="lb-cbf" id="h1-cb" style="width:0%;background:var(--pur)"></div></div><div class="lb-src" id="h1-src">–</div></div></div>
-      <div class="dcard">
-        <div class="dr"><span class="dk">raw viewer.y</span><span class="dv p" id="h1-raw">–</span></div>
-        <div class="dr"><span class="dk">local-floor ref</span><span class="dv" id="h1-rs">–</span></div>
-        <div class="dr"><span class="dk">fusion weight</span><span class="dv">5 (highest)</span></div>
-      </div>
-    </div>
+<div id="tilt-warn">⚠ Hold phone vertically (portrait, perpendicular to ground) for accurate readings</div>
 
-    <!-- ══ H2 XR hit-down ══ -->
-    <div class="pg" id="pg-h2">
-      <div class="cambox">
-        <video id="vid-h2" autoplay playsinline muted></video>
-        <canvas id="cv-h2-a"></canvas>
-        <div class="brk tl"></div><div class="brk tr"></div><div class="brk bl"></div><div class="brk br2"></div>
-        <div class="hud br" id="h2-hud">H2=–</div>
-        <div class="xr-overlay-notice" id="xr-notice-h2"><div class="xr-big">XR ACTIVE</div><div style="font-family:var(--mn);font-size:8px">Hit-test ray [0,−1,0]</div></div>
-      </div>
-      <div class="mhdr">
-        <div class="mhdr-top"><span class="mh-b" style="color:var(--pur);border-color:rgba(139,110,255,.3);background:rgba(139,110,255,.07)">XR · Hit-Test</span><div class="mh-t">H2 · XR hit-test downward</div></div>
-        <div class="mh-d">Casts ray [0,−1,0] from viewer. Floor hit Y subtracted from viewer.y. Independent from H1 — different code path via hit-test subscription rather than reference space calibration.</div>
-        <div class="mh-f">height = viewerPose.y − hitResult.y  ·  ±3 cm</div>
-      </div>
-      <button class="xr-btn" onclick="toggleXR()" id="xr-btn-h2">▶ START XR</button>
-      <div class="lb"><div><div class="lb-n" id="h2-n" style="color:var(--pur)">–</div><div class="lb-u">m</div></div><div class="lb-r"><div class="lb-st" id="h2-st" style="color:var(--dim)">XR not started</div><div class="lb-cb"><div class="lb-cbf" id="h2-cb" style="width:0%;background:var(--pur)"></div></div><div class="lb-src" id="h2-src">–</div></div></div>
-      <div class="dcard">
-        <div class="dr"><span class="dk">viewer.y</span><span class="dv" id="h2-vy">–</span></div>
-        <div class="dr"><span class="dk">hit.y</span><span class="dv" id="h2-hy">–</span></div>
-        <div class="dr"><span class="dk">fusion weight</span><span class="dv">5</span></div>
-      </div>
-    </div>
+<script>
+// ─────────────────────────────────────────────
+//  STATE
+// ─────────────────────────────────────────────
+const state = {
+  // IMU
+  imuHeight: null,
+  imuConf: 0,
+  imuActive: false,
+  gravX: 0, gravY: 0, gravZ: 0,
+  devicePitch: 0,  // angle from vertical
+  // Device orientation / absolute
+  absAlpha: null, absBeta: null, absGamma: null,
 
-    <!-- ══ H3 XR plane ══ -->
-    <div class="pg" id="pg-h3">
-      <div class="cambox">
-        <video id="vid-h3" autoplay playsinline muted></video>
-        <canvas id="cv-h3-a"></canvas>
-        <div class="brk tl"></div><div class="brk tr"></div><div class="brk bl"></div><div class="brk br2"></div>
-        <div class="hud br" id="h3-hud">H3=–</div>
-        <div class="xr-overlay-notice" id="xr-notice-h3"><div class="xr-big">XR ACTIVE</div><div style="font-family:var(--mn);font-size:8px">Plane detection</div></div>
-      </div>
-      <div class="mhdr">
-        <div class="mhdr-top"><span class="mh-b" style="color:var(--pur);border-color:rgba(139,110,255,.3);background:rgba(139,110,255,.07)">XR · Planes</span><div class="mh-t">H3 · XR plane detection floor</div></div>
-        <div class="mh-d">WebXR detects and tracks flat surfaces. The lowest horizontal plane = floor. Height = viewer.y − floorPlane.y. More stable than H2 as planes persist across frames.</div>
-        <div class="mh-f">height = viewerPose.y − lowestHorizontalPlane.y  ·  ±2 cm</div>
-      </div>
-      <button class="xr-btn" onclick="toggleXR()" id="xr-btn-h3">▶ START XR</button>
-      <div class="lb"><div><div class="lb-n" id="h3-n" style="color:var(--pur)">–</div><div class="lb-u">m</div></div><div class="lb-r"><div class="lb-st" id="h3-st" style="color:var(--dim)">XR not started</div><div class="lb-cb"><div class="lb-cbf" id="h3-cb" style="width:0%;background:var(--pur)"></div></div><div class="lb-src" id="h3-src">–</div></div></div>
-      <div class="dcard">
-        <div class="dr"><span class="dk">planes detected</span><span class="dv p" id="h3-plcnt">–</span></div>
-        <div class="dr"><span class="dk">floor plane Y</span><span class="dv" id="h3-fy">–</span></div>
-        <div class="dr"><span class="dk">viewer Y</span><span class="dv" id="h3-vy">–</span></div>
-        <div class="dr"><span class="dk">fusion weight</span><span class="dv">4</span></div>
-      </div>
-    </div>
+  // WebXR
+  xrSession: null,
+  xrHeight: null,
+  xrDist: null,
+  xrConf: 0,
+  xrActive: false,
 
-    <!-- ══ H4 XR depth buffer ══ -->
-    <div class="pg" id="pg-h4">
-      <div class="cambox">
-        <video id="vid-h4" autoplay playsinline muted></video>
-        <canvas id="cv-h4-a"></canvas>
-        <div class="brk tl"></div><div class="brk tr"></div><div class="brk bl"></div><div class="brk br2"></div>
-        <div class="hud br" id="h4-hud">H4=–</div>
-        <div class="xr-overlay-notice" id="xr-notice-h4"><div class="xr-big">XR ACTIVE</div><div style="font-family:var(--mn);font-size:8px">Hardware depth buffer</div></div>
-      </div>
-      <div class="mhdr">
-        <div class="mhdr-top"><span class="mh-b" style="color:var(--pur);border-color:rgba(139,110,255,.3);background:rgba(139,110,255,.07)">XR · HW Depth</span><div class="mh-t">H4 · XR depth buffer bottom rows</div></div>
-        <div class="mh-d">Hardware depth map (ToF/structured light). Bottom 15% of rows = floor region when camera tilts forward. Average those depths × cos(30°) for angle correction = camera height.</div>
-        <div class="mh-f">height = avg(depth[y>0.85]) × cos(30°)  ·  ±1 cm  ·  ToF/depth-sensing devices only</div>
-      </div>
-      <button class="xr-btn" onclick="toggleXR()" id="xr-btn-h4">▶ START XR</button>
-      <div class="lb"><div><div class="lb-n" id="h4-n" style="color:var(--pur)">–</div><div class="lb-u">m</div></div><div class="lb-r"><div class="lb-st" id="h4-st" style="color:var(--dim)">XR not started</div><div class="lb-cb"><div class="lb-cbf" id="h4-cb" style="width:0%;background:var(--pur)"></div></div><div class="lb-src" id="h4-src">–</div></div></div>
-      <div class="dcard">
-        <div class="dr"><span class="dk">depth-sensing available</span><span class="dv" id="h4-av">–</span></div>
-        <div class="dr"><span class="dk">floor avg depth</span><span class="dv" id="h4-avg">–</span></div>
-        <div class="dr"><span class="dk">sample count</span><span class="dv" id="h4-n2">–</span></div>
-        <div class="dr"><span class="dk">fusion weight</span><span class="dv">4</span></div>
-      </div>
-    </div>
+  // MiDaS / depth model
+  midasDist: null,
+  midasConf: 0,
+  midasActive: false,
+  midasModel: null,
+  midasInitting: false,
 
-    <!-- ══ H5 Barometer ══ -->
-    <div class="pg" id="pg-h5">
-      <div class="cambox">
-        <video id="vid-h5" autoplay playsinline muted></video>
-        <canvas id="cv-h5-a"></canvas>
-        <div class="brk tl"></div><div class="brk tr"></div><div class="brk bl"></div><div class="brk br2"></div>
-        <div class="hud br" id="h5-hud">H5=–</div>
-      </div>
-      <div class="mhdr">
-        <div class="mhdr-top"><span class="mh-b" style="color:var(--grn);border-color:rgba(0,201,167,.25);background:rgba(0,201,167,.06)">Sensor · Auto</span><div class="mh-t">H5 · Barometric Δ altitude</div></div>
-        <div class="mh-d">AbsolutePressureSensor gives raw hPa. ISA hypsometric formula converts pressure delta from launch to altitude change in metres. Also anchors ML scale calibration. Android Chrome only (not iOS).</div>
-        <div class="mh-f">Δh = 44330 × (1 − (P/P₀)^0.1903)<br>auto · Android Chrome · ±0.5 m relative</div>
-      </div>
-      <div class="lb"><div><div class="lb-n" id="h5-n" style="color:var(--grn)">–</div><div class="lb-u">m Δ</div></div><div class="lb-r"><div class="lb-st" id="h5-st" style="color:var(--dim)">checking…</div><div class="lb-cb"><div class="lb-cbf" id="h5-cb" style="width:0%;background:var(--grn)"></div></div><div class="lb-src" id="h5-src">–</div></div></div>
-      <div class="dcard">
-        <div class="dr"><span class="dk">AbsolutePressureSensor</span><span class="dv" id="h5-api">–</span></div>
-        <div class="dr"><span class="dk">P current (hPa)</span><span class="dv" id="h5-p">–</span></div>
-        <div class="dr"><span class="dk">P₀ launch (hPa)</span><span class="dv" id="h5-p0">–</span></div>
-        <div class="dr"><span class="dk">Also feeds ML scale calibration</span><span class="dv g">yes</span></div>
-        <div class="dr"><span class="dk">fusion weight</span><span class="dv">2</span></div>
-      </div>
-    </div>
+  // Geometric / focal-length estimation
+  geoHeight: null,
+  geoDist: null,
+  geoConf: 0,
+  geoActive: false,
 
-    <!-- ══ H6 ML depth ══ -->
-    <div class="pg" id="pg-h6">
-      <div class="cambox">
-        <video id="vid-h6" autoplay playsinline muted></video>
-        <canvas id="cv-h6-d" class="dov"></canvas>
-        <canvas id="cv-h6-a"></canvas>
-        <div class="brk tl"></div><div class="brk tr"></div><div class="brk bl"></div><div class="brk br2"></div>
-        <div class="hud br" id="h6-hud">H6=–</div>
-      </div>
-      <div class="legend">
-        <div class="leg"><div class="leg-d" style="background:#ff2200"></div>close</div>
-        <div class="leg"><div class="leg-d" style="background:#ff8800"></div>near</div>
-        <div class="leg"><div class="leg-d" style="background:#ffff00"></div>mid</div>
-        <div class="leg"><div class="leg-d" style="background:#00ff88"></div>far</div>
-        <div class="leg"><div class="leg-d" style="background:#0044ff"></div>v.far</div>
-      </div>
-      <div class="mhdr">
-        <div class="mhdr-top"><span class="mh-b" style="color:var(--blu);border-color:rgba(56,182,255,.25);background:rgba(56,182,255,.06)">ML · 3 Models</span><div class="mh-t">H6 · ML depth — floor region</div></div>
-        <div class="mh-d">All ML models run in parallel. Each samples the bottom 15% of the depth map (floor region) and averages. DA models convert via scale S. DepthPro gives metric directly. Best result is used as H6.</div>
-        <div class="mh-f">h = S / floorAvgDisparity  (DA models, needs calibration)<br>h = floorAvgDepth  (DepthPro — metric direct)</div>
-      </div>
-      <div class="lb"><div><div class="lb-n" id="h6-n" style="color:var(--blu)">–</div><div class="lb-u">m</div></div><div class="lb-r"><div class="lb-st" id="h6-st" style="color:var(--dim)">loading ML…</div><div class="lb-cb"><div class="lb-cbf" id="h6-cb" style="width:0%;background:var(--blu)"></div></div><div class="lb-src" id="h6-src">–</div></div></div>
-      <div class="dcard">
-        <div class="dr"><span class="dk">DA2-Small</span><span class="dv b" id="h6-da2s">–</span></div>
-        <div class="dr"><span class="dk">DepthPro (metric)</span><span class="dv o" id="h6-dpr">–</span></div>
-        <div class="dr"><span class="dk">best value used</span><span class="dv" id="h6-best">–</span></div>
-        <div class="dr"><span class="dk">inference times</span><span class="dv" id="h6-inf">–</span></div>
-        <div class="dr"><span class="dk">DA scale sources</span><span class="dv" id="h6-scal">–</span></div>
-        <div class="dr"><span class="dk">fusion weight</span><span class="dv">3</span></div>
-      </div>
-    </div>
+  // Fusion
+  fusionHeight: null,
+  fusionDist: null,
 
-    <!-- ══ H7 Trig ══ -->
-    <div class="pg" id="pg-h7">
-      <div class="cambox">
-        <video id="vid-h7" autoplay playsinline muted></video>
-        <canvas id="cv-h7-a"></canvas>
-        <div class="brk tl"></div><div class="brk tr"></div><div class="brk bl"></div><div class="brk br2"></div>
-        <div class="hud tl" id="h7-hud-tl">grav=–</div>
-        <div class="hud br" id="h7-hud">H7=–</div>
-      </div>
-      <div class="mhdr">
-        <div class="mhdr-top"><span class="mh-b" style="color:var(--yel);border-color:rgba(240,192,48,.25);background:rgba(240,192,48,.05)">Sensor · Trig</span><div class="mh-t">H7 · Trigonometric  h = D · sin(|dep|)</div></div>
-        <div class="mh-d">Uses fused distance D and camera depression angle from gravity vector. Depression = asin(−gz / |g|) — purely geometric, no camera calibration. Acts as cross-check. Also includes visual horizon Sobel, accel integration, and DeviceOrientation fallback.</div>
-        <div class="mh-f">h = D_fused × |sin(depression_rad)|<br>depression = asin(−gz/|g|)  from gravity vector<br>visual horizon = strongest horiz Sobel row<br>accel Δh = ∫∫ linear_accel dt² (drift-limited)</div>
-      </div>
-      <div class="lb"><div><div class="lb-n" id="h7-n" style="color:var(--yel)">–</div><div class="lb-u">m</div></div><div class="lb-r"><div class="lb-st" id="h7-st" style="color:var(--dim)">needs D + gravity</div><div class="lb-cb"><div class="lb-cbf" id="h7-cb" style="width:0%;background:var(--yel)"></div></div><div class="lb-src" id="h7-src">–</div></div></div>
-      <div class="dcard">
-        <div class="dr"><span class="dk">fused D</span><span class="dv" id="h7-d">–</span></div>
-        <div class="dr"><span class="dk">depression (gravity)</span><span class="dv y" id="h7-dep">–</span></div>
-        <div class="dr"><span class="dk">gravity (gx,gy,gz)</span><span class="dv" id="h7-grav">–</span></div>
-        <div class="dr"><span class="dk">visual horizon row</span><span class="dv" id="h7-vhor">–</span></div>
-        <div class="dr"><span class="dk">accel Δh (drift)</span><span class="dv" id="h7-acc">–</span></div>
-        <div class="dr"><span class="dk">DeviceOrientation β</span><span class="dv" id="h7-beta">–</span></div>
-        <div class="dr"><span class="dk">focus distance API</span><span class="dv" id="h7-focus">–</span></div>
-        <div class="dr"><span class="dk">fusion weight</span><span class="dv">1.5</span></div>
-      </div>
-    </div>
+  videoW: 0,
+  videoH: 0,
+  stream: null,
+  animFrame: null,
 
-    <!-- ══ D1 XR hit forward ══ -->
-    <div class="pg" id="pg-d1">
-      <div class="cambox">
-        <video id="vid-d1" autoplay playsinline muted></video>
-        <canvas id="cv-d1-a"></canvas>
-        <div class="brk tl"></div><div class="brk tr"></div><div class="brk bl"></div><div class="brk br2"></div>
-        <div class="hud br" id="d1-hud">D1=–</div>
-        <div class="xr-overlay-notice" id="xr-notice-d1"><div class="xr-big">XR ACTIVE</div><div style="font-family:var(--mn);font-size:8px">Hit-test forward ray</div></div>
-      </div>
-      <div class="mhdr">
-        <div class="mhdr-top"><span class="mh-b" style="color:var(--pur);border-color:rgba(139,110,255,.3);background:rgba(139,110,255,.07)">XR · Hit-Test</span><div class="mh-t">D1 · XR hit-test forward</div></div>
-        <div class="mh-d">Camera forward ray hits nearest detected surface. 3D Euclidean distance viewer→hit. Highest accuracy distance method. Updates every XR frame at 60fps.</div>
-        <div class="mh-f">D = √((vx−hx)²+(vy−hy)²+(vz−hz)²)  ·  ±1 cm</div>
-      </div>
-      <button class="xr-btn" onclick="toggleXR()" id="xr-btn-d1">▶ START XR</button>
-      <div class="lb"><div><div class="lb-n" id="d1-n" style="color:var(--pur)">–</div><div class="lb-u">m</div></div><div class="lb-r"><div class="lb-st" id="d1-st" style="color:var(--dim)">XR not started</div><div class="lb-cb"><div class="lb-cbf" id="d1-cb" style="width:0%;background:var(--pur)"></div></div><div class="lb-src" id="d1-src">–</div></div></div>
-      <div class="dcard">
-        <div class="dr"><span class="dk">viewer pos</span><span class="dv" id="d1-vp">–</span></div>
-        <div class="dr"><span class="dk">hit pos</span><span class="dv" id="d1-hp">–</span></div>
-        <div class="dr"><span class="dk">fusion weight</span><span class="dv">5</span></div>
-      </div>
-    </div>
+  // Tilt monitoring
+  lastTiltWarn: 0,
 
-    <!-- ══ D2 XR depth center ══ -->
-    <div class="pg" id="pg-d2">
-      <div class="cambox">
-        <video id="vid-d2" autoplay playsinline muted></video>
-        <canvas id="cv-d2-a"></canvas>
-        <div class="brk tl"></div><div class="brk tr"></div><div class="brk bl"></div><div class="brk br2"></div>
-        <div class="hud br" id="d2-hud">D2=–</div>
-        <div class="xr-overlay-notice" id="xr-notice-d2"><div class="xr-big">XR ACTIVE</div><div style="font-family:var(--mn);font-size:8px">Hardware depth center pixel</div></div>
-      </div>
-      <div class="mhdr">
-        <div class="mhdr-top"><span class="mh-b" style="color:var(--pur);border-color:rgba(139,110,255,.3);background:rgba(139,110,255,.07)">XR · HW Depth</span><div class="mh-t">D2 · XR depth center pixel</div></div>
-        <div class="mh-d">getDepthInMeters(0.5, 0.5) reads hardware depth at exact center of frame — the object the camera is pointing at. ToF or structured-light sensor data. Highest accuracy when hardware is present.</div>
-        <div class="mh-f">D = depthInfo.getDepthInMeters(0.5, 0.5)  ·  ±1 cm</div>
-      </div>
-      <button class="xr-btn" onclick="toggleXR()" id="xr-btn-d2">▶ START XR</button>
-      <div class="lb"><div><div class="lb-n" id="d2-n" style="color:var(--pur)">–</div><div class="lb-u">m</div></div><div class="lb-r"><div class="lb-st" id="d2-st" style="color:var(--dim)">XR not started</div><div class="lb-cb"><div class="lb-cbf" id="d2-cb" style="width:0%;background:var(--pur)"></div></div><div class="lb-src" id="d2-src">–</div></div></div>
-      <div class="dcard">
-        <div class="dr"><span class="dk">depth-sensing</span><span class="dv" id="d2-av">–</span></div>
-        <div class="dr"><span class="dk">center depth raw</span><span class="dv" id="d2-raw">–</span></div>
-        <div class="dr"><span class="dk">fusion weight</span><span class="dv">5</span></div>
-      </div>
-    </div>
-
-    <!-- ══ D3 XR depth grid ══ -->
-    <div class="pg" id="pg-d3">
-      <div class="cambox">
-        <video id="vid-d3" autoplay playsinline muted></video>
-        <canvas id="cv-d3-a"></canvas>
-        <div class="brk tl"></div><div class="brk tr"></div><div class="brk bl"></div><div class="brk br2"></div>
-        <div class="hud br" id="d3-hud">D3=–</div>
-        <div class="xr-overlay-notice" id="xr-notice-d3"><div class="xr-big">XR ACTIVE</div><div style="font-family:var(--mn);font-size:8px">5×5 grid min depth</div></div>
-      </div>
-      <div class="mhdr">
-        <div class="mhdr-top"><span class="mh-b" style="color:var(--pur);border-color:rgba(139,110,255,.3);background:rgba(139,110,255,.07)">XR · Depth Grid</span><div class="mh-t">D3 · XR depth 5×5 grid minimum</div></div>
-        <div class="mh-d">Samples 25 depth values across central 40% of frame. Takes the minimum (nearest surface). More robust than single center pixel — handles subjects slightly off-center.</div>
-        <div class="mh-f">D = min(depth[x∈0.3..0.7, y∈0.3..0.7])  ·  ±1 cm</div>
-      </div>
-      <button class="xr-btn" onclick="toggleXR()" id="xr-btn-d3">▶ START XR</button>
-      <div class="lb"><div><div class="lb-n" id="d3-n" style="color:var(--pur)">–</div><div class="lb-u">m</div></div><div class="lb-r"><div class="lb-st" id="d3-st" style="color:var(--dim)">XR not started</div><div class="lb-cb"><div class="lb-cbf" id="d3-cb" style="width:0%;background:var(--pur)"></div></div><div class="lb-src" id="d3-src">–</div></div></div>
-      <div class="dcard">
-        <div class="dr"><span class="dk">grid minimum</span><span class="dv" id="d3-min">–</span></div>
-        <div class="dr"><span class="dk">grid maximum</span><span class="dv" id="d3-max">–</span></div>
-        <div class="dr"><span class="dk">fusion weight</span><span class="dv">5</span></div>
-      </div>
-    </div>
-
-    <!-- ══ D4 XR plane ray ══ -->
-    <div class="pg" id="pg-d4">
-      <div class="cambox">
-        <video id="vid-d4" autoplay playsinline muted></video>
-        <canvas id="cv-d4-a"></canvas>
-        <div class="brk tl"></div><div class="brk tr"></div><div class="brk bl"></div><div class="brk br2"></div>
-        <div class="hud br" id="d4-hud">D4=–</div>
-        <div class="xr-overlay-notice" id="xr-notice-d4"><div class="xr-big">XR ACTIVE</div><div style="font-family:var(--mn);font-size:8px">Plane ray intersection</div></div>
-      </div>
-      <div class="mhdr">
-        <div class="mhdr-top"><span class="mh-b" style="color:var(--pur);border-color:rgba(139,110,255,.3);background:rgba(139,110,255,.07)">XR · Planes</span><div class="mh-t">D4 · XR plane ray intersection</div></div>
-        <div class="mh-d">Camera ray × detected floor plane. Geometric floor distance from camera to the floor point being aimed at. Combined with height (H1-H3) for a geometrically exact slant distance calculation.</div>
-        <div class="mh-f">D_floor = h / sin(|depression|)  ·  ±2 cm  ·  floor plane required</div>
-      </div>
-      <button class="xr-btn" onclick="toggleXR()" id="xr-btn-d4">▶ START XR</button>
-      <div class="lb"><div><div class="lb-n" id="d4-n" style="color:var(--pur)">–</div><div class="lb-u">m</div></div><div class="lb-r"><div class="lb-st" id="d4-st" style="color:var(--dim)">XR not started</div><div class="lb-cb"><div class="lb-cbf" id="d4-cb" style="width:0%;background:var(--pur)"></div></div><div class="lb-src" id="d4-src">–</div></div></div>
-      <div class="dcard">
-        <div class="dr"><span class="dk">floor plane</span><span class="dv" id="d4-pl">–</span></div>
-        <div class="dr"><span class="dk">H_fused</span><span class="dv" id="d4-h">–</span></div>
-        <div class="dr"><span class="dk">depression</span><span class="dv" id="d4-dep">–</span></div>
-        <div class="dr"><span class="dk">fusion weight</span><span class="dv">4</span></div>
-      </div>
-    </div>
-
-    <!-- ══ D5 ML center ══ -->
-    <div class="pg" id="pg-d5">
-      <div class="cambox">
-        <video id="vid-d5" autoplay playsinline muted></video>
-        <canvas id="cv-d5-d" class="dov"></canvas>
-        <canvas id="cv-d5-a"></canvas>
-        <div class="brk tl"></div><div class="brk tr"></div><div class="brk bl"></div><div class="brk br2"></div>
-        <div class="hud br" id="d5-hud">D5=–</div>
-      </div>
-      <div class="legend">
-        <div class="leg"><div class="leg-d" style="background:#ff2200"></div>close</div>
-        <div class="leg"><div class="leg-d" style="background:#ffff00"></div>mid</div>
-        <div class="leg"><div class="leg-d" style="background:#0044ff"></div>far</div>
-      </div>
-      <div class="mhdr">
-        <div class="mhdr-top"><span class="mh-b" style="color:var(--blu);border-color:rgba(56,182,255,.25);background:rgba(56,182,255,.06)">ML · 3 Models</span><div class="mh-t">D5 · ML depth — center pixel</div></div>
-        <div class="mh-d">All ML models read depth at frame center — the object being pointed at. DA models use scale S. DepthPro is metric direct. Best available model result is D5. Works without XR — no fullscreen.</div>
-        <div class="mh-f">D = S / centerDisparity  (DA models)<br>D = centerDepth  (DepthPro — metric direct)</div>
-      </div>
-      <div class="lb"><div><div class="lb-n" id="d5-n" style="color:var(--blu)">–</div><div class="lb-u">m</div></div><div class="lb-r"><div class="lb-st" id="d5-st" style="color:var(--dim)">–</div><div class="lb-cb"><div class="lb-cbf" id="d5-cb" style="width:0%;background:var(--blu)"></div></div><div class="lb-src" id="d5-src">–</div></div></div>
-      <div class="dcard">
-        <div class="dr"><span class="dk">DA2-Small</span><span class="dv b" id="d5-da2s">–</span></div>
-        <div class="dr"><span class="dk">DepthPro (metric)</span><span class="dv o" id="d5-dpr">–</span></div>
-        <div class="dr"><span class="dk">DA2-Small S</span><span class="dv" id="d5-s1">–</span></div>
-        <div class="dr"><span class="dk">fusion weight</span><span class="dv">3</span></div>
-      </div>
-    </div>
-
-    <!-- ══ D6 ML tap ══ -->
-    <div class="pg" id="pg-d6">
-      <div style="font-family:var(--mn);font-size:8px;color:var(--blu);text-align:center;padding:4px 0 6px">👆 Tap any object in the depth view below to measure it</div>
-      <div class="cambox" id="d6-box">
-        <video id="vid-d6" autoplay playsinline muted></video>
-        <canvas id="cv-d6-d" class="dov"></canvas>
-        <canvas id="cv-d6-a"></canvas>
-        <div class="brk tl"></div><div class="brk tr"></div><div class="brk bl"></div><div class="brk br2"></div>
-        <div class="hud br" id="d6-hud">tap to measure</div>
-      </div>
-      <div class="legend">
-        <div class="leg"><div class="leg-d" style="background:#ff2200"></div>close</div>
-        <div class="leg"><div class="leg-d" style="background:#ffff00"></div>mid</div>
-        <div class="leg"><div class="leg-d" style="background:#0044ff"></div>far</div>
-      </div>
-      <div class="mhdr">
-        <div class="mhdr-top"><span class="mh-b" style="color:var(--blu);border-color:rgba(56,182,255,.25);background:rgba(56,182,255,.06)">ML · Tap-Measure</span><div class="mh-t">D6 · ML tap-to-measure any object</div></div>
-        <div class="mh-d">Tap anywhere in the depth view. All ML models read the depth value at your exact tap pixel. Best available model result = D6. Works for any object in the scene, not just the center.</div>
-        <div class="mh-f">D_tap = S / tapDisparity  OR  tapDepthMetric</div>
-      </div>
-      <div class="lb"><div><div class="lb-n" id="d6-n" style="color:var(--blu)">–</div><div class="lb-u">m</div></div><div class="lb-r"><div class="lb-st" id="d6-st" style="color:var(--dim)">tap an object</div><div class="lb-cb"><div class="lb-cbf" id="d6-cb" style="width:0%;background:var(--blu)"></div></div><div class="lb-src" id="d6-src">–</div></div></div>
-      <div class="dcard">
-        <div class="dr"><span class="dk">tap point</span><span class="dv b" id="d6-xy">–</span></div>
-        <div class="dr"><span class="dk">DA2-Small at tap</span><span class="dv b" id="d6-da2s">–</span></div>
-        <div class="dr"><span class="dk">DepthPro at tap</span><span class="dv o" id="d6-dpr">–</span></div>
-      </div>
-    </div>
-
-    <!-- ══ D7 Trig ══ -->
-    <div class="pg" id="pg-d7">
-      <div class="cambox">
-        <video id="vid-d7" autoplay playsinline muted></video>
-        <canvas id="cv-d7-a"></canvas>
-        <div class="brk tl"></div><div class="brk tr"></div><div class="brk bl"></div><div class="brk br2"></div>
-        <div class="hud br" id="d7-hud">D7=–</div>
-      </div>
-      <div class="mhdr">
-        <div class="mhdr-top"><span class="mh-b" style="color:var(--yel);border-color:rgba(240,192,48,.25);background:rgba(240,192,48,.05)">Sensor · Trig</span><div class="mh-t">D7 · Trigonometric  D = h / tan(|dep|)</div></div>
-        <div class="mh-d">When camera height h is known and the phone is tilted down by depression angle dep, the floor distance to the aimed-at floor point = h/tan(dep). Also includes: camera focus distance API (where exposed by phone), visual Sobel depth cue, and optical flow parallax.</div>
-        <div class="mh-f">D = h_fused / tan(|depression_rad|)<br>Also: focus distance API · Sobel edge density · optical flow</div>
-      </div>
-      <div class="lb"><div><div class="lb-n" id="d7-n" style="color:var(--yel)">–</div><div class="lb-u">m</div></div><div class="lb-r"><div class="lb-st" id="d7-st" style="color:var(--dim)">needs H + gravity</div><div class="lb-cb"><div class="lb-cbf" id="d7-cb" style="width:0%;background:var(--yel)"></div></div><div class="lb-src" id="d7-src">–</div></div></div>
-      <div class="dcard">
-        <div class="dr"><span class="dk">fused H</span><span class="dv" id="d7-h">–</span></div>
-        <div class="dr"><span class="dk">depression</span><span class="dv" id="d7-dep">–</span></div>
-        <div class="dr"><span class="dk">tan(|dep|)</span><span class="dv" id="d7-tan">–</span></div>
-        <div class="dr"><span class="dk">gravity (gx,gy,gz)</span><span class="dv" id="d7-grav">–</span></div>
-        <div class="dr"><span class="dk">focus distance API</span><span class="dv" id="d7-focus">–</span></div>
-        <div class="dr"><span class="dk">Sobel center density</span><span class="dv" id="d7-sobel">–</span></div>
-        <div class="dr"><span class="dk">fusion weight</span><span class="dv">1.5</span></div>
-      </div>
-    </div>
-
-  </div><!-- /pages -->
-</div><!-- /app -->
-<div id="toast"></div>
-
-<script type="module">
-'use strict';
-// ═════════════════════════════════════════════════════════
-//  AR·SENSE v8
-//
-//  FULLSCREEN FIX:
-//    immersive-ar XR session → GL clears framebuffer to
-//    opaque white every frame → hides the AR camera feed.
-//    domOverlay root=document.body keeps our HTML visible.
-//    User sees only our HTML, never the raw camera overlay.
-//
-//  SENSOR METHODS (besides XR and ML):
-//    H5  Barometric pressure (AbsolutePressureSensor)
-//    H7  Gravity vector depression + trig
-//    H7  Visual horizon (Sobel strongest horizontal edge)
-//    H7  Accel integration (Δh from launch, drift-limited)
-//    H7  DeviceOrientation beta fallback
-//    D7  Trig D = h/tan(dep)
-//    D7  Camera focus distance API (where exposed)
-//    D7  Sobel center edge density (approx scene depth)
-//    D7  Optical flow parallax (frame-to-frame features)
-//
-//  ML MODELS:
-//    da2s  Depth Anything V2-Small  ~25MB  relative
-//    da2s  Depth Anything V2-Small  ~25MB  relative → calibrated metric
-//    dpr   Apple DepthPro            ~300MB METRIC direct (optional)
-//    dpr   Apple DepthPro           ~300MB METRIC  (optional)
-// ═════════════════════════════════════════════════════════
-
-const IS_IOS=/iPad|iPhone|iPod/.test(navigator.userAgent)&&!window.MSStream;
-const IS_AND=/Android/.test(navigator.userAgent);
-
-const G={
-  SF:{ax:0,ay:0,az:0, gx:0,gy:0,gz:0, lax:0,lay:0,laz:0},
-  dep:0, hFrac:0.5, beta:90,
-  baro:{p:null,p0:null},
-  AI:{vz:0,hz:0}, // accel integration
-  OF:{prev:null,prevAx:0,baseline:0}, // optical flow
-  focusDist:null, // camera focus distance
-  sobelDensity:null, // sobel center density
-  h:{m1:null,m2:null,m3:null,m4:null,m5:null,m6:null,m7:null,fused:null,conf:0},
-  d:{m1:null,m2:null,m3:null,m4:null,m5:null,m6:null,m7:null,fused:null,conf:0},
-  XR:{ok:false,sess:null,rsF:null,rsV:null,hitFwd:null,hitDn:null,
-      hasDepth:false,hasPlanes:false,gl:null,fb:null},
-  M:{
-    da2s:{pipe:null,raw:null,w:0,h:0,S:null,Sh:[],infer:0,ctr:null,fl:null},
-    dpr: {pipe:null,raw:null,w:0,h:0,infer:0,ctr:null,fl:null}, // metric
-  },
-  tap:{x:-1,y:-1},
-  stream:null, Hh:[],Hd:[],
+  // Accumulated gravity for stable reading
+  gravBuf: [],
+  gravBufSize: 60,
 };
-const $=id=>document.getElementById(id);
-const T=(id,v)=>{const e=$(id);if(e)e.textContent=v;};
-const LP=(n,o,a=.1)=>o+a*(n-o);
 
-let _tt;
-function toast(m,d=2800){const e=$('toast');e.textContent=m;e.classList.add('show');clearTimeout(_tt);_tt=setTimeout(()=>e.classList.remove('show'),d);}
+// Known average human standing eye-level height for bootstrap prior
+const PRIOR_HEIGHT_M = 1.4;
 
-function setII(id,st,txt,sub=''){
-  const el=$(id);if(!el)return;el.className='ii '+st;
-  const se=$(id+'-st');if(se)se.textContent=st==='loading'?'…':txt;
-  if(sub){const s=el.querySelector('.ii-sub');if(s)s.textContent=sub;}
+// ─────────────────────────────────────────────
+//  UI HELPERS
+// ─────────────────────────────────────────────
+const $ = id => document.getElementById(id);
+function setVal(id, v, decimals=2) {
+  const el = $(id);
+  if (el) el.textContent = (v === null || v === undefined || isNaN(v)) ? '--' : v.toFixed(decimals);
+}
+function setConf(key, pct) {
+  const p = Math.min(100, Math.max(0, Math.round(pct)));
+  const bar = $(`conf-${key}`); const val = $(`cval-${key}`);
+  if (bar) bar.style.width = p + '%';
+  if (val) val.textContent = p + '%';
+}
+function setPill(key, status) { // 'active'|'inactive'|'error'
+  const el = $(`pill-${key}`);
+  if (!el) return;
+  el.className = `method-pill ${status}`;
+}
+function setStatus(msg) {
+  const el = $('status-line');
+  if (el) el.innerHTML = msg + '<span class="ticker">_</span>';
 }
 
-// ═══ SPLASH INIT ════════════════════════════════════════
-async function initAll(){
-  await initCam();
-  initSensors();
-  await checkXR();
-  // DA2-Small loads first (required, ~25MB)
-  await loadModel('da2s');
-  // DepthPro loads in background (optional, ~300MB, user can skip)
-  loadModel('dpr');
-  $('launch').disabled=false;
-}
-
-window.initCam=async function(){
-  setII('ii-cam','loading','…');
-  try{
-    G.stream=await navigator.mediaDevices.getUserMedia({
-      video:{facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:720}}
+// ─────────────────────────────────────────────
+//  CAMERA
+// ─────────────────────────────────────────────
+async function startCamera() {
+  const vid = $('cam');
+  try {
+    state.stream = await navigator.mediaDevices.getUserMedia({
+      video: {
+        facingMode: 'environment',
+        width: { ideal: 1280 },
+        height: { ideal: 720 },
+      },
+      audio: false
     });
-    document.querySelectorAll('video').forEach(v=>{v.srcObject=G.stream;v.play().catch(()=>{});});
-    $('nocam').classList.add('gone');
-    // Try to get focus distance
-    const tr=G.stream.getVideoTracks()[0];
-    if(tr){
-      setInterval(()=>{try{const s=tr.getSettings?.();if(s?.focusDistance>0){G.focusDist=s.focusDistance;}}catch{}},800);
+    vid.srcObject = state.stream;
+    await new Promise(r => vid.onloadedmetadata = r);
+    vid.play();
+    state.videoW = vid.videoWidth;
+    state.videoH = vid.videoHeight;
+
+    // Get focal length estimate from track settings
+    const track = state.stream.getVideoTracks()[0];
+    const settings = track.getSettings();
+    if (settings.focalLength) state.focalPx = settings.focalLength;
+    else {
+      // Estimate: typical phone FOV ~70° horizontal
+      state.focalPx = state.videoW / (2 * Math.tan((70 * Math.PI / 180) / 2));
     }
-    setII('ii-cam','ok','✓ ready');
-  }catch(e){setII('ii-cam','fail','✗ '+e.message.slice(0,28));}
-};
 
-function initSensors(){
-  setII('ii-sens','loading','starting');
-  let got=[];
-  if(IS_IOS&&typeof DeviceOrientationEvent?.requestPermission==='function')
-    document.addEventListener('click',()=>DeviceOrientationEvent.requestPermission().catch(()=>{}),{once:true});
-  if(typeof DeviceMotionEvent!=='undefined'){
-    window.addEventListener('devicemotion',onMotion,true); got.push('motion');
-  }
-  if(typeof GravitySensor!=='undefined'){
-    try{const gs=new GravitySensor({frequency:30});gs.onreading=()=>{G.SF.gx=LP(gs.x,G.SF.gx,.08);G.SF.gy=LP(gs.y,G.SF.gy,.08);G.SF.gz=LP(gs.z,G.SF.gz,.08);updateDep();};gs.start();got.push('grav');}catch{}
-  }
-  if(typeof LinearAccelerationSensor!=='undefined'){
-    try{const ls=new LinearAccelerationSensor({frequency:30});ls.onreading=()=>{G.SF.lax=LP(ls.x,G.SF.lax,.1);G.SF.lay=LP(ls.y,G.SF.lay,.1);G.SF.laz=LP(ls.z,G.SF.laz,.1);};ls.start();got.push('linacc');}catch{}
-  }
-  window.addEventListener('deviceorientation',onOrient,true);
-  if(typeof AbsolutePressureSensor!=='undefined'){
-    try{
-      const b=new AbsolutePressureSensor({frequency:1});
-      b.onreading=()=>{
-        if(G.baro.p0===null)G.baro.p0=b.pressure;
-        G.baro.p=b.pressure;
-        G.h.m5=44330*(1-Math.pow(b.pressure/G.baro.p0,.1903));
-        T('h5-p',b.pressure.toFixed(2));T('h5-p0',G.baro.p0.toFixed(2));
-        T('h5-api','✓');$('h5-api').className='dv g';
-        $('p-baro').textContent='BARO✓';$('p-baro').className='pill grn';
-        tick();
-      };
-      b.start();got.push('baro');
-    }catch{T('h5-api','not available');$('h5-api').className='dv r';}
-  }else{T('h5-api','not available');$('h5-api').className='dv r';}
-  setTimeout(()=>{
-    setII('ii-sens',got.length>0?'ok':'fail',got.length>0?'✓ '+got.join('+'):'✗ no sensors');
-  },500);
-}
-
-function onOrient(e){
-  if(e.beta!=null){
-    G.beta=e.beta;
-    T('h7-beta',e.beta.toFixed(1)+'°');
-    if(!G.SF.gx&&!G.XR.sess){
-      G.dep=90-e.beta;
-      G.hFrac=Math.max(.02,Math.min(.98,.5-G.dep/60));
-    }
+    return true;
+  } catch(e) {
+    setStatus('Camera error: ' + e.message);
+    return false;
   }
 }
 
-function onMotion(e){
-  const a=e.accelerationIncludingGravity;
-  if(a?.x!=null){G.SF.ax=LP(a.x,G.SF.ax);G.SF.ay=LP(a.y,G.SF.ay);G.SF.az=LP(a.z,G.SF.az);}
-  const la=e.acceleration;
-  if(la?.x!=null){G.SF.lax=LP(la.x,G.SF.lax,.1);G.SF.lay=LP(la.y,G.SF.lay,.1);G.SF.laz=LP(la.z,G.SF.laz,.1);}
-  accelInt(e.interval||.016);
-  if(!G.SF.gx)updateDep();
-}
-
-function updateDep(){
-  const gx=G.SF.gx||G.SF.ax,gy=G.SF.gy||G.SF.ay,gz=G.SF.gz||G.SF.az;
-  const gm=Math.sqrt(gx*gx+gy*gy+gz*gz);
-  if(gm>.5&&!G.XR.sess){
-    G.dep=Math.asin(Math.max(-1,Math.min(1,-gz/gm)))*180/Math.PI;
-    G.hFrac=Math.max(.02,Math.min(.98,.5-G.dep/60));
+// ─────────────────────────────────────────────
+//  METHOD 1: IMU / GRAVITY VECTOR
+//  Phone in portrait, perpendicular → gravity along -Y (screen normal X)
+//  DeviceMotion gives acceleration with gravity on each axis.
+//  When perfectly vertical: gravY ≈ -9.8, gravX ≈ 0, gravZ ≈ 0
+//  We measure pitch from vertical to estimate camera tilt,
+//  but since device is perpendicular, camera is roughly level.
+//
+//  Height estimation: We can't directly get height from IMU alone,
+//  but we combine with PRIOR knowledge + barometric pressure delta.
+//  We also use the gravity vector to confirm orientation.
+// ─────────────────────────────────────────────
+function initIMU() {
+  if (!window.DeviceMotionEvent) {
+    setPill('imu', 'error');
+    return;
   }
-  tick();
-}
 
-// Accel vertical integration — Δh from launch, drift-limited
-function accelInt(dt){
-  if(dt<=0||dt>.5)return;
-  const gx=G.SF.gx||G.SF.ax,gy=G.SF.gy||G.SF.ay,gz=G.SF.gz||G.SF.az;
-  const gm=Math.sqrt(gx*gx+gy*gy+gz*gz);if(gm<.5)return;
-  const lx=G.SF.lax||G.SF.ax-G.SF.ax*.95,ly=G.SF.lay||G.SF.ay-G.SF.ay*.95,lz=G.SF.laz||G.SF.az-G.SF.az*.95;
-  const av=(lx*(-gx)+ly*(-gy)+lz*(-gz))/gm;
-  if(Math.sqrt(lx*lx+ly*ly+lz*lz)<.15)G.AI.vz*=.85;else G.AI.vz+=av*dt;
-  G.AI.hz+=G.AI.vz*dt;
-  if(G.h.m5!=null)G.AI.hz+=(G.h.m5-G.AI.hz)*.02;
-  T('h7-acc',(G.AI.hz>=0?'+':'')+G.AI.hz.toFixed(4)+'m');
-}
-
-window.checkXR=async function(){
-  setII('ii-xr','loading','checking');
-  if(!navigator.xr){setII('ii-xr','skip','✗ no WebXR');G.XR.ok=false;return;}
-  try{G.XR.ok=await navigator.xr.isSessionSupported('immersive-ar');}catch{}
-  G.XR.hasDepth=IS_AND&&/Chrome/.test(navigator.userAgent);
-  G.XR.hasPlanes=G.XR.hasDepth;
-  setII('ii-xr',G.XR.ok?'ok':'skip',G.XR.ok?'✓ immersive-ar available':'✗ not supported');
-  if(!G.XR.ok){
-    ['xr-main-btn','xr-btn-h1','xr-btn-h2','xr-btn-h3','xr-btn-h4','xr-btn-d1','xr-btn-d2','xr-btn-d3','xr-btn-d4'].forEach(id=>{
-      const e=$(id);if(e){e.textContent='NO WebXR on this device';e.className='xr-btn na';e.disabled=true;}
-    });
-  }
-};
-
-// ═══ ML MODELS ══════════════════════════════════════════
-const MCFG={
-  da2s:{id:'onnx-community/depth-anything-v2-small', metric:false},
-  dpr: {id:'onnx-community/DepthPro-ONNX',           metric:true, useAuto:true},
-};
-
-let dprSkipped=false;
-window.skipDPR=function(){
-  dprSkipped=true;
-  setII('ii-dpr','skip','⊘ skipped by user','DepthPro skipped — DA2-Small will be calibrated via XR/baro instead');
-  const btn=$('dpr-skip-btn');if(btn)btn.style.display='none';
-};
-
-window.loadModel=async function(key){
-  const cfg=MCFG[key];if(!cfg)return;
-  if(key==='dpr'&&dprSkipped)return;
-  const iiId='ii-'+key;
-  setII(iiId,'loading','loading');
-  // Hide skip button once loading starts
-  if(key==='dpr'){const b=$('dpr-skip-btn');if(b)b.style.display='none';}
-  try{
-    const{pipeline,env,AutoModelForDepthEstimation,AutoProcessor,RawImage}=
-      await import('https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.3.3/dist/transformers.min.js');
-    env.allowLocalModels=false;
-    const dev=navigator.gpu?'webgpu':'wasm';
-    const prog=(info)=>{
-      if(info.status==='progress'&&info.total){
-        const pct=Math.round(info.loaded/info.total*100);
-        const pf=$('pf-'+key);if(pf)pf.style.width=pct+'%';
-        T('pp-'+key,pct+'%');
-        T(iiId+'-sub',(info.file||'').split('/').pop()+' — '+pct+'%');
-      }
-    };
-    if(cfg.useAuto){
-      const proc=await AutoProcessor.from_pretrained(cfg.id,{progress_callback:prog});
-      const model=await AutoModelForDepthEstimation.from_pretrained(cfg.id,{dtype:'q4',device:dev,progress_callback:prog});
-      G.M[key].pipe={type:'auto',proc,model,RI:RawImage};
-    }else{
-      G.M[key].pipe=await pipeline('depth-estimation',cfg.id,{device:dev,progress_callback:prog});
-    }
-    setII(iiId,'ok','✓ '+dev.toUpperCase());
-    if($('p-ml').textContent==='ML–'){$('p-ml').textContent='ML✓';$('p-ml').className='pill blu';}
-    startLoop(key);
-  }catch(e){
-    setII(iiId,'fail','✗ '+e.message.slice(0,35));
-  }
-};
-
-const looping={};
-function startLoop(key){
-  if(looping[key])return;looping[key]=true;
-  const m=G.M[key],metric=MCFG[key].metric;
-  const vid=$('vid');
-  (async()=>{
-    while(m.pipe){
-      if(vid.readyState>=2&&vid.videoWidth>0){
-        try{
-          const t0=performance.now();
-          let raw,w,h;
-          if(m.pipe.type==='auto'){
-            const img=await m.pipe.RI.fromBlob(await vidBlob(vid));
-            const inputs=await m.pipe.proc(img);
-            const out=await m.pipe.model(inputs);
-            const pd=out.predicted_depth;
-            raw=new Float32Array(pd.data);
-            w=pd.dims[pd.dims.length-1];h=pd.dims[pd.dims.length-2];
-          }else{
-            const r=await m.pipe(vid);
-            if(!r?.depth)continue;
-            const d=r.depth;
-            raw=d.data instanceof Float32Array?d.data:(()=>{const f=new Float32Array(d.data.length);for(let i=0;i<d.data.length;i++)f[i]=d.data[i]/255;return f;})();
-            w=d.width;h=d.height;
-          }
-          m.raw=raw;m.w=w;m.h=h;m.infer=performance.now()-t0;
-          procML(key,raw,w,h,metric);
-        }catch(e){console.warn(key,e.message);}
-      }
-      await new Promise(r=>setTimeout(r,key==='da2s'?200:600));
-    }
-    looping[key]=false;
-  })();
-}
-
-async function vidBlob(v){
-  const c=document.createElement('canvas');c.width=v.videoWidth;c.height=v.videoHeight;
-  c.getContext('2d').drawImage(v,0,0);
-  return new Promise(r=>c.toBlob(r,'image/jpeg',.75));
-}
-
-function procML(key,raw,w,h,metric){
-  const m=G.M[key];
-  const cx=Math.floor(w/2),cy=Math.floor(h/2);
-  m.ctr=raw[cy*w+cx];
-  let fs=0,fn=0;const ys=Math.floor(h*.85);
-  for(let y=ys;y<h;y++)for(let x=0;x<w;x++){fs+=raw[y*w+x];fn++;}
-  m.fl=fn>0?fs/fn:null;
-  if(!metric)calibS(key,raw,w,h);
-  renderDepths(key,raw,w,h);
-  updateMLVals();
-  tick();
-}
-
-function calibS(key,raw,w,h){
-  if(key!=='da2s')return; // only relative-depth models need scale calibration
-  const m=G.M[key];
-  const cx=Math.floor(w/2),cy=Math.floor(h/2);
-  const cv=raw[cy*w+cx];if(cv<.01)return;
-  let anchor=null;
-  // Priority: XR hit-fwd > XR depth-center > XR height+dep > baro > DepthPro center
-  if(G.d.m1!=null)anchor=G.d.m1;
-  else if(G.d.m2!=null)anchor=G.d.m2;
-  else if(G.h.m1!=null&&Math.abs(G.dep)>2)anchor=G.h.m1/Math.abs(Math.sin(G.dep*Math.PI/180));
-  else if(G.h.m5!=null&&Math.abs(G.h.m5)>.1)anchor=Math.abs(G.h.m5)+1.3;
-  else if(G.M.dpr.ctr&&G.M.dpr.ctr>0.1)anchor=G.M.dpr.ctr; // DepthPro is metric → can calibrate DA2
-  if(!anchor||anchor<.05)return;
-  m.Sh.push(anchor*cv);if(m.Sh.length>40)m.Sh.shift();
-  const s=[...m.Sh].sort((a,b)=>a-b);m.S=s[Math.floor(s.length/2)];
-}
-
-function updateMLVals(){
-  const da2s=G.M.da2s, dpr=G.M.dpr;
-  // H6: prefer DepthPro floor (metric), fallback DA2-Small calibrated
-  if(dpr.fl&&dpr.fl>0)          G.h.m6=dpr.fl;
-  else if(da2s.S&&da2s.fl>.01)  G.h.m6=da2s.S/da2s.fl;
-  // D5: prefer DepthPro center, fallback DA2-Small
-  if(dpr.ctr&&dpr.ctr>0)        G.d.m5=dpr.ctr;
-  else if(da2s.S&&da2s.ctr>.01) G.d.m5=da2s.S/da2s.ctr;
-  // D6: tap — read both models
-  if(G.tap.x>=0){
-    const tapVals=[];
-    for(const [k,m] of Object.entries(G.M)){
-      if(!m.raw)continue;
-      const tx=Math.floor(G.tap.x*m.w),ty=Math.floor(G.tap.y*m.h);
-      const tv=m.raw[Math.max(0,Math.min(m.raw.length-1,ty*m.w+tx))];
-      const met=MCFG[k].metric;
-      const v=met?(tv>0?tv:null):(m.S&&tv>.01?m.S/tv:null);
-      T('d6-'+k,v?v.toFixed(3)+'m':'–');
-      if(v)tapVals.push({v,w:met?4:2});
-    }
-    if(tapVals.length){const ws=tapVals.reduce((s,x)=>s+x.w,0);G.d.m6=tapVals.reduce((s,x)=>s+x.v*x.w,0)/ws;}
-  }
-}
-
-// ═══ CAMERA ANALYSIS (Sobel + optical flow) ═════════════
-let prevFrameData=null,prevAx=0;
-function analyzeFrame(imgData,w,h){
-  // Visual horizon: find row with strongest horizontal edges
-  let maxE=0,maxY=Math.floor(h*.5);
-  for(let y=Math.floor(h*.1);y<Math.floor(h*.9);y++){
-    let e=0;for(let x=2;x<w-2;x++)e+=Math.abs(lumaPx(imgData,x,y+1,w)-lumaPx(imgData,x,y-1,w));
-    if(e>maxE){maxE=e;maxY=y;}
-  }
-  const horizFrac=maxY/h;
-  T('h7-vhor',(horizFrac*100).toFixed(1)+'% from top');
-  if(!G.XR.sess)G.hFrac=horizFrac;
-
-  // Sobel center density → approx scene depth
-  const cx=Math.floor(w/2),cy=Math.floor(h/2),r=Math.floor(w/8);
-  let ss=0,sn=0;
-  for(let y=cy-r;y<=cy+r;y++)for(let x=cx-r;x<=cx+r;x++){
-    if(x<1||x>=w-1||y<1||y>=h-1)continue;
-    ss+=sobel(imgData,x,y,w);sn++;
-  }
-  if(sn){G.sobelDensity=ss/sn;T('d7-sobel',(ss/sn).toFixed(1));}
-
-  // Optical flow: Lucas-Kanade lite
-  if(prevFrameData&&prevFrameData.length===imgData.data.length){
-    let tdx=0,tdy=0,tn=0;
-    const step=Math.max(4,Math.floor(w/16));
-    for(let y=step;y<h-step;y+=step)for(let x=step;x<w-step;x+=step){
-      const dx=lumaPx(imgData,x+1,y,w)-lumaPx(imgData,x-1,y,w);
-      const dy=lumaPx(imgData,x,y+1,w)-lumaPx(imgData,x,y-1,w);
-      if(dx*dx+dy*dy>100){
-        let bssd=999999,bdx=0,bdy=0;
-        for(let sy=-3;sy<=3;sy++)for(let sx=-3;sx<=3;sx++){
-          const nx=x+sx,ny=y+sy;
-          if(nx<1||nx>=w-1||ny<1||ny>=h-1)continue;
-          let ssd=0;
-          for(let py=-1;py<=1;py++)for(let px=-1;px<=1;px++){
-            const ci=((y+py)*w+(x+px))*4,pi=((ny+py)*w+(nx+px))*4;
-            const d=(.3*imgData.data[ci]+.59*imgData.data[ci+1]+.11*imgData.data[ci+2])-(.3*prevFrameData[pi]+.59*prevFrameData[pi+1]+.11*prevFrameData[pi+2]);
-            ssd+=d*d;
-          }
-          if(ssd<bssd){bssd=ssd;bdx=sx;bdy=sy;}
-        }
-        if(bssd<1500){tdx+=bdx;tdy+=bdy;tn++;}
-      }
-    }
-    if(tn>3){
-      const mag=Math.sqrt((tdx/tn)**2+(tdy/tn)**2);
-      const dAx=G.SF.ax-prevAx;
-      const motEst=Math.abs(dAx)*.016*.5;
-      if(mag>.3&&motEst>.003){
-        const fPx=w/(2*Math.tan(30*Math.PI/180));
-        const flowD=fPx*motEst/mag;
-        if(flowD>.1&&flowD<20&&!G.d.m7)G.d.m7=flowD; // only if trig not available
-      }
-    }
-  }
-  prevFrameData=new Uint8ClampedArray(imgData.data);
-  prevAx=G.SF.ax;
-}
-
-function lumaPx(id,x,y,w){const i=(y*w+x)*4;return.3*id.data[i]+.59*id.data[i+1]+.11*id.data[i+2];}
-function sobel(id,x,y,w){
-  const g=(dx,dy)=>{const nx=Math.max(0,x+dx),ny=Math.max(0,y+dy);const i=(ny*w+nx)*4;return(.3*id.data[i]+.59*id.data[i+1]+.11*id.data[i+2]);};
-  const Gx=-g(-1,-1)+g(1,-1)-2*g(-1,0)+2*g(1,0)-g(-1,1)+g(1,1);
-  const Gy=-g(-1,-1)-2*g(0,-1)-g(1,-1)+g(-1,1)+2*g(0,1)+g(1,1);
-  return Math.sqrt(Gx*Gx+Gy*Gy);
-}
-
-// ═══ WebXR — FULLSCREEN TRICK ═══════════════════════════
-//  Strategy:
-//  1. Request immersive-ar with domOverlay={root:document.body}
-//  2. In every XR frame, clear the WebGL framebuffer to
-//     opaque white (1,1,1,1) — this paints over the AR camera passthrough
-//  3. domOverlay renders our HTML on top of the white GL canvas
-//  4. User sees only our HTML, no camera passthrough
-//  5. All XR data (pose, hit-test, planes, depth) still works normally
-let xrOn=false;
-
-window.toggleXR=async function(){
-  if(xrOn){stopXR();return;}
-  if(!G.XR.ok){toast('WebXR not supported on this device');return;}
-  toast('Starting WebXR…');
-  const init={
-    requiredFeatures:['local-floor','hit-test'],
-    optionalFeatures:['plane-detection','depth-sensing','dom-overlay'],
+  // Try to get permission (iOS 13+)
+  const setup = () => {
+    window.addEventListener('devicemotion', onMotion, { passive: true });
+    window.addEventListener('deviceorientation', onOrientation, { passive: true });
+    window.addEventListener('deviceorientationabsolute', onAbsOrientation, { passive: true });
+    setPill('imu', 'active');
+    state.imuActive = true;
+    setStatus('IMU active');
   };
-  try{init.domOverlay={root:document.body};}catch{}
-  if(G.XR.hasDepth)init.depthSensing={usagePreference:['cpu-optimized'],dataFormatPreference:['luminance-alpha']};
-  try{
-    G.XR.sess=await navigator.xr.requestSession('immersive-ar',init);
-    xrOn=true;
-    // Setup GL — we MUST have a baseLayer; we use it to clear to white
-    const oc=document.createElement('canvas');
-    G.XR.gl=oc.getContext('webgl',{alpha:true,antialias:false});
-    const gl=G.XR.gl;
-    if(gl){
-      try{await gl.makeXRCompatible?.();}catch{}
-      const layer=new XRWebGLLayer(G.XR.sess,gl);
-      G.XR.sess.updateRenderState({baseLayer:layer});
-      G.XR.fb=layer.framebuffer;
+
+  if (typeof DeviceMotionEvent.requestPermission === 'function') {
+    DeviceMotionEvent.requestPermission().then(r => {
+      if (r === 'granted') setup();
+      else setPill('imu', 'error');
+    }).catch(() => setPill('imu', 'error'));
+  } else {
+    setup();
+  }
+}
+
+function onMotion(e) {
+  const g = e.accelerationIncludingGravity;
+  if (!g) return;
+  const gx = g.x || 0, gy = g.y || 0, gz = g.z || 0;
+  state.gravX = gx; state.gravY = gy; state.gravZ = gz;
+
+  // Low-pass filter for stability
+  state.gravBuf.push({ x: gx, y: gy, z: gz });
+  if (state.gravBuf.length > state.gravBufSize) state.gravBuf.shift();
+
+  // Average
+  const avg = state.gravBuf.reduce((a,b) => ({ x:a.x+b.x, y:a.y+b.y, z:a.z+b.z }), {x:0,y:0,z:0});
+  const n = state.gravBuf.length;
+  const ax = avg.x/n, ay = avg.y/n, az = avg.z/n;
+
+  // Magnitude
+  const mag = Math.sqrt(ax*ax + ay*ay + az*az);
+
+  // Phone portrait perpendicular: gravity mostly along -Y (screen faces up=+Y)
+  // Pitch from true vertical (Z axis is screen normal)
+  // Beta = arctan2(ay, -az) gives pitch; for portrait vertical: beta≈90
+  state.devicePitch = Math.atan2(Math.abs(ay), Math.abs(az)) * 180 / Math.PI;
+
+  // Tilt from vertical (we want ~90° = perpendicular to ground)
+  const tiltFromVertical = Math.abs(90 - state.devicePitch);
+
+  // If tilt < 15°, device is reasonably vertical
+  if (tiltFromVertical < 25 && mag > 8) {
+    // IMU height: we use a Kalman-like approach
+    // Initial prior: 1.4m (eye level), refined by XR/MiDaS
+    if (state.imuHeight === null) {
+      state.imuHeight = PRIOR_HEIGHT_M;
     }
-    G.XR.rsF=await G.XR.sess.requestReferenceSpace('local-floor');
-    G.XR.rsV=await G.XR.sess.requestReferenceSpace('viewer');
-    G.XR.hitFwd=await G.XR.sess.requestHitTestSource({space:G.XR.rsV,entityTypes:['plane','point','mesh']}).catch(()=>null);
-    G.XR.hitDn =await G.XR.sess.requestHitTestSource({space:G.XR.rsV,entityTypes:['plane']}).catch(()=>null);
-    G.XR.sess.addEventListener('end',()=>{
-      xrOn=false;G.XR.sess=null;
-      $('p-xr').textContent='XR–';$('p-xr').className='pill';
-      document.querySelectorAll('.xr-overlay-notice').forEach(e=>e.classList.remove('show'));
-      ['xr-main-btn','xr-btn-h1','xr-btn-h2','xr-btn-h3','xr-btn-h4','xr-btn-d1','xr-btn-d2','xr-btn-d3','xr-btn-d4'].forEach(id=>{const e=$(id);if(e){e.textContent='▶ START XR';e.className='xr-btn';}});
-      T('lv-xr','ended');
-      ['m1','m2','m3','m4'].forEach(k=>{G.h[k]=null;G.d[k]=null;});
+    // Update confidence based on how stable and vertical the device is
+    const stabConf = Math.min(1, state.gravBuf.length / state.gravBufSize);
+    const tiltConf = Math.max(0, 1 - tiltFromVertical / 25);
+    state.imuConf = stabConf * tiltConf * 0.75; // Max 75% conf without barometer
+    setConf('imu', state.imuConf * 100);
+    $('tilt-warn').style.display = 'none';
+  } else {
+    $('tilt-warn').style.display = 'block';
+    state.imuConf = 0.1;
+  }
+}
+
+function onOrientation(e) {
+  // Beta: front-back tilt, Gamma: left-right
+  // For portrait perpendicular: beta≈90, gamma≈0
+  state.absBeta  = e.beta;
+  state.absGamma = e.gamma;
+  state.absAlpha = e.alpha;
+}
+
+function onAbsOrientation(e) {
+  if (e.absolute) {
+    state.absBeta  = e.beta;
+    state.absGamma = e.gamma;
+    state.absAlpha = e.alpha;
+  }
+}
+
+// ─────────────────────────────────────────────
+//  METHOD 2: WebXR AR (hit-test + viewer pose)
+// ─────────────────────────────────────────────
+async function initWebXR() {
+  if (!navigator.xr) { setPill('xr', 'error'); setStatus('WebXR not available'); return; }
+
+  const supported = await navigator.xr.isSessionSupported('immersive-ar').catch(() => false);
+  if (!supported) { setPill('xr', 'error'); return; }
+
+  try {
+    const session = await navigator.xr.requestSession('immersive-ar', {
+      requiredFeatures: ['local-floor'],
+      optionalFeatures: ['hit-test', 'dom-overlay', 'depth-sensing'],
     });
-    $('p-xr').textContent='XR●';$('p-xr').className='pill pur';
-    document.querySelectorAll('.xr-overlay-notice').forEach(e=>e.classList.add('show'));
-    ['xr-main-btn','xr-btn-h1','xr-btn-h2','xr-btn-h3','xr-btn-h4','xr-btn-d1','xr-btn-d2','xr-btn-d3','xr-btn-d4'].forEach(id=>{const e=$(id);if(e){e.textContent='■ STOP XR';e.className='xr-btn active';}});
-    T('lv-xr','active');
-    G.XR.sess.requestAnimationFrame(xrFrame);
-    toast('WebXR active — XR data flowing');
-  }catch(e){
-    xrOn=false;G.XR.sess=null;
-    toast('XR failed: '+e.message,5000);
-  }
-};
-window.stopXR=async function(){if(G.XR.sess)try{await G.XR.sess.end();}catch{}};
+    state.xrSession = session;
+    state.xrActive = true;
+    setPill('xr', 'active');
 
-function xrFrame(t,frame){
-  if(!xrOn)return;
-  G.XR.sess.requestAnimationFrame(xrFrame);
+    const gl = $('canvas-overlay').getContext('webgl', { xrCompatible: true });
+    await gl.makeXRCompatible();
+    session.updateRenderState({ baseLayer: new XRWebGLLayer(session, gl) });
 
-  // *** FULLSCREEN PREVENTION: clear GL framebuffer to opaque white ***
-  // This hides the AR camera passthrough — user sees only our HTML overlay
-  const gl=G.XR.gl;
-  if(gl&&G.XR.fb){
-    gl.bindFramebuffer(gl.FRAMEBUFFER,G.XR.fb);
-    gl.clearColor(1,1,1,1); // opaque white — covers camera feed
-    gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
-  }
+    const localFloorRef = await session.requestReferenceSpace('local-floor');
+    const viewerRef = await session.requestReferenceSpace('viewer');
 
-  try{
-    const vp=frame.getViewerPose(G.XR.rsF);
-    if(vp){
-      const pos=vp.transform.position;
-      G.h.m1=pos.y;
-      T('h1-raw',pos.y.toFixed(4));T('h1-rs','local-floor');T('h1-st','live');T('h1-hud','H1='+pos.y.toFixed(3));
-      // Depression from XR quaternion
-      const{x:qx,y:qy,z:qz,w:qw}=vp.transform.orientation;
-      G.dep=-Math.asin(Math.max(-1,Math.min(1,2*(qy*qz-qw*qx))))*180/Math.PI;
-      G.hFrac=Math.max(.02,Math.min(.98,.5-G.dep/60));
-      // D1 forward hit-test
-      if(G.XR.hitFwd){
-        const hits=frame.getHitTestResults(G.XR.hitFwd);
-        if(hits.length>0){const hp=hits[0].getPose(G.XR.rsF);if(hp){const h=hp.transform.position;G.d.m1=Math.sqrt((pos.x-h.x)**2+(pos.y-h.y)**2+(pos.z-h.z)**2);T('d1-vp',`${pos.x.toFixed(2)},${pos.y.toFixed(2)},${pos.z.toFixed(2)}`);T('d1-hp',`${h.x.toFixed(2)},${h.y.toFixed(2)},${h.z.toFixed(2)}`);T('d1-st','live');T('d1-hud','D1='+G.d.m1.toFixed(3));}}
+    let hitTestSource = null;
+    try {
+      hitTestSource = await session.requestHitTestSource({ space: viewerRef });
+    } catch(e) {}
+
+    session.requestAnimationFrame(function xrFrame(t, frame) {
+      session.requestAnimationFrame(xrFrame);
+      const pose = frame.getViewerPose(localFloorRef);
+      if (pose) {
+        // Height above floor = Y of viewer in local-floor space
+        const h = pose.transform.position.y;
+        state.xrHeight = h > 0.3 && h < 3.0 ? h : state.xrHeight;
+        state.xrConf = 0.95;
+        setConf('xr', 95);
+        setPill('xr', 'active');
       }
-      // H2 down hit-test
-      if(G.XR.hitDn){
-        const hits=frame.getHitTestResults(G.XR.hitDn);
-        if(hits.length>0){const hp=hits[0].getPose(G.XR.rsF);if(hp){G.h.m2=pos.y-hp.transform.position.y;T('h2-vy',pos.y.toFixed(4));T('h2-hy',hp.transform.position.y.toFixed(4));T('h2-st','live');T('h2-hud','H2='+G.h.m2.toFixed(3));}}
-      }
-      // H3 / D4 planes
-      if(frame.detectedPlanes){
-        const planes=[];
-        frame.detectedPlanes.forEach(pl=>{try{const pose=frame.getPose(pl.planeSpace,G.XR.rsF);if(pose)planes.push({o:pl.orientation,y:pose.transform.position.y});}catch{}});
-        T('h3-plcnt',planes.length);
-        const horiz=planes.filter(p=>p.o==='horizontal').sort((a,b)=>a.y-b.y);
-        if(horiz.length>0){
-          G.h.m3=pos.y-horiz[0].y;T('h3-fy',horiz[0].y.toFixed(4));T('h3-vy',pos.y.toFixed(4));T('h3-st','live');T('h3-hud','H3='+G.h.m3.toFixed(3));
-          const dR=G.dep*Math.PI/180,dY=G.h.m3;
-          if(dY>0&&Math.abs(G.dep)>.5){G.d.m4=Math.sqrt((dY/Math.tan(Math.abs(dR)))**2+dY**2);T('d4-pl','yes');T('d4-h',dY.toFixed(3));T('d4-dep',G.dep.toFixed(2)+'°');T('d4-st','live');T('d4-hud','D4='+G.d.m4.toFixed(3));}
+
+      // Hit test for distance
+      if (hitTestSource) {
+        const hits = frame.getHitTestResults(hitTestSource);
+        if (hits.length > 0) {
+          const hitPose = hits[0].getPose(localFloorRef);
+          if (hitPose && pose) {
+            const dx = hitPose.transform.position.x - pose.transform.position.x;
+            const dy = hitPose.transform.position.y - pose.transform.position.y;
+            const dz = hitPose.transform.position.z - pose.transform.position.z;
+            state.xrDist = Math.sqrt(dx*dx + dy*dy + dz*dz);
+          }
         }
       }
-      // H4 / D2 / D3 depth
-      if(G.XR.hasDepth){
-        for(const view of vp.views){try{
-          const di=frame.getDepthInformation?.(view);if(!di)continue;
-          T('h4-av','yes');$('h4-av').className='dv g';T('d2-av','yes');$('d2-av').className='dv g';
-          const dc=di.getDepthInMeters(.5,.5);
-          if(dc>0){G.d.m2=dc;T('d2-raw',dc.toFixed(4)+'m');T('d2-st','live');T('d2-hud','D2='+dc.toFixed(3));}
-          let mn=Infinity,mx=0;
-          for(let gx=.3;gx<=.7;gx+=.1)for(let gy=.3;gy<=.7;gy+=.1){try{const v=di.getDepthInMeters(gx,gy);if(v>0){if(v<mn)mn=v;if(v>mx)mx=v;}}catch{}}
-          if(mn<Infinity){G.d.m3=mn;T('d3-min',mn.toFixed(4)+'m');T('d3-max',mx.toFixed(4)+'m');T('d3-st','live');T('d3-hud','D3='+mn.toFixed(3));}
-          let fs=0,fn=0;
-          for(let bx=.2;bx<=.8;bx+=.1)for(let by=.85;by<=.98;by+=.04){try{const v=di.getDepthInMeters(bx,by);if(v>0){fs+=v;fn++;}}catch{}}
-          if(fn>0){G.h.m4=(fs/fn)*Math.cos(30*Math.PI/180);T('h4-avg',(fs/fn).toFixed(4)+'m');T('h4-n2',fn);T('h4-st','live');T('h4-hud','H4='+G.h.m4.toFixed(3));}
-        }catch{}}
-      }
-      // Calibrate ML with XR data
-      Object.keys(G.M).forEach(k=>{if(!MCFG[k].metric)calibS(k,G.M[k].raw||new Float32Array(1),G.M[k].w||1,G.M[k].h||1);});
-    }
-  }catch(e){console.warn('xrFrame',e);}
-  tick();
-}
-
-// ═══ FUSION ═════════════════════════════════════════════
-const HW=[5,5,4,4,2,3,1.5],DW=[5,5,5,4,3,3,1.5];
-function wFuse(vals,wts){
-  const pool=vals.map((v,i)=>({v,w:wts[i]})).filter(x=>x.v!=null&&isFinite(x.v)&&x.v>0);
-  if(!pool.length)return null;
-  const ws=pool.reduce((s,x)=>s+x.w,0),wm=pool.reduce((s,x)=>s+x.v*x.w,0)/ws;
-  if(pool.length<3)return wm;
-  const std=Math.sqrt(pool.reduce((s,x)=>s+x.w*(x.v-wm)**2,0)/ws);
-  const cl=std>.05?pool.filter(x=>Math.abs(x.v-wm)<2.5*std):pool;
-  const ws2=cl.reduce((s,x)=>s+x.w,0);
-  return cl.reduce((s,x)=>s+x.v*x.w,0)/ws2;
-}
-
-function tick(){
-  const dep=G.dep*Math.PI/180;
-  // H7: trig from D + depression
-  if(G.d.fused!=null&&Math.abs(G.dep)>1&&Math.abs(G.dep)<88){
-    G.h.m7=G.d.fused*Math.abs(Math.sin(dep));
-  }
-  // Also use focus distance for H7
-  if(G.focusDist&&Math.abs(G.dep)>2){
-    const hFromFocus=G.focusDist*Math.abs(Math.sin(dep));
-    if(!G.h.m7)G.h.m7=hFromFocus;
-  }
-  G.h.fused=wFuse([G.h.m1,G.h.m2,G.h.m3,G.h.m4,G.h.m5,G.h.m6,G.h.m7],HW);
-  const hA=[G.h.m1,G.h.m2,G.h.m3,G.h.m4,G.h.m5,G.h.m6,G.h.m7].filter(v=>v!=null).length;
-  G.h.conf=Math.min(100,hA*12+(xrOn?28:0)+(G.M.dpr.ctr?20:0)+(G.h.m5!=null?10:0));
-  // D7: trig from H + depression, focus, sobel
-  if(G.h.fused!=null&&Math.abs(G.dep)>1&&Math.abs(G.dep)<88){
-    G.d.m7=G.h.fused/Math.tan(Math.abs(dep));
-  }
-  // Focus distance as D7 override if better
-  if(G.focusDist&&(!G.d.m7||!G.h.fused)){
-    G.d.m7=G.focusDist;T('d7-focus',G.focusDist.toFixed(3)+'m');
-  }
-  if(G.focusDist)T('h7-focus',G.focusDist.toFixed(3)+'m');
-  G.d.fused=wFuse([G.d.m1,G.d.m2,G.d.m3,G.d.m4,G.d.m5,G.d.m6,G.d.m7],DW);
-  const dA=[G.d.m1,G.d.m2,G.d.m3,G.d.m4,G.d.m5,G.d.m6,G.d.m7].filter(v=>v!=null).length;
-  G.d.conf=Math.min(100,dA*12+(xrOn?28:0)+(G.M.dpr.ctr?20:0));
-  renderUI();
-}
-
-// ═══ UI RENDER ══════════════════════════════════════════
-function renderUI(){
-  const hv=G.h.fused,dv=G.d.fused;
-  T('lv-h',hv!=null?hv.toFixed(3)+'m':'–');T('lv-d',dv!=null?dv.toFixed(3)+'m':'–');
-  $('lv-h-bar').style.width=G.h.conf+'%';$('lv-d-bar').style.width=G.d.conf+'%';
-  T('lv-h-src',hSrc());T('lv-d-src',dSrc());
-  const hA=[G.h.m1,G.h.m2,G.h.m3,G.h.m4,G.h.m5,G.h.m6,G.h.m7].filter(v=>v!=null).length;
-  const dA=[G.d.m1,G.d.m2,G.d.m3,G.d.m4,G.d.m5,G.d.m6,G.d.m7].filter(v=>v!=null).length;
-  T('lv-hcnt',hA+'/7');T('lv-dcnt',dA+'/7');
-  T('lv-conf',G.h.conf+'%/'+G.d.conf+'%');T('lv-dep',G.dep.toFixed(2)+'°');
-  T('lv-s1',G.M.da2s.S?'S='+G.M.da2s.S.toFixed(5)+' (n='+G.M.da2s.Sh.length+')':'uncal — needs XR or baro');
-  T('lv-dpr',G.M.dpr.ctr?G.M.dpr.ctr.toFixed(3)+'m (metric direct)':'–');
-
-  // Method live blocks
-  const upd=(pre,val,conf,col)=>{
-    T(pre+'-n',val!=null?val.toFixed(4):'–');
-    const cb=$(pre+'-cb');if(cb){cb.style.width=(val!=null?conf:0)+'%';cb.style.background=col;}
-  };
-  upd('h1',G.h.m1,90,'var(--pur)');upd('h2',G.h.m2,88,'var(--pur)');upd('h3',G.h.m3,88,'var(--pur)');upd('h4',G.h.m4,95,'var(--pur)');
-  upd('h5',G.h.m5,70,'var(--grn)');upd('h6',G.h.m6,G.h.m6?75:35,'var(--blu)');upd('h7',G.h.m7,60,'var(--yel)');
-  upd('d1',G.d.m1,95,'var(--pur)');upd('d2',G.d.m2,95,'var(--pur)');upd('d3',G.d.m3,92,'var(--pur)');upd('d4',G.d.m4,88,'var(--pur)');
-  upd('d5',G.d.m5,G.d.m5?72:25,'var(--blu)');upd('d6',G.d.m6,68,'var(--blu)');upd('d7',G.d.m7,58,'var(--yel)');
-
-  // HUD labels
-  ['h1','h2','h3','h4','h5','h6','h7'].forEach(k=>{const v=G.h['m'+k[1]];T(k+'-hud',v!=null?k.toUpperCase()+'='+v.toFixed(3)+'m':k.toUpperCase()+'=–');});
-  ['d1','d2','d3','d4','d5','d6','d7'].forEach(k=>{const v=G.d['m'+k[1]];T(k+'-hud',v!=null?k.toUpperCase()+'='+v.toFixed(3)+'m':k.toUpperCase()+'=–');});
-
-  // H6 detail
-  const fm=v=>v!=null?v.toFixed(3)+'m':'–';
-  T('h6-da2s',G.M.da2s.S&&G.M.da2s.fl?fm(G.M.da2s.S/G.M.da2s.fl):'uncal');
-  T('h6-dpr',fm(G.M.dpr.fl));
-  T('h6-best',G.M.dpr.fl?'DepthPro (metric)':G.M.da2s.S?'DA2-Small (calibrated)':'–');
-  T('h6-inf',Object.entries(G.M).filter(([,m])=>m.infer).map(([k,m])=>k+': '+m.infer.toFixed(0)+'ms').join('  '));
-  T('h6-scal',G.M.da2s.S?'S='+G.M.da2s.S.toFixed(5)+' (n='+G.M.da2s.Sh.length+')':'none yet — start XR or baro');
-  T('h6-st',G.h.m6?'live — '+(G.M.dpr.fl?'DepthPro metric':'DA2-Small calibrated'):'needs calibration');
-  T('h6-src',G.M.dpr.fl?'DepthPro (metric)':'DA2-Small + scale S');
-
-  // D5 detail
-  T('d5-da2s',G.M.da2s.S&&G.M.da2s.ctr?fm(G.M.da2s.S/G.M.da2s.ctr):'uncal');
-  T('d5-dpr',fm(G.M.dpr.ctr));
-  T('d5-s1',G.M.da2s.S?'S='+G.M.da2s.S.toFixed(5):'uncal');
-  T('d5-st',G.d.m5?'live — '+(G.M.dpr.ctr?'DepthPro metric':'DA2-Small calibrated'):'needs calibration');
-  T('d5-src',G.M.dpr.ctr?'DepthPro (metric)':'DA2-Small + scale S');
-  T('d5-hud',G.d.m5?'D5='+G.d.m5.toFixed(3)+'m':'D5=–');
-
-  // H7/D7 detail
-  T('h7-d',dv?dv.toFixed(4):'–');T('h7-dep',G.dep.toFixed(2)+'°');T('h7-grav',`${G.SF.gx.toFixed(2)},${G.SF.gy.toFixed(2)},${G.SF.gz.toFixed(2)}`);
-  T('h7-st',G.h.m7?'live':'needs D');
-  T('d7-h',hv?hv.toFixed(4):'–');T('d7-dep',G.dep.toFixed(2)+'°');T('d7-grav',`${G.SF.gx.toFixed(2)},${G.SF.gy.toFixed(2)},${G.SF.gz.toFixed(2)}`);T('d7-tan',Math.tan(Math.abs(G.dep*Math.PI/180)).toFixed(4));
-  T('d7-st',G.d.m7?'live':'needs H');
-
-  // H5
-  if(G.h.m5!=null){T('h5-st','live');T('h5-src','barometric');T('h5-hud','H5='+G.h.m5.toFixed(3)+'m');$('h5-cb').style.width='70%';$('h5-cb').style.background='var(--grn)';}
-
-  // D6 tap
-  T('d6-xy',G.tap.x>=0?`${(G.tap.x*100).toFixed(0)}%, ${(G.tap.y*100).toFixed(0)}%`:'–');
-  T('d6-st',G.d.m6?G.d.m6.toFixed(3)+'m':'tap an object');
-  T('d6-hud',G.d.m6?'D₆='+G.d.m6.toFixed(3)+'m':'tap to measure');
-  if(G.d.m6!=null){$('d6-cb').style.width='68%';$('d6-cb').style.background='var(--blu)';}
-
-  drawLive();
-  G.Hh.push(hv??0);if(G.Hh.length>200)G.Hh.shift();
-  G.Hd.push(dv??0);if(G.Hd.length>200)G.Hd.shift();
-  if(G.Hh.length>3)sparkline('spk-h',G.Hh,'#00c9a7');
-  if(G.Hd.length>3)sparkline('spk-d',G.Hd,'#f0c030');
-}
-function hSrc(){if(G.h.m1)return'H1·XR-floor';if(G.h.m2)return'H2·XR-hit';if(G.h.m3)return'H3·XR-plane';if(G.h.m4)return'H4·XR-depth';if(G.h.m5)return'H5·baro';if(G.h.m6)return'H6·ML';if(G.h.m7)return'H7·trig';return'awaiting…';}
-function dSrc(){if(G.d.m1)return'D1·XR-hit';if(G.d.m2)return'D2·XR-depth';if(G.d.m3)return'D3·XR-grid';if(G.d.m4)return'D4·XR-plane';if(G.d.m5)return'D5·ML';if(G.d.m6)return'D6·ML-tap';if(G.d.m7)return'D7·trig';return'start XR or ML…';}
-
-// ═══ DEPTH COLOURIZER (jet) ══════════════════════════════
-function jetCol(v){
-  const x=Math.max(0,Math.min(1,v));let r,g,b;
-  if(x<.25){r=0;g=x*4;b=1;}else if(x<.5){r=0;g=1;b=1-(x-.25)*4;}else if(x<.75){r=(x-.5)*4;g=1;b=0;}else{r=1;g=1-(x-.75)*4;b=0;}
-  return[r*255|0,g*255|0,b*255|0];
-}
-function getBest(){
-  if(G.M.dpr.raw)return G.M.dpr;
-  if(G.M.da2s.raw)return G.M.da2s;
-  return null;
-}
-const _dtmp=document.createElement('canvas');
-function renderDepths(key,raw,w,h){
-  const best=getBest();if(!best)return;
-  const{raw:r,w:mw,h:mh}=best;
-  let mn=Infinity,mx=0;for(let i=0;i<r.length;i++){if(r[i]<mn)mn=r[i];if(r[i]>mx)mx=r[i];}
-  const rng=mx-mn||1;
-  _dtmp.width=mw;_dtmp.height=mh;
-  const tc=_dtmp.getContext('2d');const img=tc.createImageData(mw,mh);
-  for(let i=0;i<r.length;i++){const n=(r[i]-mn)/rng;const[R,G2,B]=jetCol(n);img.data[i*4]=R;img.data[i*4+1]=G2;img.data[i*4+2]=B;img.data[i*4+3]=200;}
-  tc.putImageData(img,0,0);
-  ['cv0-d','cv-h6-d','cv-d5-d','cv-d6-d'].forEach(id=>{
-    const cv=$(id);if(!cv)return;
-    const vw=$('vid').videoWidth||320,vh=$('vid').videoHeight||240;
-    cv.width=vw;cv.height=vh;
-    const ctx=cv.getContext('2d');ctx.drawImage(_dtmp,0,0,vw,vh);
-    // Crosshair
-    ctx.strokeStyle='rgba(255,255,255,.55)';ctx.lineWidth=1.2;
-    ctx.beginPath();ctx.moveTo(vw/2-7,vh/2);ctx.lineTo(vw/2+7,vh/2);ctx.stroke();
-    ctx.beginPath();ctx.moveTo(vw/2,vh/2-7);ctx.lineTo(vw/2,vh/2+7);ctx.stroke();
-    ctx.beginPath();ctx.arc(vw/2,vh/2,13,0,Math.PI*2);ctx.strokeStyle='rgba(255,255,255,.25)';ctx.stroke();
-    // D5 label on depth canvases
-    if(id!=='cv-d6-d'&&G.d.m5!=null){
-      rr2(ctx,vw/2-44,vh/2-28,88,13,3);ctx.fillStyle='rgba(5,16,30,.9)';ctx.fill();
-      ctx.fillStyle='#38b6ff';ctx.font='bold 9px DM Mono,monospace';ctx.textAlign='center';
-      ctx.fillText('D5='+G.d.m5.toFixed(3)+'m',vw/2,vh/2-18);
-    }
-  });
-  // Tap on D6 canvas
-  const d6cv=$('cv-d6-d');
-  if(d6cv&&G.tap.x>=0){
-    const vw=$('vid').videoWidth||320,vh=$('vid').videoHeight||240;
-    const ctx=d6cv.getContext('2d');
-    const tx=G.tap.x*vw,ty=G.tap.y*vh;
-    ctx.strokeStyle='#38b6ff';ctx.lineWidth=2;
-    ctx.beginPath();ctx.arc(tx,ty,12,0,Math.PI*2);ctx.stroke();
-    ctx.beginPath();ctx.moveTo(tx-8,ty);ctx.lineTo(tx+8,ty);ctx.stroke();
-    ctx.beginPath();ctx.moveTo(tx,ty-8);ctx.lineTo(tx,ty+8);ctx.stroke();
-    if(G.d.m6!=null){rr2(ctx,tx-44,ty-26,88,13,3);ctx.fillStyle='rgba(5,16,30,.9)';ctx.fill();ctx.fillStyle='#38b6ff';ctx.font='bold 9px DM Mono,monospace';ctx.textAlign='center';ctx.fillText('D₆='+G.d.m6.toFixed(3)+'m',tx,ty-16);}
-  }
-  // Also draw floor region line on H6 depth canvas
-  const h6cv=$('cv-h6-d');
-  if(h6cv){
-    const vw=$('vid').videoWidth||320,vh=$('vid').videoHeight||240;
-    const ctx=h6cv.getContext('2d');
-    ctx.strokeStyle='rgba(0,201,167,.5)';ctx.setLineDash([3,4]);
-    ctx.beginPath();ctx.moveTo(0,vh*.85);ctx.lineTo(vw,vh*.85);ctx.stroke();
-    ctx.setLineDash([]);
-    ctx.fillStyle='rgba(0,201,167,.06)';ctx.fillRect(0,vh*.85,vw,vh*.15);
-    if(G.h.m6!=null){rr2(ctx,4,vh*.85+4,120,13,3);ctx.fillStyle='rgba(5,16,30,.9)';ctx.fill();ctx.fillStyle='#38b6ff';ctx.font='bold 8px DM Mono,monospace';ctx.textAlign='left';ctx.fillText('H6='+G.h.m6.toFixed(3)+'m floor',8,vh*.85+13);}
-  }
-}
-
-// ═══ LIVE CAMERA ANNOTATION ═════════════════════════════
-function drawLive(){
-  const cv=$('cv0-a'),vid=$('vid');
-  if(!cv||!vid.videoWidth)return;
-  const W=vid.videoWidth,H=vid.videoHeight;cv.width=W;cv.height=H;
-  const ctx=cv.getContext('2d');ctx.clearRect(0,0,W,H);
-  const cx=W/2,cy=H/2,hv=G.h.fused,dv=G.d.fused;
-  // Horizon line
-  const hy=Math.max(2,Math.min(H-2,G.hFrac*H));
-  const hg=ctx.createLinearGradient(0,0,W,0);hg.addColorStop(0,'transparent');hg.addColorStop(.25,'rgba(240,80,80,.5)');hg.addColorStop(.75,'rgba(240,80,80,.5)');hg.addColorStop(1,'transparent');
-  ctx.strokeStyle=hg;ctx.lineWidth=1;ctx.setLineDash([4,5]);ctx.beginPath();ctx.moveTo(0,hy);ctx.lineTo(W,hy);ctx.stroke();ctx.setLineDash([]);
-  ctx.fillStyle='rgba(0,201,167,.02)';ctx.fillRect(0,hy,W,H-hy);
-  $('hz0').style.top=(G.hFrac*100)+'%';
-  // Distance rings
-  if(dv!=null){
-    const r=Math.max(10,Math.min(W*.44,200/dv));
-    [[r*1.5,'rgba(240,192,48,.15)',.5],[r,'#f0c030',1.8]].forEach(([rr,col,lw])=>{
-      ctx.beginPath();ctx.arc(cx,cy,rr,0,Math.PI*2);ctx.strokeStyle=col;ctx.lineWidth=lw;ctx.stroke();
     });
-    for(let a=0;a<Math.PI*2;a+=Math.PI/2){ctx.beginPath();ctx.moveTo(cx+Math.cos(a)*r,cy+Math.sin(a)*r);ctx.lineTo(cx+Math.cos(a)*(r+5),cy+Math.sin(a)*(r+5));ctx.strokeStyle='#f0c030';ctx.lineWidth=1.8;ctx.stroke();}
-    const ly=cy+r+15;rr2(ctx,cx-55,ly-10,110,14,3);ctx.fillStyle='rgba(5,16,30,.92)';ctx.fill();
-    ctx.fillStyle='#f0c030';ctx.font='bold 10px DM Mono,monospace';ctx.textAlign='center';ctx.fillText('D = '+dv.toFixed(3)+' m  ('+dSrc()+')',cx,ly);
-  }else{
-    ctx.strokeStyle='rgba(0,201,167,.65)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(cx-9,cy);ctx.lineTo(cx+9,cy);ctx.stroke();ctx.beginPath();ctx.moveTo(cx,cy-9);ctx.lineTo(cx,cy+9);ctx.stroke();ctx.beginPath();ctx.arc(cx,cy,16,0,Math.PI*2);ctx.strokeStyle='rgba(0,201,167,.2)';ctx.stroke();
+  } catch(e) {
+    setPill('xr', 'error');
+    setStatus('XR: ' + e.message);
   }
-  // Height label
-  if(hv!=null){const hl=Math.max(11,Math.min(H-11,hy-11));rr2(ctx,cx-58,hl-10,116,14,3);ctx.fillStyle='rgba(5,16,30,.92)';ctx.fill();ctx.fillStyle=G.h.conf>50?'#00c9a7':'#f0c030';ctx.font='bold 9px DM Mono,monospace';ctx.textAlign='center';ctx.fillText('h = '+hv.toFixed(3)+' m  ('+G.h.conf+'%)  '+hSrc(),cx,hl);}
-  // Source badges
-  const bs=[];if(xrOn)bs.push({t:'XR',c:'#8b6eff'});
-  if(G.M.dpr.raw)bs.push({t:'DepthPro',c:'#ff8040'});
-  if(G.M.da2s.raw)bs.push({t:'DA2-S',c:'#38b6ff'});
-  if(G.h.m5!=null)bs.push({t:'BARO',c:'#00c9a7'});
-  let bx=5;bs.forEach(b=>{ctx.font='bold 7px DM Mono,monospace';const tw=ctx.measureText(b.t).width+8;rr2(ctx,bx,H-16,tw,12,3);ctx.fillStyle=b.c+'20';ctx.fill();ctx.strokeStyle=b.c+'55';ctx.lineWidth=1;ctx.stroke();ctx.fillStyle=b.c;ctx.textAlign='left';ctx.fillText(b.t,bx+4,H-8);bx+=tw+3;});
-  T('hud0-tl','|g|='+(Math.sqrt(G.SF.ax**2+G.SF.ay**2+G.SF.az**2)).toFixed(1));
-  T('hud0-tr','dep='+G.dep.toFixed(1)+'°');
-  T('hud0-br',(hv?'h='+hv.toFixed(2)+'m':'h=–')+' '+(dv?'D='+dv.toFixed(2)+'m':'D=–'));
-  // Draw same annotation on all method camera canvases
-  ['cv-h1-a','cv-h2-a','cv-h3-a','cv-h4-a','cv-h5-a','cv-h7-a',
-   'cv-d1-a','cv-d2-a','cv-d3-a','cv-d4-a','cv-d7-a'].forEach(id=>{
-    const c=$(id);if(!c)return;
-    c.width=W;c.height=H;const x=c.getContext('2d');x.clearRect(0,0,W,H);
-    // Mini horizon + value label
-    x.strokeStyle='rgba(240,80,80,.3)';x.lineWidth=1;x.setLineDash([3,5]);x.beginPath();x.moveTo(0,hy);x.lineTo(W,hy);x.stroke();x.setLineDash([]);
+}
+
+// ─────────────────────────────────────────────
+//  METHOD 3: MiDaS Monocular Depth via TF.js
+// ─────────────────────────────────────────────
+async function initMiDaS() {
+  if (state.midasInitting) return;
+  state.midasInitting = true;
+  setPill('midas', 'inactive');
+  setStatus('Loading MiDaS depth model...');
+
+  try {
+    // Dynamically load TF.js and the depth estimation model
+    await loadScript('https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.17.0/dist/tf.min.js');
+    await loadScript('https://cdn.jsdelivr.net/npm/@tensorflow-models/depth-estimation@0.0.3/dist/depth-estimation.min.js');
+
+    setStatus('MiDaS: initializing backend...');
+    await tf.ready();
+    await tf.setBackend('webgl');
+
+    setStatus('MiDaS: loading weights...');
+    const model = await depthEstimation.createEstimator(
+      depthEstimation.SupportedModels.ARPortraitDepth || 'ARPortraitDepth',
+      { outputDepthRange: [0, 10] }
+    );
+    state.midasModel = model;
+    state.midasActive = true;
+    setPill('midas', 'active');
+    $('depth-wrap').style.display = 'block';
+    setStatus('MiDaS ready');
+    runMiDaS();
+  } catch(e) {
+    // Fallback: try lite model
+    try {
+      setStatus('MiDaS fallback: loading lite model...');
+      const model2 = await depthEstimation.createEstimator(
+        depthEstimation.SupportedModels.ARPortraitDepth,
+        { modelType: 'lite' }
+      );
+      state.midasModel = model2;
+      state.midasActive = true;
+      setPill('midas', 'active');
+      $('depth-wrap').style.display = 'block';
+      runMiDaS();
+    } catch(e2) {
+      setPill('midas', 'error');
+      setStatus('MiDaS unavailable: ' + e2.message.slice(0,50));
+    }
+  }
+}
+
+function loadScript(src) {
+  return new Promise((res, rej) => {
+    if (document.querySelector(`script[src="${src}"]`)) { res(); return; }
+    const s = document.createElement('script');
+    s.src = src; s.onload = res; s.onerror = rej;
+    document.head.appendChild(s);
   });
 }
 
-// ═══ RENDER LOOP ════════════════════════════════════════
-const _ftmp=document.createElement('canvas');
-function startLoop(){
-  const vid=$('vid');
-  (function frame(){
-    requestAnimationFrame(frame);
-    if(!vid.videoWidth)return;
-    // Image analysis every 4th frame
-    if(++_fc%4===0){
-      const sw=Math.floor(vid.videoWidth*.25),sh=Math.floor(vid.videoHeight*.25);
-      _ftmp.width=sw;_ftmp.height=sh;
-      _ftmp.getContext('2d').drawImage(vid,0,0,sw,sh);
-      const id=_ftmp.getContext('2d').getImageData(0,0,sw,sh);
-      analyzeFrame(id,sw,sh);
+async function runMiDaS() {
+  const vid = $('cam');
+  const dc = $('depth-canvas');
+  const dctx = dc.getContext('2d');
+
+  const loop = async () => {
+    if (!state.midasModel || !state.midasActive) return;
+    if (vid.readyState < 2) { requestAnimationFrame(loop); return; }
+
+    try {
+      const depthMap = await state.midasModel.estimateDepth(vid, { flipHorizontal: false });
+      if (!depthMap) { requestAnimationFrame(loop); return; }
+
+      // Render depth map thumbnail
+      const depthTensor = await depthMap.toTensor();
+      const data = await depthTensor.data();
+      const [h, w] = depthTensor.shape.slice(0, 2);
+
+      dc.width = w; dc.height = h;
+      const img = dctx.createImageData(w, h);
+      let centerDepth = 0, ccount = 0;
+      const cx1 = Math.floor(w*0.4), cx2 = Math.floor(w*0.6);
+      const cy1 = Math.floor(h*0.4), cy2 = Math.floor(h*0.6);
+
+      for (let i = 0; i < h * w; i++) {
+        const val = data[i];
+        const norm = Math.min(255, val * 25.5);
+        const r = i * 4;
+        // Turbo colormap approximation
+        img.data[r]   = Math.min(255, norm * 1.2);
+        img.data[r+1] = Math.min(255, 255 - Math.abs(norm - 127));
+        img.data[r+2] = Math.max(0, 255 - norm * 1.5);
+        img.data[r+3] = 200;
+
+        const px = i % w, py = Math.floor(i / w);
+        if (px >= cx1 && px <= cx2 && py >= cy1 && py <= cy2) {
+          centerDepth += val; ccount++;
+        }
+      }
+      dctx.putImageData(img, 0, 0);
+      depthTensor.dispose();
+
+      if (ccount > 0) {
+        const rawDepth = centerDepth / ccount;
+        // Scale factor: MiDaS outputs relative depth, calibrate with known height if available
+        const scaleFactor = state.fusionHeight ? state.fusionHeight / 1.4 : 1.0;
+        state.midasDist = rawDepth * scaleFactor;
+        state.midasConf = 0.6;
+        setConf('midas', 60);
+        setPill('midas', 'active');
+      }
+
+      depthMap.dispose();
+    } catch(e) {
+      // silent
     }
-    drawLive();
-  })();
-}
-let _fc=0;
 
-// ═══ TABS ═══════════════════════════════════════════════
-document.querySelectorAll('.tb').forEach(b=>b.addEventListener('click',function(){
-  document.querySelectorAll('.tb').forEach(t=>t.classList.remove('on'));
-  document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
-  this.classList.add('on');
-  $('pg-'+this.dataset.pg)?.classList.add('on');
-}));
-
-// ═══ TAP D6 ═════════════════════════════════════════════
-['cv-d6-d','cv-d6-a'].forEach(id=>{
-  const el=$(id);if(!el)return;
-  el.style.pointerEvents='all';
-  const fn=(e)=>{
-    const rect=el.getBoundingClientRect();
-    const cx=(e.touches?e.touches[0].clientX:e.clientX)-rect.left;
-    const cy=(e.touches?e.touches[0].clientY:e.clientY)-rect.top;
-    G.tap.x=cx/rect.width;G.tap.y=cy/rect.height;
-    toast('Measuring tap point…');tick();
+    setTimeout(loop, 200); // ~5fps to save battery
   };
-  el.addEventListener('click',fn);el.addEventListener('touchstart',fn,{passive:true});
+  loop();
+}
+
+// ─────────────────────────────────────────────
+//  METHOD 4: GEOMETRIC / FOCAL LENGTH
+//  If phone height H above ground:
+//   - Camera looks forward (level)
+//   - Ground intersection: tan(vertical_angle) = H / dist
+//   - For center pixel: vertical_angle = atan2(H_pixels_below_center, focalPx)
+//  Also: if we see a reference object or ground plane edge, compute.
+// ─────────────────────────────────────────────
+function initGeometric() {
+  // Always active as fallback
+  state.geoActive = true;
+  setPill('geo', 'active');
+}
+
+function updateGeometric() {
+  // Use fusion height as reference if available, else prior
+  const H = state.fusionHeight || PRIOR_HEIGHT_M;
+  const f = state.focalPx || 800;
+
+  // Camera points horizontally (device perpendicular to ground)
+  // Horizon is at center of image
+  // Ground line (bottom of image) subtends angle: atan((videoH/2) / f)
+  // Distance to ground intersection at bottom of frame:
+  const halfH = state.videoH / 2;
+  const angleToBottom = Math.atan2(halfH, f);
+  if (angleToBottom > 0) {
+    state.geoDist = H / Math.tan(angleToBottom);
+  }
+
+  // Height is either fused or prior; geo itself can't measure height
+  state.geoHeight = H;
+  state.geoConf = 0.4;
+  state.geoActive = true;
+  setPill('geo', 'active');
+}
+
+// ─────────────────────────────────────────────
+//  SENSOR FUSION — weighted average
+// ─────────────────────────────────────────────
+function fuseEstimates() {
+  // HEIGHT FUSION
+  const hEstimates = [];
+  if (state.xrHeight !== null && state.xrConf > 0)     hEstimates.push({ v: state.xrHeight, w: state.xrConf });
+  if (state.imuHeight !== null && state.imuConf > 0)   hEstimates.push({ v: state.imuHeight, w: state.imuConf });
+  if (hEstimates.length === 0) hEstimates.push({ v: PRIOR_HEIGHT_M, w: 0.2 });
+
+  const totalW_h = hEstimates.reduce((s, e) => s + e.w, 0);
+  state.fusionHeight = hEstimates.reduce((s, e) => s + e.v * e.w, 0) / totalW_h;
+
+  // DISTANCE FUSION
+  const dEstimates = [];
+  if (state.xrDist !== null && state.xrConf > 0)       dEstimates.push({ v: state.xrDist,   w: state.xrConf });
+  if (state.midasDist !== null && state.midasConf > 0) dEstimates.push({ v: state.midasDist, w: state.midasConf });
+  if (state.geoDist !== null && state.geoConf > 0)     dEstimates.push({ v: state.geoDist,   w: state.geoConf });
+
+  if (dEstimates.length > 0) {
+    const totalW_d = dEstimates.reduce((s, e) => s + e.w, 0);
+    state.fusionDist = dEstimates.reduce((s, e) => s + e.v * e.w, 0) / totalW_d;
+  } else {
+    state.fusionDist = null;
+  }
+
+  const anyActive = state.xrActive || state.imuActive || state.midasActive;
+  setPill('fusion', anyActive ? 'active' : 'inactive');
+}
+
+// ─────────────────────────────────────────────
+//  CANVAS OVERLAY (HUD data viz)
+// ─────────────────────────────────────────────
+function drawOverlay() {
+  const canvas = $('canvas-overlay');
+  const vid = $('cam');
+  canvas.width = vid.clientWidth;
+  canvas.height = vid.clientHeight;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  const W = canvas.width, H = canvas.height;
+  const CX = W / 2, CY = H / 2;
+
+  // Horizon line (camera level = center)
+  ctx.beginPath();
+  ctx.moveTo(0, CY);
+  ctx.lineTo(W, CY);
+  ctx.strokeStyle = 'rgba(0,255,180,0.25)';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([8, 12]);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Distance arc visualization
+  if (state.fusionDist !== null) {
+    const d = state.fusionDist;
+    const label = d.toFixed(1) + 'm';
+    ctx.beginPath();
+    ctx.arc(CX, CY, 40, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(0,200,255,0.35)';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    ctx.font = 'bold 11px "Share Tech Mono"';
+    ctx.fillStyle = 'rgba(0,200,255,0.8)';
+    ctx.textAlign = 'center';
+    ctx.fillText(label, CX, CY - 50);
+  }
+
+  // Height indicator bar on left
+  if (state.fusionHeight !== null) {
+    const h = state.fusionHeight;
+    const maxH = 3.0;
+    const barH = H * 0.5;
+    const barY = CY - barH / 2;
+    const fillRatio = Math.min(1, h / maxH);
+    const fillH = barH * fillRatio;
+
+    ctx.fillStyle = 'rgba(0,255,180,0.08)';
+    ctx.fillRect(10, barY, 6, barH);
+    ctx.fillStyle = 'rgba(0,255,180,0.5)';
+    ctx.fillRect(10, barY + barH - fillH, 6, fillH);
+
+    ctx.font = '9px "Share Tech Mono"';
+    ctx.fillStyle = 'rgba(0,255,180,0.7)';
+    ctx.textAlign = 'left';
+    ctx.fillText(h.toFixed(1)+'m', 20, barY + barH - fillH + 4);
+  }
+
+  // Ground line projection
+  const H_m = state.fusionHeight || PRIOR_HEIGHT_M;
+  const f = state.focalPx || 800;
+  const scaleX = W / (state.videoW || W);
+  const scaleY = H / (state.videoH || H);
+  const fScaled = f * scaleY;
+
+  // Vanishing point lines
+  ctx.beginPath();
+  ctx.moveTo(0, CY + (H_m / (H_m + 0.5)) * fScaled);
+  ctx.lineTo(W, CY + (H_m / (H_m + 0.5)) * fScaled);
+  ctx.strokeStyle = 'rgba(255,107,53,0.2)';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([4, 8]);
+  ctx.stroke();
+  ctx.setLineDash([]);
+}
+
+// ─────────────────────────────────────────────
+//  MAIN RENDER LOOP
+// ─────────────────────────────────────────────
+function renderLoop() {
+  updateGeometric();
+  fuseEstimates();
+
+  // Update UI
+  setVal('height-val', state.fusionHeight);
+  setVal('dist-val', state.fusionDist);
+
+  // Sub labels
+  const hSources = [];
+  if (state.xrActive && state.xrHeight) hSources.push('XR');
+  if (state.imuActive && state.imuHeight) hSources.push('IMU');
+  if (hSources.length === 0) hSources.push('PRIOR');
+  $('height-sub').textContent = hSources.join('+') + ' · ' + (state.fusionHeight ? ((state.fusionHeight * 100).toFixed(0) + 'cm') : '--');
+
+  const dSources = [];
+  if (state.xrDist) dSources.push('XR');
+  if (state.midasDist) dSources.push('MiDaS');
+  if (state.geoDist) dSources.push('GEO');
+  $('dist-sub').textContent = dSources.join('+') + (state.fusionDist ? ' · ' + (state.fusionDist * 100).toFixed(0) + 'cm' : ' · waiting');
+
+  // Status
+  const methods = [
+    state.imuActive && 'IMU',
+    state.xrActive && 'XR',
+    state.midasActive && 'MiDaS',
+    state.geoActive && 'GEO',
+  ].filter(Boolean);
+  if (methods.length > 0) {
+    setStatus('LIVE · ' + methods.join(' + ') + ' · FUSED');
+  }
+
+  drawOverlay();
+  state.animFrame = requestAnimationFrame(renderLoop);
+}
+
+// ─────────────────────────────────────────────
+//  BOOT
+// ─────────────────────────────────────────────
+$('start-btn').addEventListener('click', async () => {
+  $('permission-screen').style.display = 'none';
+  $('cam-wrap').style.display = 'block';
+  $('readout').style.display = 'block';
+
+  setStatus('Starting camera...');
+  const ok = await startCamera();
+  if (!ok) {
+    $('permission-screen').style.display = 'flex';
+    return;
+  }
+
+  initIMU();
+  initGeometric();
+
+  // Try WebXR (async, may fail gracefully)
+  initWebXR().catch(() => setPill('xr', 'error'));
+
+  // Load MiDaS after a short delay (non-blocking)
+  setTimeout(() => initMiDaS(), 1500);
+
+  renderLoop();
 });
 
-// ═══ UTILS ══════════════════════════════════════════════
-function rr2(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.arcTo(x+w,y,x+w,y+r,r);ctx.lineTo(x+w,y+h-r);ctx.arcTo(x+w,y+h,x+w-r,y+h,r);ctx.lineTo(x+r,y+h);ctx.arcTo(x,y+h,x,y+h-r,r);ctx.lineTo(x,y+r);ctx.arcTo(x,y,x+r,y,r);ctx.closePath();}
-function sparkline(id,data,color){const c=$(id);if(!c||data.length<2)return;const W=c.offsetWidth||260,H=28;c.width=W;c.height=H;const ctx=c.getContext('2d');ctx.clearRect(0,0,W,H);let mn=Infinity,mx=-Infinity;data.forEach(v=>{if(v<mn)mn=v;if(v>mx)mx=v;});const rng=mx-mn||.001;ctx.beginPath();ctx.strokeStyle=color;ctx.lineWidth=1.3;data.forEach((v,i)=>{const x=i/(data.length-1)*W,y=H-((v-mn)/rng)*(H-4)-2;i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);});ctx.stroke();ctx.lineTo(W,H);ctx.lineTo(0,H);ctx.closePath();ctx.fillStyle=color+'12';ctx.fill();ctx.font='7px DM Mono,monospace';ctx.fillStyle=color+'80';ctx.textAlign='left';ctx.fillText(mn.toFixed(3),2,H-2);ctx.textAlign='right';ctx.fillText(mx.toFixed(3),W-2,H-2);}
-
-// ═══ LAUNCH ═════════════════════════════════════════════
-window.doLaunch=function(){
-  $('splash').style.display='none';
-  $('app').style.display='flex';
-  $('p-os').textContent=IS_IOS?'iOS':IS_AND?'Android':'Desktop';
-  startLoop();tick();
-};
-
-window.addEventListener('DOMContentLoaded',()=>initAll());
+// Cleanup on hide
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    cancelAnimationFrame(state.animFrame);
+  } else {
+    state.animFrame = requestAnimationFrame(renderLoop);
+  }
+});
 </script>
 </body>
 </html>

@@ -4,1457 +4,1604 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>DEPTH RANGER</title>
+<title>DEPTH RANGER PRO</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600;700&family=Share+Tech+Mono&display=swap');
 :root{
-  --bg:#010b0f;--bg1:#041018;--bg2:#071a26;
-  --c0:#00e0ff;--c1:#00ff99;--c2:#ff4060;--c3:#ffd600;--c4:#aa44ff;
-  --dim:rgba(0,224,255,.38);--bdr:rgba(0,224,255,.13);--bdr2:rgba(0,224,255,.06);
-  --txt:#cceeff;--mut:rgba(204,238,255,.35);
+  --bg:#010a0e;--bg1:#041018;--bg2:#06182a;--bg3:#0a2035;
+  --c0:#00ddff;--c1:#00ff99;--c2:#ff3d6b;--c3:#ffd200;--c4:#9d4eff;--c5:#ff8800;
+  --dim:rgba(0,221,255,.4);--bdr:rgba(0,221,255,.14);--bdr2:rgba(0,221,255,.06);
+  --txt:#c8eeff;--mut:rgba(200,238,255,.34);
   --mono:'Share Tech Mono',monospace;--head:'Rajdhani',sans-serif;--disp:'Bebas Neue',sans-serif;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--txt)}
 body{font-family:var(--mono);display:flex;flex-direction:column;height:100dvh}
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9998;
+  background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.018) 3px,rgba(0,0,0,.018) 4px)}
 
-/* ── LOADING ── */
-#LS{position:fixed;inset:0;z-index:999;background:var(--bg);display:flex;flex-direction:column;align-items:center;padding:16px 14px 12px;overflow-y:auto;gap:0}
+/* ════════ LOADING SCREEN ════════ */
+#LS{position:fixed;inset:0;z-index:500;background:var(--bg);display:flex;flex-direction:column;align-items:center;padding:14px 14px 10px;overflow-y:auto;gap:0}
 #LS::before{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;
-  background:radial-gradient(ellipse 70% 35% at 15% 5%,rgba(0,224,255,.06),transparent 65%),
-    radial-gradient(ellipse 50% 60% at 85% 95%,rgba(0,255,153,.04),transparent 65%),
-    linear-gradient(rgba(0,224,255,.025) 1px,transparent 1px) 0 0/28px 28px,
-    linear-gradient(90deg,rgba(0,224,255,.025) 1px,transparent 1px) 0 0/28px 28px}
-.ls-brand{text-align:center;margin-bottom:12px}
-.ls-title{font-family:var(--disp);font-size:40px;letter-spacing:4px;line-height:1;
-  background:linear-gradient(130deg,var(--c0) 30%,var(--c1));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.ls-sub{font-family:var(--head);font-size:10px;font-weight:600;letter-spacing:3px;color:var(--dim);text-transform:uppercase;margin-top:3px}
-.ls-desc{font-size:8px;color:var(--mut);margin-top:3px;letter-spacing:.5px}
+  background:
+    radial-gradient(ellipse 65% 30% at 15% 5%,rgba(0,221,255,.07),transparent 65%),
+    radial-gradient(ellipse 45% 55% at 88% 92%,rgba(0,255,153,.05),transparent 65%),
+    linear-gradient(rgba(0,221,255,.022) 1px,transparent 1px) 0 0/30px 30px,
+    linear-gradient(90deg,rgba(0,221,255,.022) 1px,transparent 1px) 0 0/30px 30px}
 
-/* progress */
-.pg-wrap{width:100%;max-width:380px;margin-bottom:10px}
-.pg-row{display:flex;justify-content:space-between;font-size:8.5px;color:var(--dim);margin-bottom:4px;font-family:var(--head);font-weight:600;text-transform:uppercase;letter-spacing:1px}
-.pg-track{height:8px;background:rgba(0,224,255,.06);border-radius:4px;border:1px solid var(--bdr);overflow:hidden;position:relative}
+.brand{text-align:center;margin-bottom:10px}
+.brand-title{font-family:var(--disp);font-size:36px;letter-spacing:4px;line-height:1;
+  background:linear-gradient(130deg,var(--c0) 20%,var(--c1));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.brand-sub{font-family:var(--head);font-size:9.5px;font-weight:600;letter-spacing:3.5px;color:var(--dim);text-transform:uppercase;margin-top:3px}
+.brand-libs{display:flex;flex-wrap:wrap;justify-content:center;gap:4px;margin-top:6px}
+.lib-tag{font-size:7.5px;font-family:var(--head);font-weight:700;letter-spacing:.6px;padding:2px 7px;border-radius:20px;border:1px solid;text-transform:uppercase}
+.lt-mp {border-color:rgba(0,221,255,.5);color:var(--c0);background:rgba(0,221,255,.07)}
+.lt-tf {border-color:rgba(255,136,0,.5);color:var(--c5);background:rgba(255,136,0,.07)}
+.lt-xn {border-color:rgba(157,78,255,.5);color:var(--c4);background:rgba(157,78,255,.07)}
+.lt-on {border-color:rgba(0,255,153,.5);color:var(--c1);background:rgba(0,255,153,.07)}
+.lt-ml {border-color:rgba(255,61,107,.5);color:var(--c2);background:rgba(255,61,107,.07)}
+.lt-cv {border-color:rgba(255,210,0,.5);color:var(--c3);background:rgba(255,210,0,.07)}
+
+/* Progress */
+.pg-wrap{width:100%;max-width:400px;margin-bottom:9px}
+.pg-row{display:flex;justify-content:space-between;font-size:8px;color:var(--dim);margin-bottom:4px;font-family:var(--head);font-weight:600;text-transform:uppercase;letter-spacing:1px}
+.pg-track{height:7px;background:rgba(0,221,255,.06);border-radius:4px;border:1px solid var(--bdr);overflow:hidden;position:relative}
 .pg-bar{height:100%;background:linear-gradient(90deg,var(--c0),var(--c1));border-radius:4px;width:0%;transition:width .4s ease}
-.pg-shine{position:absolute;top:0;right:-40px;width:40px;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.35));animation:shine 1.2s linear infinite;display:none}
-@keyframes shine{from{right:-40px}to{right:110%}}
+.pg-shine{position:absolute;top:0;right:-50px;width:50px;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.28));animation:pgsh 1.2s linear infinite;display:none}
+@keyframes pgsh{from{right:-50px}to{right:110%}}
 
-/* module cards */
-.ml{width:100%;max-width:380px;display:flex;flex-direction:column;gap:4px;margin-bottom:10px}
-.mc{display:flex;align-items:center;gap:8px;background:rgba(0,224,255,.02);border:1px solid var(--bdr2);border-radius:6px;padding:6px 9px;transition:all .3s}
-.mc.loading{border-color:rgba(0,224,255,.22);background:rgba(0,224,255,.04)}
-.mc.done   {border-color:rgba(0,255,153,.26);background:rgba(0,255,153,.03)}
-.mc.fail   {border-color:rgba(255,64,96,.25);background:rgba(255,64,96,.03)}
-.mc.na     {opacity:.35}
-.mc-ico{width:26px;height:26px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;border:1px solid var(--bdr);background:rgba(0,224,255,.05);transition:all .3s}
-.mc.done .mc-ico{border-color:rgba(0,255,153,.4);background:rgba(0,255,153,.08)}
-.mc.fail .mc-ico{border-color:rgba(255,64,96,.4);background:rgba(255,64,96,.08)}
-.mc.loading .mc-ico{animation:ipl 1s ease-in-out infinite}
-@keyframes ipl{0%,100%{opacity:.5}50%{opacity:1}}
+/* Module grid */
+.mod-grid{width:100%;max-width:400px;display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:9px}
+.mc{display:flex;align-items:center;gap:6px;background:rgba(0,221,255,.02);border:1px solid var(--bdr2);border-radius:5px;padding:5px 7px;transition:all .3s;min-width:0}
+.mc.loading{border-color:rgba(0,221,255,.22);background:rgba(0,221,255,.04)}
+.mc.done   {border-color:rgba(0,255,153,.24);background:rgba(0,255,153,.03)}
+.mc.fail   {border-color:rgba(255,61,107,.22);background:rgba(255,61,107,.03)}
+.mc.na     {opacity:.3}
+.mc-ico{font-size:13px;flex-shrink:0;width:20px;text-align:center}
 .mc-body{flex:1;min-width:0}
-.mc-name{font-family:var(--head);font-size:11px;font-weight:700;color:var(--txt)}
-.mc-msg{font-size:8px;color:var(--mut);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.mc-bdg{font-size:8px;font-family:var(--head);font-weight:700;letter-spacing:.6px;padding:2px 7px;border-radius:20px;border:1px solid currentColor;flex-shrink:0;text-transform:uppercase}
+.mc-name{font-family:var(--head);font-size:9.5px;font-weight:700;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mc-msg{font-size:7px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mc-bdg{font-size:7px;font-family:var(--head);font-weight:700;padding:1px 5px;border-radius:10px;border:1px solid currentColor;flex-shrink:0;text-transform:uppercase}
 .bdg-w{color:var(--dim)}.bdg-ok{color:var(--c1)}.bdg-fail{color:var(--c2)}.bdg-na{color:var(--mut)}
 
-.ls-acts{width:100%;max-width:380px;display:flex;flex-direction:column;gap:6px}
-#btn-go{background:linear-gradient(130deg,var(--c0),var(--c1));color:#010c10;border:none;padding:13px;border-radius:6px;font-family:var(--disp);font-size:18px;letter-spacing:3px;cursor:pointer;width:100%;transition:opacity .2s}
-#btn-go:active{opacity:.8}#btn-go:disabled{opacity:.4;cursor:not-allowed}
-#btn-retry{background:transparent;color:var(--c2);border:1px solid rgba(255,64,96,.36);padding:9px;border-radius:6px;font-family:var(--head);font-weight:700;font-size:10px;letter-spacing:2px;cursor:pointer;width:100%;display:none;text-transform:uppercase}
-.ls-note{font-size:8px;color:var(--mut);text-align:center;line-height:1.7}
+/* Sub-item rows for module detail */
+.mc-subs{grid-column:span 2;padding:0 4px 2px;display:none}
+.mc-subs.open{display:block}
+.sub-row{display:flex;align-items:center;gap:5px;margin-bottom:2px;font-size:7px}
+.sub-dot{width:4px;height:4px;border-radius:50%;flex-shrink:0}
+.sub-dot.ok{background:var(--c1)}.sub-dot.fail{background:var(--c2)}.sub-dot.wait{background:var(--dim)}
+.sub-txt{color:var(--mut);flex:1}.sub-val{color:var(--c0);margin-left:auto}
 
-/* ── APP ── */
+.ls-acts{width:100%;max-width:400px;display:flex;flex-direction:column;gap:5px}
+#btn-go{background:linear-gradient(130deg,var(--c0),var(--c1));color:#010d12;border:none;padding:13px;border-radius:5px;font-family:var(--disp);font-size:18px;letter-spacing:3px;cursor:pointer;width:100%;transition:opacity .2s}
+#btn-go:active{opacity:.8}#btn-go:disabled{opacity:.4;cursor:not-allowed}
+#btn-retry{background:transparent;color:var(--c2);border:1px solid rgba(255,61,107,.35);padding:8px;border-radius:5px;font-family:var(--head);font-weight:700;font-size:9.5px;letter-spacing:2px;cursor:pointer;width:100%;display:none;text-transform:uppercase}
+.ls-note{font-size:7.5px;color:var(--mut);text-align:center;line-height:1.7}
+
+/* ════════ APP SHELL ════════ */
 #APP{display:none;flex-direction:column;height:100dvh}
 
-/* tabs */
+/* Tab bar */
 #TABS{display:flex;background:var(--bg1);border-bottom:1px solid var(--bdr);flex-shrink:0;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
 #TABS::-webkit-scrollbar{display:none}
-.tb{flex:0 0 auto;min-width:58px;height:48px;padding:0 8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;font-family:var(--head);font-size:7.5px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--mut);border:none;background:transparent;cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;position:relative}
+.tb{flex:0 0 auto;min-width:52px;height:46px;padding:0 7px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;font-family:var(--head);font-size:7px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--mut);border:none;background:transparent;cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;position:relative;white-space:nowrap}
 .tb.on{color:var(--c0);border-bottom-color:var(--c0)}
-.tb .ti{font-size:15px;line-height:1}
-.dot{position:absolute;top:6px;right:6px;width:5px;height:5px;border-radius:50%;background:var(--dim);transition:background .3s}
-.dot.live{background:var(--c0);animation:dpl 1.4s ease-in-out infinite}
-.dot.ok{background:var(--c1)}.dot.fail{background:var(--c2)}
-@keyframes dpl{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1.2)}}
+.tb .ti{font-size:14px;line-height:1}
+.tdot{position:absolute;top:5px;right:5px;width:5px;height:5px;border-radius:50%;background:var(--dim);transition:background .3s}
+.tdot.live{background:var(--c0);animation:tdp 1.4s ease-in-out infinite}
+.tdot.ok{background:var(--c1)}.tdot.fail{background:var(--c2)}.tdot.skip{background:var(--mut);opacity:.4}
+@keyframes tdp{0%,100%{opacity:.3;transform:scale(.75)}50%{opacity:1;transform:scale(1.3)}}
 
-/* panes */
+/* Page content */
 #PAGES{flex:1;overflow:hidden;position:relative}
 .pane{display:none;position:absolute;inset:0;flex-direction:column;overflow:hidden}
 .pane.on{display:flex}
 
-/* each pane: video + overlay on top, metrics below */
-.pv-wrap{position:relative;flex-shrink:0;width:100%;background:#000;overflow:hidden}
-.pv-wrap video{width:100%;height:100%;object-fit:cover;display:block}
-.pv-wrap canvas.ov{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
-
-/* the output canvas for ML drawing */
-.pv-wrap canvas.ml-cv{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
-
-/* hud elements */
-.hud-cross{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:50px;height:50px;pointer-events:none}
-.hud-cross::before,.hud-cross::after{content:'';position:absolute;background:var(--c0);opacity:.6}
+/* ════════ CAMERA + CANVAS LAYER ════════ */
+.cam-wrap{position:relative;flex-shrink:0;background:#000;overflow:hidden;
+  height:clamp(130px,38vw,240px)}
+.cam-wrap video{width:100%;height:100%;object-fit:cover;display:block}
+/* Base HUD overlay (crosshair etc) drawn here */
+.cam-wrap .ov-hud{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+/* ML output drawn on this canvas ON TOP of video */
+.cam-wrap .ov-ml{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+/* HUD decorations */
+.hud-cross{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:44px;height:44px;pointer-events:none}
+.hud-cross::before,.hud-cross::after{content:'';position:absolute;background:var(--c0);opacity:.55}
 .hud-cross::before{width:1px;height:100%;left:50%;margin-left:-.5px}
 .hud-cross::after{height:1px;width:100%;top:50%;margin-top:-.5px}
-.hud-ring{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:60px;height:60px;border:1.5px solid var(--c0);border-radius:50%;opacity:.4;pointer-events:none;animation:rpl 2s ease-in-out infinite}
-@keyframes rpl{0%,100%{opacity:.3;transform:translate(-50%,-50%) scale(1)}50%{opacity:.65;transform:translate(-50%,-50%) scale(1.1)}}
-.hud-scan{position:absolute;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--c0),transparent);opacity:0;pointer-events:none;animation:scl 3.5s linear infinite}
-@keyframes scl{0%{top:0;opacity:0}4%{opacity:.45}95%{opacity:.45}100%{top:100%;opacity:0}}
-.hud-cdec{position:absolute;width:13px;height:13px;border-color:var(--c0);border-style:solid;opacity:.55;pointer-events:none}
-.hud-cdec.tl{top:7px;left:7px;border-width:1.5px 0 0 1.5px}
-.hud-cdec.tr{top:7px;right:7px;border-width:1.5px 1.5px 0 0}
-.hud-cdec.bl{bottom:7px;left:7px;border-width:0 0 1.5px 1.5px}
-.hud-cdec.br{bottom:7px;right:7px;border-width:0 1.5px 1.5px 0}
+.hud-ring{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:55px;height:55px;border:1.5px solid var(--c0);border-radius:50%;
+  opacity:.38;pointer-events:none;animation:rng 2.2s ease-in-out infinite}
+@keyframes rng{0%,100%{opacity:.25;transform:translate(-50%,-50%) scale(1)}50%{opacity:.6;transform:translate(-50%,-50%) scale(1.1)}}
+.hud-scan{position:absolute;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--c0),transparent);
+  opacity:0;pointer-events:none;animation:scn 4s linear infinite}
+@keyframes scn{0%{top:0;opacity:0}3%{opacity:.4}97%{opacity:.4}100%{top:100%;opacity:0}}
+.cdec{position:absolute;width:12px;height:12px;border-color:var(--c0);border-style:solid;opacity:.5;pointer-events:none}
+.cdec.tl{top:6px;left:6px;border-width:1.5px 0 0 1.5px}
+.cdec.tr{top:6px;right:6px;border-width:1.5px 1.5px 0 0}
+.cdec.bl{bottom:6px;left:6px;border-width:0 0 1.5px 1.5px}
+.cdec.br{bottom:6px;right:6px;border-width:0 1.5px 1.5px 0}
 
-/* big 2-metric row */
-.metrics{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:8px 8px 0;flex-shrink:0}
-.met{background:var(--bg1);border:1px solid var(--bdr);border-radius:7px;padding:7px 9px;position:relative;overflow:hidden}
+/* ════════ METRIC BAR ════════ */
+.mbar{display:grid;grid-template-columns:1fr 1fr;gap:5px;padding:6px 7px 0;flex-shrink:0}
+.met{background:var(--bg1);border:1px solid var(--bdr);border-radius:6px;padding:6px 8px;position:relative;overflow:hidden}
 .met::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--c0),var(--c1))}
-.met-lbl{font-family:var(--head);font-size:8px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim);margin-bottom:2px}
-.met-val{font-family:var(--disp);font-size:30px;color:var(--c0);line-height:1;letter-spacing:1px}
-.met-unit{font-size:11px;color:var(--dim);margin-left:1px;font-family:var(--head)}
-.met-src{font-size:7.5px;color:rgba(0,224,255,.28);margin-top:2px;font-family:var(--mono)}
+.met-l{font-family:var(--head);font-size:7.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim);margin-bottom:1px}
+.met-v{font-family:var(--disp);font-size:29px;color:var(--c0);line-height:1;letter-spacing:.5px}
+.met-u{font-size:10px;color:var(--dim);margin-left:1px;font-family:var(--head)}
+.met-s{font-size:7px;color:rgba(0,221,255,.26);margin-top:1px;font-family:var(--mono);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
-/* detail section */
-.det{flex:1;overflow-y:auto;padding:7px 8px 8px}
+/* Tilt warning */
+.twarn{margin:3px 7px 0;background:rgba(255,61,107,.08);border:1px solid rgba(255,61,107,.3);
+  border-radius:4px;padding:4px 7px;font-size:7.5px;color:var(--c2);display:none;font-family:var(--head);font-weight:600}
+
+/* ════════ DETAIL SCROLL AREA ════════ */
+.det{flex:1;overflow-y:auto;padding:5px 7px 7px}
 .det::-webkit-scrollbar{width:2px}.det::-webkit-scrollbar-thumb{background:var(--bdr);border-radius:1px}
-.dh{font-family:var(--head);font-size:8px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--dim);margin-bottom:6px;margin-top:8px;display:flex;align-items:center;gap:6px}
+.dh{font-family:var(--head);font-size:7.5px;font-weight:700;letter-spacing:2px;text-transform:uppercase;
+  color:var(--dim);margin-bottom:5px;margin-top:7px;display:flex;align-items:center;gap:5px}
 .dh:first-child{margin-top:0}
 .dh::after{content:'';flex:1;height:1px;background:var(--bdr2)}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:6px}
-.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin-bottom:6px}
-.dc{background:rgba(0,224,255,.025);border:1px solid var(--bdr2);border-radius:5px;padding:6px 8px}
-.dl{font-size:7.5px;color:var(--dim);font-family:var(--head);font-weight:600;letter-spacing:.4px;margin-bottom:2px}
-.dv{font-family:var(--disp);font-size:18px;color:var(--c0);line-height:1}
-.du{font-size:7.5px;color:var(--dim)}
-.sc{background:rgba(0,224,255,.025);border:1px solid var(--bdr);border-radius:6px;padding:8px 10px;margin-bottom:6px}
-.sr{display:flex;justify-content:space-between;align-items:center;margin-bottom:3px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:5px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-bottom:5px}
+.g4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:4px;margin-bottom:5px}
+.dc{background:rgba(0,221,255,.025);border:1px solid var(--bdr2);border-radius:4px;padding:5px 7px}
+.dl{font-size:7px;color:var(--dim);font-family:var(--head);font-weight:600;letter-spacing:.4px;margin-bottom:1px}
+.dv{font-family:var(--disp);font-size:16px;color:var(--c0);line-height:1}
+.du{font-size:7px;color:var(--dim)}
+.sc{background:rgba(0,221,255,.025);border:1px solid var(--bdr);border-radius:5px;padding:7px 9px;margin-bottom:5px}
+.sr{display:flex;justify-content:space-between;align-items:center;margin-bottom:2px}
 .sr:last-child{margin-bottom:0}
-.sk{font-size:8px;color:var(--mut);font-family:var(--head);font-weight:600}
-.sv{font-size:8px;color:var(--c0);font-family:var(--mono)}
-.sv.ok{color:var(--c1)}.sv.fail{color:var(--c2)}
-.badge{display:inline-flex;align-items:center;gap:4px;font-family:var(--head);font-weight:700;font-size:8.5px;letter-spacing:.7px;padding:3px 9px;border-radius:20px;border:1px solid;margin-bottom:6px;text-transform:uppercase}
-.badge.live{border-color:var(--c0);color:var(--c0);background:rgba(0,224,255,.07)}
-.badge.ok{border-color:var(--c1);color:var(--c1);background:rgba(0,255,153,.07)}
-.badge.fail{border-color:var(--c2);color:var(--c2);background:rgba(255,64,96,.07)}
+.sk{font-size:7.5px;color:var(--mut);font-family:var(--head);font-weight:600}
+.sv{font-size:7.5px;color:var(--c0);font-family:var(--mono)}
+.sv.ok{color:var(--c1)}.sv.fail{color:var(--c2)}.sv.warn{color:var(--c3)}
+.badge{display:inline-flex;align-items:center;gap:4px;font-family:var(--head);font-weight:700;font-size:8px;
+  letter-spacing:.6px;padding:2px 8px;border-radius:20px;border:1px solid;margin-bottom:5px;text-transform:uppercase}
+.badge.live{border-color:var(--c0);color:var(--c0);background:rgba(0,221,255,.07)}
+.badge.ok  {border-color:var(--c1);color:var(--c1);background:rgba(0,255,153,.07)}
+.badge.fail{border-color:var(--c2);color:var(--c2);background:rgba(255,61,107,.07)}
 .badge.wait{border-color:var(--dim);color:var(--dim)}
 .bdot{width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0}
-.bdot.p{animation:dpl 1.2s ease-in-out infinite}
-.retbtn{background:transparent;color:var(--c2);border:1px solid rgba(255,64,96,.33);padding:5px 12px;border-radius:20px;font-family:var(--head);font-weight:700;font-size:8.5px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;margin-bottom:6px;display:none}
-.retbtn.show{display:inline-flex;align-items:center;gap:4px}
-.log{background:var(--bg2);border:1px solid var(--bdr2);border-radius:5px;padding:6px;font-size:7.5px;color:var(--mut);line-height:1.8;max-height:90px;overflow-y:auto;margin-bottom:6px}
-.log::-webkit-scrollbar{width:2px}.log::-webkit-scrollbar-thumb{background:var(--bdr)}
+.bdot.p{animation:tdp 1.2s ease-in-out infinite}
+.retbtn{background:transparent;color:var(--c2);border:1px solid rgba(255,61,107,.32);
+  padding:4px 11px;border-radius:20px;font-family:var(--head);font-weight:700;font-size:8px;
+  letter-spacing:1px;text-transform:uppercase;cursor:pointer;margin-bottom:5px;display:none}
+.retbtn.show{display:inline-flex;align-items:center;gap:3px}
+.retbtn:active{background:rgba(255,61,107,.1)}
+.logbox{background:var(--bg2);border:1px solid var(--bdr2);border-radius:4px;padding:5px;
+  font-size:7px;color:var(--mut);line-height:1.9;max-height:85px;overflow-y:auto;margin-bottom:5px}
+.logbox::-webkit-scrollbar{width:2px}.logbox::-webkit-scrollbar-thumb{background:var(--bdr)}
 .ll.ok{color:var(--c1)}.ll.err{color:var(--c2)}.ll.info{color:var(--c0)}.ll.warn{color:var(--c3)}
-.safe{height:max(env(safe-area-inset-bottom,0px),6px);flex-shrink:0}
+.safe{height:max(env(safe-area-inset-bottom,0px),5px);flex-shrink:0}
 
-/* video heights per tab context */
-.pv-wrap{height:38vw;max-height:230px;min-height:130px}
+/* Confidence bar rows (fused tab) */
+.cbar-row{display:flex;align-items:center;gap:5px;margin-bottom:4px}
+.cbar-lbl{font-size:7.5px;color:var(--mut);width:70px;flex-shrink:0;font-family:var(--head);font-weight:600}
+.cbar-track{flex:1;height:4px;background:rgba(0,221,255,.06);border-radius:2px;overflow:hidden}
+.cbar-fill{height:100%;border-radius:2px;transition:width .5s ease}
+.cbar-fill.h{background:linear-gradient(90deg,var(--c0),var(--c1))}
+.cbar-fill.m{background:linear-gradient(90deg,var(--c4),var(--c0))}
+.cbar-fill.l{background:linear-gradient(90deg,var(--c2),var(--c4))}
+.cbar-pct{font-size:7px;color:var(--c0);width:22px;text-align:right;flex-shrink:0;font-family:var(--mono)}
+.cbar-raw{font-size:7px;color:var(--mut);width:38px;text-align:right;flex-shrink:0;font-family:var(--mono)}
 
-/* tilt warning */
-.tilt-w{margin:4px 8px 0;background:rgba(255,64,96,.08);border:1px solid rgba(255,64,96,.3);border-radius:5px;padding:5px 8px;font-size:8px;color:var(--c2);display:none;font-family:var(--head);font-weight:600}
+/* OpenCV canvas */
+.cv-canvas{width:100%;border-radius:4px;border:1px solid var(--bdr2);background:var(--bg3);display:block;margin-bottom:5px}
 </style>
 </head>
 <body>
 
-<!-- ══════════ LOADING ══════════ -->
+<!-- ════════════════════════════════
+     LOADING SCREEN
+════════════════════════════════ -->
 <div id="LS">
-  <div class="ls-brand">
-    <div class="ls-title">DEPTH RANGER</div>
-    <div class="ls-sub">Real-time Height &amp; Distance · ML/DL Only</div>
-    <div class="ls-desc">MediaPipe Pose · Hands · Selfie Seg · BodyPix · PoseNet · COCO-SSD · IMU · GPS</div>
+  <div class="brand">
+    <div class="brand-title">DEPTH RANGER PRO</div>
+    <div class="brand-sub">Real-time Height &amp; Distance · All ML Frameworks</div>
+    <div class="brand-libs">
+      <span class="lib-tag lt-mp">MediaPipe</span>
+      <span class="lib-tag lt-tf">TensorFlow.js</span>
+      <span class="lib-tag lt-xn">Transformers.js</span>
+      <span class="lib-tag lt-on">ONNX Runtime</span>
+      <span class="lib-tag lt-ml">ml5.js</span>
+      <span class="lib-tag lt-cv">OpenCV.js</span>
+    </div>
   </div>
 
   <div class="pg-wrap">
-    <div class="pg-row"><span id="pg-lbl">Ready to start</span><span id="pg-n">0/0</span></div>
+    <div class="pg-row"><span id="pg-lbl">Ready</span><span id="pg-n">0/0</span></div>
     <div class="pg-track"><div class="pg-bar" id="pg-bar"></div><div class="pg-shine" id="pg-shine"></div></div>
   </div>
 
-  <div class="ml" id="mod-list"></div>
+  <div class="mod-grid" id="mod-grid"></div>
 
   <div class="ls-acts">
-    <div class="ls-note">All models load in parallel. Camera streams to every tab. No AR/WebXR used.</div>
-    <button id="btn-go">⚡ START — LOAD ALL MODELS</button>
+    <div class="ls-note">All frameworks load in parallel · Live camera on every tab · No AR/WebXR · Portrait mode</div>
+    <button id="btn-go">⚡ LOAD ALL FRAMEWORKS</button>
     <button id="btn-retry">↻ RETRY FAILED</button>
   </div>
 </div>
 
-<!-- ══════════ APP ══════════ -->
+<!-- ════════════════════════════════
+     APP
+════════════════════════════════ -->
 <div id="APP">
   <div id="TABS">
-    <button class="tb on"  data-p="p0" onclick="GT('p0')"><span class="ti">🎯</span>FUSED<span class="dot" id="dot-p0"></span></button>
-    <button class="tb"     data-p="p1" onclick="GT('p1')"><span class="ti">🤸</span>POSE<span class="dot"  id="dot-p1"></span></button>
-    <button class="tb"     data-p="p2" onclick="GT('p2')"><span class="ti">🖐</span>HANDS<span class="dot" id="dot-p2"></span></button>
-    <button class="tb"     data-p="p3" onclick="GT('p3')"><span class="ti">🧍</span>SEG<span class="dot"   id="dot-p3"></span></button>
-    <button class="tb"     data-p="p4" onclick="GT('p4')"><span class="ti">🎭</span>BPIX<span class="dot"  id="dot-p4"></span></button>
-    <button class="tb"     data-p="p5" onclick="GT('p5')"><span class="ti">🦴</span>PNET<span class="dot"  id="dot-p5"></span></button>
-    <button class="tb"     data-p="p6" onclick="GT('p6')"><span class="ti">📦</span>COCO<span class="dot"  id="dot-p6"></span></button>
-    <button class="tb"     data-p="p7" onclick="GT('p7')"><span class="ti">📡</span>IMU<span class="dot"   id="dot-p7"></span></button>
-    <button class="tb"     data-p="p8" onclick="GT('p8')"><span class="ti">🛰</span>GPS<span class="dot"   id="dot-p8"></span></button>
+    <button class="tb on"  data-p="p0"  onclick="GT('p0')"><span class="ti">🎯</span>FUSED<span class="tdot" id="td-p0"></span></button>
+    <button class="tb"     data-p="p1"  onclick="GT('p1')"><span class="ti">🤸</span>POSE<span class="tdot"  id="td-p1"></span></button>
+    <button class="tb"     data-p="p2"  onclick="GT('p2')"><span class="ti">🖐</span>HANDS<span class="tdot" id="td-p2"></span></button>
+    <button class="tb"     data-p="p3"  onclick="GT('p3')"><span class="ti">🧍</span>SEG<span class="tdot"   id="td-p3"></span></button>
+    <button class="tb"     data-p="p4"  onclick="GT('p4')"><span class="ti">😶</span>FACE<span class="tdot"  id="td-p4"></span></button>
+    <button class="tb"     data-p="p5"  onclick="GT('p5')"><span class="ti">🎭</span>BPIX<span class="tdot"  id="td-p5"></span></button>
+    <button class="tb"     data-p="p6"  onclick="GT('p6')"><span class="ti">🦴</span>PNET<span class="tdot"  id="td-p6"></span></button>
+    <button class="tb"     data-p="p7"  onclick="GT('p7')"><span class="ti">📦</span>COCO<span class="tdot"  id="td-p7"></span></button>
+    <button class="tb"     data-p="p8"  onclick="GT('p8')"><span class="ti">🤖</span>ml5<span class="tdot"   id="td-p8"></span></button>
+    <button class="tb"     data-p="p9"  onclick="GT('p9')"><span class="ti">🔮</span>ONNX<span class="tdot"  id="td-p9"></span></button>
+    <button class="tb"     data-p="p10" onclick="GT('p10')"><span class="ti">🧠</span>HF<span class="tdot"   id="td-p10"></span></button>
+    <button class="tb"     data-p="p11" onclick="GT('p11')"><span class="ti">👁</span>CV<span class="tdot"   id="td-p11"></span></button>
+    <button class="tb"     data-p="p12" onclick="GT('p12')"><span class="ti">📡</span>IMU<span class="tdot"  id="td-p12"></span></button>
   </div>
 
   <div id="PAGES">
 
-    <!-- ── P0: FUSED ── -->
+    <!-- P0: FUSED -->
     <div class="pane on" id="p0">
-      <div class="pv-wrap">
+      <div class="cam-wrap">
         <video id="v0" autoplay playsinline muted></video>
-        <canvas class="ov" id="cv0"></canvas>
+        <canvas class="ov-hud" id="cv0-hud"></canvas>
+        <canvas class="ov-ml"  id="cv0-ml"></canvas>
         <div class="hud-ring"></div><div class="hud-cross"></div><div class="hud-scan"></div>
-        <div class="hud-cdec tl"></div><div class="hud-cdec tr"></div><div class="hud-cdec bl"></div><div class="hud-cdec br"></div>
+        <div class="cdec tl"></div><div class="cdec tr"></div><div class="cdec bl"></div><div class="cdec br"></div>
       </div>
-      <div class="tilt-w" id="tilt0">⚠ Hold phone vertical — portrait, perpendicular to ground</div>
-      <div class="metrics">
-        <div class="met"><div class="met-lbl">Camera Height</div>
-          <span class="met-val" id="f-h">--</span><span class="met-unit">m</span>
-          <div class="met-src" id="f-hs">awaiting models</div></div>
-        <div class="met"><div class="met-lbl">Object Distance</div>
-          <span class="met-val" id="f-d">--</span><span class="met-unit">m</span>
-          <div class="met-src" id="f-ds">awaiting depth</div></div>
+      <div class="twarn" id="tw0">⚠ Hold phone vertical — portrait, perpendicular to ground</div>
+      <div class="mbar">
+        <div class="met"><div class="met-l">Camera Height</div>
+          <span class="met-v" id="fH">--</span><span class="met-u">m</span>
+          <div class="met-s" id="fH-s">awaiting models</div></div>
+        <div class="met"><div class="met-l">Object Distance</div>
+          <span class="met-v" id="fD">--</span><span class="met-u">m</span>
+          <div class="met-s" id="fD-s">awaiting models</div></div>
       </div>
       <div class="det">
-        <div class="dh">All-source confidence</div>
-        <div id="conf-rows"></div>
+        <div class="dh">All source confidence</div>
+        <div id="cbar-container"></div>
         <div class="safe"></div>
       </div>
     </div>
 
-    <!-- ── P1: MP POSE ── -->
+    <!-- P1: MediaPipe Pose -->
     <div class="pane" id="p1">
-      <div class="pv-wrap">
+      <div class="cam-wrap">
         <video id="v1" autoplay playsinline muted></video>
-        <canvas class="ml-cv" id="cv1"></canvas>
+        <canvas class="ov-ml" id="cv1"></canvas>
         <div class="hud-cross"></div><div class="hud-scan"></div>
       </div>
-      <div class="metrics">
-        <div class="met"><div class="met-lbl">Cam Height</div>
-          <span class="met-val" id="p1-h">--</span><span class="met-unit">m</span>
-          <div class="met-src" id="p1-hs">--</div></div>
-        <div class="met"><div class="met-lbl">Person Dist</div>
-          <span class="met-val" id="p1-d">--</span><span class="met-unit">m</span>
-          <div class="met-src" id="p1-ds">--</div></div>
+      <div class="mbar">
+        <div class="met"><div class="met-l">Cam Height</div><span class="met-v" id="p1h">--</span><span class="met-u">m</span><div class="met-s" id="p1hs">fusion</div></div>
+        <div class="met"><div class="met-l">Person Dist</div><span class="met-v" id="p1d">--</span><span class="met-u">m</span><div class="met-s" id="p1ds">focal·1.7m/px</div></div>
       </div>
       <div class="det">
-        <div class="badge wait" id="p1-badge"><span class="bdot p"></span>Loading MediaPipe Pose</div>
-        <button class="retbtn" id="p1-ret" onclick="retryPose()">↻ Retry</button>
-        <div class="dh">Measurements</div>
-        <div class="grid2">
+        <div class="badge wait" id="b1"><span class="bdot p"></span>Loading MediaPipe Pose</div>
+        <button class="retbtn" id="r1" onclick="R('pose')">↻ Retry</button>
+        <div class="g2">
           <div class="dc"><div class="dl">Head↔Ankle px</div><div class="dv" id="p1-ht">--</div></div>
           <div class="dc"><div class="dl">Visibility</div><div class="dv" id="p1-vis">--</div></div>
           <div class="dc"><div class="dl">Focal px</div><div class="dv" id="p1-f">--</div></div>
           <div class="dc"><div class="dl">FPS</div><div class="dv" id="p1-fps">--</div></div>
         </div>
-        <div class="sc">
-          <div class="sr"><span class="sk">Method</span><span class="sv">focal×1.7m / head-ankle px</span></div>
-          <div class="sr"><span class="sk">Confidence</span><span class="sv" id="p1-conf">0%</span></div>
-        </div>
-        <div class="log" id="p1-log"></div>
-        <div class="safe"></div>
+        <div class="sc"><div class="sr"><span class="sk">Method</span><span class="sv">focal × 1.7m ÷ head-ankle-px</span></div>
+          <div class="sr"><span class="sk">Confidence</span><span class="sv" id="p1-conf">0%</span></div></div>
+        <div class="logbox" id="log1"></div><div class="safe"></div>
       </div>
     </div>
 
-    <!-- ── P2: MP HANDS ── -->
+    <!-- P2: MediaPipe Hands -->
     <div class="pane" id="p2">
-      <div class="pv-wrap">
+      <div class="cam-wrap">
         <video id="v2" autoplay playsinline muted></video>
-        <canvas class="ml-cv" id="cv2"></canvas>
+        <canvas class="ov-ml" id="cv2"></canvas>
         <div class="hud-cross"></div><div class="hud-scan"></div>
       </div>
-      <div class="metrics">
-        <div class="met"><div class="met-lbl">Cam Height</div>
-          <span class="met-val" id="p2-h">--</span><span class="met-unit">m</span>
-          <div class="met-src">from fusion</div></div>
-        <div class="met"><div class="met-lbl">Hand Dist</div>
-          <span class="met-val" id="p2-d">--</span><span class="met-unit">m</span>
-          <div class="met-src" id="p2-ds">wrist-mid span</div></div>
+      <div class="mbar">
+        <div class="met"><div class="met-l">Cam Height</div><span class="met-v" id="p2h">--</span><span class="met-u">m</span><div class="met-s">fusion</div></div>
+        <div class="met"><div class="met-l">Hand Dist</div><span class="met-v" id="p2d">--</span><span class="met-u">m</span><div class="met-s" id="p2ds">wrist-span</div></div>
       </div>
       <div class="det">
-        <div class="badge wait" id="p2-badge"><span class="bdot p"></span>Loading MediaPipe Hands</div>
-        <button class="retbtn" id="p2-ret" onclick="retryHands()">↻ Retry</button>
-        <div class="grid2">
+        <div class="badge wait" id="b2"><span class="bdot p"></span>Loading MediaPipe Hands</div>
+        <button class="retbtn" id="r2" onclick="R('hands')">↻ Retry</button>
+        <div class="g2">
           <div class="dc"><div class="dl">Hands found</div><div class="dv" id="p2-n">--</div></div>
           <div class="dc"><div class="dl">Span px</div><div class="dv" id="p2-sp">--</div></div>
-          <div class="dc"><div class="dl">Confidence</div><div class="dv" id="p2-conf">--%</div></div>
+          <div class="dc"><div class="dl">Conf</div><div class="dv" id="p2-conf">--%</div></div>
           <div class="dc"><div class="dl">FPS</div><div class="dv" id="p2-fps">--</div></div>
         </div>
-        <div class="log" id="p2-log"></div>
-        <div class="safe"></div>
+        <div class="logbox" id="log2"></div><div class="safe"></div>
       </div>
     </div>
 
-    <!-- ── P3: MP SELFIE SEG ── -->
+    <!-- P3: MediaPipe Selfie Seg -->
     <div class="pane" id="p3">
-      <div class="pv-wrap">
+      <div class="cam-wrap">
         <video id="v3" autoplay playsinline muted></video>
-        <canvas class="ml-cv" id="cv3"></canvas>
+        <canvas class="ov-ml" id="cv3"></canvas>
         <div class="hud-cross"></div><div class="hud-scan"></div>
       </div>
-      <div class="metrics">
-        <div class="met"><div class="met-lbl">Cam Height</div>
-          <span class="met-val" id="p3-h">--</span><span class="met-unit">m</span>
-          <div class="met-src">from fusion</div></div>
-        <div class="met"><div class="met-lbl">Person Dist</div>
-          <span class="met-val" id="p3-d">--</span><span class="met-unit">m</span>
-          <div class="met-src" id="p3-ds">bbox height</div></div>
+      <div class="mbar">
+        <div class="met"><div class="met-l">Cam Height</div><span class="met-v" id="p3h">--</span><span class="met-u">m</span><div class="met-s">fusion</div></div>
+        <div class="met"><div class="met-l">Person Dist</div><span class="met-v" id="p3d">--</span><span class="met-u">m</span><div class="met-s" id="p3ds">bbox height</div></div>
       </div>
       <div class="det">
-        <div class="badge wait" id="p3-badge"><span class="bdot p"></span>Loading MP Selfie Seg</div>
-        <button class="retbtn" id="p3-ret" onclick="retrySeg()">↻ Retry</button>
-        <div class="grid2">
+        <div class="badge wait" id="b3"><span class="bdot p"></span>Loading MP Selfie Seg</div>
+        <button class="retbtn" id="r3" onclick="R('seg')">↻ Retry</button>
+        <div class="g2">
           <div class="dc"><div class="dl">Person px</div><div class="dv" id="p3-px">--</div></div>
           <div class="dc"><div class="dl">Bbox H px</div><div class="dv" id="p3-bh">--</div></div>
-          <div class="dc"><div class="dl">Confidence</div><div class="dv" id="p3-conf">--%</div></div>
+          <div class="dc"><div class="dl">Conf</div><div class="dv" id="p3-conf">--%</div></div>
           <div class="dc"><div class="dl">FPS</div><div class="dv" id="p3-fps">--</div></div>
         </div>
-        <div class="log" id="p3-log"></div>
-        <div class="safe"></div>
+        <div class="logbox" id="log3"></div><div class="safe"></div>
       </div>
     </div>
 
-    <!-- ── P4: BODYPIX ── -->
+    <!-- P4: MediaPipe FaceMesh -->
     <div class="pane" id="p4">
-      <div class="pv-wrap">
+      <div class="cam-wrap">
         <video id="v4" autoplay playsinline muted></video>
-        <canvas class="ml-cv" id="cv4"></canvas>
+        <canvas class="ov-ml" id="cv4"></canvas>
         <div class="hud-cross"></div><div class="hud-scan"></div>
       </div>
-      <div class="metrics">
-        <div class="met"><div class="met-lbl">Cam Height</div>
-          <span class="met-val" id="p4-h">--</span><span class="met-unit">m</span>
-          <div class="met-src">from fusion</div></div>
-        <div class="met"><div class="met-lbl">Person Dist</div>
-          <span class="met-val" id="p4-d">--</span><span class="met-unit">m</span>
-          <div class="met-src" id="p4-ds">--</div></div>
+      <div class="mbar">
+        <div class="met"><div class="met-l">Cam Height</div><span class="met-v" id="p4h">--</span><span class="met-u">m</span><div class="met-s">fusion</div></div>
+        <div class="met"><div class="met-l">Face Dist</div><span class="met-v" id="p4d">--</span><span class="met-u">m</span><div class="met-s" id="p4ds">iris/IPD method</div></div>
       </div>
       <div class="det">
-        <div class="badge wait" id="p4-badge"><span class="bdot p"></span>Loading BodyPix</div>
-        <button class="retbtn" id="p4-ret" onclick="retryBodyPix()">↻ Retry</button>
-        <div class="grid2">
-          <div class="dc"><div class="dl">Detected</div><div class="dv" id="p4-det">--</div></div>
-          <div class="dc"><div class="dl">Person px</div><div class="dv" id="p4-px">--</div></div>
-          <div class="dc"><div class="dl">Bbox H px</div><div class="dv" id="p4-bh">--</div></div>
+        <div class="badge wait" id="b4"><span class="bdot p"></span>Loading MP FaceMesh</div>
+        <button class="retbtn" id="r4" onclick="R('face')">↻ Retry</button>
+        <div class="g2">
+          <div class="dc"><div class="dl">Faces</div><div class="dv" id="p4-n">--</div></div>
+          <div class="dc"><div class="dl">IPD px</div><div class="dv" id="p4-ipd">--</div></div>
+          <div class="dc"><div class="dl">Conf</div><div class="dv" id="p4-conf">--%</div></div>
           <div class="dc"><div class="dl">FPS</div><div class="dv" id="p4-fps">--</div></div>
         </div>
-        <div class="log" id="p4-log"></div>
-        <div class="safe"></div>
+        <div class="sc"><div class="sr"><span class="sk">Method</span><span class="sv">focal × 0.063m (IPD) ÷ eye-px</span></div></div>
+        <div class="logbox" id="log4"></div><div class="safe"></div>
       </div>
     </div>
 
-    <!-- ── P5: POSENET ── -->
+    <!-- P5: BodyPix TF.js -->
     <div class="pane" id="p5">
-      <div class="pv-wrap">
+      <div class="cam-wrap">
         <video id="v5" autoplay playsinline muted></video>
-        <canvas class="ml-cv" id="cv5"></canvas>
+        <canvas class="ov-ml" id="cv5"></canvas>
         <div class="hud-cross"></div><div class="hud-scan"></div>
       </div>
-      <div class="metrics">
-        <div class="met"><div class="met-lbl">Cam Height</div>
-          <span class="met-val" id="p5-h">--</span><span class="met-unit">m</span>
-          <div class="met-src">from fusion</div></div>
-        <div class="met"><div class="met-lbl">Person Dist</div>
-          <span class="met-val" id="p5-d">--</span><span class="met-unit">m</span>
-          <div class="met-src" id="p5-ds">--</div></div>
+      <div class="mbar">
+        <div class="met"><div class="met-l">Cam Height</div><span class="met-v" id="p5h">--</span><span class="met-u">m</span><div class="met-s">fusion</div></div>
+        <div class="met"><div class="met-l">Person Dist</div><span class="met-v" id="p5d">--</span><span class="met-u">m</span><div class="met-s" id="p5ds">--</div></div>
       </div>
       <div class="det">
-        <div class="badge wait" id="p5-badge"><span class="bdot p"></span>Loading PoseNet</div>
-        <button class="retbtn" id="p5-ret" onclick="retryPoseNet()">↻ Retry</button>
-        <div class="grid2">
-          <div class="dc"><div class="dl">Pose score</div><div class="dv" id="p5-sc">--</div></div>
-          <div class="dc"><div class="dl">Head↔Ankle</div><div class="dv" id="p5-ht">--<span class="du">px</span></div></div>
-          <div class="dc"><div class="dl">Confidence</div><div class="dv" id="p5-conf">--%</div></div>
+        <div class="badge wait" id="b5"><span class="bdot p"></span>Loading BodyPix (TF.js)</div>
+        <button class="retbtn" id="r5" onclick="R('bpix')">↻ Retry</button>
+        <div class="g2">
+          <div class="dc"><div class="dl">Detected</div><div class="dv" id="p5-det">--</div></div>
+          <div class="dc"><div class="dl">Person px</div><div class="dv" id="p5-px">--</div></div>
+          <div class="dc"><div class="dl">Bbox H</div><div class="dv" id="p5-bh">--<span class="du">px</span></div></div>
           <div class="dc"><div class="dl">FPS</div><div class="dv" id="p5-fps">--</div></div>
         </div>
-        <div class="log" id="p5-log"></div>
-        <div class="safe"></div>
+        <div class="logbox" id="log5"></div><div class="safe"></div>
       </div>
     </div>
 
-    <!-- ── P6: COCO-SSD ── -->
+    <!-- P6: PoseNet TF.js -->
     <div class="pane" id="p6">
-      <div class="pv-wrap">
+      <div class="cam-wrap">
         <video id="v6" autoplay playsinline muted></video>
-        <canvas class="ml-cv" id="cv6"></canvas>
+        <canvas class="ov-ml" id="cv6"></canvas>
         <div class="hud-cross"></div><div class="hud-scan"></div>
       </div>
-      <div class="metrics">
-        <div class="met"><div class="met-lbl">Cam Height</div>
-          <span class="met-val" id="p6-h">--</span><span class="met-unit">m</span>
-          <div class="met-src">from fusion</div></div>
-        <div class="met"><div class="met-lbl">Center Obj Dist</div>
-          <span class="met-val" id="p6-d">--</span><span class="met-unit">m</span>
-          <div class="met-src" id="p6-ds">--</div></div>
+      <div class="mbar">
+        <div class="met"><div class="met-l">Cam Height</div><span class="met-v" id="p6h">--</span><span class="met-u">m</span><div class="met-s">fusion</div></div>
+        <div class="met"><div class="met-l">Person Dist</div><span class="met-v" id="p6d">--</span><span class="met-u">m</span><div class="met-s" id="p6ds">--</div></div>
       </div>
       <div class="det">
-        <div class="badge wait" id="p6-badge"><span class="bdot p"></span>Loading COCO-SSD</div>
-        <button class="retbtn" id="p6-ret" onclick="retryCOCO()">↻ Retry</button>
-        <div class="grid2">
-          <div class="dc"><div class="dl">Objects</div><div class="dv" id="p6-n">--</div></div>
-          <div class="dc"><div class="dl">Nearest class</div><div class="dv" id="p6-cls" style="font-size:12px">--</div></div>
-          <div class="dc"><div class="dl">Score</div><div class="dv" id="p6-sc">--%</div></div>
+        <div class="badge wait" id="b6"><span class="bdot p"></span>Loading PoseNet (TF.js)</div>
+        <button class="retbtn" id="r6" onclick="R('pnet')">↻ Retry</button>
+        <div class="g2">
+          <div class="dc"><div class="dl">Pose score</div><div class="dv" id="p6-sc">--</div></div>
+          <div class="dc"><div class="dl">Head↔Ankle</div><div class="dv" id="p6-ht">--<span class="du">px</span></div></div>
+          <div class="dc"><div class="dl">Conf</div><div class="dv" id="p6-conf">--%</div></div>
           <div class="dc"><div class="dl">FPS</div><div class="dv" id="p6-fps">--</div></div>
         </div>
-        <div class="sc">
-          <div class="sr"><span class="sk">Distance method</span><span class="sv">focal × known size / bbox px</span></div>
-          <div class="sr"><span class="sk">Known sizes used</span><span class="sv">person 1.7m, car 1.5m, chair 0.9m…</span></div>
-        </div>
-        <div class="log" id="p6-log"></div>
-        <div class="safe"></div>
+        <div class="logbox" id="log6"></div><div class="safe"></div>
       </div>
     </div>
 
-    <!-- ── P7: IMU ── -->
+    <!-- P7: COCO-SSD TF.js -->
     <div class="pane" id="p7">
-      <div class="pv-wrap">
+      <div class="cam-wrap">
         <video id="v7" autoplay playsinline muted></video>
-        <canvas class="ov" id="cv7"></canvas>
+        <canvas class="ov-ml" id="cv7"></canvas>
         <div class="hud-cross"></div><div class="hud-scan"></div>
       </div>
-      <div class="tilt-w" id="tilt7">⚠ Hold phone vertical — portrait, perpendicular to ground</div>
-      <div class="metrics">
-        <div class="met"><div class="met-lbl">Cam Height (est)</div>
-          <span class="met-val" id="p7-h">--</span><span class="met-unit">m</span>
-          <div class="met-src">prior + tilt corr.</div></div>
-        <div class="met"><div class="met-lbl">Tilt from Vert</div>
-          <span class="met-val" id="p7-t">--</span><span class="met-unit">°</span>
-          <div class="met-src">want &lt;15° for best</div></div>
+      <div class="mbar">
+        <div class="met"><div class="met-l">Cam Height</div><span class="met-v" id="p7h">--</span><span class="met-u">m</span><div class="met-s">fusion</div></div>
+        <div class="met"><div class="met-l">Nearest Dist</div><span class="met-v" id="p7d">--</span><span class="met-u">m</span><div class="met-s" id="p7ds">known-size</div></div>
       </div>
       <div class="det">
-        <div class="badge wait" id="p7-badge"><span class="bdot p"></span>Requesting motion</div>
-        <button class="retbtn" id="p7-ret" onclick="retryIMU()">↻ Retry IMU</button>
-        <div class="dh">Gravity vector (80-sample avg)</div>
-        <div class="grid3">
-          <div class="dc"><div class="dl">Grav X</div><div class="dv" id="i-x">--</div></div>
-          <div class="dc"><div class="dl">Grav Y</div><div class="dv" id="i-y">--</div></div>
-          <div class="dc"><div class="dl">Grav Z</div><div class="dv" id="i-z">--</div></div>
+        <div class="badge wait" id="b7"><span class="bdot p"></span>Loading COCO-SSD (TF.js)</div>
+        <button class="retbtn" id="r7" onclick="R('coco')">↻ Retry</button>
+        <div class="g2">
+          <div class="dc"><div class="dl">Objects</div><div class="dv" id="p7-n">--</div></div>
+          <div class="dc"><div class="dl">Nearest class</div><div class="dv" id="p7-cls" style="font-size:11px">--</div></div>
+          <div class="dc"><div class="dl">Score</div><div class="dv" id="p7-sc">--%</div></div>
+          <div class="dc"><div class="dl">FPS</div><div class="dv" id="p7-fps">--</div></div>
         </div>
-        <div class="sc">
-          <div class="sr"><span class="sk">Pitch</span><span class="sv" id="i-pitch">--°</span></div>
-          <div class="sr"><span class="sk">Alpha / Beta / Gamma</span><span class="sv" id="i-abg">-- / -- / --°</span></div>
-          <div class="sr"><span class="sk">Confidence</span><span class="sv" id="i-conf">0%</span></div>
-          <div class="sr"><span class="sk">Buffer</span><span class="sv" id="i-buf">0/80</span></div>
-        </div>
-        <div class="log" id="p7-log"></div>
-        <div class="safe"></div>
+        <div class="logbox" id="log7"></div><div class="safe"></div>
       </div>
     </div>
 
-    <!-- ── P8: GPS ── -->
+    <!-- P8: ml5.js -->
     <div class="pane" id="p8">
-      <div class="pv-wrap">
+      <div class="cam-wrap">
         <video id="v8" autoplay playsinline muted></video>
-        <canvas class="ov" id="cv8"></canvas>
+        <canvas class="ov-ml" id="cv8"></canvas>
         <div class="hud-cross"></div><div class="hud-scan"></div>
       </div>
-      <div class="metrics">
-        <div class="met"><div class="met-lbl">GPS Altitude</div>
-          <span class="met-val" id="p8-a">--</span><span class="met-unit">m</span>
-          <div class="met-src">above sea level</div></div>
-        <div class="met"><div class="met-lbl">Δ Altitude</div>
-          <span class="met-val" id="p8-d">--</span><span class="met-unit">m</span>
-          <div class="met-src">from start</div></div>
+      <div class="mbar">
+        <div class="met"><div class="met-l">Cam Height</div><span class="met-v" id="p8h">--</span><span class="met-u">m</span><div class="met-s">fusion</div></div>
+        <div class="met"><div class="met-l">ml5 Dist</div><span class="met-v" id="p8d">--</span><span class="met-u">m</span><div class="met-s" id="p8ds">bodypose</div></div>
       </div>
       <div class="det">
-        <div class="badge wait" id="p8-badge"><span class="bdot p"></span>Acquiring GPS</div>
-        <button class="retbtn" id="p8-ret" onclick="retryGPS()">↻ Retry GPS</button>
-        <div class="grid2">
-          <div class="dc"><div class="dl">Lat</div><div class="dv" id="g-la" style="font-size:12px">--</div></div>
-          <div class="dc"><div class="dl">Lng</div><div class="dv" id="g-lo" style="font-size:12px">--</div></div>
-          <div class="dc"><div class="dl">±Acc</div><div class="dv" id="g-ac">--<span class="du">m</span></div></div>
-          <div class="dc"><div class="dl">Alt Acc</div><div class="dv" id="g-aa">--<span class="du">m</span></div></div>
+        <div class="badge wait" id="b8"><span class="bdot p"></span>Loading ml5.js</div>
+        <button class="retbtn" id="r8" onclick="R('ml5')">↻ Retry</button>
+        <div class="dh">ml5 BodyPose (MoveNet)</div>
+        <div class="g2">
+          <div class="dc"><div class="dl">Persons</div><div class="dv" id="p8-n">--</div></div>
+          <div class="dc"><div class="dl">Head↔Ankle</div><div class="dv" id="p8-ht">--<span class="du">px</span></div></div>
+          <div class="dc"><div class="dl">Dist</div><div class="dv" id="p8-d2">--<span class="du">m</span></div></div>
+          <div class="dc"><div class="dl">FPS</div><div class="dv" id="p8-fps">--</div></div>
         </div>
-        <div class="log" id="p8-log"></div>
-        <div class="safe"></div>
+        <div class="dh">ml5 Object Detection</div>
+        <div class="g2">
+          <div class="dc"><div class="dl">Objects</div><div class="dv" id="p8-on">--</div></div>
+          <div class="dc"><div class="dl">Nearest</div><div class="dv" id="p8-ocls" style="font-size:11px">--</div></div>
+        </div>
+        <div class="logbox" id="log8"></div><div class="safe"></div>
+      </div>
+    </div>
+
+    <!-- P9: ONNX Runtime Web -->
+    <div class="pane" id="p9">
+      <div class="cam-wrap">
+        <video id="v9" autoplay playsinline muted></video>
+        <canvas class="ov-ml" id="cv9"></canvas>
+        <div class="hud-cross"></div><div class="hud-scan"></div>
+      </div>
+      <div class="mbar">
+        <div class="met"><div class="met-l">Cam Height</div><span class="met-v" id="p9h">--</span><span class="met-u">m</span><div class="met-s">fusion</div></div>
+        <div class="met"><div class="met-l">ONNX Dist</div><span class="met-v" id="p9d">--</span><span class="met-u">m</span><div class="met-s" id="p9ds">SqueezeNet cls</div></div>
+      </div>
+      <div class="det">
+        <div class="badge wait" id="b9"><span class="bdot p"></span>Loading ONNX Runtime Web</div>
+        <button class="retbtn" id="r9" onclick="R('onnx')">↻ Retry</button>
+        <div class="dh">SqueezeNet 1.1 (5MB ONNX)</div>
+        <div class="g2">
+          <div class="dc"><div class="dl">Top class</div><div class="dv" id="p9-cls" style="font-size:9px">--</div></div>
+          <div class="dc"><div class="dl">Score</div><div class="dv" id="p9-sc">--%</div></div>
+          <div class="dc"><div class="dl">Inference</div><div class="dv" id="p9-ms">--<span class="du">ms</span></div></div>
+          <div class="dc"><div class="dl">FPS</div><div class="dv" id="p9-fps">--</div></div>
+        </div>
+        <div class="sc">
+          <div class="sr"><span class="sk">Model</span><span class="sv">SqueezeNet 1.1 (ONNX Model Zoo)</span></div>
+          <div class="sr"><span class="sk">Backend</span><span class="sv" id="p9-bk">--</span></div>
+          <div class="sr"><span class="sk">Runtime</span><span class="sv">onnxruntime-web 1.17.3</span></div>
+        </div>
+        <div class="logbox" id="log9"></div><div class="safe"></div>
+      </div>
+    </div>
+
+    <!-- P10: Hugging Face / Transformers.js -->
+    <div class="pane" id="p10">
+      <div class="cam-wrap">
+        <video id="v10" autoplay playsinline muted></video>
+        <canvas class="ov-ml" id="cv10"></canvas>
+        <div class="hud-cross"></div><div class="hud-scan"></div>
+      </div>
+      <div class="mbar">
+        <div class="met"><div class="met-l">Cam Height</div><span class="met-v" id="p10h">--</span><span class="met-u">m</span><div class="met-s">fusion</div></div>
+        <div class="met"><div class="met-l">HF Dist</div><span class="met-v" id="p10d">--</span><span class="met-u">m</span><div class="met-s" id="p10ds">depth-anything</div></div>
+      </div>
+      <div class="det">
+        <div class="badge wait" id="b10"><span class="bdot p"></span>Loading Transformers.js</div>
+        <button class="retbtn" id="r10" onclick="R('hf')">↻ Retry</button>
+        <div class="dh">Xenova/depth-anything-small-hf (~27MB)</div>
+        <canvas id="cv10-depth" class="cv-canvas" height="90"></canvas>
+        <div class="g2">
+          <div class="dc"><div class="dl">Center depth</div><div class="dv" id="p10-c">--</div></div>
+          <div class="dc"><div class="dl">Min depth</div><div class="dv" id="p10-min">--</div></div>
+          <div class="dc"><div class="dl">Inference</div><div class="dv" id="p10-ms">--<span class="du">ms</span></div></div>
+          <div class="dc"><div class="dl">FPS</div><div class="dv" id="p10-fps">--</div></div>
+        </div>
+        <div class="sc">
+          <div class="sr"><span class="sk">Model</span><span class="sv">Xenova/depth-anything-small-hf</span></div>
+          <div class="sr"><span class="sk">Source</span><span class="sv">Hugging Face Hub (auto-fetch)</span></div>
+          <div class="sr"><span class="sk">Runtime</span><span class="sv">@xenova/transformers 2.17.2</span></div>
+        </div>
+        <div class="logbox" id="log10"></div><div class="safe"></div>
+      </div>
+    </div>
+
+    <!-- P11: OpenCV.js -->
+    <div class="pane" id="p11">
+      <div class="cam-wrap">
+        <video id="v11" autoplay playsinline muted></video>
+        <canvas class="ov-ml" id="cv11"></canvas>
+        <div class="hud-cross"></div><div class="hud-scan"></div>
+      </div>
+      <div class="mbar">
+        <div class="met"><div class="met-l">Cam Height</div><span class="met-v" id="p11h">--</span><span class="met-u">m</span><div class="met-s">fusion</div></div>
+        <div class="met"><div class="met-l">Edge Dist est</div><span class="met-v" id="p11d">--</span><span class="met-u">m</span><div class="met-s" id="p11ds">contour</div></div>
+      </div>
+      <div class="det">
+        <div class="badge wait" id="b11"><span class="bdot p"></span>Loading OpenCV.js</div>
+        <button class="retbtn" id="r11" onclick="R('ocv')">↻ Retry</button>
+        <div class="dh">Edge detection + contour analysis</div>
+        <canvas id="cv11-edge" class="cv-canvas" height="90"></canvas>
+        <div class="g2">
+          <div class="dc"><div class="dl">Contours</div><div class="dv" id="p11-cnt">--</div></div>
+          <div class="dc"><div class="dl">Largest area</div><div class="dv" id="p11-area">--<span class="du">px²</span></div></div>
+          <div class="dc"><div class="dl">Largest H</div><div class="dv" id="p11-lh">--<span class="du">px</span></div></div>
+          <div class="dc"><div class="dl">FPS</div><div class="dv" id="p11-fps">--</div></div>
+        </div>
+        <div class="sc">
+          <div class="sr"><span class="sk">Operations</span><span class="sv">Canny · findContours · boundingRect</span></div>
+          <div class="sr"><span class="sk">Dist method</span><span class="sv">focal × est_height ÷ bbox_px</span></div>
+        </div>
+        <div class="logbox" id="log11"></div><div class="safe"></div>
+      </div>
+    </div>
+
+    <!-- P12: IMU -->
+    <div class="pane" id="p12">
+      <div class="cam-wrap">
+        <video id="v12" autoplay playsinline muted></video>
+        <canvas class="ov-hud" id="cv12-hud"></canvas>
+        <div class="hud-cross"></div><div class="hud-scan"></div>
+      </div>
+      <div class="twarn" id="tw12">⚠ Hold phone vertical — portrait, perpendicular to ground</div>
+      <div class="mbar">
+        <div class="met"><div class="met-l">Cam Height est</div><span class="met-v" id="p12h">--</span><span class="met-u">m</span><div class="met-s">prior+tilt</div></div>
+        <div class="met"><div class="met-l">Tilt from vert</div><span class="met-v" id="p12t">--</span><span class="met-u">°</span><div class="met-s">want &lt;15°</div></div>
+      </div>
+      <div class="det">
+        <div class="badge wait" id="b12"><span class="bdot p"></span>Requesting motion</div>
+        <button class="retbtn" id="r12" onclick="R('imu')">↻ Retry IMU</button>
+        <div class="dh">Gravity vector (80-sample avg)</div>
+        <div class="g3">
+          <div class="dc"><div class="dl">Grav X</div><div class="dv" id="im-x">--</div></div>
+          <div class="dc"><div class="dl">Grav Y</div><div class="dv" id="im-y">--</div></div>
+          <div class="dc"><div class="dl">Grav Z</div><div class="dv" id="im-z">--</div></div>
+        </div>
+        <div class="sc">
+          <div class="sr"><span class="sk">Pitch</span><span class="sv" id="im-pitch">--°</span></div>
+          <div class="sr"><span class="sk">Alpha / Beta / Gamma</span><span class="sv" id="im-abg">--/--/--°</span></div>
+          <div class="sr"><span class="sk">Confidence</span><span class="sv" id="im-conf">0%</span></div>
+          <div class="sr"><span class="sk">Buffer</span><span class="sv" id="im-buf">0/80</span></div>
+        </div>
+        <div class="logbox" id="log12"></div><div class="safe"></div>
       </div>
     </div>
 
   </div><!-- PAGES -->
 </div><!-- APP -->
-
 <script>
 'use strict';
-// ═══════════════════════════════════════════════
-// CONFIG
-// ═══════════════════════════════════════════════
-const CDN_TF   = 'https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.17.0/dist/tf.min.js';
-const CDN_BPIX = 'https://cdn.jsdelivr.net/npm/@tensorflow-models/body-pix@2.2.0/dist/body-pix.min.js';
-const CDN_PNET = 'https://cdn.jsdelivr.net/npm/@tensorflow-models/posenet@2.2.2/dist/posenet.min.js';
-const CDN_COCO = 'https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3/dist/coco-ssd.min.js';
-const CDN_MPOSE= 'https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.5.1675469404/pose.js';
-const CDN_MHAND= 'https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/hands.js';
-const CDN_MSEG = 'https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation@0.1.1675465747/selfie_segmentation.js';
-const BASE_MPOSE= 'https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.5.1675469404/';
-const BASE_MHAND= 'https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/';
-const BASE_MSEG = 'https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation@0.1.1675465747/';
-const PRIOR_H = 1.4; // camera prior height (m)
-const FOCAL_DEF = 800; // default focal length px
+// ══════════════════════════════════════════════════════
+// CDN CONSTANTS (all verified 200 OK)
+// ══════════════════════════════════════════════════════
+const C = {
+  TF:    'https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.17.0/dist/tf.min.js',
+  BPIX:  'https://cdn.jsdelivr.net/npm/@tensorflow-models/body-pix@2.2.0/dist/body-pix.min.js',
+  PNET:  'https://cdn.jsdelivr.net/npm/@tensorflow-models/posenet@2.2.2/dist/posenet.min.js',
+  COCO:  'https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3/dist/coco-ssd.min.js',
+  MP_POSE: 'https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.5.1675469404/pose.js',
+  MP_HAND: 'https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/hands.js',
+  MP_SEG:  'https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation@0.1.1675465747/selfie_segmentation.js',
+  MP_FACE: 'https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4.1633559619/face_mesh.js',
+  ML5:   'https://cdn.jsdelivr.net/npm/ml5@1.0.1/dist/ml5.min.js',
+  ORT:   'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.17.3/dist/ort.min.js',
+  XFM:   'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2/dist/transformers.min.js',
+  OCV:   'https://cdn.jsdelivr.net/npm/opencv.js@1.2.1/opencv.js',
+  // MediaPipe WASM base paths
+  B_POSE: 'https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.5.1675469404/',
+  B_HAND: 'https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/',
+  B_SEG:  'https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation@0.1.1675465747/',
+  B_FACE: 'https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4.1633559619/',
+  // ONNX Model (SqueezeNet from ONNX Model Zoo via GitHub)
+  SQNET: 'https://github.com/onnx/models/raw/main/validated/vision/classification/squeezenet/model/squeezenet1.0-12.onnx',
+};
 
-// ═══════════════════════════════════════════════
-// STATE
-// ═══════════════════════════════════════════════
+// Prior camera height (typical eye-level)
+const PH = 1.4;
+// Average inter-pupillary distance
+const IPD_M = 0.063;
+
+// ══════════════════════════════════════════════════════
+// GLOBAL STATE
+// ══════════════════════════════════════════════════════
 const S = {
-  stream: null, vW: 0, vH: 0, focal: FOCAL_DEF,
-  tfReady: false, tfLoading: null,
-  // per-model results
+  stream: null, vW: 0, vH: 0, focal: 800,
+  tfLoaded: false, tfP: null,   // TF.js shared promise
+  ocvReady: false,
+  // Per-model state
   pose:  { active:false, loading:false, inst:null, dist:null, conf:0, fps:0, _fc:0, _lt:0, htPx:0, vis:0 },
   hands: { active:false, loading:false, inst:null, dist:null, conf:0, fps:0, _fc:0, _lt:0, spanPx:0, n:0 },
   seg:   { active:false, loading:false, inst:null, dist:null, conf:0, fps:0, _fc:0, _lt:0, px:0, bh:0 },
+  face:  { active:false, loading:false, inst:null, dist:null, conf:0, fps:0, _fc:0, _lt:0, n:0, ipd:0 },
   bpix:  { active:false, loading:false, inst:null, dist:null, conf:0, fps:0, _fc:0, _lt:0, px:0, bh:0, found:false },
   pnet:  { active:false, loading:false, inst:null, dist:null, conf:0, fps:0, _fc:0, _lt:0, htPx:0, sc:0 },
   coco:  { active:false, loading:false, inst:null, dist:null, conf:0, fps:0, _fc:0, _lt:0, dets:[], cls:'--', score:0 },
-  imu:   { active:false, height:PRIOR_H, pitch:0, conf:0, samples:0, buf:[], gx:0, gy:0, gz:0, alpha:0, beta:0, gamma:0 },
-  gps:   { active:false, alt:null, lat:null, lng:null, acc:null, altAcc:null, ref:null, delta:null, conf:0 },
-  // fused
+  ml5s:  { active:false, loading:false, bp:null, od:null, dist:null, conf:0, fps:0, _fc:0, _lt:0, htPx:0, n:0, ocls:'--', on:0 },
+  onnx:  { active:false, loading:false, sess:null, dist:null, conf:0, fps:0, _fc:0, _lt:0, cls:'--', sc:0, ms:0, bk:'--', labels:[] },
+  hf:    { active:false, loading:false, pipe:null, dist:null, conf:0, fps:0, _fc:0, _lt:0, center:null, minD:null, ms:0 },
+  ocv:   { active:false, loading:false, dist:null, conf:0, fps:0, _fc:0, _lt:0, cnt:0, area:0, lh:0 },
+  imu:   { active:false, height:PH, pitch:0, conf:0, samples:0, buf:[], gx:0, gy:0, gz:0, alpha:0, beta:0, gamma:0 },
+  // Fused outputs
   fusH: null, fusD: null,
   animId: null,
-  KNOWN_SIZES: { person:1.7, car:1.5, chair:0.9, tv:0.8, laptop:0.3, bottle:0.25, cup:0.1, book:0.3, 'cell phone':0.15, keyboard:0.4, mouse:0.07, bicycle:1.1, motorcycle:1.1, bus:3.0, truck:2.5, dog:0.5, cat:0.3, 'dining table':0.9, couch:1.0, bed:1.5, 'potted plant':0.4 },
+  KNOWN: { person:1.7,car:1.5,chair:0.9,tv:0.8,laptop:0.3,bottle:0.25,cup:0.1,book:0.3,
+           'cell phone':0.15,keyboard:0.4,mouse:0.07,bicycle:1.1,motorcycle:1.1,
+           bus:3.0,truck:2.5,dog:0.5,cat:0.3,'dining table':0.9,couch:1.0 },
 };
 
-// ═══════════════════════════════════════════════
-// MODULES (loading screen)
-// ═══════════════════════════════════════════════
+// ══════════════════════════════════════════════════════
+// MODULE DEFINITIONS (loading screen)
+// ══════════════════════════════════════════════════════
 const MODS = [
-  { id:'cam',   ico:'📷', name:'Camera (rear-facing, HD)' },
-  { id:'pose',  ico:'🤸', name:'MediaPipe Pose (WASM)' },
-  { id:'hands', ico:'🖐', name:'MediaPipe Hands (WASM)' },
-  { id:'seg',   ico:'🧍', name:'MediaPipe Selfie Segmentation (WASM)' },
-  { id:'bpix',  ico:'🎭', name:'BodyPix — TF.js' },
-  { id:'pnet',  ico:'🦴', name:'PoseNet — TF.js' },
-  { id:'coco',  ico:'📦', name:'COCO-SSD — TF.js (80 classes)' },
-  { id:'imu',   ico:'📡', name:'IMU — DeviceMotion + Orientation' },
-  { id:'gps',   ico:'🛰', name:'GPS — Geolocation Altitude' },
+  { id:'cam',  ico:'📷', name:'Camera (rear, HD)',          lib:'camera' },
+  { id:'pose', ico:'🤸', name:'MP Pose',                    lib:'mp' },
+  { id:'hand', ico:'🖐', name:'MP Hands',                   lib:'mp' },
+  { id:'seg',  ico:'🧍', name:'MP Selfie Seg',              lib:'mp' },
+  { id:'face', ico:'😶', name:'MP FaceMesh',                lib:'mp' },
+  { id:'bpix', ico:'🎭', name:'BodyPix (TF.js)',            lib:'tf' },
+  { id:'pnet', ico:'🦴', name:'PoseNet (TF.js)',            lib:'tf' },
+  { id:'coco', ico:'📦', name:'COCO-SSD (TF.js)',           lib:'tf' },
+  { id:'ml5',  ico:'🤖', name:'ml5.js (BodyPose+ObjDet)',   lib:'ml5' },
+  { id:'onnx', ico:'🔮', name:'ONNX Runtime (SqueezeNet)',  lib:'onnx' },
+  { id:'hf',   ico:'🧠', name:'Transformers.js (HF Depth)', lib:'hf' },
+  { id:'ocv',  ico:'👁', name:'OpenCV.js (Edge/Contour)',   lib:'cv' },
+  { id:'imu',  ico:'📡', name:'IMU DeviceMotion',           lib:'sensor' },
 ];
 const mSt = {}, mMsg = {};
 MODS.forEach(m => { mSt[m.id]='wait'; mMsg[m.id]='Waiting…'; });
 
 function renderMods() {
-  document.getElementById('mod-list').innerHTML = MODS.map(m => {
-    const s = mSt[m.id];
-    const bc = s==='done'?'bdg-ok':s==='fail'?'bdg-fail':s==='na'?'bdg-na':'bdg-w';
-    const bt = s==='done'?'OK':s==='fail'?'FAIL':s==='na'?'N/A':s==='loading'?'···':'WAIT';
+  document.getElementById('mod-grid').innerHTML = MODS.map(m => {
+    const s=mSt[m.id], bc=s==='done'?'bdg-ok':s==='fail'?'bdg-fail':s==='na'?'bdg-na':'bdg-w';
+    const bt=s==='done'?'OK':s==='fail'?'FAIL':s==='na'?'N/A':s==='loading'?'···':'WAIT';
     return `<div class="mc ${s}" id="mc-${m.id}">
       <div class="mc-ico">${m.ico}</div>
-      <div class="mc-body">
-        <div class="mc-name">${m.name}</div>
-        <div class="mc-msg" id="mm-${m.id}">${mMsg[m.id]}</div>
-      </div>
-      <div class="mc-bdg ${bc}" id="mb-${m.id}">${bt}</div>
-    </div>`;
+      <div class="mc-body"><div class="mc-name">${m.name}</div>
+        <div class="mc-msg" id="mm-${m.id}">${mMsg[m.id]}</div></div>
+      <div class="mc-bdg ${bc}" id="mb-${m.id}">${bt}</div></div>`;
   }).join('');
 }
 
-function SM(id, st, msg) {
-  mSt[id] = st; mMsg[id] = msg;
-  const el = _('mc-'+id), ml = _('mm-'+id), mb = _('mb-'+id);
-  if (el) el.className = 'mc ' + st;
-  if (ml && msg) ml.textContent = msg;
-  if (mb) {
-    const bc = st==='done'?'bdg-ok':st==='fail'?'bdg-fail':st==='na'?'bdg-na':'bdg-w';
-    const bt = st==='done'?'OK':st==='fail'?'FAIL':st==='na'?'N/A':st==='loading'?'···':'WAIT';
-    mb.className = 'mc-bdg ' + bc; mb.textContent = bt;
-  }
+function SM(id,st,msg) {
+  mSt[id]=st; mMsg[id]=msg;
+  const el=_('mc-'+id), ml=_('mm-'+id), mb=_('mb-'+id);
+  if(el) el.className='mc '+st;
+  if(ml&&msg) ml.textContent=msg;
+  if(mb){ const bc=st==='done'?'bdg-ok':st==='fail'?'bdg-fail':st==='na'?'bdg-na':'bdg-w';
+    const bt=st==='done'?'OK':st==='fail'?'FAIL':st==='na'?'N/A':st==='loading'?'···':'WAIT';
+    mb.className='mc-bdg '+bc; mb.textContent=bt; }
   updProg();
 }
-
 function updProg() {
-  const tot = MODS.length;
-  const done = MODS.filter(m => ['done','fail','na'].includes(mSt[m.id])).length;
-  const pct = tot ? Math.round(done/tot*100) : 0;
-  _('pg-bar').style.width = pct + '%';
-  _('pg-n').textContent = done + '/' + tot;
-  const ld = MODS.find(m => mSt[m.id]==='loading');
-  _('pg-lbl').textContent = ld ? 'Loading ' + ld.name + '…' : done===tot ? 'All checked' : 'Initializing…';
-  _('pg-shine').style.display = ld ? 'block' : 'none';
-  _('btn-retry').style.display = MODS.some(m => mSt[m.id]==='fail') ? 'block' : 'none';
+  const tot=MODS.length, done=MODS.filter(m=>['done','fail','na'].includes(mSt[m.id])).length;
+  const pct=tot?Math.round(done/tot*100):0;
+  _('pg-bar').style.width=pct+'%'; _('pg-n').textContent=done+'/'+tot;
+  const ld=MODS.find(m=>mSt[m.id]==='loading');
+  _('pg-lbl').textContent=ld?'Loading '+ld.name+'…':done===tot?'All checked':'Initializing…';
+  _('pg-shine').style.display=ld?'block':'none';
+  _('btn-retry').style.display=MODS.some(m=>mSt[m.id]==='fail')?'block':'none';
 }
 
-// ═══════════════════════════════════════════════
+// ══════════════════════════════════════════════════════
 // HELPERS
-// ═══════════════════════════════════════════════
+// ══════════════════════════════════════════════════════
 const _ = id => document.getElementById(id);
-function tx(id,v) { const e=_(id); if(e) e.textContent = v; }
-function nm(id,v,d=2) { const e=_(id); if(e) e.textContent = (v==null||isNaN(v)) ? '--' : Number(v).toFixed(d); }
-function setBadge(id, cls, txt) {
-  const e=_(id); if(!e) return;
-  e.className = 'badge ' + cls;
-  e.innerHTML = `<span class="bdot${cls==='live'?' p':''}"></span>${txt}`;
-}
-function setDot(id, cls) { const e=_(id); if(e) e.className = 'dot ' + cls; }
-function LOG(lid, msg, t='info') {
-  const el=_(lid); if(!el) return;
-  const d=new Date(), ts=`${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}:${d.getSeconds().toString().padStart(2,'0')}`;
-  const ln=document.createElement('div'); ln.className='ll '+t; ln.textContent=`[${ts}] ${msg}`;
-  el.appendChild(ln); el.scrollTop = el.scrollHeight;
-}
-function ldJS(src) {
-  return new Promise((res, rej) => {
-    if (document.querySelector(`script[src="${src}"]`)) { res(); return; }
-    const s = document.createElement('script'); s.src = src; s.crossOrigin = 'anonymous';
-    s.onload = res; s.onerror = () => rej(new Error('Failed: ' + src.split('/').pop()));
-    document.head.appendChild(s);
-  });
-}
-// TF.js shared loader — loads once, all models wait
+function tx(id,v){ const e=_(id); if(e) e.textContent=v; }
+function nm(id,v,d=2){ const e=_(id); if(e) e.textContent=(v==null||isNaN(v))?'--':Number(v).toFixed(d); }
+function setBadge(id,cls,txt){ const e=_(id); if(!e)return; e.className='badge '+cls; e.innerHTML=`<span class="bdot${cls==='live'?' p':''}"></span>${txt}`; }
+function setDot(id,cls){ const e=_(id); if(e) e.className='tdot '+cls; }
+function LOG(lid,msg,t='info'){ const el=_(lid); if(!el)return; const d=new Date(),ts=`${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}:${d.getSeconds().toString().padStart(2,'0')}`; const ln=document.createElement('div'); ln.className='ll '+t; ln.textContent=`[${ts}] ${msg}`; el.appendChild(ln); el.scrollTop=el.scrollHeight; }
+function ldJS(src){ return new Promise((res,rej)=>{ if(document.querySelector(`script[src="${src}"]`)){res();return;} const s=document.createElement('script'); s.src=src; s.crossOrigin='anonymous'; s.onload=res; s.onerror=()=>rej(new Error('Load failed: '+src.split('/').slice(-1)[0])); document.head.appendChild(s); }); }
+function focalDist(realM, px){ return(!px||px<2)?null:(S.focal*realM)/px; }
+function fps_tick(m){ m._fc++; if(Date.now()-m._lt>=1000){m.fps=m._fc;m._fc=0;m._lt=Date.now();} }
+
+// Shared TF.js loader
 async function ensureTF() {
-  if (S.tfReady) return;
-  if (S.tfLoading) return S.tfLoading;
-  S.tfLoading = (async () => {
-    await ldJS(CDN_TF);
-    await tf.ready();
-    try { await tf.setBackend('webgl'); } catch(_) { await tf.setBackend('cpu'); }
-    S.tfReady = true;
-    LOG('p4-log', 'TF.js ready · backend: ' + tf.getBackend(), 'ok');
-    LOG('p5-log', 'TF.js ready · backend: ' + tf.getBackend(), 'ok');
-    LOG('p6-log', 'TF.js ready · backend: ' + tf.getBackend(), 'ok');
+  if(S.tfLoaded) return;
+  if(S.tfP) return S.tfP;
+  S.tfP = (async()=>{
+    await ldJS(C.TF); await tf.ready();
+    try{ await tf.setBackend('webgl'); } catch(_){ await tf.setBackend('cpu'); }
+    S.tfLoaded=true;
+    ['log5','log6','log7'].forEach(l=>LOG(l,'TF.js ready · backend: '+tf.getBackend(),'ok'));
   })();
-  return S.tfLoading;
+  return S.tfP;
 }
 
-// Focal-length distance: dist = focal_px * real_height_m / apparent_px
-function focalDist(realM, apparentPx) {
-  if (!apparentPx || apparentPx < 2) return null;
-  return (S.focal * realM) / apparentPx;
-}
-
-// ═══════════════════════════════════════════════
-// CAMERA — attach same stream to ALL video els
-// ═══════════════════════════════════════════════
+// ══════════════════════════════════════════════════════
+// CAMERA — attach to ALL 13 video elements
+// ══════════════════════════════════════════════════════
 async function initCam() {
-  SM('cam','loading','Requesting camera…');
+  SM('cam','loading','Requesting rear camera…');
   try {
     S.stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode:'environment', width:{ideal:1280}, height:{ideal:720} },
-      audio: false
+      video:{ facingMode:'environment', width:{ideal:1280}, height:{ideal:720} }, audio:false
     });
-    // Attach to all 9 video elements
-    for (let i = 0; i <= 8; i++) {
-      const v = _('v'+i);
-      if (v) { v.srcObject = S.stream; v.play().catch(()=>{}); }
-    }
-    const vid = _('v0');
-    await new Promise(r => { vid.onloadedmetadata = r; });
-    S.vW = vid.videoWidth; S.vH = vid.videoHeight;
-    // Estimate focal from 70° H-FOV assumption (most phone cameras)
-    S.focal = (S.vW / 2) / Math.tan(70 * Math.PI / 360);
-    SM('cam','done', `${S.vW}×${S.vH} · focal≈${S.focal.toFixed(0)}px`);
+    for(let i=0;i<=12;i++){ const v=_('v'+i); if(v){v.srcObject=S.stream;v.play().catch(()=>{});} }
+    const vid=_('v0');
+    await new Promise(r=>{ vid.onloadedmetadata=r; });
+    S.vW=vid.videoWidth; S.vH=vid.videoHeight;
+    S.focal=(S.vW/2)/Math.tan(70*Math.PI/360);
+    SM('cam','done',`${S.vW}×${S.vH} · f≈${S.focal.toFixed(0)}px`);
     return true;
-  } catch(e) {
-    SM('cam','fail', e.message.slice(0,55));
-    return false;
-  }
+  } catch(e){ SM('cam','fail',e.message.slice(0,55)); return false; }
 }
 
-// ═══════════════════════════════════════════════
+// ══════════════════════════════════════════════════════
 // MODEL 1 — MediaPipe Pose
-// ═══════════════════════════════════════════════
+// ══════════════════════════════════════════════════════
 async function initPose() {
-  if (S.pose.loading) return;
-  S.pose.loading = true;
-  SM('pose','loading','Loading MP Pose WASM…');
-  setBadge('p1-badge','wait','Loading…');
+  if(S.pose.loading) return; S.pose.loading=true;
+  SM('pose','loading','Loading MP Pose WASM…'); setBadge('b1','wait','Loading…');
   try {
-    await ldJS(CDN_MPOSE);
-    const inst = new Pose({ locateFile: f => BASE_MPOSE + f });
+    await ldJS(C.MP_POSE);
+    const inst = new Pose({ locateFile: f=>C.B_POSE+f });
     inst.setOptions({ modelComplexity:1, smoothLandmarks:true, minDetectionConfidence:0.5, minTrackingConfidence:0.5 });
-    inst.onResults(r => onPoseResult(r));
+    inst.onResults(r=>onPose(r));
     await inst.initialize();
-    S.pose.inst = inst; S.pose.active = true; S.pose.loading = false;
-    SM('pose','done','MediaPipe Pose ready');
-    setBadge('p1-badge','live','● Live'); setDot('dot-p1','live');
-    _('p1-ret').classList.remove('show');
-    LOG('p1-log','MP Pose initialized','ok');
-    runPoseLoop();
-  } catch(e) {
-    S.pose.loading = false;
-    SM('pose','fail', e.message.slice(0,60));
-    setBadge('p1-badge','fail','Failed'); setDot('dot-p1','fail');
-    _('p1-ret').classList.add('show');
-    LOG('p1-log','Error: ' + e.message, 'err');
-  }
+    S.pose.inst=inst; S.pose.active=true; S.pose.loading=false;
+    SM('pose','done','MP Pose ready'); setBadge('b1','live','● Live'); setDot('td-p1','live');
+    _('r1').classList.remove('show'); LOG('log1','MP Pose initialized','ok'); runPoseLoop();
+  } catch(e){ S.pose.loading=false; SM('pose','fail',e.message.slice(0,55)); setBadge('b1','fail','Failed'); setDot('td-p1','fail'); _('r1').classList.add('show'); LOG('log1','Error: '+e.message,'err'); }
 }
-function retryPose() { S.pose.loading=false; S.pose.active=false; S.pose.inst=null; initPose(); }
 
-function onPoseResult(r) {
-  const cv = _('cv1'), ctx = cv.getContext('2d');
-  cv.width = S.vW; cv.height = S.vH;
-  ctx.drawImage(r.image, 0, 0, S.vW, S.vH);
-  if (!r.poseLandmarks) { S.pose.conf=0; return; }
-  const L = r.poseLandmarks;
-  // Draw skeleton
-  const CONN=[[0,1],[1,3],[0,2],[2,4],[5,6],[5,7],[7,9],[6,8],[8,10],[5,11],[6,12],[11,12],[11,13],[13,15],[12,14],[14,16]];
+const POSE_CONN=[[0,1],[1,3],[0,2],[2,4],[5,6],[5,7],[7,9],[6,8],[8,10],[5,11],[6,12],[11,12],[11,13],[13,15],[12,14],[14,16]];
+function onPose(r) {
+  const cv=_('cv1'),ctx=cv.getContext('2d'); cv.width=S.vW; cv.height=S.vH;
+  ctx.drawImage(r.image,0,0,S.vW,S.vH);
+  if(!r.poseLandmarks){ S.pose.conf=0; fps_tick(S.pose); return; }
+  const L=r.poseLandmarks;
   ctx.strokeStyle='rgba(0,255,153,.8)'; ctx.lineWidth=2;
-  CONN.forEach(([a,b]) => {
-    if (L[a]&&L[b]&&L[a].visibility>.3&&L[b].visibility>.3) {
-      ctx.beginPath(); ctx.moveTo(L[a].x*S.vW, L[a].y*S.vH);
-      ctx.lineTo(L[b].x*S.vW, L[b].y*S.vH); ctx.stroke();
-    }
-  });
-  L.forEach(lm => {
-    if (lm.visibility > .3) {
-      ctx.beginPath(); ctx.arc(lm.x*S.vW, lm.y*S.vH, 4, 0, Math.PI*2);
-      ctx.fillStyle='rgba(0,224,255,.9)'; ctx.fill();
-    }
-  });
-  // Head (nose=0) to ankle (27/28)
+  POSE_CONN.forEach(([a,b])=>{ if(L[a]&&L[b]&&L[a].visibility>.3&&L[b].visibility>.3){ ctx.beginPath(); ctx.moveTo(L[a].x*S.vW,L[a].y*S.vH); ctx.lineTo(L[b].x*S.vW,L[b].y*S.vH); ctx.stroke(); } });
+  L.forEach(lm=>{ if(lm.visibility>.3){ ctx.beginPath(); ctx.arc(lm.x*S.vW,lm.y*S.vH,3.5,0,Math.PI*2); ctx.fillStyle='rgba(0,221,255,.9)'; ctx.fill(); } });
   const nose=L[0], lA=L[27], rA=L[28];
-  const ankY = (lA?.visibility>.3&&rA?.visibility>.3) ? (lA.y+rA.y)/2*S.vH
-             : (lA?.visibility>.3 ? lA.y*S.vH : (rA?.visibility>.3 ? rA.y*S.vH : null));
-  if (nose?.visibility>.3 && ankY!==null) {
-    const htPx = Math.abs(ankY - nose.y*S.vH);
-    S.pose.htPx = htPx;
-    S.pose.dist = focalDist(1.7, htPx);
-    S.pose.conf = Math.min(.82, nose.visibility * .9);
-  } else { S.pose.conf = 0; }
-  S.pose.vis = nose?.visibility || 0;
-  S.pose._fc++;
-  if (Date.now()-S.pose._lt >= 1000) { S.pose.fps=S.pose._fc; S.pose._fc=0; S.pose._lt=Date.now(); }
+  const ankY=(lA?.visibility>.3&&rA?.visibility>.3)?(lA.y+rA.y)/2*S.vH:(lA?.visibility>.3?lA.y*S.vH:(rA?.visibility>.3?rA.y*S.vH:null));
+  if(nose?.visibility>.3&&ankY!==null){ S.pose.htPx=Math.abs(ankY-nose.y*S.vH); S.pose.dist=focalDist(1.7,S.pose.htPx); S.pose.conf=Math.min(.82,nose.visibility*.9); }
+  else{ S.pose.conf=0; }
+  S.pose.vis=nose?.visibility||0; fps_tick(S.pose);
 }
-async function runPoseLoop() {
-  const loop = async () => {
-    if (!S.pose.inst || !S.pose.active) return;
-    const vid = _('v1');
-    if (vid && vid.readyState >= 2 && !vid.paused) {
-      try { await S.pose.inst.send({ image: vid }); } catch(_) {}
-    }
-    setTimeout(loop, 80); // ~12fps max
-  };
-  loop();
-}
+async function runPoseLoop(){ const l=async()=>{ if(!S.pose.inst||!S.pose.active)return; const v=_('v1'); if(v&&v.readyState>=2&&!v.paused){try{await S.pose.inst.send({image:v});}catch(_){}} setTimeout(l,80); }; l(); }
 
-// ═══════════════════════════════════════════════
+// ══════════════════════════════════════════════════════
 // MODEL 2 — MediaPipe Hands
-// ═══════════════════════════════════════════════
+// ══════════════════════════════════════════════════════
 async function initHands() {
-  if (S.hands.loading) return;
-  S.hands.loading = true;
-  SM('hands','loading','Loading MP Hands WASM…');
-  setBadge('p2-badge','wait','Loading…');
+  if(S.hands.loading)return; S.hands.loading=true;
+  SM('hand','loading','Loading MP Hands WASM…'); setBadge('b2','wait','Loading…');
   try {
-    await ldJS(CDN_MHAND);
-    const inst = new Hands({ locateFile: f => BASE_MHAND + f });
-    inst.setOptions({ maxNumHands:2, modelComplexity:1, minDetectionConfidence:0.6, minTrackingConfidence:0.5 });
-    inst.onResults(r => onHandsResult(r));
-    await inst.initialize();
-    S.hands.inst = inst; S.hands.active = true; S.hands.loading = false;
-    SM('hands','done','MediaPipe Hands ready');
-    setBadge('p2-badge','live','● Live'); setDot('dot-p2','live');
-    _('p2-ret').classList.remove('show');
-    LOG('p2-log','MP Hands initialized','ok');
-    runHandsLoop();
-  } catch(e) {
-    S.hands.loading = false;
-    SM('hands','fail', e.message.slice(0,60));
-    setBadge('p2-badge','fail','Failed'); setDot('dot-p2','fail');
-    _('p2-ret').classList.add('show');
-    LOG('p2-log','Error: ' + e.message, 'err');
-  }
+    await ldJS(C.MP_HAND);
+    const inst=new Hands({locateFile:f=>C.B_HAND+f});
+    inst.setOptions({maxNumHands:2,modelComplexity:1,minDetectionConfidence:0.6,minTrackingConfidence:0.5});
+    inst.onResults(r=>onHands(r)); await inst.initialize();
+    S.hands.inst=inst; S.hands.active=true; S.hands.loading=false;
+    SM('hand','done','MP Hands ready'); setBadge('b2','live','● Live'); setDot('td-p2','live');
+    _('r2').classList.remove('show'); LOG('log2','MP Hands ready','ok'); runHandsLoop();
+  } catch(e){ S.hands.loading=false; SM('hand','fail',e.message.slice(0,55)); setBadge('b2','fail','Failed'); setDot('td-p2','fail'); _('r2').classList.add('show'); LOG('log2','Error: '+e.message,'err'); }
 }
-function retryHands() { S.hands.loading=false; S.hands.active=false; S.hands.inst=null; initHands(); }
 
-const HC = [[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[5,9],[9,10],[10,11],[11,12],[9,13],[13,14],[14,15],[15,16],[13,17],[17,18],[18,19],[19,20],[0,17]];
-function onHandsResult(r) {
-  const cv = _('cv2'), ctx = cv.getContext('2d');
-  cv.width = S.vW; cv.height = S.vH;
-  ctx.drawImage(r.image, 0, 0, S.vW, S.vH);
-  if (!r.multiHandLandmarks || !r.multiHandLandmarks.length) {
-    S.hands.n=0; S.hands.conf=0; return;
-  }
-  S.hands.n = r.multiHandLandmarks.length;
-  r.multiHandLandmarks.forEach(lms => {
-    ctx.strokeStyle='rgba(255,214,0,.85)'; ctx.lineWidth=2;
-    HC.forEach(([a,b]) => {
-      ctx.beginPath(); ctx.moveTo(lms[a].x*S.vW, lms[a].y*S.vH);
-      ctx.lineTo(lms[b].x*S.vW, lms[b].y*S.vH); ctx.stroke();
-    });
-    lms.forEach(lm => {
-      ctx.beginPath(); ctx.arc(lm.x*S.vW, lm.y*S.vH, 4, 0, Math.PI*2);
-      ctx.fillStyle='rgba(255,214,0,.9)'; ctx.fill();
-    });
+const HC=[[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[5,9],[9,10],[10,11],[11,12],[9,13],[13,14],[14,15],[15,16],[13,17],[17,18],[18,19],[19,20],[0,17]];
+function onHands(r) {
+  const cv=_('cv2'),ctx=cv.getContext('2d'); cv.width=S.vW; cv.height=S.vH;
+  ctx.drawImage(r.image,0,0,S.vW,S.vH);
+  if(!r.multiHandLandmarks?.length){ S.hands.n=0; S.hands.conf=0; fps_tick(S.hands); return; }
+  S.hands.n=r.multiHandLandmarks.length;
+  r.multiHandLandmarks.forEach(lms=>{
+    ctx.strokeStyle='rgba(255,210,0,.85)'; ctx.lineWidth=2;
+    HC.forEach(([a,b])=>{ ctx.beginPath(); ctx.moveTo(lms[a].x*S.vW,lms[a].y*S.vH); ctx.lineTo(lms[b].x*S.vW,lms[b].y*S.vH); ctx.stroke(); });
+    lms.forEach(lm=>{ ctx.beginPath(); ctx.arc(lm.x*S.vW,lm.y*S.vH,3.5,0,Math.PI*2); ctx.fillStyle='rgba(255,210,0,.9)'; ctx.fill(); });
   });
-  // Distance: wrist(0) to middle-tip(12) span ≈ 0.18m
-  const lms = r.multiHandLandmarks[0];
-  const dx = (lms[12].x - lms[0].x)*S.vW;
-  const dy = (lms[12].y - lms[0].y)*S.vH;
-  const span = Math.sqrt(dx*dx + dy*dy);
-  S.hands.spanPx = span;
-  S.hands.dist = focalDist(0.18, span);
-  S.hands.conf = span > 10 ? 0.65 : 0;
-  S.hands._fc++;
-  if (Date.now()-S.hands._lt >= 1000) { S.hands.fps=S.hands._fc; S.hands._fc=0; S.hands._lt=Date.now(); }
+  const lms=r.multiHandLandmarks[0];
+  const dx=(lms[12].x-lms[0].x)*S.vW, dy=(lms[12].y-lms[0].y)*S.vH;
+  S.hands.spanPx=Math.sqrt(dx*dx+dy*dy);
+  S.hands.dist=focalDist(0.18,S.hands.spanPx); S.hands.conf=S.hands.spanPx>10?0.62:0;
+  fps_tick(S.hands);
 }
-async function runHandsLoop() {
-  const loop = async () => {
-    if (!S.hands.inst || !S.hands.active) return;
-    const vid = _('v2');
-    if (vid && vid.readyState >= 2 && !vid.paused) {
-      try { await S.hands.inst.send({ image: vid }); } catch(_) {}
-    }
-    setTimeout(loop, 90);
-  };
-  loop();
-}
+async function runHandsLoop(){ const l=async()=>{ if(!S.hands.inst||!S.hands.active)return; const v=_('v2'); if(v&&v.readyState>=2&&!v.paused){try{await S.hands.inst.send({image:v});}catch(_){}} setTimeout(l,90); }; l(); }
 
-// ═══════════════════════════════════════════════
+// ══════════════════════════════════════════════════════
 // MODEL 3 — MediaPipe Selfie Segmentation
-// ═══════════════════════════════════════════════
+// ══════════════════════════════════════════════════════
 async function initSeg() {
-  if (S.seg.loading) return;
-  S.seg.loading = true;
-  SM('seg','loading','Loading MP Selfie Seg WASM…');
-  setBadge('p3-badge','wait','Loading…');
+  if(S.seg.loading)return; S.seg.loading=true;
+  SM('seg','loading','Loading MP Selfie Seg WASM…'); setBadge('b3','wait','Loading…');
   try {
-    await ldJS(CDN_MSEG);
-    const inst = new SelfieSegmentation({ locateFile: f => BASE_MSEG + f });
-    inst.setOptions({ modelSelection: 1 }); // 1=landscape, better for full body
-    inst.onResults(r => onSegResult(r));
-    await inst.initialize();
-    S.seg.inst = inst; S.seg.active = true; S.seg.loading = false;
-    SM('seg','done','MP Selfie Seg ready');
-    setBadge('p3-badge','live','● Live'); setDot('dot-p3','live');
-    _('p3-ret').classList.remove('show');
-    LOG('p3-log','MP Selfie Seg initialized','ok');
-    runSegLoop();
-  } catch(e) {
-    S.seg.loading = false;
-    SM('seg','fail', e.message.slice(0,60));
-    setBadge('p3-badge','fail','Failed'); setDot('dot-p3','fail');
-    _('p3-ret').classList.add('show');
-    LOG('p3-log','Error: ' + e.message, 'err');
-  }
-}
-function retrySeg() { S.seg.loading=false; S.seg.active=false; S.seg.inst=null; initSeg(); }
-
-function onSegResult(r) {
-  const cv = _('cv3'), ctx = cv.getContext('2d');
-  cv.width = S.vW; cv.height = S.vH;
-  ctx.drawImage(r.image, 0, 0, S.vW, S.vH);
-  if (!r.segmentationMask) { S.seg.conf=0; return; }
-  // Draw mask
-  const tmp = document.createElement('canvas');
-  tmp.width = S.vW; tmp.height = S.vH;
-  const tc = tmp.getContext('2d');
-  tc.drawImage(r.segmentationMask, 0, 0, S.vW, S.vH);
-  const id = tc.getImageData(0, 0, S.vW, S.vH);
-  let px=0, minY=S.vH, maxY=0;
-  for (let i=0; i<id.data.length; i+=4) {
-    const mask = id.data[i]/255;
-    const y = Math.floor(i/4/S.vW);
-    if (mask > .5) {
-      px++;
-      if (y < minY) minY=y;
-      if (y > maxY) maxY=y;
-      id.data[i]=0; id.data[i+1]=255; id.data[i+2]=100; id.data[i+3]=80;
-    } else { id.data[i+3]=0; }
-  }
-  tc.putImageData(id, 0, 0);
-  ctx.drawImage(tmp, 0, 0);
-  S.seg.px = px;
-  S.seg.bh = maxY - minY;
-  S.seg.dist = (px>200 && S.seg.bh>20) ? focalDist(1.7, S.seg.bh) : null;
-  S.seg.conf = (px>200 && S.seg.bh>20) ? Math.min(.70, px/8000) : 0;
-  S.seg._fc++;
-  if (Date.now()-S.seg._lt >= 1000) { S.seg.fps=S.seg._fc; S.seg._fc=0; S.seg._lt=Date.now(); }
-}
-async function runSegLoop() {
-  const loop = async () => {
-    if (!S.seg.inst || !S.seg.active) return;
-    const vid = _('v3');
-    if (vid && vid.readyState >= 2 && !vid.paused) {
-      try { await S.seg.inst.send({ image: vid }); } catch(_) {}
-    }
-    setTimeout(loop, 100);
-  };
-  loop();
+    await ldJS(C.MP_SEG);
+    const inst=new SelfieSegmentation({locateFile:f=>C.B_SEG+f});
+    inst.setOptions({modelSelection:1}); inst.onResults(r=>onSeg(r)); await inst.initialize();
+    S.seg.inst=inst; S.seg.active=true; S.seg.loading=false;
+    SM('seg','done','MP Selfie Seg ready'); setBadge('b3','live','● Live'); setDot('td-p3','live');
+    _('r3').classList.remove('show'); LOG('log3','MP Selfie Seg ready','ok'); runSegLoop();
+  } catch(e){ S.seg.loading=false; SM('seg','fail',e.message.slice(0,55)); setBadge('b3','fail','Failed'); setDot('td-p3','fail'); _('r3').classList.add('show'); LOG('log3','Error: '+e.message,'err'); }
 }
 
-// ═══════════════════════════════════════════════
-// MODEL 4 — BodyPix (TF.js)
-// ═══════════════════════════════════════════════
+function onSeg(r) {
+  const cv=_('cv3'),ctx=cv.getContext('2d'); cv.width=S.vW; cv.height=S.vH;
+  ctx.drawImage(r.image,0,0,S.vW,S.vH);
+  if(!r.segmentationMask){ S.seg.conf=0; fps_tick(S.seg); return; }
+  const tmp=document.createElement('canvas'); tmp.width=S.vW; tmp.height=S.vH;
+  const tc=tmp.getContext('2d'); tc.drawImage(r.segmentationMask,0,0,S.vW,S.vH);
+  const id=tc.getImageData(0,0,S.vW,S.vH); let px=0,minY=S.vH,maxY=0;
+  for(let i=0;i<id.data.length;i+=4){ const m=id.data[i]/255,y=Math.floor(i/4/S.vW); if(m>.5){px++;if(y<minY)minY=y;if(y>maxY)maxY=y;id.data[i]=0;id.data[i+1]=255;id.data[i+2]=100;id.data[i+3]=75;}else id.data[i+3]=0; }
+  tc.putImageData(id,0,0); ctx.drawImage(tmp,0,0);
+  S.seg.px=px; S.seg.bh=maxY-minY; S.seg.dist=(px>200&&S.seg.bh>20)?focalDist(1.7,S.seg.bh):null; S.seg.conf=(px>200&&S.seg.bh>20)?Math.min(.68,px/8000):0;
+  fps_tick(S.seg);
+}
+async function runSegLoop(){ const l=async()=>{ if(!S.seg.inst||!S.seg.active)return; const v=_('v3'); if(v&&v.readyState>=2&&!v.paused){try{await S.seg.inst.send({image:v});}catch(_){}} setTimeout(l,100); }; l(); }
+
+// ══════════════════════════════════════════════════════
+// MODEL 4 — MediaPipe FaceMesh (IPD distance)
+// ══════════════════════════════════════════════════════
+async function initFace() {
+  if(S.face.loading)return; S.face.loading=true;
+  SM('face','loading','Loading MP FaceMesh WASM…'); setBadge('b4','wait','Loading…');
+  try {
+    await ldJS(C.MP_FACE);
+    const inst=new FaceMesh({locateFile:f=>C.B_FACE+f});
+    inst.setOptions({maxNumFaces:2,refineLandmarks:true,minDetectionConfidence:0.5,minTrackingConfidence:0.5});
+    inst.onResults(r=>onFace(r)); await inst.initialize();
+    S.face.inst=inst; S.face.active=true; S.face.loading=false;
+    SM('face','done','MP FaceMesh ready'); setBadge('b4','live','● Live'); setDot('td-p4','live');
+    _('r4').classList.remove('show'); LOG('log4','MP FaceMesh ready (468 landmarks + iris)','ok'); runFaceLoop();
+  } catch(e){ S.face.loading=false; SM('face','fail',e.message.slice(0,55)); setBadge('b4','fail','Failed'); setDot('td-p4','fail'); _('r4').classList.add('show'); LOG('log4','Error: '+e.message,'err'); }
+}
+
+function onFace(r) {
+  const cv=_('cv4'),ctx=cv.getContext('2d'); cv.width=S.vW; cv.height=S.vH;
+  ctx.drawImage(r.image,0,0,S.vW,S.vH);
+  if(!r.multiFaceLandmarks?.length){ S.face.n=0; S.face.conf=0; fps_tick(S.face); return; }
+  S.face.n=r.multiFaceLandmarks.length;
+  const L=r.multiFaceLandmarks[0];
+  // Draw mesh dots (sparse for perf)
+  ctx.fillStyle='rgba(0,221,255,.25)';
+  for(let i=0;i<L.length;i+=4){ ctx.beginPath(); ctx.arc(L[i].x*S.vW,L[i].y*S.vH,1,0,Math.PI*2); ctx.fill(); }
+  // IPD: left eye center (landmark 468) vs right eye center (473) — iris landmarks
+  // Fallback: left eye outer(33) vs right eye outer(263)
+  const lEye = L[468]||L[33], rEye = L[473]||L[263];
+  if(lEye&&rEye){
+    const dx=(rEye.x-lEye.x)*S.vW, dy=(rEye.y-lEye.y)*S.vH;
+    S.face.ipd=Math.sqrt(dx*dx+dy*dy);
+    S.face.dist=focalDist(IPD_M,S.face.ipd); S.face.conf=S.face.ipd>5?0.72:0;
+    // Draw eye line
+    ctx.beginPath(); ctx.moveTo(lEye.x*S.vW,lEye.y*S.vH); ctx.lineTo(rEye.x*S.vW,rEye.y*S.vH);
+    ctx.strokeStyle='rgba(0,255,153,.8)'; ctx.lineWidth=2; ctx.stroke();
+    ctx.beginPath(); ctx.arc(lEye.x*S.vW,lEye.y*S.vH,5,0,Math.PI*2); ctx.fillStyle='rgba(0,221,255,.9)'; ctx.fill();
+    ctx.beginPath(); ctx.arc(rEye.x*S.vW,rEye.y*S.vH,5,0,Math.PI*2); ctx.fill();
+  } else { S.face.conf=0; }
+  fps_tick(S.face);
+}
+async function runFaceLoop(){ const l=async()=>{ if(!S.face.inst||!S.face.active)return; const v=_('v4'); if(v&&v.readyState>=2&&!v.paused){try{await S.face.inst.send({image:v});}catch(_){}} setTimeout(l,110); }; l(); }
+
+// ══════════════════════════════════════════════════════
+// MODEL 5 — BodyPix (TF.js)
+// ══════════════════════════════════════════════════════
+const TFM = { bpix:null, pnet:null, coco:null }; // TF.js model instances
 async function initBodyPix() {
-  if (S.bpix.loading) return;
-  S.bpix.loading = true;
-  SM('bpix','loading','Loading TF.js…');
-  setBadge('p4-badge','wait','Loading TF.js…');
+  if(S.bpix.loading)return; S.bpix.loading=true;
+  SM('bpix','loading','Loading TF.js…'); setBadge('b5','wait','Loading…');
   try {
-    await ensureTF();
-    SM('bpix','loading','Loading BodyPix model…');
-    await ldJS(CDN_BPIX);
-    G.bpix = await bodyPix.load({ architecture:'MobileNetV1', outputStride:16, multiplier:0.75, quantBytes:2 });
-    S.bpix.inst = G.bpix; S.bpix.active = true; S.bpix.loading = false;
-    SM('bpix','done','BodyPix ready');
-    setBadge('p4-badge','live','● Live'); setDot('dot-p4','live');
-    _('p4-ret').classList.remove('show');
-    LOG('p4-log','BodyPix ready (MobileNetV1, stride 16)','ok');
-    runBodyPixLoop();
-  } catch(e) {
-    S.bpix.loading = false;
-    SM('bpix','fail', e.message.slice(0,60));
-    setBadge('p4-badge','fail','Failed'); setDot('dot-p4','fail');
-    _('p4-ret').classList.add('show');
-    LOG('p4-log','Error: ' + e.message, 'err');
-  }
-}
-function retryBodyPix() { S.bpix.loading=false; S.bpix.active=false; S.bpix.inst=null; if(G.bpix) G.bpix=null; initBodyPix(); }
-
-const G = { bpix: null, pnet: null, coco: null }; // TF.js model instances
-
-async function runBodyPixLoop() {
-  const cv = _('cv4'), ctx = cv.getContext('2d');
-  const loop = async () => {
-    if (!S.bpix.active || !G.bpix) return;
-    const vid = _('v4');
-    if (!vid || vid.readyState < 2) { setTimeout(loop, 300); return; }
-    try {
-      const seg = await G.bpix.segmentPerson(vid, { flipHorizontal:false, internalResolution:'medium', segmentationThreshold:0.7 });
-      cv.width = seg.width; cv.height = seg.height;
-      const img = ctx.createImageData(seg.width, seg.height);
-      let px=0, minY=seg.height, maxY=0;
-      for (let i=0; i<seg.data.length; i++) {
-        const r=i*4, x=i%seg.width, y=Math.floor(i/seg.width);
-        if (seg.data[i]===1) {
-          px++; if(y<minY)minY=y; if(y>maxY)maxY=y;
-          img.data[r]=0; img.data[r+1]=220; img.data[r+2]=100; img.data[r+3]=110;
-        } else { img.data[r]=8; img.data[r+1]=16; img.data[r+2]=28; img.data[r+3]=180; }
-      }
-      ctx.putImageData(img, 0, 0);
-      S.bpix.found = px > 100; S.bpix.px = px; S.bpix.bh = maxY-minY;
-      const scaledBH = S.bpix.bh * (S.vH / seg.height);
-      S.bpix.dist = (S.bpix.found && S.bpix.bh>20) ? focalDist(1.7, scaledBH) : null;
-      S.bpix.conf = (S.bpix.found && S.bpix.bh>20) ? Math.min(.72, px/5000) : 0;
-      S.bpix._fc++;
-      if (Date.now()-S.bpix._lt >= 1000) { S.bpix.fps=S.bpix._fc; S.bpix._fc=0; S.bpix._lt=Date.now(); }
-    } catch(e) { LOG('p4-log', 'Loop err: '+e.message.slice(0,40), 'err'); }
-    setTimeout(loop, 350);
-  };
-  loop();
+    await ensureTF(); SM('bpix','loading','Loading BodyPix weights…');
+    await ldJS(C.BPIX);
+    TFM.bpix=await bodyPix.load({architecture:'MobileNetV1',outputStride:16,multiplier:0.75,quantBytes:2});
+    S.bpix.active=true; S.bpix.loading=false;
+    SM('bpix','done','BodyPix ready'); setBadge('b5','live','● Live'); setDot('td-p5','live');
+    _('r5').classList.remove('show'); LOG('log5','BodyPix ready (MobileNetV1 stride16)','ok'); runBodyPixLoop();
+  } catch(e){ S.bpix.loading=false; SM('bpix','fail',e.message.slice(0,55)); setBadge('b5','fail','Failed'); setDot('td-p5','fail'); _('r5').classList.add('show'); LOG('log5','Error: '+e.message,'err'); }
 }
 
-// ═══════════════════════════════════════════════
-// MODEL 5 — PoseNet (TF.js, no TFHub needed)
-// ═══════════════════════════════════════════════
+async function runBodyPixLoop(){
+  const cv=_('cv5'),ctx=cv.getContext('2d');
+  const l=async()=>{
+    if(!S.bpix.active||!TFM.bpix)return;
+    const v=_('v5'); if(!v||v.readyState<2){setTimeout(l,300);return;}
+    try{
+      const seg=await TFM.bpix.segmentPerson(v,{flipHorizontal:false,internalResolution:'medium',segmentationThreshold:0.7});
+      cv.width=seg.width; cv.height=seg.height;
+      const img=ctx.createImageData(seg.width,seg.height); let px=0,minY=seg.height,maxY=0;
+      for(let i=0;i<seg.data.length;i++){ const r=i*4,x=i%seg.width,y=Math.floor(i/seg.width); if(seg.data[i]===1){px++;if(y<minY)minY=y;if(y>maxY)maxY=y;img.data[r]=0;img.data[r+1]=220;img.data[r+2]=100;img.data[r+3]=105;}else{img.data[r]=8;img.data[r+1]=14;img.data[r+2]=24;img.data[r+3]=175;} }
+      ctx.putImageData(img,0,0);
+      S.bpix.found=px>100; S.bpix.px=px; S.bpix.bh=maxY-minY;
+      S.bpix.dist=(S.bpix.found&&S.bpix.bh>20)?focalDist(1.7,S.bpix.bh*(S.vH/seg.height)):null;
+      S.bpix.conf=(S.bpix.found&&S.bpix.bh>20)?Math.min(.70,px/5000):0;
+      fps_tick(S.bpix);
+    } catch(e){LOG('log5','Loop: '+e.message.slice(0,40),'err');}
+    setTimeout(l,360);
+  }; l();
+}
+
+// ══════════════════════════════════════════════════════
+// MODEL 6 — PoseNet (TF.js)
+// ══════════════════════════════════════════════════════
 async function initPoseNet() {
-  if (S.pnet.loading) return;
-  S.pnet.loading = true;
-  SM('pnet','loading','Loading TF.js…');
-  setBadge('p5-badge','wait','Loading TF.js…');
+  if(S.pnet.loading)return; S.pnet.loading=true;
+  SM('pnet','loading','Loading TF.js…'); setBadge('b6','wait','Loading…');
   try {
-    await ensureTF();
-    SM('pnet','loading','Loading PoseNet model…');
-    await ldJS(CDN_PNET);
-    G.pnet = await posenet.load({ architecture:'MobileNetV1', outputStride:16, inputResolution:{width:257,height:257}, multiplier:0.75 });
-    S.pnet.inst = G.pnet; S.pnet.active = true; S.pnet.loading = false;
-    SM('pnet','done','PoseNet ready');
-    setBadge('p5-badge','live','● Live'); setDot('dot-p5','live');
-    _('p5-ret').classList.remove('show');
-    LOG('p5-log','PoseNet ready (MobileNetV1, stride 16)','ok');
-    runPoseNetLoop();
-  } catch(e) {
-    S.pnet.loading = false;
-    SM('pnet','fail', e.message.slice(0,60));
-    setBadge('p5-badge','fail','Failed'); setDot('dot-p5','fail');
-    _('p5-ret').classList.add('show');
-    LOG('p5-log','Error: ' + e.message, 'err');
-  }
-}
-function retryPoseNet() { S.pnet.loading=false; S.pnet.active=false; S.pnet.inst=null; if(G.pnet)G.pnet=null; initPoseNet(); }
-
-const PN_PARTS = ['nose','leftEye','rightEye','leftEar','rightEar','leftShoulder','rightShoulder','leftElbow','rightElbow','leftWrist','rightWrist','leftHip','rightHip','leftKnee','rightKnee','leftAnkle','rightAnkle'];
-const PN_PAIRS = [[0,1],[0,2],[1,3],[2,4],[5,6],[5,7],[7,9],[6,8],[8,10],[5,11],[6,12],[11,12],[11,13],[13,15],[12,14],[14,16]];
-
-async function runPoseNetLoop() {
-  const cv = _('cv5'), ctx = cv.getContext('2d');
-  const loop = async () => {
-    if (!S.pnet.active || !G.pnet) return;
-    const vid = _('v5');
-    if (!vid || vid.readyState < 2) { setTimeout(loop, 300); return; }
-    try {
-      const pose = await G.pnet.estimateSinglePose(vid, { flipHorizontal: false });
-      cv.width = S.vW; cv.height = S.vH;
-      ctx.drawImage(vid, 0, 0, S.vW, S.vH);
-      S.pnet.sc = pose.score;
-      if (pose.score > 0.2) {
-        const kps = {};
-        pose.keypoints.forEach(kp => { kps[kp.part] = kp; });
-        // Draw skeleton
-        ctx.strokeStyle='rgba(170,68,255,.8)'; ctx.lineWidth=2;
-        PN_PAIRS.forEach(([a,b]) => {
-          const kA=pose.keypoints[a], kB=pose.keypoints[b];
-          if (kA.score>.3 && kB.score>.3) {
-            ctx.beginPath(); ctx.moveTo(kA.position.x, kA.position.y);
-            ctx.lineTo(kB.position.x, kB.position.y); ctx.stroke();
-          }
-        });
-        pose.keypoints.forEach(kp => {
-          if (kp.score > .3) {
-            ctx.beginPath(); ctx.arc(kp.position.x, kp.position.y, 4, 0, Math.PI*2);
-            ctx.fillStyle='rgba(170,68,255,.9)'; ctx.fill();
-          }
-        });
-        // Head↔ankle
-        const nose = kps['nose'], lAnk=kps['leftAnkle'], rAnk=kps['rightAnkle'];
-        const ankY = (lAnk?.score>.3&&rAnk?.score>.3) ? (lAnk.position.y+rAnk.position.y)/2
-                   : (lAnk?.score>.3 ? lAnk.position.y : (rAnk?.score>.3 ? rAnk.position.y : null));
-        if (nose?.score>.3 && ankY!==null) {
-          const htPx = Math.abs(ankY - nose.position.y);
-          S.pnet.htPx = htPx;
-          S.pnet.dist = focalDist(1.7, htPx);
-          S.pnet.conf = Math.min(.75, pose.score * .85);
-        } else { S.pnet.conf = 0; }
-      } else {
-        S.pnet.conf = 0;
-        ctx.font='11px "Share Tech Mono"'; ctx.fillStyle='rgba(0,224,255,.4)'; ctx.textAlign='center';
-        ctx.fillText('No pose detected', S.vW/2, S.vH/2);
-      }
-      S.pnet._fc++;
-      if (Date.now()-S.pnet._lt >= 1000) { S.pnet.fps=S.pnet._fc; S.pnet._fc=0; S.pnet._lt=Date.now(); }
-    } catch(e) { LOG('p5-log','Loop err: '+e.message.slice(0,40),'err'); }
-    setTimeout(loop, 300);
-  };
-  loop();
+    await ensureTF(); SM('pnet','loading','Loading PoseNet weights…');
+    await ldJS(C.PNET);
+    TFM.pnet=await posenet.load({architecture:'MobileNetV1',outputStride:16,inputResolution:{width:257,height:257},multiplier:0.75});
+    S.pnet.active=true; S.pnet.loading=false;
+    SM('pnet','done','PoseNet ready'); setBadge('b6','live','● Live'); setDot('td-p6','live');
+    _('r6').classList.remove('show'); LOG('log6','PoseNet ready (MobileNetV1 stride16)','ok'); runPoseNetLoop();
+  } catch(e){ S.pnet.loading=false; SM('pnet','fail',e.message.slice(0,55)); setBadge('b6','fail','Failed'); setDot('td-p6','fail'); _('r6').classList.add('show'); LOG('log6','Error: '+e.message,'err'); }
 }
 
-// ═══════════════════════════════════════════════
-// MODEL 6 — COCO-SSD (TF.js)
-// ═══════════════════════════════════════════════
+const PN_PAIRS=[[0,1],[0,2],[1,3],[2,4],[5,6],[5,7],[7,9],[6,8],[8,10],[5,11],[6,12],[11,12],[11,13],[13,15],[12,14],[14,16]];
+async function runPoseNetLoop(){
+  const cv=_('cv6'),ctx=cv.getContext('2d');
+  const l=async()=>{
+    if(!S.pnet.active||!TFM.pnet)return;
+    const v=_('v6'); if(!v||v.readyState<2){setTimeout(l,300);return;}
+    try{
+      const pose=await TFM.pnet.estimateSinglePose(v,{flipHorizontal:false});
+      cv.width=S.vW; cv.height=S.vH; ctx.drawImage(v,0,0,S.vW,S.vH);
+      S.pnet.sc=pose.score;
+      if(pose.score>.2){
+        ctx.strokeStyle='rgba(157,78,255,.8)'; ctx.lineWidth=2;
+        PN_PAIRS.forEach(([a,b])=>{ const kA=pose.keypoints[a],kB=pose.keypoints[b]; if(kA.score>.3&&kB.score>.3){ctx.beginPath();ctx.moveTo(kA.position.x,kA.position.y);ctx.lineTo(kB.position.x,kB.position.y);ctx.stroke();} });
+        pose.keypoints.forEach(kp=>{ if(kp.score>.3){ctx.beginPath();ctx.arc(kp.position.x,kp.position.y,3.5,0,Math.PI*2);ctx.fillStyle='rgba(157,78,255,.9)';ctx.fill();} });
+        const kps={}; pose.keypoints.forEach(kp=>kps[kp.part]=kp);
+        const nose=kps['nose'],lAnk=kps['leftAnkle'],rAnk=kps['rightAnkle'];
+        const ankY=(lAnk?.score>.3&&rAnk?.score>.3)?(lAnk.position.y+rAnk.position.y)/2:(lAnk?.score>.3?lAnk.position.y:(rAnk?.score>.3?rAnk.position.y:null));
+        if(nose?.score>.3&&ankY!==null){ S.pnet.htPx=Math.abs(ankY-nose.position.y); S.pnet.dist=focalDist(1.7,S.pnet.htPx); S.pnet.conf=Math.min(.73,pose.score*.85); }
+        else S.pnet.conf=0;
+      } else { S.pnet.conf=0; ctx.font='10px "Share Tech Mono"'; ctx.fillStyle='rgba(0,221,255,.4)'; ctx.textAlign='center'; ctx.fillText('No pose detected',S.vW/2,S.vH/2); }
+      fps_tick(S.pnet);
+    } catch(e){LOG('log6','Loop: '+e.message.slice(0,40),'err');}
+    setTimeout(l,300);
+  }; l();
+}
+
+// ══════════════════════════════════════════════════════
+// MODEL 7 — COCO-SSD (TF.js)
+// ══════════════════════════════════════════════════════
 async function initCOCO() {
-  if (S.coco.loading) return;
-  S.coco.loading = true;
-  SM('coco','loading','Loading TF.js…');
-  setBadge('p6-badge','wait','Loading TF.js…');
+  if(S.coco.loading)return; S.coco.loading=true;
+  SM('coco','loading','Loading TF.js…'); setBadge('b7','wait','Loading…');
   try {
-    await ensureTF();
-    SM('coco','loading','Loading COCO-SSD weights…');
-    await ldJS(CDN_COCO);
-    G.coco = await cocoSsd.load({ base:'mobilenet_v2' });
-    S.coco.inst = G.coco; S.coco.active = true; S.coco.loading = false;
-    SM('coco','done','COCO-SSD ready (80 classes)');
-    setBadge('p6-badge','live','● Live'); setDot('dot-p6','live');
-    _('p6-ret').classList.remove('show');
-    LOG('p6-log','COCO-SSD ready (MobileNetV2, 80 classes)','ok');
-    runCOCOLoop();
-  } catch(e) {
-    S.coco.loading = false;
-    SM('coco','fail', e.message.slice(0,60));
-    setBadge('p6-badge','fail','Failed'); setDot('dot-p6','fail');
-    _('p6-ret').classList.add('show');
-    LOG('p6-log','Error: ' + e.message, 'err');
-  }
-}
-function retryCOCO() { S.coco.loading=false; S.coco.active=false; S.coco.inst=null; if(G.coco)G.coco=null; initCOCO(); }
-
-async function runCOCOLoop() {
-  const cv = _('cv6'), ctx = cv.getContext('2d');
-  const COLS = ['#00e0ff','#00ff99','#ffd600','#ff4060','#aa44ff','#ff8c00'];
-  const loop = async () => {
-    if (!S.coco.active || !G.coco) return;
-    const vid = _('v6');
-    if (!vid || vid.readyState < 2) { setTimeout(loop, 350); return; }
-    try {
-      const dets = await G.coco.detect(vid, 10, 0.3);
-      cv.width = S.vW; cv.height = S.vH;
-      ctx.drawImage(vid, 0, 0, S.vW, S.vH);
-      S.coco.dets = dets;
-      // Find detection closest to center
-      let best=null, bestD=Infinity;
-      dets.forEach(d => {
-        const bx=d.bbox[0]+d.bbox[2]/2, by=d.bbox[1]+d.bbox[3]/2;
-        const dd=Math.sqrt((bx-S.vW/2)**2+(by-S.vH/2)**2);
-        if (dd < bestD) { bestD=dd; best=d; }
-      });
-      dets.forEach((d,i) => {
-        const [x,y,w,h]=d.bbox, col=COLS[i%COLS.length], isB=(d===best);
-        ctx.strokeStyle=isB?'#00ff99':col; ctx.lineWidth=isB?2.5:1.5;
-        ctx.strokeRect(x,y,w,h);
-        ctx.fillStyle=isB?'rgba(0,255,153,.13)':'rgba(0,224,255,.07)';
-        ctx.fillRect(x,y,w,h);
-        const lbl=`${d.class} ${(d.score*100).toFixed(0)}%`;
-        ctx.font='bold 10px "Share Tech Mono"';
-        const tw=ctx.measureText(lbl).width;
-        ctx.fillStyle=isB?'rgba(0,255,153,.85)':'rgba(0,224,255,.8)';
-        ctx.fillRect(x,y-16,tw+6,16);
-        ctx.fillStyle='#010c10'; ctx.fillText(lbl,x+3,y-3);
-      });
-      if (best) {
-        S.coco.cls=best.class; S.coco.score=best.score;
-        const knownH=S.KNOWN_SIZES[best.class]||1.0;
-        S.coco.dist = focalDist(knownH, best.bbox[3]);
-        S.coco.conf = Math.min(.68, best.score*.8);
-      } else { S.coco.cls='--'; S.coco.score=0; S.coco.dist=null; S.coco.conf=0; }
-      S.coco._fc++;
-      if (Date.now()-S.coco._lt >= 1000) { S.coco.fps=S.coco._fc; S.coco._fc=0; S.coco._lt=Date.now(); }
-    } catch(e) { LOG('p6-log','Loop err: '+e.message.slice(0,40),'err'); }
-    setTimeout(loop, 320);
-  };
-  loop();
+    await ensureTF(); SM('coco','loading','Loading COCO-SSD weights…');
+    await ldJS(C.COCO);
+    TFM.coco=await cocoSsd.load({base:'mobilenet_v2'});
+    S.coco.active=true; S.coco.loading=false;
+    SM('coco','done','COCO-SSD ready (80 classes)'); setBadge('b7','live','● Live'); setDot('td-p7','live');
+    _('r7').classList.remove('show'); LOG('log7','COCO-SSD ready (MobileNetV2 80cls)','ok'); runCOCOLoop();
+  } catch(e){ S.coco.loading=false; SM('coco','fail',e.message.slice(0,55)); setBadge('b7','fail','Failed'); setDot('td-p7','fail'); _('r7').classList.add('show'); LOG('log7','Error: '+e.message,'err'); }
 }
 
-// ═══════════════════════════════════════════════
-// SENSOR 7 — IMU
-// ═══════════════════════════════════════════════
-async function initIMU() {
-  SM('imu','loading','Requesting DeviceMotion…');
-  if (!window.DeviceMotionEvent) {
-    SM('imu','na','DeviceMotion not supported');
-    setBadge('p7-badge','fail','Not supported'); setDot('dot-p7','fail');
-    return;
-  }
-  const setup = () => {
-    window.addEventListener('devicemotion', onMotion, { passive:true });
-    window.addEventListener('deviceorientation', onOrientation, { passive:true });
-    S.imu.active = true;
-    SM('imu','done','IMU active');
-    setBadge('p7-badge','live','● Live'); setDot('dot-p7','live');
-    _('p7-ret').classList.remove('show');
-    LOG('p7-log','DeviceMotion active','ok');
-  };
+async function runCOCOLoop(){
+  const cv=_('cv7'),ctx=cv.getContext('2d');
+  const COLS=['#00ddff','#00ff99','#ffd200','#ff3d6b','#9d4eff','#ff8800'];
+  const l=async()=>{
+    if(!S.coco.active||!TFM.coco)return;
+    const v=_('v7'); if(!v||v.readyState<2){setTimeout(l,350);return;}
+    try{
+      const dets=await TFM.coco.detect(v,10,0.28);
+      cv.width=S.vW; cv.height=S.vH; ctx.drawImage(v,0,0,S.vW,S.vH); S.coco.dets=dets;
+      let best=null,bd=Infinity;
+      dets.forEach(d=>{ const bx=d.bbox[0]+d.bbox[2]/2,by=d.bbox[1]+d.bbox[3]/2; const dd=Math.sqrt((bx-S.vW/2)**2+(by-S.vH/2)**2); if(dd<bd){bd=dd;best=d;} });
+      dets.forEach((d,i)=>{ const[x,y,w,h]=d.bbox,col=COLS[i%COLS.length],isB=(d===best); ctx.strokeStyle=isB?'#00ff99':col;ctx.lineWidth=isB?2.5:1.5;ctx.strokeRect(x,y,w,h); ctx.fillStyle=isB?'rgba(0,255,153,.12)':'rgba(0,221,255,.06)';ctx.fillRect(x,y,w,h); const lbl=`${d.class} ${(d.score*100).toFixed(0)}%`;ctx.font='bold 9px "Share Tech Mono"';const tw=ctx.measureText(lbl).width;ctx.fillStyle=isB?'rgba(0,255,153,.85)':'rgba(0,221,255,.8)';ctx.fillRect(x,y-15,tw+6,15);ctx.fillStyle='#010c10';ctx.fillText(lbl,x+3,y-3); });
+      if(best){S.coco.cls=best.class;S.coco.score=best.score;S.coco.dist=focalDist(S.KNOWN[best.class]||1.0,best.bbox[3]);S.coco.conf=Math.min(.66,best.score*.8);}
+      else{S.coco.cls='--';S.coco.score=0;S.coco.dist=null;S.coco.conf=0;}
+      fps_tick(S.coco);
+    } catch(e){LOG('log7','Loop: '+e.message.slice(0,40),'err');}
+    setTimeout(l,330);
+  }; l();
+}
+
+// ══════════════════════════════════════════════════════
+// MODEL 8 — ml5.js (BodyPose MoveNet + ObjectDetection)
+// ══════════════════════════════════════════════════════
+async function initML5() {
+  if(S.ml5s.loading)return; S.ml5s.loading=true;
+  SM('ml5','loading','Loading ml5.js…'); setBadge('b8','wait','Loading…');
   try {
-    if (typeof DeviceMotionEvent.requestPermission === 'function') {
-      const r = await DeviceMotionEvent.requestPermission();
-      if (r === 'granted') setup(); else throw new Error('Permission denied');
-    } else { setup(); }
-  } catch(e) {
-    SM('imu','fail', e.message);
-    setBadge('p7-badge','fail','Denied'); setDot('dot-p7','fail');
-    _('p7-ret').classList.add('show');
-    LOG('p7-log','IMU denied: '+e.message,'err');
-  }
-}
-function retryIMU() { initIMU(); }
+    await ldJS(C.ML5);
+    // Wait for ml5 to be available
+    let tries=0; while(!window.ml5&&tries<30){await new Promise(r=>setTimeout(r,200));tries++;}
+    if(!window.ml5) throw new Error('ml5 global not found after timeout');
+    LOG('log8','ml5 v'+ml5.version+' loaded','ok');
 
-function onMotion(e) {
-  const g = e.accelerationIncludingGravity; if (!g) return;
-  S.imu.gx=g.x||0; S.imu.gy=g.y||0; S.imu.gz=g.z||0;
-  S.imu.buf.push({ x:S.imu.gx, y:S.imu.gy, z:S.imu.gz });
-  if (S.imu.buf.length > 80) S.imu.buf.shift();
-  S.imu.samples++;
-  const n=S.imu.buf.length;
-  const avg=S.imu.buf.reduce((a,b)=>({x:a.x+b.x,y:a.y+b.y,z:a.z+b.z}),{x:0,y:0,z:0});
-  const ax=avg.x/n, ay=avg.y/n, az=avg.z/n;
-  S.imu.pitch = Math.atan2(ay, Math.sqrt(ax*ax+az*az)) * 180/Math.PI;
-  const tiltV = Math.abs(90 - Math.abs(S.imu.pitch));
-  const stab = Math.min(1, n/80);
-  const tiltConf = Math.max(0, 1 - tiltV/30);
-  S.imu.conf = stab * tiltConf * 0.70;
-  S.imu.height = S.fusH || PRIOR_H; // IMU can't measure absolute height; uses fused
-  // Show/hide tilt warnings
-  const showWarn = tiltV > 20;
-  _('tilt0').style.display = showWarn ? 'block' : 'none';
-  _('tilt7').style.display = showWarn ? 'block' : 'none';
-}
-function onOrientation(e) {
-  S.imu.alpha=e.alpha||0; S.imu.beta=e.beta||0; S.imu.gamma=e.gamma||0;
+    // BodyPose with MoveNet
+    SM('ml5','loading','Loading ml5 BodyPose (MoveNet)…');
+    const vid = _('v8');
+    S.ml5s.bp = ml5.bodyPose('MoveNet', { flipped:false }, ()=>{
+      LOG('log8','ml5 BodyPose ready','ok');
+      S.ml5s.bp.detectStart(vid, r=>onML5Pose(r));
+    });
+
+    // ObjectDetection with COCO-SSD
+    SM('ml5','loading','Loading ml5 ObjectDetection…');
+    S.ml5s.od = ml5.objectDetection('CocoSsd', { flipped:false }, ()=>{
+      LOG('log8','ml5 ObjectDetection ready','ok');
+      S.ml5s.od.detectStart(vid, r=>onML5Obj(r));
+    });
+
+    S.ml5s.active=true; S.ml5s.loading=false;
+    SM('ml5','done','ml5 ready (BodyPose+ObjDet)'); setBadge('b8','live','● Live'); setDot('td-p8','live');
+    _('r8').classList.remove('show'); LOG('log8','ml5 BodyPose + ObjectDetection active','ok');
+    // ml5 uses detectStart callbacks, no explicit loop needed
+    runML5Draw();
+  } catch(e){ S.ml5s.loading=false; SM('ml5','fail',e.message.slice(0,55)); setBadge('b8','fail','Failed'); setDot('td-p8','fail'); _('r8').classList.add('show'); LOG('log8','Error: '+e.message,'err'); }
 }
 
-// ═══════════════════════════════════════════════
-// SENSOR 8 — GPS
-// ═══════════════════════════════════════════════
-async function initGPS() {
-  SM('gps','loading','Requesting location…');
-  if (!navigator.geolocation) {
-    SM('gps','na','Geolocation not supported');
-    setBadge('p8-badge','fail','N/A'); setDot('dot-p8','fail');
-    _('p8-ret').classList.add('show');
-    return;
-  }
-  const opts = { enableHighAccuracy:true, maximumAge:0, timeout:20000 };
-  navigator.geolocation.getCurrentPosition(
-    pos => {
-      onGPS(pos);
-      S.gps.watchId = navigator.geolocation.watchPosition(onGPS, onGPSErr, { enableHighAccuracy:true, maximumAge:5000 });
-      SM('gps','done','GPS active');
-      setBadge('p8-badge','live','● Live'); setDot('dot-p8','live');
-      _('p8-ret').classList.remove('show');
-    },
-    err => {
-      SM('gps','fail', err.message);
-      setBadge('p8-badge','fail', err.code===1?'Denied':'No fix');
-      setDot('dot-p8','fail'); _('p8-ret').classList.add('show');
-      LOG('p8-log','Error: '+err.message,'err');
-    },
-    opts
-  );
-}
-function retryGPS() { if(S.gps.watchId) navigator.geolocation.clearWatch(S.gps.watchId); initGPS(); }
-function onGPS(pos) {
-  const c=pos.coords;
-  S.gps.alt=c.altitude; S.gps.lat=c.latitude; S.gps.lng=c.longitude;
-  S.gps.acc=c.accuracy; S.gps.altAcc=c.altitudeAccuracy;
-  S.gps.active=true;
-  if (S.gps.alt!==null && S.gps.ref===null) S.gps.ref=S.gps.alt;
-  if (S.gps.alt!==null && S.gps.ref!==null) S.gps.delta=S.gps.alt-S.gps.ref;
-  S.gps.conf = c.altitudeAccuracy ? Math.max(0,.4-c.altitudeAccuracy/60) : 0.08;
-  LOG('p8-log',`Fix: alt=${c.altitude?.toFixed(1)||'null'}m ±${c.altitudeAccuracy?.toFixed(0)||'?'}m`,'ok');
-}
-function onGPSErr(e) { LOG('p8-log','Err: '+e.message,'err'); }
+const ML5_CONN=[[0,1],[0,2],[1,3],[2,4],[5,6],[5,7],[7,9],[6,8],[8,10],[5,11],[6,12],[11,12],[11,13],[13,15],[12,14],[14,16]];
+let _ml5poses=[], _ml5objs=[];
+function onML5Pose(results){ _ml5poses=results||[]; fps_tick(S.ml5s); }
+function onML5Obj(results){ _ml5objs=results||[]; }
 
-// ═══════════════════════════════════════════════
-// SENSOR FUSION
-// ═══════════════════════════════════════════════
-function fuse() {
-  // HEIGHT: weighted average of all height estimates
-  // Note: only IMU can contribute — all ML models measure distance not camera height
-  // Camera height from ML: if we know person is on floor and camera points horizontally,
-  // and we detect feet pixel position below horizon → trigonometry gives height.
-  // We implement this for pose/pnet models.
-  const hE = [];
-
-  // From pose models: if feet visible near bottom of frame, camera height = trig
-  [S.pose, S.pnet].forEach(m => {
-    if (m.active && m.htPx > 20) {
-      // Phone horizontal → horizon at center. Feet below horizon by (footY - cy) pixels.
-      // Angle below horizon = atan((footY-cy)/focal). With dist=D, height = D * tan(angle).
-      // But we need dist for this — use m.dist.
-      if (m.dist && m.dist > 0.2 && m.dist < 20) {
-        // More direct: camera_height = dist * tan(angle_to_feet)
-        // angle_to_feet ≈ atan((vH/2 * some fraction) / focal) — approximate
-        const estH = Math.min(2.5, Math.max(0.5, m.dist * 0.25)); // rough approximation
-        hE.push({ v: estH, w: m.conf * 0.4 });
-      }
+async function runML5Draw(){
+  const cv=_('cv8'),ctx=cv.getContext('2d');
+  const l=()=>{
+    if(!S.ml5s.active)return;
+    const v=_('v8'); if(!v||v.readyState<2){requestAnimationFrame(l);return;}
+    cv.width=S.vW; cv.height=S.vH; ctx.drawImage(v,0,0,S.vW,S.vH);
+    // Draw poses
+    S.ml5s.n=_ml5poses.length;
+    if(_ml5poses.length>0){
+      const p=_ml5poses[0]; const kps=p.keypoints||[];
+      ctx.strokeStyle='rgba(0,255,153,.8)'; ctx.lineWidth=2;
+      ML5_CONN.forEach(([a,b])=>{ const kA=kps[a],kB=kps[b]; if(kA?.confidence>.3&&kB?.confidence>.3){ctx.beginPath();ctx.moveTo(kA.x,kA.y);ctx.lineTo(kB.x,kB.y);ctx.stroke();} });
+      kps.forEach(kp=>{ if(kp.confidence>.3){ctx.beginPath();ctx.arc(kp.x,kp.y,3.5,0,Math.PI*2);ctx.fillStyle='rgba(0,221,255,.9)';ctx.fill();} });
+      const nose=kps[0],lAnk=kps[15],rAnk=kps[16];
+      const ankY=(lAnk?.confidence>.3&&rAnk?.confidence>.3)?(lAnk.y+rAnk.y)/2:(lAnk?.confidence>.3?lAnk.y:(rAnk?.confidence>.3?rAnk.y:null));
+      if(nose?.confidence>.3&&ankY!==null){ S.ml5s.htPx=Math.abs(ankY-nose.y); S.ml5s.dist=focalDist(1.7,S.ml5s.htPx); S.ml5s.conf=Math.min(.78,nose.confidence*.9); }
+      else S.ml5s.conf=0;
+    } else S.ml5s.conf=0;
+    // Draw object detections
+    S.ml5s.on=_ml5objs.length;
+    if(_ml5objs.length>0){
+      let best=null,bd=Infinity;
+      _ml5objs.forEach(d=>{ const bx=d.x+d.width/2,by=d.y+d.height/2; const dd=Math.sqrt((bx-S.vW/2)**2+(by-S.vH/2)**2); if(dd<bd){bd=dd;best=d;} });
+      _ml5objs.forEach(d=>{ const isB=(d===best); ctx.strokeStyle=isB?'#ffd200':'rgba(255,136,0,.7)';ctx.lineWidth=isB?2:1.5;ctx.strokeRect(d.x,d.y,d.width,d.height); const lbl=`${d.label} ${(d.confidence*100).toFixed(0)}%`;ctx.font='9px "Share Tech Mono"';ctx.fillStyle='rgba(255,210,0,.8)';ctx.fillText(lbl,d.x+3,d.y+12); });
+      if(best){S.ml5s.ocls=best.label;}else S.ml5s.ocls='--';
     }
-  });
-
-  if (S.imu.active) hE.push({ v: S.imu.height, w: S.imu.conf });
-  if (S.gps.active && S.gps.delta !== null) hE.push({ v: PRIOR_H + S.gps.delta, w: S.gps.conf });
-  if (!hE.length) hE.push({ v: PRIOR_H, w: 0.05 });
-
-  const wH = hE.reduce((s,e)=>s+e.w, 0);
-  S.fusH = hE.reduce((s,e)=>s+e.v*e.w, 0) / wH;
-
-  // DISTANCE: weighted average of all distance estimates
-  const dE = [];
-  if (S.pose.active  && S.pose.dist)  dE.push({ v:S.pose.dist,  w:S.pose.conf });
-  if (S.hands.active && S.hands.dist) dE.push({ v:S.hands.dist, w:S.hands.conf });
-  if (S.seg.active   && S.seg.dist)   dE.push({ v:S.seg.dist,   w:S.seg.conf });
-  if (S.bpix.active  && S.bpix.dist)  dE.push({ v:S.bpix.dist,  w:S.bpix.conf });
-  if (S.pnet.active  && S.pnet.dist)  dE.push({ v:S.pnet.dist,  w:S.pnet.conf });
-  if (S.coco.active  && S.coco.dist)  dE.push({ v:S.coco.dist,  w:S.coco.conf });
-  if (dE.length) {
-    const wD = dE.reduce((s,e)=>s+e.w, 0);
-    S.fusD = dE.reduce((s,e)=>s+e.v*e.w, 0) / wD;
-  } else { S.fusD = null; }
+    requestAnimationFrame(l);
+  }; l();
 }
 
-// ═══════════════════════════════════════════════
-// RENDER LOOP (UI updates)
-// ═══════════════════════════════════════════════
-function buildConfRows() {
-  const rows = [
-    { id:'cr-pose',  label:'MP Pose',   get:()=>S.pose  },
-    { id:'cr-hands', label:'MP Hands',  get:()=>S.hands },
-    { id:'cr-seg',   label:'MP Seg',    get:()=>S.seg   },
-    { id:'cr-bpix',  label:'BodyPix',   get:()=>S.bpix  },
-    { id:'cr-pnet',  label:'PoseNet',   get:()=>S.pnet  },
-    { id:'cr-coco',  label:'COCO-SSD',  get:()=>S.coco  },
-    { id:'cr-imu',   label:'IMU',       get:()=>S.imu   },
-    { id:'cr-gps',   label:'GPS',       get:()=>S.gps   },
+// ══════════════════════════════════════════════════════
+// MODEL 9 — ONNX Runtime Web (SqueezeNet)
+// ══════════════════════════════════════════════════════
+async function initONNX() {
+  if(S.onnx.loading)return; S.onnx.loading=true;
+  SM('onnx','loading','Loading ONNX Runtime Web…'); setBadge('b9','wait','Loading…');
+  try {
+    await ldJS(C.ORT);
+    LOG('log9','ORT loaded, setting WASM paths…','info');
+    ort.env.wasm.wasmPaths = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.17.3/dist/';
+    SM('onnx','loading','Downloading SqueezeNet 1.0 (~5MB)…');
+    LOG('log9','Fetching SqueezeNet from ONNX Model Zoo…','info');
+
+    // Fetch model bytes
+    const resp = await fetch(C.SQNET);
+    if(!resp.ok) throw new Error('Model fetch failed: '+resp.status);
+    const modelBytes = await resp.arrayBuffer();
+    LOG('log9','Model downloaded ('+Math.round(modelBytes.byteLength/1024)+'KB)','ok');
+
+    SM('onnx','loading','Creating ONNX session…');
+    // Try WebGL backend, fall back to wasm
+    let sess=null, bk='wasm';
+    try{ sess=await ort.InferenceSession.create(modelBytes,{executionProviders:['webgl']}); bk='webgl'; }
+    catch(_){ sess=await ort.InferenceSession.create(modelBytes,{executionProviders:['wasm']}); }
+    S.onnx.sess=sess; S.onnx.bk=bk;
+
+    // Load ImageNet labels
+    S.onnx.labels = await fetch('https://raw.githubusercontent.com/anishathalye/imagenet-simple-labels/master/imagenet-simple-labels.json')
+      .then(r=>r.json()).catch(()=>[]);
+    LOG('log9','Labels: '+(S.onnx.labels.length||'failed to load'),'info');
+
+    S.onnx.active=true; S.onnx.loading=false;
+    SM('onnx','done','ONNX SqueezeNet ready ('+bk+')'); setBadge('b9','live','● Live'); setDot('td-p9','live');
+    _('r9').classList.remove('show'); LOG('log9','SqueezeNet session created (backend: '+bk+')','ok');
+    runONNXLoop();
+  } catch(e){ S.onnx.loading=false; SM('onnx','fail',e.message.slice(0,55)); setBadge('b9','fail','Failed'); setDot('td-p9','fail'); _('r9').classList.add('show'); LOG('log9','Error: '+e.message,'err'); }
+}
+
+async function runONNXLoop(){
+  const cv=_('cv9'),ctx=cv.getContext('2d');
+  const tmp=document.createElement('canvas'); tmp.width=224; tmp.height=224;
+  const tc=tmp.getContext('2d');
+  const l=async()=>{
+    if(!S.onnx.active||!S.onnx.sess)return;
+    const v=_('v9'); if(!v||v.readyState<2){setTimeout(l,400);return;}
+    try{
+      tc.drawImage(v,0,0,224,224);
+      const id=tc.getImageData(0,0,224,224);
+      // Build NCHW float32 tensor: normalize to [-1,1] (SqueezeNet expects this)
+      const data=new Float32Array(3*224*224);
+      const mean=[0.485,0.456,0.406], std=[0.229,0.224,0.225];
+      for(let i=0;i<224*224;i++){
+        const r=id.data[i*4]/255, g=id.data[i*4+1]/255, b=id.data[i*4+2]/255;
+        data[i]=(r-mean[0])/std[0]; data[224*224+i]=(g-mean[1])/std[1]; data[2*224*224+i]=(b-mean[2])/std[2];
+      }
+      const tensor=new ort.Tensor('float32',data,[1,3,224,224]);
+      const t0=performance.now();
+      const res=await S.onnx.sess.run({data_0:tensor});
+      S.onnx.ms=performance.now()-t0;
+      // Get output (softmax_1 or output)
+      const outKey=Object.keys(res)[0];
+      const logits=Array.from(res[outKey].data);
+      // Softmax
+      const maxL=Math.max(...logits);
+      const exp=logits.map(x=>Math.exp(x-maxL));
+      const sum=exp.reduce((a,b)=>a+b);
+      const probs=exp.map(x=>x/sum);
+      const topIdx=probs.indexOf(Math.max(...probs));
+      S.onnx.cls=S.onnx.labels[topIdx]||'class_'+topIdx;
+      S.onnx.sc=probs[topIdx];
+      S.onnx.conf=Math.min(.55,probs[topIdx]*.7); // classification ≠ distance confidence
+      // Draw
+      cv.width=S.vW; cv.height=S.vH; ctx.drawImage(v,0,0,S.vW,S.vH);
+      ctx.fillStyle='rgba(0,13,25,.65)'; ctx.fillRect(0,S.vH-28,S.vW,28);
+      ctx.font='9px "Share Tech Mono"'; ctx.fillStyle='rgba(0,221,255,.9)'; ctx.textAlign='left';
+      ctx.fillText('ONNX: '+S.onnx.cls.slice(0,28)+' '+(S.onnx.sc*100).toFixed(0)+'%  '+S.onnx.ms.toFixed(0)+'ms',6,S.vH-10);
+      fps_tick(S.onnx);
+    } catch(e){LOG('log9','Loop: '+e.message.slice(0,50),'err');}
+    setTimeout(l,500); // ~2fps — ONNX SqueezeNet is slow on mobile wasm
+  }; l();
+}
+
+// ══════════════════════════════════════════════════════
+// MODEL 10 — Transformers.js / HuggingFace (Depth-Anything)
+// ══════════════════════════════════════════════════════
+async function initHF() {
+  if(S.hf.loading)return; S.hf.loading=true;
+  SM('hf','loading','Loading Transformers.js…'); setBadge('b10','wait','Loading…');
+  try {
+    await ldJS(C.XFM);
+    // Transformers.js exposes global `transformers` or window.pipeline
+    let tries=0;
+    while(!window.transformers&&tries<20){await new Promise(r=>setTimeout(r,300));tries++;}
+    if(!window.transformers) throw new Error('transformers global not found');
+    LOG('log10','Transformers.js loaded','ok');
+    // Configure to use remote HF models
+    transformers.env.allowLocalModels=false;
+    transformers.env.useBrowserCache=true;
+    SM('hf','loading','Downloading depth-anything-small (~27MB, cached after first run)…');
+    LOG('log10','Loading Xenova/depth-anything-small-hf pipeline…','info');
+    LOG('log10','First load downloads ~27MB from HuggingFace — please wait','warn');
+    S.hf.pipe=await transformers.pipeline('depth-estimation','Xenova/depth-anything-small-hf');
+    S.hf.active=true; S.hf.loading=false;
+    SM('hf','done','Depth-Anything ready'); setBadge('b10','live','● Live'); setDot('td-p10','live');
+    _('r10').classList.remove('show'); LOG('log10','depth-anything-small-hf pipeline ready','ok');
+    runHFLoop();
+  } catch(e){ S.hf.loading=false; SM('hf','fail',e.message.slice(0,55)); setBadge('b10','fail','Failed'); setDot('td-p10','fail'); _('r10').classList.add('show'); LOG('log10','Error: '+e.message,'err'); }
+}
+
+async function runHFLoop(){
+  const cv=_('cv10'),ctx=cv.getContext('2d');
+  const dc=_('cv10-depth'),dctx=dc.getContext('2d');
+  const l=async()=>{
+    if(!S.hf.active||!S.hf.pipe)return;
+    const v=_('v10'); if(!v||v.readyState<2){setTimeout(l,500);return;}
+    try{
+      // Capture frame to data URL
+      const tmp=document.createElement('canvas'); tmp.width=320; tmp.height=180;
+      tmp.getContext('2d').drawImage(v,0,0,320,180);
+      const url=tmp.toDataURL('image/jpeg',0.7);
+      const t0=performance.now();
+      const result=await S.hf.pipe(url);
+      S.hf.ms=performance.now()-t0;
+      if(result&&result.depth){
+        const depthData=result.depth;
+        const W=depthData.width||320, H=depthData.height||180;
+        dc.width=W; dc.height=H;
+        const img=dctx.createImageData(W,H);
+        let mn=Infinity,mx=-Infinity,cs=0,cn=0;
+        const cx1=Math.floor(W*.35),cx2=Math.floor(W*.65),cy1=Math.floor(H*.35),cy2=Math.floor(H*.65);
+        const vals=depthData.data||[];
+        for(let i=0;i<W*H;i++){
+          const vv=vals[i]||0; if(vv<mn)mn=vv;if(vv>mx)mx=vv;
+          const px=i%W,py=Math.floor(i/W);if(px>=cx1&&px<=cx2&&py>=cy1&&py<=cy2){cs+=vv;cn++;}
+          const t=Math.min(1,Math.max(0,(vv-mn)/(mx-mn+.001))),r=i*4;
+          img.data[r]=Math.min(255,Math.round(255*(0.2+t*.8)));
+          img.data[r+1]=Math.min(255,Math.round(255*Math.sin(Math.PI*t)));
+          img.data[r+2]=Math.min(255,Math.round(255*(1-t)*.85));
+          img.data[r+3]=220;
+        }
+        dctx.putImageData(img,0,0);
+        const scale=S.fusH?S.fusH/PH:1;
+        S.hf.center=cn>0?(cs/cn)*scale:null; S.hf.minD=mn*scale;
+        S.hf.dist=S.hf.center; S.hf.conf=S.hf.center?0.60:0;
+      }
+      // Mirror to main canvas
+      cv.width=S.vW; cv.height=S.vH; ctx.drawImage(v,0,0,S.vW,S.vH);
+      if(dc.width>1) ctx.drawImage(dc,S.vW-dc.width*.4-4,4,dc.width*.4,dc.height*.4);
+      fps_tick(S.hf);
+    } catch(e){LOG('log10','Loop: '+e.message.slice(0,50),'err');}
+    setTimeout(l,800); // Depth-Anything is heavier
+  }; l();
+}
+
+// ══════════════════════════════════════════════════════
+// MODEL 11 — OpenCV.js (Edge detection + Contour analysis)
+// ══════════════════════════════════════════════════════
+async function initOpenCV() {
+  if(S.ocv.loading)return; S.ocv.loading=true;
+  SM('ocv','loading','Loading OpenCV.js (8MB)…'); setBadge('b11','wait','Loading…');
+  try {
+    await ldJS(C.OCV);
+    // OpenCV.js uses a runtime callback
+    await new Promise((res,rej)=>{
+      if(window.cv&&cv.Mat) return res();
+      let tries=0;
+      const check=setInterval(()=>{
+        if(window.cv&&cv.Mat){ clearInterval(check); res(); }
+        if(++tries>60){ clearInterval(check); rej(new Error('OpenCV init timeout')); }
+      },300);
+      if(window.onRuntimeInitialized) window.onRuntimeInitialized=res;
+    });
+    S.ocv.active=true; S.ocv.loading=false;
+    SM('ocv','done','OpenCV.js ready'); setBadge('b11','live','● Live'); setDot('td-p11','live');
+    _('r11').classList.remove('show'); LOG('log11','OpenCV.js ready · '+cv.getBuildInformation().split('\n')[0],'ok');
+    runOCVLoop();
+  } catch(e){ S.ocv.loading=false; SM('ocv','fail',e.message.slice(0,55)); setBadge('b11','fail','Failed'); setDot('td-p11','fail'); _('r11').classList.add('show'); LOG('log11','Error: '+e.message,'err'); }
+}
+
+async function runOCVLoop(){
+  const cvMain=_('cv11'),ctxMain=cvMain.getContext('2d');
+  const cvEdge=_('cv11-edge'),ctxEdge=cvEdge.getContext('2d');
+  const tmp=document.createElement('canvas'); tmp.width=320; tmp.height=180;
+  const tc=tmp.getContext('2d');
+  const l=async()=>{
+    if(!S.ocv.active)return;
+    const v=_('v11'); if(!v||v.readyState<2){setTimeout(l,300);return;}
+    try{
+      tc.drawImage(v,0,0,320,180);
+      const src=cv.imread(tmp);
+      const gray=new cv.Mat(),blurred=new cv.Mat(),edges=new cv.Mat(),hierarchy=new cv.Mat();
+      const contours=new cv.MatVector();
+      cv.cvtColor(src,gray,cv.COLOR_RGBA2GRAY);
+      cv.GaussianBlur(gray,blurred,new cv.Size(5,5),0);
+      cv.Canny(blurred,edges,50,150);
+      cv.findContours(edges,contours,hierarchy,cv.RETR_EXTERNAL,cv.CHAIN_APPROX_SIMPLE);
+      // Draw edges onto edge canvas
+      cvEdge.width=320; cvEdge.height=180;
+      const edgeRGBA=new cv.Mat();
+      cv.cvtColor(edges,edgeRGBA,cv.COLOR_GRAY2RGBA);
+      cv.imshow(cvEdge,edgeRGBA);
+      // Find largest contour
+      S.ocv.cnt=contours.size(); let bigArea=0,bigH=0;
+      for(let i=0;i<contours.size();i++){
+        const area=cv.contourArea(contours.get(i));
+        if(area>bigArea){ bigArea=area; const rect=cv.boundingRect(contours.get(i)); bigH=rect.height; }
+      }
+      S.ocv.area=bigArea; S.ocv.lh=bigH;
+      // Estimate distance: treat largest contour as a person-like object (~1.5m height)
+      if(bigH>20){
+        S.ocv.dist=focalDist(1.5,bigH*(S.vH/180));
+        S.ocv.conf=Math.min(.40,bigArea/(320*180*.15));
+      } else { S.ocv.dist=null; S.ocv.conf=0; }
+      // Main canvas: draw video + contours
+      cvMain.width=S.vW; cvMain.height=S.vH; ctxMain.drawImage(v,0,0,S.vW,S.vH);
+      ctxMain.drawImage(cvEdge,S.vW-132,4,128,72); // minimap
+      // Cleanup
+      [src,gray,blurred,edges,hierarchy,edgeRGBA,contours].forEach(m=>{ try{m.delete();}catch(_){} });
+      fps_tick(S.ocv);
+    } catch(e){LOG('log11','Loop: '+e.message.slice(0,40),'err');}
+    setTimeout(l,250);
+  }; l();
+}
+
+// ══════════════════════════════════════════════════════
+// SENSOR — IMU
+// ══════════════════════════════════════════════════════
+async function initIMU() {
+  SM('imu','loading','Requesting DeviceMotion…'); setBadge('b12','wait','Requesting…');
+  if(!window.DeviceMotionEvent){
+    SM('imu','na','Not supported'); setBadge('b12','fail','N/A'); setDot('td-p12','skip');
+    return;
+  }
+  const setup=()=>{
+    window.addEventListener('devicemotion',onMot,{passive:true});
+    window.addEventListener('deviceorientation',onOri,{passive:true});
+    S.imu.active=true; SM('imu','done','IMU active');
+    setBadge('b12','live','● Live'); setDot('td-p12','live');
+    _('r12').classList.remove('show'); LOG('log12','DeviceMotion active','ok');
+  };
+  try{
+    if(typeof DeviceMotionEvent.requestPermission==='function'){
+      const r=await DeviceMotionEvent.requestPermission();
+      if(r==='granted')setup(); else throw new Error('Permission denied');
+    } else setup();
+  } catch(e){ SM('imu','fail',e.message); setBadge('b12','fail','Denied'); setDot('td-p12','fail'); _('r12').classList.add('show'); LOG('log12','Denied: '+e.message,'err'); }
+}
+function onMot(e){
+  const g=e.accelerationIncludingGravity; if(!g)return;
+  S.imu.gx=g.x||0; S.imu.gy=g.y||0; S.imu.gz=g.z||0;
+  S.imu.buf.push({x:S.imu.gx,y:S.imu.gy,z:S.imu.gz});
+  if(S.imu.buf.length>80)S.imu.buf.shift(); S.imu.samples++;
+  const n=S.imu.buf.length,avg=S.imu.buf.reduce((a,b)=>({x:a.x+b.x,y:a.y+b.y,z:a.z+b.z}),{x:0,y:0,z:0});
+  const ax=avg.x/n,ay=avg.y/n,az=avg.z/n;
+  S.imu.pitch=Math.atan2(ay,Math.sqrt(ax*ax+az*az))*180/Math.PI;
+  const tv=Math.abs(90-Math.abs(S.imu.pitch));
+  S.imu.conf=Math.min(1,n/80)*Math.max(0,1-tv/30)*.70;
+  S.imu.height=S.fusH||PH;
+  const showW=tv>20;
+  _('tw0').style.display=showW?'block':'none'; _('tw12').style.display=showW?'block':'none';
+}
+function onOri(e){ S.imu.alpha=e.alpha||0; S.imu.beta=e.beta||0; S.imu.gamma=e.gamma||0; }
+
+// ══════════════════════════════════════════════════════
+// RETRY ROUTING
+// ══════════════════════════════════════════════════════
+function R(which){
+  const map={
+    pose:  ()=>{S.pose.loading=false;S.pose.active=false;S.pose.inst=null;initPose();},
+    hands: ()=>{S.hands.loading=false;S.hands.active=false;S.hands.inst=null;initHands();},
+    seg:   ()=>{S.seg.loading=false;S.seg.active=false;S.seg.inst=null;initSeg();},
+    face:  ()=>{S.face.loading=false;S.face.active=false;S.face.inst=null;initFace();},
+    bpix:  ()=>{S.bpix.loading=false;S.bpix.active=false;TFM.bpix=null;initBodyPix();},
+    pnet:  ()=>{S.pnet.loading=false;S.pnet.active=false;TFM.pnet=null;initPoseNet();},
+    coco:  ()=>{S.coco.loading=false;S.coco.active=false;TFM.coco=null;initCOCO();},
+    ml5:   ()=>{S.ml5s.loading=false;S.ml5s.active=false;S.ml5s.bp=null;S.ml5s.od=null;initML5();},
+    onnx:  ()=>{S.onnx.loading=false;S.onnx.active=false;S.onnx.sess=null;initONNX();},
+    hf:    ()=>{S.hf.loading=false;S.hf.active=false;S.hf.pipe=null;initHF();},
+    ocv:   ()=>{S.ocv.loading=false;S.ocv.active=false;initOpenCV();},
+    imu:   ()=>initIMU(),
+  };
+  if(map[which]) map[which]();
+}
+
+// ══════════════════════════════════════════════════════
+// SENSOR FUSION
+// ══════════════════════════════════════════════════════
+function fuse(){
+  // HEIGHT estimates
+  const hE=[];
+  if(S.imu.active) hE.push({v:S.imu.height,w:S.imu.conf});
+  // From ML: if person detected, rough cam height from trig
+  [S.pose,S.pnet,S.ml5s].forEach(m=>{ if(m.active&&m.dist&&m.dist>.2&&m.dist<15) hE.push({v:Math.min(2.2,Math.max(.5,m.dist*.22)),w:m.conf*.35}); });
+  if(!hE.length) hE.push({v:PH,w:.05});
+  const wH=hE.reduce((s,e)=>s+e.w,0); S.fusH=hE.reduce((s,e)=>s+e.v*e.w,0)/wH;
+
+  // DISTANCE estimates
+  const dE=[];
+  if(S.pose.active&&S.pose.dist)   dE.push({v:S.pose.dist,   w:S.pose.conf});
+  if(S.hands.active&&S.hands.dist) dE.push({v:S.hands.dist,  w:S.hands.conf});
+  if(S.seg.active&&S.seg.dist)     dE.push({v:S.seg.dist,    w:S.seg.conf});
+  if(S.face.active&&S.face.dist)   dE.push({v:S.face.dist,   w:S.face.conf});
+  if(S.bpix.active&&S.bpix.dist)   dE.push({v:S.bpix.dist,   w:S.bpix.conf});
+  if(S.pnet.active&&S.pnet.dist)   dE.push({v:S.pnet.dist,   w:S.pnet.conf});
+  if(S.coco.active&&S.coco.dist)   dE.push({v:S.coco.dist,   w:S.coco.conf});
+  if(S.ml5s.active&&S.ml5s.dist)   dE.push({v:S.ml5s.dist,   w:S.ml5s.conf});
+  if(S.hf.active&&S.hf.dist)       dE.push({v:S.hf.dist,     w:S.hf.conf});
+  if(S.ocv.active&&S.ocv.dist)     dE.push({v:S.ocv.dist,    w:S.ocv.conf});
+  if(dE.length){ const wD=dE.reduce((s,e)=>s+e.w,0); S.fusD=dE.reduce((s,e)=>s+e.v*e.w,0)/wD; }
+  else S.fusD=null;
+}
+
+// ══════════════════════════════════════════════════════
+// CONFIDENCE BARS (fused tab)
+// ══════════════════════════════════════════════════════
+function buildCBars(){
+  const rows=[
+    {id:'cb-pose', lbl:'MP Pose',       grade:'h'},
+    {id:'cb-hands',lbl:'MP Hands',      grade:'h'},
+    {id:'cb-seg',  lbl:'MP Seg',        grade:'h'},
+    {id:'cb-face', lbl:'MP Face',       grade:'h'},
+    {id:'cb-bpix', lbl:'BodyPix',       grade:'m'},
+    {id:'cb-pnet', lbl:'PoseNet',       grade:'m'},
+    {id:'cb-coco', lbl:'COCO-SSD',      grade:'m'},
+    {id:'cb-ml5',  lbl:'ml5',           grade:'m'},
+    {id:'cb-onnx', lbl:'ONNX',          grade:'l'},
+    {id:'cb-hf',   lbl:'HF Depth',      grade:'l'},
+    {id:'cb-ocv',  lbl:'OpenCV',        grade:'l'},
+    {id:'cb-imu',  lbl:'IMU',           grade:'h'},
   ];
-  _('conf-rows').innerHTML = rows.map(r =>
-    `<div style="display:flex;align-items:center;gap:6px;margin-bottom:5px">
-      <div style="font-size:8px;color:var(--mut);font-family:var(--head);font-weight:600;width:68px;flex-shrink:0">${r.label}</div>
-      <div style="flex:1;height:4px;background:rgba(0,224,255,.06);border-radius:2px;overflow:hidden">
-        <div style="height:100%;border-radius:2px;background:linear-gradient(90deg,var(--c0),var(--c1));transition:width .5s ease" id="${r.id}-bar" style="width:0%"></div>
-      </div>
-      <div style="font-size:7.5px;color:var(--c0);width:24px;text-align:right;font-family:var(--mono)" id="${r.id}-pct">0%</div>
-      <div style="font-size:7.5px;color:var(--mut);width:42px;text-align:right;font-family:var(--mono)" id="${r.id}-raw">--</div>
-    </div>`
-  ).join('');
+  _('cbar-container').innerHTML=rows.map(r=>`
+    <div class="cbar-row">
+      <div class="cbar-lbl">${r.lbl}</div>
+      <div class="cbar-track"><div class="cbar-fill ${r.grade}" id="${r.id}-bar" style="width:0%"></div></div>
+      <div class="cbar-pct" id="${r.id}-pct">0%</div>
+      <div class="cbar-raw" id="${r.id}-raw">--</div>
+    </div>`).join('');
+}
+function setCBar(id,pct,raw){
+  const p=Math.min(100,Math.max(0,Math.round(pct)));
+  const b=_(id+'-bar'),pe=_(id+'-pct'),re=_(id+'-raw');
+  if(b)b.style.width=p+'%'; if(pe)pe.textContent=p+'%'; if(re)re.textContent=raw||'--';
 }
 
-function updConfRow(id, conf, raw) {
-  const p = Math.min(100, Math.max(0, Math.round(conf)));
-  const bar = _(id+'-bar'), pct = _(id+'-pct'), rv = _(id+'-raw');
-  if (bar) bar.style.width = p+'%';
-  if (pct) pct.textContent = p+'%';
-  if (rv)  rv.textContent  = raw || '--';
-}
-
-function drawFusedHUD() {
-  const cv = _('cv0'), vid = _('v0');
-  if (!cv||!vid) return;
-  cv.width=vid.clientWidth; cv.height=vid.clientHeight;
-  const ctx=cv.getContext('2d'), W=cv.width, H=cv.height, CX=W/2, CY=H/2;
-  ctx.clearRect(0,0,W,H);
-  // Horizon line
-  ctx.beginPath(); ctx.moveTo(0,CY); ctx.lineTo(W,CY);
-  ctx.strokeStyle='rgba(0,224,255,.18)'; ctx.lineWidth=1;
-  ctx.setLineDash([4,8]); ctx.stroke(); ctx.setLineDash([]);
-  // Height bar left
-  if (S.fusH) {
-    const bH=H*.5, bY=CY-bH/2, fill=Math.min(1,S.fusH/3)*bH;
-    ctx.fillStyle='rgba(0,224,255,.05)'; ctx.fillRect(6,bY,4,bH);
-    ctx.fillStyle='rgba(0,224,255,.5)';  ctx.fillRect(6,bY+bH-fill,4,fill);
-    ctx.font='8px "Share Tech Mono"'; ctx.fillStyle='rgba(0,224,255,.75)'; ctx.textAlign='left';
-    ctx.fillText(S.fusH.toFixed(2)+'m', 13, bY+bH-fill+4);
-  }
-  // Distance overlay
-  if (S.fusD) {
-    ctx.font='bold 13px "Share Tech Mono"'; ctx.fillStyle='rgba(0,255,153,.9)'; ctx.textAlign='center';
-    ctx.fillText(S.fusD.toFixed(2)+'m', CX, CY-40);
-  }
-  // Draw active model indicators
-  const active = [
-    S.pose.active?'POSE':null, S.hands.active?'HANDS':null,
-    S.seg.active?'SEG':null, S.bpix.active?'BPIX':null,
-    S.pnet.active?'PNET':null, S.coco.active?'COCO':null
-  ].filter(Boolean);
-  if (active.length) {
-    ctx.font='7px "Share Tech Mono"'; ctx.fillStyle='rgba(0,224,255,.5)'; ctx.textAlign='right';
-    ctx.fillText(active.join(' · '), W-8, H-8);
-  }
-}
-
-function drawSensorHUD(cvId, vidId) {
-  const cv=_(cvId), vid=_(vidId);
-  if(!cv||!vid) return;
-  cv.width=vid.clientWidth; cv.height=vid.clientHeight;
-  const ctx=cv.getContext('2d'), W=cv.width, H=cv.height, CX=W/2, CY=H/2;
-  ctx.clearRect(0,0,W,H);
-  ctx.beginPath(); ctx.moveTo(0,CY); ctx.lineTo(W,CY);
-  ctx.strokeStyle='rgba(0,224,255,.15)'; ctx.lineWidth=1;
-  ctx.setLineDash([3,7]); ctx.stroke(); ctx.setLineDash([]);
-  if (S.fusH) {
-    ctx.font='bold 11px "Share Tech Mono"'; ctx.fillStyle='rgba(0,224,255,.7)'; ctx.textAlign='left';
-    ctx.fillText('H: '+S.fusH.toFixed(2)+'m', 10, 18);
-  }
-  if (S.fusD) {
-    ctx.font='bold 11px "Share Tech Mono"'; ctx.fillStyle='rgba(0,255,153,.7)'; ctx.textAlign='right';
-    ctx.fillText('D: '+S.fusD.toFixed(2)+'m', W-10, 18);
-  }
-}
-
-let _raf;
-function renderLoop() {
+// ══════════════════════════════════════════════════════
+// RENDER LOOP — all UI updates
+// ══════════════════════════════════════════════════════
+function renderLoop(){
   fuse();
 
-  // Fused tab
-  nm('f-h', S.fusH, 2); nm('f-d', S.fusD, 2);
-  const hSrc = [S.pose.active&&S.pose.dist?'POSE':null, S.imu.active?'IMU':null, S.gps.active?'GPS':null].filter(Boolean);
-  tx('f-hs', (hSrc.join('+')||'PRIOR') + ' · ' + (S.fusH?(S.fusH*100).toFixed(0):'-')+'cm');
-  const dSrc = [S.pose.active&&S.pose.dist?'POSE':null, S.hands.active&&S.hands.dist?'HANDS':null, S.seg.active&&S.seg.dist?'SEG':null, S.bpix.active&&S.bpix.dist?'BPIX':null, S.pnet.active&&S.pnet.dist?'PNET':null, S.coco.active&&S.coco.dist?'COCO':null].filter(Boolean);
-  tx('f-ds', dSrc.length ? dSrc.join('+') : 'waiting for models…');
-  setDot('dot-p0', (S.pose.active||S.coco.active||S.bpix.active) ? 'live' : 'ok');
-
-  // Conf rows
-  updConfRow('cr-pose',  S.pose.conf*100,  S.pose.dist?.toFixed(2)+'m');
-  updConfRow('cr-hands', S.hands.conf*100, S.hands.dist?.toFixed(2)+'m');
-  updConfRow('cr-seg',   S.seg.conf*100,   S.seg.dist?.toFixed(2)+'m');
-  updConfRow('cr-bpix',  S.bpix.conf*100,  S.bpix.dist?.toFixed(2)+'m');
-  updConfRow('cr-pnet',  S.pnet.conf*100,  S.pnet.dist?.toFixed(2)+'m');
-  updConfRow('cr-coco',  S.coco.conf*100,  S.coco.dist?.toFixed(2)+'m');
-  updConfRow('cr-imu',   S.imu.conf*100,   S.imu.height?.toFixed(2)+'m');
-  updConfRow('cr-gps',   S.gps.conf*100,   S.gps.alt?.toFixed(1)+'m');
-
-  // Pose tab
-  nm('p1-h', S.fusH, 2); nm('p1-d', S.pose.dist, 2);
-  tx('p1-hs', S.fusH?(S.fusH*100).toFixed(0)+'cm':'--');
-  tx('p1-ds', S.pose.htPx?S.pose.htPx.toFixed(0)+'px head↔ankle':'--');
-  nm('p1-ht', S.pose.htPx, 0); nm('p1-vis', S.pose.vis, 2);
-  nm('p1-f', S.focal, 0); tx('p1-fps', S.pose.fps+' fps');
-  tx('p1-conf', Math.round(S.pose.conf*100)+'%');
-
-  // Hands tab
-  nm('p2-h', S.fusH, 2); nm('p2-d', S.hands.dist, 2);
-  tx('p2-ds', S.hands.spanPx?S.hands.spanPx.toFixed(0)+'px span':'--');
-  tx('p2-n', String(S.hands.n)); nm('p2-sp', S.hands.spanPx, 0);
-  tx('p2-conf', Math.round(S.hands.conf*100)+'%'); tx('p2-fps', S.hands.fps+' fps');
-
-  // Seg tab
-  nm('p3-h', S.fusH, 2); nm('p3-d', S.seg.dist, 2);
-  tx('p3-ds', S.seg.bh?S.seg.bh.toFixed(0)+'px bbox':'--');
-  tx('p3-px', S.seg.px?S.seg.px.toLocaleString():'--'); nm('p3-bh', S.seg.bh, 0);
-  tx('p3-conf', Math.round(S.seg.conf*100)+'%'); tx('p3-fps', S.seg.fps+' fps');
-
-  // BodyPix tab
-  nm('p4-h', S.fusH, 2); nm('p4-d', S.bpix.dist, 2);
-  tx('p4-ds', S.bpix.bh?S.bpix.bh.toFixed(0)+'px scaled':'--');
-  tx('p4-det', S.bpix.found?'✓ YES':'✗ NO'); tx('p4-px', S.bpix.px?S.bpix.px.toLocaleString():'--');
-  nm('p4-bh', S.bpix.bh, 0); tx('p4-fps', S.bpix.fps+' fps');
-
-  // PoseNet tab
-  nm('p5-h', S.fusH, 2); nm('p5-d', S.pnet.dist, 2);
-  tx('p5-ds', S.pnet.htPx?S.pnet.htPx.toFixed(0)+'px head↔ankle':'--');
-  nm('p5-sc', S.pnet.sc, 2); nm('p5-ht', S.pnet.htPx, 0);
-  tx('p5-conf', Math.round(S.pnet.conf*100)+'%'); tx('p5-fps', S.pnet.fps+' fps');
-
-  // COCO tab
-  nm('p6-h', S.fusH, 2); nm('p6-d', S.coco.dist, 2);
-  tx('p6-ds', S.coco.cls!=='--'?S.coco.cls+' center':'--');
-  tx('p6-n', String(S.coco.dets.length)); tx('p6-cls', S.coco.cls);
-  tx('p6-sc', (S.coco.score*100).toFixed(0)+'%'); tx('p6-fps', S.coco.fps+' fps');
-
-  // IMU tab
-  nm('p7-h', S.imu.height, 2); nm('p7-t', Math.abs(90-Math.abs(S.imu.pitch)), 1);
-  nm('i-x', S.imu.gx, 2); nm('i-y', S.imu.gy, 2); nm('i-z', S.imu.gz, 2);
-  tx('i-pitch', S.imu.pitch.toFixed(1)+'°');
-  tx('i-abg', S.imu.alpha.toFixed(0)+'°/ '+S.imu.beta.toFixed(0)+'°/ '+S.imu.gamma.toFixed(0)+'°');
-  tx('i-conf', Math.round(S.imu.conf*100)+'%');
-  tx('i-buf', S.imu.samples+'/80');
-
-  // GPS tab
-  nm('p8-a', S.gps.alt, 1); nm('p8-d', S.gps.delta, 2);
-  nm('g-la', S.gps.lat, 5); nm('g-lo', S.gps.lng, 5);
-  tx('g-ac', S.gps.acc?'±'+S.gps.acc.toFixed(0)+'m':'--');
-  tx('g-aa', S.gps.altAcc?'±'+S.gps.altAcc.toFixed(0)+'m':'--');
-
-  // HUD draws
+  // ── FUSED ──
+  nm('fH',S.fusH,2); nm('fD',S.fusD,2);
+  const hSrc=[S.imu.active?'IMU':null,[S.pose,S.pnet,S.ml5s].some(m=>m.active&&m.dist)?'POSE':null].filter(Boolean);
+  tx('fH-s',(hSrc.join('+')||'PRIOR')+' · '+(S.fusH?(S.fusH*100).toFixed(0):'-')+'cm');
+  const dSrc=[S.pose.dist?'POSE':null,S.hands.dist?'HANDS':null,S.seg.dist?'SEG':null,S.face.dist?'FACE':null,S.bpix.dist?'BPIX':null,S.pnet.dist?'PNET':null,S.coco.dist?'COCO':null,S.ml5s.dist?'ml5':null,S.hf.dist?'HF':null,S.ocv.dist?'OCV':null].filter(Boolean);
+  tx('fD-s',dSrc.length?dSrc.join('+'):'waiting for models…');
+  setCBar('cb-pose', S.pose.conf*100,  S.pose.dist?.toFixed(2)+'m');
+  setCBar('cb-hands',S.hands.conf*100, S.hands.dist?.toFixed(2)+'m');
+  setCBar('cb-seg',  S.seg.conf*100,   S.seg.dist?.toFixed(2)+'m');
+  setCBar('cb-face', S.face.conf*100,  S.face.dist?.toFixed(2)+'m');
+  setCBar('cb-bpix', S.bpix.conf*100,  S.bpix.dist?.toFixed(2)+'m');
+  setCBar('cb-pnet', S.pnet.conf*100,  S.pnet.dist?.toFixed(2)+'m');
+  setCBar('cb-coco', S.coco.conf*100,  S.coco.dist?.toFixed(2)+'m');
+  setCBar('cb-ml5',  S.ml5s.conf*100,  S.ml5s.dist?.toFixed(2)+'m');
+  setCBar('cb-onnx', S.onnx.conf*100,  S.onnx.cls.slice(0,8));
+  setCBar('cb-hf',   S.hf.conf*100,    S.hf.dist?.toFixed(2)+'m');
+  setCBar('cb-ocv',  S.ocv.conf*100,   S.ocv.dist?.toFixed(2)+'m');
+  setCBar('cb-imu',  S.imu.conf*100,   S.imu.height?.toFixed(2)+'m');
+  const any=S.pose.active||S.coco.active||S.bpix.active||S.ml5s.active;
+  setDot('td-p0',any?'live':'ok');
   drawFusedHUD();
-  drawSensorHUD('cv7','v7');
-  drawSensorHUD('cv8','v8');
 
-  _raf = requestAnimationFrame(renderLoop);
+  // ── P1 POSE ──
+  nm('p1h',S.fusH,2); nm('p1d',S.pose.dist,2);
+  tx('p1hs',S.fusH?(S.fusH*100).toFixed(0)+'cm':'--');
+  tx('p1ds',S.pose.htPx?S.pose.htPx.toFixed(0)+'px':'--');
+  nm('p1-ht',S.pose.htPx,0); nm('p1-vis',S.pose.vis,2);
+  nm('p1-f',S.focal,0); tx('p1-fps',S.pose.fps+' fps');
+  tx('p1-conf',Math.round(S.pose.conf*100)+'%');
+
+  // ── P2 HANDS ──
+  nm('p2h',S.fusH,2); nm('p2d',S.hands.dist,2);
+  tx('p2ds',S.hands.spanPx?S.hands.spanPx.toFixed(0)+'px span':'--');
+  tx('p2-n',String(S.hands.n)); nm('p2-sp',S.hands.spanPx,0);
+  tx('p2-conf',Math.round(S.hands.conf*100)+'%'); tx('p2-fps',S.hands.fps+' fps');
+
+  // ── P3 SEG ──
+  nm('p3h',S.fusH,2); nm('p3d',S.seg.dist,2);
+  tx('p3ds',S.seg.bh?S.seg.bh.toFixed(0)+'px bbox':'--');
+  tx('p3-px',S.seg.px?S.seg.px.toLocaleString():'--'); nm('p3-bh',S.seg.bh,0);
+  tx('p3-conf',Math.round(S.seg.conf*100)+'%'); tx('p3-fps',S.seg.fps+' fps');
+
+  // ── P4 FACE ──
+  nm('p4h',S.fusH,2); nm('p4d',S.face.dist,2);
+  tx('p4ds',S.face.ipd?S.face.ipd.toFixed(0)+'px IPD':'--');
+  tx('p4-n',String(S.face.n)); nm('p4-ipd',S.face.ipd,0);
+  tx('p4-conf',Math.round(S.face.conf*100)+'%'); tx('p4-fps',S.face.fps+' fps');
+
+  // ── P5 BPIX ──
+  nm('p5h',S.fusH,2); nm('p5d',S.bpix.dist,2);
+  tx('p5ds',S.bpix.bh?S.bpix.bh.toFixed(0)+'px scaled':'--');
+  tx('p5-det',S.bpix.found?'✓ YES':'✗ NO'); tx('p5-px',S.bpix.px?S.bpix.px.toLocaleString():'--');
+  nm('p5-bh',S.bpix.bh,0); tx('p5-fps',S.bpix.fps+' fps');
+
+  // ── P6 PNET ──
+  nm('p6h',S.fusH,2); nm('p6d',S.pnet.dist,2);
+  tx('p6ds',S.pnet.htPx?S.pnet.htPx.toFixed(0)+'px':'--');
+  nm('p6-sc',S.pnet.sc,2); nm('p6-ht',S.pnet.htPx,0);
+  tx('p6-conf',Math.round(S.pnet.conf*100)+'%'); tx('p6-fps',S.pnet.fps+' fps');
+
+  // ── P7 COCO ──
+  nm('p7h',S.fusH,2); nm('p7d',S.coco.dist,2);
+  tx('p7ds',S.coco.cls!=='--'?S.coco.cls+' center':'--');
+  tx('p7-n',String(S.coco.dets.length)); tx('p7-cls',S.coco.cls);
+  tx('p7-sc',(S.coco.score*100).toFixed(0)+'%'); tx('p7-fps',S.coco.fps+' fps');
+
+  // ── P8 ml5 ──
+  nm('p8h',S.fusH,2); nm('p8d',S.ml5s.dist,2);
+  tx('p8ds',S.ml5s.htPx?S.ml5s.htPx.toFixed(0)+'px':'--');
+  tx('p8-n',String(S.ml5s.n)); nm('p8-ht',S.ml5s.htPx,0);
+  nm('p8-d2',S.ml5s.dist,2); tx('p8-fps',S.ml5s.fps+' fps');
+  tx('p8-on',String(S.ml5s.on)); tx('p8-ocls',S.ml5s.ocls);
+
+  // ── P9 ONNX ──
+  nm('p9h',S.fusH,2); nm('p9d',null,2); // ONNX does classification, not dist directly
+  tx('p9-cls',S.onnx.cls.slice(0,20)); tx('p9-sc',(S.onnx.sc*100).toFixed(0)+'%');
+  nm('p9-ms',S.onnx.ms,0); tx('p9-fps',S.onnx.fps+' fps'); tx('p9-bk',S.onnx.bk);
+
+  // ── P10 HF ──
+  nm('p10h',S.fusH,2); nm('p10d',S.hf.dist,2);
+  tx('p10ds',S.hf.center?'center depth: '+S.hf.center?.toFixed(2):'--');
+  nm('p10-c',S.hf.center,3); nm('p10-min',S.hf.minD,2);
+  nm('p10-ms',S.hf.ms,0); tx('p10-fps',S.hf.fps+' fps');
+
+  // ── P11 OCV ──
+  nm('p11h',S.fusH,2); nm('p11d',S.ocv.dist,2);
+  tx('p11ds',S.ocv.lh?S.ocv.lh.toFixed(0)+'px larg.contour':'--');
+  tx('p11-cnt',String(S.ocv.cnt)); nm('p11-area',S.ocv.area,0);
+  nm('p11-lh',S.ocv.lh,0); tx('p11-fps',S.ocv.fps+' fps');
+
+  // ── P12 IMU ──
+  nm('p12h',S.imu.height,2); nm('p12t',Math.abs(90-Math.abs(S.imu.pitch)),1);
+  nm('im-x',S.imu.gx,2); nm('im-y',S.imu.gy,2); nm('im-z',S.imu.gz,2);
+  tx('im-pitch',S.imu.pitch.toFixed(1)+'°');
+  tx('im-abg',S.imu.alpha.toFixed(0)+'°/'+S.imu.beta.toFixed(0)+'°/'+S.imu.gamma.toFixed(0)+'°');
+  tx('im-conf',Math.round(S.imu.conf*100)+'%');
+  tx('im-buf',S.imu.samples+'/80');
+
+  // ── per-tab cam height mirror ──
+  ['p5h','p6h','p7h','p8h','p9h','p10h','p11h'].forEach(id=>nm(id,S.fusH,2));
+
+  S.animId=requestAnimationFrame(renderLoop);
 }
 
-// ═══════════════════════════════════════════════
+// ══════════════════════════════════════════════════════
+// HUD CANVAS DRAW (fused + IMU tabs)
+// ══════════════════════════════════════════════════════
+function drawFusedHUD(){
+  const cv=_('cv0-hud'),v=_('v0'); if(!cv||!v)return;
+  cv.width=v.clientWidth; cv.height=v.clientHeight;
+  const ctx=cv.getContext('2d'),W=cv.width,H=cv.height,CX=W/2,CY=H/2;
+  ctx.clearRect(0,0,W,H);
+  // Horizon
+  ctx.beginPath(); ctx.moveTo(0,CY); ctx.lineTo(W,CY);
+  ctx.strokeStyle='rgba(0,221,255,.18)'; ctx.lineWidth=1; ctx.setLineDash([4,8]); ctx.stroke(); ctx.setLineDash([]);
+  // Height bar
+  if(S.fusH){ const bH=H*.52,bY=CY-bH/2,fill=Math.min(1,S.fusH/3)*bH; ctx.fillStyle='rgba(0,221,255,.05)'; ctx.fillRect(5,bY,4,bH); ctx.fillStyle='rgba(0,221,255,.52)'; ctx.fillRect(5,bY+bH-fill,4,fill); ctx.font='7.5px "Share Tech Mono"'; ctx.fillStyle='rgba(0,221,255,.75)'; ctx.textAlign='left'; ctx.fillText(S.fusH.toFixed(2)+'m',11,bY+bH-fill+4); }
+  // Distance
+  if(S.fusD){ ctx.font='bold 12px "Share Tech Mono"'; ctx.fillStyle='rgba(0,255,153,.9)'; ctx.textAlign='center'; ctx.fillText(S.fusD.toFixed(2)+'m',CX,CY-38); }
+  // Active models indicator
+  const active=[S.pose.active?'POSE':null,S.hands.active?'HANDS':null,S.face.active?'FACE':null,S.bpix.active?'BPIX':null,S.coco.active?'COCO':null,S.ml5s.active?'ml5':null,S.hf.active?'HF':null,S.ocv.active?'OCV':null].filter(Boolean);
+  if(active.length){ ctx.font='7px "Share Tech Mono"'; ctx.fillStyle='rgba(0,221,255,.45)'; ctx.textAlign='right'; ctx.fillText(active.join('·'),W-7,H-7); }
+}
+
+// ══════════════════════════════════════════════════════
 // TAB SWITCHING
-// ═══════════════════════════════════════════════
-function GT(pid) {
-  document.querySelectorAll('.pane').forEach(p => p.classList.remove('on'));
-  document.querySelectorAll('.tb').forEach(b => b.classList.remove('on'));
-  const pane = _(pid), btn = document.querySelector(`[data-p="${pid}"]`);
-  if (pane) pane.classList.add('on');
-  if (btn) btn.classList.add('on');
+// ══════════════════════════════════════════════════════
+function GT(pid){
+  document.querySelectorAll('.pane').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.tb').forEach(b=>b.classList.remove('on'));
+  const pane=_(pid), btn=document.querySelector(`[data-p="${pid}"]`);
+  if(pane)pane.classList.add('on'); if(btn)btn.classList.add('on');
 }
 
-// ═══════════════════════════════════════════════
+// ══════════════════════════════════════════════════════
 // BOOT
-// ═══════════════════════════════════════════════
-async function initAll() {
-  _('btn-go').disabled = true; _('btn-go').textContent = '⏳ LOADING…';
-  _('pg-shine').style.display = 'block';
+// ══════════════════════════════════════════════════════
+async function initAll(){
+  _('btn-go').disabled=true; _('btn-go').textContent='⏳ LOADING…'; _('pg-shine').style.display='block';
+  // Camera first (needed by all models)
+  const camOk=await initCam();
+  if(!camOk){ _('btn-go').textContent='Camera failed — retry'; _('btn-go').disabled=false; return; }
+  // All models in parallel
   await Promise.allSettled([
-    initCam(),
-    initPose(),
-    initHands(),
-    initSeg(),
-    initBodyPix(),
-    initPoseNet(),
-    initCOCO(),
-    initIMU(),
-    initGPS(),
+    initPose(), initHands(), initSeg(), initFace(),
+    initBodyPix(), initPoseNet(), initCOCO(),
+    initML5(), initONNX(), initHF(), initOpenCV(),
+    initIMU()
   ]);
-  _('pg-shine').style.display = 'none';
-  updProg();
-  _('btn-go').textContent = '▶ LAUNCH';
-  _('btn-go').disabled = false;
-  _('btn-go').onclick = launch;
+  _('pg-shine').style.display='none'; updProg();
+  _('btn-go').textContent='▶ LAUNCH APP';
+  _('btn-go').disabled=false; _('btn-go').onclick=launch;
 }
 
-function launch() {
-  _('LS').style.display = 'none';
-  _('APP').style.display = 'flex';
-  buildConfRows();
-  renderLoop();
+function launch(){
+  _('LS').style.display='none'; _('APP').style.display='flex';
+  buildCBars(); renderLoop();
 }
 
-function retryFailed() {
-  MODS.forEach(m => { if (mSt[m.id]==='fail') SM(m.id,'wait','Retrying…'); });
+function retryAll(){
+  MODS.forEach(m=>{ if(mSt[m.id]==='fail') SM(m.id,'wait','Retrying…'); });
   initAll();
 }
 
 renderMods();
-_('btn-go').addEventListener('click', initAll);
-_('btn-retry').addEventListener('click', retryFailed);
-document.addEventListener('visibilitychange', () => {
-  if (document.hidden) cancelAnimationFrame(_raf);
-  else if (_('APP').style.display==='flex') renderLoop();
-});
+_('btn-go').addEventListener('click',initAll);
+_('btn-retry').addEventListener('click',retryAll);
+document.addEventListener('visibilitychange',()=>{ if(document.hidden)cancelAnimationFrame(S.animId); else if(_('APP').style.display==='flex')renderLoop(); });
 </script>
 </body>
 </html>

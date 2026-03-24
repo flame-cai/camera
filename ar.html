@@ -348,8 +348,9 @@ body{display:flex;flex-direction:column;height:100dvh}
 /* ═══════════════════════════════════════════════════
    CONSTANTS  — all verified 200 OK
 ═══════════════════════════════════════════════════ */
-const MP_MJS   = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.34/vision_bundle.mjs';
-const MP_WASM  = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.34/wasm';
+const MP_MJS      = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.34/vision_bundle.mjs';
+const MP_WASM_JS  = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.34/wasm/vision_wasm_internal.js';
+const MP_WASM_BIN = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.34/wasm/vision_wasm_internal.wasm';
 const HOLISTIC = 'https://storage.googleapis.com/mediapipe-models/holistic_landmarker/holistic_landmarker/float16/latest/holistic_landmarker.task';
 const DEG = Math.PI / 180;
 
@@ -485,8 +486,14 @@ async function initMP() {
   setStep('esm','loading','Importing vision_bundle.mjs…');
   try {
     _MP = await import(MP_MJS);
-    setStep('esm','loading','Resolving WASM runtime…');
-    _MP.vision = await _MP.FilesetResolver.forVisionTasks(MP_WASM);
+    setStep('esm','loading','Building WASM fileset…');
+    // Build WasmFileset manually — bypasses FilesetResolver.forVisionTasks()
+    // which can fail due to path-construction or SIMD-detection issues on mobile.
+    // wasmLoaderPath + wasmBinaryPath are the two files the runtime needs explicitly.
+    _MP.vision = {
+      wasmLoaderPath: MP_WASM_JS,
+      wasmBinaryPath: MP_WASM_BIN,
+    };
     setStep('esm','ok',`MediaPipe Tasks 0.10.34 · WASM ready`);
   } catch(e) {
     const msg = (e?.message || String(e)).slice(0, 80);

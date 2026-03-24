@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>SPATIAL</title>
 <link href="https://fonts.bunny.net/css?family=bebas-neue:400|ibm-plex-mono:400,500|barlow-condensed:400,600,700" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/exif-js@2.3.0/exif.js"></script>
 <style>
 /* ── RESET & TOKENS ─────────────────────────────── */
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -262,18 +261,18 @@ body{display:flex;flex-direction:column;height:100dvh}
       Optional: EXIF focus · Camera AF · DeviceMotion IMU · applyConstraints<br>
       All processing on-device · @mediapipe/tasks-vision@latest
     </div>
-    <button id="btn-load" onclick="loadAll()">▸ LOAD ALL</button>
-    <button id="btn-skip" onclick="launch()">⟶ SKIP — launch with what's loaded</button>
+    <button id="btn-load">▸ LOAD ALL</button>
+    <button id="btn-skip" style="display:none">⟶ SKIP — launch with what's loaded</button>
   </div>
 </div>
 
 <!-- ════════════════ APP ════════════════ -->
 <div id="app">
   <div id="tabs">
-    <button class="tab on" id="tab0" onclick="GT(0)">
+    <button class="tab on" id="tab0">
       <span class="ti">🤸</span>HOLISTIC
     </button>
-    <button class="tab" id="tab1" onclick="GT(1)">
+    <button class="tab" id="tab1">
       <span class="ti">📷</span>FOCUS
     </button>
   </div>
@@ -377,11 +376,14 @@ body{display:flex;flex-direction:column;height:100dvh}
   </div>
 </div>
 
+<!-- exif-js latest from unpkg (no version pin = latest) -->
+<script src="https://unpkg.com/exif-js"></script>
+
 <script type="module">
 'use strict';
 
 /* ════════════════════════════════════════════════
-   URLS  — exactly as specified by user
+   URLS
 ════════════════════════════════════════════════ */
 const MP_MJS  = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/vision_bundle.mjs';
 const MP_WASM = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm';
@@ -389,7 +391,7 @@ const HOLISTIC= 'https://storage.googleapis.com/mediapipe-models/holistic_landma
 const DEG     = Math.PI / 180;
 
 /* ════════════════════════════════════════════════
-   STEP DEFINITIONS  (id · icon · label · required)
+   STEP DEFINITIONS
 ════════════════════════════════════════════════ */
 const STEPS = [
   {id:'cam', ico:'📷', name:'Camera (rear)',               req:true},
@@ -408,21 +410,17 @@ STEPS.forEach(s => { St[s.id] = {state:'wait', msg:'Waiting…'}; });
 ════════════════════════════════════════════════ */
 const S = {
   stream:null, track:null, vW:0, vH:0,
-  MP:{},           // {FilesetResolver, HolisticLandmarker, vision}
-  hol:null,        // HolisticLandmarker instance
+  MP:{},
+  hol:null,
   holReady:false,
-  // Measurements
   camH:null, dist:null, personH:null,
   wNose:null, wAnkle:null,
   focalGeo:null, focalExif:null, focalAsm:null,
   hConf:0, fps:0, _fc:0, _lt:0,
-  // Focus
   fdTrack:null, fdExif:null, fdGeo:null,
   fdBest:null, fdSrc:'–',
   fl35:null,
-  // ImageCapture
   ic:null, exifBusy:false,
-  // IMU
   imu:{active:false, pitch:0, tilt:90, conf:0, samples:0, buf:[]},
 };
 let _loading = false;
@@ -437,7 +435,7 @@ const focalFromFOV  = (w, fov=70) => (w/2) / Math.tan(fov/2 * DEG);
 const focalFromFL35 = (fl, w)     => (w/2) / Math.tan(Math.atan(18/fl));
 
 /* ════════════════════════════════════════════════
-   HOME SCREEN — build step rows
+   HOME — build step rows
 ════════════════════════════════════════════════ */
 function buildSteps() {
   _('steps').innerHTML = STEPS.map(s => `
@@ -451,7 +449,7 @@ function buildSteps() {
         <div class="st-msg" id="sm-${s.id}">Waiting…</div>
       </div>
       <div class="st-right">
-        <button class="st-retry" id="rb-${s.id}" onclick="retryStep('${s.id}')">↻ Retry</button>
+        <button class="st-retry" id="rb-${s.id}" onclick="window._retryStep('${s.id}')">↻ Retry</button>
         <span class="st-tag tg-wait" id="st-${s.id}">WAIT</span>
       </div>
     </div>`).join('');
@@ -478,7 +476,6 @@ function updateProgress() {
   _('pg-cnt').textContent   = `${done} / ${total}`;
   _('pg-lbl').textContent   = active ? active.name+'…' : done===total ? 'Complete' : 'Ready to load';
   _('pg-shine').style.display = active ? 'block' : 'none';
-  // Show SKIP once any loading has started
   const started = STEPS.some(s => !['wait'].includes(St[s.id].state));
   _('btn-skip').style.display = started ? 'block' : 'none';
 }
@@ -495,11 +492,9 @@ const RETRY = {
   imu: () => initIMU().catch(()=>{}),
   sk:  () => initApplyConstr().catch(()=>{}),
 };
-function retryStep(id) { RETRY[id]?.(); }
-window.retryStep = retryStep;
 
 /* ════════════════════════════════════════════════
-   INIT — CAMERA  (15s timeout guard)
+   INIT — CAMERA
 ════════════════════════════════════════════════ */
 async function initCamera() {
   setStep('cam','loading','Requesting rear camera…');
@@ -530,9 +525,6 @@ async function initCamera() {
 
 /* ════════════════════════════════════════════════
    INIT — MEDIAPIPE ESM
-   Uses forVisionTasks(MP_WASM) as requested by user.
-   MP_WASM is the wasm/ directory base URL; the runtime
-   appends /vision_wasm_internal.js and .wasm automatically.
 ════════════════════════════════════════════════ */
 async function initMP() {
   setStep('esm','loading','Importing vision_bundle.mjs…');
@@ -590,9 +582,8 @@ async function initHolistic() {
 }
 
 /* ════════════════════════════════════════════════
-   INIT — EXIF FOCUS  (ImageCapture → takePhoto)
-   On Android: EXIF SubjectDistance = AF plane distance (metres)
-   EXIF FocalLengthIn35mmFilm → derive focal_px
+   INIT — EXIF FOCUS
+   Uses window.EXIF injected by <script src="https://unpkg.com/exif-js">
 ════════════════════════════════════════════════ */
 async function initEXIF() {
   setStep('ic','loading','Setting up ImageCapture…');
@@ -602,22 +593,24 @@ async function initEXIF() {
   if (!S.track) {
     setStep('ic','skip','No camera track — load camera first'); return;
   }
+  // Verify EXIF library loaded (injected via <script src>)
+  if (typeof window.EXIF === 'undefined') {
+    setStep('ic','skip','exif-js library failed to load'); return;
+  }
   try {
     S.ic = new ImageCapture(S.track);
   } catch(e) {
     setStep('ic','fail','new ImageCapture() failed: '+String(e?.message||e).slice(0,50));
     return;
   }
-  // Wait for camera to stabilise — takePhoto too soon after track start throws on Android
   setStep('ic','loading','Camera stabilising…');
   await new Promise(r => setTimeout(r, 500));
   setStep('ic','loading','Taking first EXIF photo…');
-  // First shot failure is non-fatal — interval will keep retrying
   try { await doEXIF(); } catch(e) { console.warn('[EXIF] first shot:', e?.message); }
-  // Always start polling regardless of first-shot result
   setInterval(doEXIF, 4000);
   setStep('ic','ok','EXIF polling active (every 4 s)');
 }
+
 async function doEXIF() {
   if (!S.ic || S.exifBusy) return;
   S.exifBusy = true;
@@ -626,9 +619,9 @@ async function doEXIF() {
     const url  = URL.createObjectURL(blob);
     const img  = new Image(); img.src = url;
     await new Promise(res => {
-      EXIF.getData(img, function() {
-        const sd = EXIF.getTag(this, 'SubjectDistance');
-        const fl = EXIF.getTag(this, 'FocalLengthIn35mmFilm');
+      window.EXIF.getData(img, function() {
+        const sd = window.EXIF.getTag(this, 'SubjectDistance');
+        const fl = window.EXIF.getTag(this, 'FocalLengthIn35mmFilm');
         if (sd != null && sd > 0.1 && sd < 30)  S.fdExif = sd;
         if (fl != null && fl > 5) { S.fl35 = fl; S.focalExif = focalFromFL35(fl, S.vW); }
         res();
@@ -640,7 +633,6 @@ async function doEXIF() {
 
 /* ════════════════════════════════════════════════
    INIT — CAMERA AF focusDistance
-   Must: check capabilities, applyConstraints → poll
 ════════════════════════════════════════════════ */
 async function initFocusDist() {
   setStep('afd','loading','Reading focusDistance capabilities…');
@@ -652,7 +644,6 @@ async function initFocusDist() {
     tx('cap-fdr', fdr ? `${fdr.min?.toFixed(1)}–${fdr.max?.toFixed(1)} m` : 'not supported');
     tx('cap-fmo', fmo.join(', ') || 'none');
     if (!fdr) { setStep('afd','skip','focusDistance not in capabilities'); tx('fd1','not supported'); return; }
-    // Poll
     const poll = () => {
       const fd = S.track.getSettings?.()?.focusDistance ?? null;
       S.fdTrack = (fd != null && fd > 0.05 && fd < 30) ? fd : null;
@@ -666,8 +657,6 @@ async function initFocusDist() {
 
 /* ════════════════════════════════════════════════
    INIT — applyConstraints focusMode
-   Calling focusMode:continuous BEFORE reading getSettings()
-   is required on Android Chrome for focusDistance to appear.
 ════════════════════════════════════════════════ */
 async function initApplyConstr() {
   setStep('sk','loading','Applying focusMode:continuous…');
@@ -718,10 +707,7 @@ async function initIMU() {
 }
 
 /* ════════════════════════════════════════════════
-   GEOMETRY  — self-calibrate focal + distance
-   Solves: given worldLandmarks (metres, hip origin)
-   + normalised landmarks (pixels), find D and focal_px
-   without any prior knowledge.
+   GEOMETRY — self-calibrate focal + distance
 ════════════════════════════════════════════════ */
 function selfCal(nlm, wlm) {
   const wN=wlm[0], wLA=wlm[27], wRA=wlm[28];
@@ -772,7 +758,6 @@ const FLIPS = [61,146,91,181,84,17,314,405,321,375,291,308,324,318,402,317,14,87
 function drawOverlays(ctx, res) {
   const W = ctx.canvas.width, H = ctx.canvas.height;
 
-  // Body mask — from poseSegmentationMasks
   if (res.poseSegmentationMasks?.[0]) {
     const mask = res.poseSegmentationMasks[0];
     const d = mask.getAsFloat32Array(), mW = mask.width, mH = mask.height;
@@ -785,7 +770,6 @@ function drawOverlays(ctx, res) {
     tc.putImageData(id,0,0); ctx.drawImage(tmp,0,0,W,H); mask.close();
   }
 
-  // Face mask — filled oval from faceLandmarks FACE_OVAL contour
   if (res.faceLandmarks?.[0]) {
     const L = res.faceLandmarks[0];
     ctx.beginPath();
@@ -805,7 +789,6 @@ function drawOverlays(ctx, res) {
     contour(FLIPS,'rgba(245,80,90,.55)');
   }
 
-  // Pose skeleton
   if (res.poseLandmarks?.[0]) {
     const L = res.poseLandmarks[0];
     ctx.strokeStyle='rgba(0,220,175,.72)'; ctx.lineWidth=1.8;
@@ -821,20 +804,16 @@ function drawOverlays(ctx, res) {
     });
   }
 
-  // Hands — mask + skeleton
   const hand = (lms, col, fill) => {
-    // palm fill
     ctx.beginPath();
     [0,1,5,9,13,17,0].forEach((i,j) => {
       if(!lms[i])return; j===0?ctx.moveTo(lms[i].x*W,lms[i].y*H):ctx.lineTo(lms[i].x*W,lms[i].y*H);
     });
     ctx.fillStyle=fill; ctx.fill();
-    // connections
     ctx.strokeStyle=col; ctx.lineWidth=1.6;
     HC.forEach(([a,b]) => {
       ctx.beginPath(); ctx.moveTo(lms[a].x*W,lms[a].y*H); ctx.lineTo(lms[b].x*W,lms[b].y*H); ctx.stroke();
     });
-    // dots
     lms.forEach(lm => {
       ctx.beginPath(); ctx.arc(lm.x*W,lm.y*H,2.5,0,Math.PI*2);
       ctx.fillStyle=col; ctx.fill();
@@ -846,10 +825,8 @@ function drawOverlays(ctx, res) {
     hand(res.rightHandLandmarks[0],'rgba(176,96,240,.9)', 'rgba(176,96,240,.12)');
 }
 
-// HUD: camera-height bar (left), distance label (centre), person-height (right)
 function drawHUD(ctx, D, camH, pH) {
   const W=ctx.canvas.width, Hv=ctx.canvas.height, cx=W/2, cy=Hv/2;
-  // Height bar (left edge)
   if (camH != null) {
     const bH=Hv*.46, bY=cy-bH/2, fill=Math.min(1, camH/2.5)*bH;
     ctx.fillStyle='rgba(0,220,175,.04)'; ctx.fillRect(4,bY,3,bH);
@@ -857,7 +834,6 @@ function drawHUD(ctx, D, camH, pH) {
     ctx.font='8px "IBM Plex Mono"'; ctx.fillStyle='rgba(0,220,175,.78)'; ctx.textAlign='left';
     ctx.fillText(camH.toFixed(2)+'m', 10, bY+bH-fill+5);
   }
-  // Distance (centre)
   if (D != null) {
     ctx.font='bold 15px "Bebas Neue"'; ctx.fillStyle='rgba(72,130,255,.92)'; ctx.textAlign='center';
     ctx.fillText(D.toFixed(2)+' m', cx, cy-44);
@@ -866,7 +842,6 @@ function drawHUD(ctx, D, camH, pH) {
     ctx.beginPath(); ctx.moveTo(cx-5,cy); ctx.lineTo(cx+5,cy); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(cx,cy-5); ctx.lineTo(cx,cy+5); ctx.stroke();
   }
-  // Person height (right)
   if (pH != null) {
     ctx.font='11px "Bebas Neue"'; ctx.fillStyle='rgba(176,96,240,.88)'; ctx.textAlign='right';
     ctx.fillText('↕ '+pH.toFixed(2)+'m', W-7, cy+5);
@@ -886,25 +861,22 @@ function startHolistic() {
     _lastT = now;
     try {
       const res = S.hol.detectForVideo(vid, now);
-      // Draw at display resolution
       cv.width  = vid.clientWidth  || S.vW;
       cv.height = vid.clientHeight || S.vH;
       const ctx = cv.getContext('2d');
-      // Draw video then overlays at video resolution via offscreen canvas
       const tmp = document.createElement('canvas'); tmp.width=S.vW; tmp.height=S.vH;
       const tc  = tmp.getContext('2d');
       tc.drawImage(vid, 0, 0, S.vW, S.vH);
       drawOverlays(tc, res);
       ctx.drawImage(tmp, 0, 0, cv.width, cv.height);
-      // Measurements from worldLandmarks
       S.camH=null; S.dist=null; S.personH=null; S.wNose=null; S.wAnkle=null;
       if (res.poseLandmarks?.[0] && res.poseWorldLandmarks?.[0]) {
         const nlm=res.poseLandmarks[0], wlm=res.poseWorldLandmarks[0];
         const wN=wlm[0], wLA=wlm[27], wRA=wlm[28];
         if (wN && wLA) {
           const aky = wRA?(wLA.y+wRA.y)/2:wLA.y;
-          S.personH = Math.abs(wN.y - aky);   // direct metres
-          S.camH    = Math.abs(aky) + 0.05;    // ankle ≈ ground
+          S.personH = Math.abs(wN.y - aky);
+          S.camH    = Math.abs(aky) + 0.05;
           S.wNose   = wN; S.wAnkle = {y:aky, z:wLA.z||0};
           const cal = selfCal(nlm, wlm);
           if (cal) { S.dist=cal.D; S.focalGeo=cal.focal; S.fdGeo=cal.D; S.hConf=Math.min(.88,wN.visibility??0.7); }
@@ -921,7 +893,7 @@ function startHolistic() {
 }
 
 /* ════════════════════════════════════════════════
-   FOCUS LOOP  (Tab 1 — live video + distance HUD)
+   FOCUS LOOP
 ════════════════════════════════════════════════ */
 function startFocusLoop() {
   const vid=_('v1'), cv=_('c1');
@@ -960,13 +932,12 @@ function fuseFocus() {
 }
 
 /* ════════════════════════════════════════════════
-   RENDER UI  (rAF driven)
+   RENDER UI
 ════════════════════════════════════════════════ */
 function renderUI() {
   fuseFocus();
   const focal = S.focalExif ?? S.focalGeo ?? S.focalAsm;
 
-  // Tab 0 — Holistic
   nm('H0', S.camH);    tx('H0s', S.camH?'ankle→ground':'–');
   nm('D0', S.dist);    tx('D0s', S.dist?'self-cal':'–');
   nm('P0', S.personH);
@@ -977,7 +948,6 @@ function renderUI() {
   tx('fv0', focal ? (2*Math.atan(S.vW/2/focal)/DEG).toFixed(1) : '--');
   tx('fps0', S.fps+' fps');
 
-  // Tab 1 — Focus
   nm('H1', S.camH??1.4);   tx('H1s', S.camH?'world lm':'prior 1.4m');
   nm('D1', S.fdBest);       tx('D1s', S.fdSrc);
   nm('P1', S.personH);      tx('P1s', S.personH?'world lm':'–');
@@ -991,7 +961,6 @@ function renderUI() {
   tx('focb', S.focalGeo  ? S.focalGeo.toFixed(0)+'px' : '–');
   tx('focc', S.focalAsm  ? S.focalAsm.toFixed(0)+'px' : '–');
 
-  // Focus chip
   const ch1=_('chip1');
   if (S.fdBest!=null) { ch1.className='cam-chip chip-live'; ch1.textContent=S.fdBest.toFixed(2)+'m · '+S.fdSrc; }
 
@@ -1007,10 +976,9 @@ function GT(n) {
     _('p'+i).classList.toggle('on', i===n);
   });
 }
-window.GT = GT;
 
 /* ════════════════════════════════════════════════
-   LAUNCH  (go to app view)
+   LAUNCH
 ════════════════════════════════════════════════ */
 function launch() {
   _('home').style.display='none';
@@ -1019,10 +987,9 @@ function launch() {
   startFocusLoop();
   renderUI();
 }
-window.launch = launch;
 
 /* ════════════════════════════════════════════════
-   LOAD ALL  (sequential required, parallel optional)
+   LOAD ALL
 ════════════════════════════════════════════════ */
 async function loadAll() {
   if (_loading) return;
@@ -1033,16 +1000,10 @@ async function loadAll() {
   _('btn-skip').textContent = '⟶ Skip — launch with what\'s loaded';
 
   try {
-    // Required (sequential — each depends on previous)
     if (St.cam.state !== 'ok') await initCamera();
     if (St.esm.state !== 'ok') await initMP();
     if (St.hol.state !== 'ok') await initHolistic();
 
-    // Optional camera steps — must run in order:
-    // 1. Read capabilities first (no side effects)
-    // 2. applyConstraints (changes track state — must be before takePhoto)
-    // 3. EXIF / takePhoto (needs stable track state after constraints applied)
-    // IMU is independent — run in parallel
     await Promise.allSettled([
       (async () => {
         if (St.afd.state !== 'ok') await initFocusDist().catch(()=>{});
@@ -1058,23 +1019,28 @@ async function loadAll() {
     _('btn-skip').textContent = '⟶ Launch now';
 
   } catch(e) {
-    // A required step failed — show which one + retry
     const failed = STEPS.filter(s=>s.req).find(s=>St[s.id].state==='fail');
     _('btn-load').textContent = `↻ RETRY${failed?' ('+failed.name.slice(0,20)+'…)':''}`;
     _('btn-load').disabled = false;
     _('btn-load').onclick = () => { _loading=false; _('btn-load').onclick=null; loadAll(); };
     _('btn-skip').textContent = '⟶ Skip — launch with what\'s loaded';
-    // Still run IMU even if required steps fail
     if (St.imu.state==='wait') initIMU().catch(()=>{});
   }
 
   _loading = false;
 }
-window.loadAll = loadAll;
 
 /* ════════════════════════════════════════════════
-   BOOT
+   BOOT — wire up buttons after DOM is ready,
+   expose globals needed by inline onclick attrs
 ════════════════════════════════════════════════ */
+window._retryStep = id => RETRY[id]?.();
+
+_('btn-load').addEventListener('click', () => loadAll());
+_('btn-skip').addEventListener('click', () => launch());
+_('tab0').addEventListener('click', () => GT(0));
+_('tab1').addEventListener('click', () => GT(1));
+
 buildSteps();
 updateProgress();
 </script>

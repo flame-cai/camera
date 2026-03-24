@@ -181,6 +181,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .sk{font-size:7.5px;color:var(--mut);font-family:var(--cond);font-weight:600;flex-shrink:0;margin-right:6px}
 .sv{font-size:7.5px;color:var(--a);font-family:var(--mono);text-align:right}
 .sv.b{color:var(--b)}.sv.w{color:var(--d)}.sv.ok{color:var(--a)}.sv.fail{color:var(--c)}
+.cv.ok{color:var(--a)}
 .bdg{display:inline-flex;align-items:center;gap:3px;font-family:var(--cond);font-weight:700;
   font-size:8.5px;letter-spacing:.5px;padding:3px 9px;border-radius:2px;border:1px solid;
   margin-bottom:5px;text-transform:uppercase}
@@ -333,8 +334,8 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
         <div class="crosshair"></div><div class="scanline"></div>
       </div>
       <div class="metbar">
-        <div class="met">    <div class="ml">Cam Height</div><span class="mv" id="p2H">--</span><span class="mu">m</span><div class="ms">fused</div></div>
-        <div class="met b">  <div class="ml">Distance</div><span class="mv b" id="p2D">--</span><span class="mu">m</span><div class="ms">self-cal</div></div>
+        <div class="met">    <div class="ml">Cam Height</div><span class="mv" id="p2H">--</span><span class="mu">m</span><div class="ms" id="p2Hs">fused</div></div>
+        <div class="met b">  <div class="ml">Distance</div><span class="mv b" id="p2D">--</span><span class="mu">m</span><div class="ms" id="p2Ds">self-cal</div></div>
         <div class="met c">  <div class="ml">Person H</div><span class="mv e" id="p2P">--</span><span class="mu">m</span><div class="ms">world lm</div></div>
       </div>
       <div class="det">
@@ -346,9 +347,25 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
           <div class="cell"><div class="cl">L hand</div><div class="cv e" id="p2lh">--</div></div>
           <div class="cell"><div class="cl">FPS</div><div class="cv" id="p2fps">--</div></div>
         </div>
+        <div class="dh">Masks &amp; Landmarks</div>
+        <div class="g2">
+          <div class="cell"><div class="cl">Body mask</div><div class="cv ok" id="p2bm">--</div></div>
+          <div class="cell"><div class="cl">Face mask</div><div class="cv b" id="p2fm">--</div></div>
+          <div class="cell"><div class="cl">Body px</div><div class="cv" id="p2bpx">--</div></div>
+          <div class="cell"><div class="cl">Face area</div><div class="cv b" id="p2farea">--</div></div>
+        </div>
+        <div class="dh">Distance Sources</div>
+        <div class="scard">
+          <div class="sr"><span class="sk">Self-cal (geometry)</span><span class="sv ok" id="p2dsc">--</span></div>
+          <div class="sr"><span class="sk">Camera focusDistance</span><span class="sv b" id="p2dfd">--</span></div>
+          <div class="sr"><span class="sk">IPD (face landmarks)</span><span class="sv" id="p2dipd">--</span></div>
+          <div class="sr"><span class="sk">Using</span><span class="sv ok" id="p2dsrc">--</span></div>
+        </div>
         <div class="scard">
           <div class="sr"><span class="sk">Model</span><span class="sv">holistic_landmarker (13MB)</span></div>
-          <div class="sr"><span class="sk">Outputs</span><span class="sv ok">pose33 + face478 + hands21 × 2</span></div>
+          <div class="sr"><span class="sk">Body mask</span><span class="sv ok">outputPoseSegmentationMasks:true</span></div>
+          <div class="sr"><span class="sk">Face mask</span><span class="sv ok">constructed from 36-pt face oval</span></div>
+          <div class="sr"><span class="sk">World lm</span><span class="sv ok">pose + left/right hand (metres)</span></div>
         </div>
         <div class="logbx" id="l2"></div><div class="safe"></div>
       </div>
@@ -539,13 +556,20 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
         </div>
         <div class="dh">Focal Derivation Sources</div>
         <div id="focaldiv"></div>
+        <div class="dh">Camera AF → Distance (direct)</div>
+        <div class="scard">
+          <div class="sr"><span class="sk">focusDistance</span><span class="sv ok" id="o8fd">--</span></div>
+          <div class="sr"><span class="sk">AF person dist</span><span class="sv b" id="o8afd">--</span></div>
+          <div class="sr"><span class="sk">Focal from AF+pose</span><span class="sv ok" id="o8aff">--</span></div>
+          <div class="sr"><span class="sk">Support</span><span class="sv w">Android Chrome only · polls 800ms</span></div>
+        </div>
         <div class="dh">Pinhole Model (with derived focal)</div>
         <div class="scard">
-          <div class="sr"><span class="sk">focal_px</span><span class="sv" id="o8fp">--</span></div>
-          <div class="sr"><span class="sk">Method A: 70° FOV assumption</span><span class="sv" id="o8ma">--</span></div>
-          <div class="sr"><span class="sk">Method B: pose self-calibration</span><span class="sv ok" id="o8mb">--</span></div>
-          <div class="sr"><span class="sk">Method C: IMU horizon angle</span><span class="sv" id="o8mc">--</span></div>
-          <div class="sr"><span class="sk">Distance (best focal)</span><span class="sv b" id="o8d">--</span></div>
+          <div class="sr"><span class="sk">focal_px (best)</span><span class="sv ok" id="o8fp">--</span></div>
+          <div class="sr"><span class="sk">A · 70° FOV assumption</span><span class="sv" id="o8ma">--</span></div>
+          <div class="sr"><span class="sk">B · pose self-calibration ✓</span><span class="sv ok" id="o8mb">--</span></div>
+          <div class="sr"><span class="sk">C · AF-anchored focal</span><span class="sv b" id="o8maf">--</span></div>
+          <div class="sr"><span class="sk">Best distance estimate</span><span class="sv b" id="o8d">--</span></div>
         </div>
         <div class="logbx" id="l8"></div><div class="safe"></div>
       </div>
@@ -589,7 +613,8 @@ const S = {
   pose:{active:false,loading:false,lm:null,dist:null,conf:0,fps:0,_fc:0,_lt:0,
         pH:null,cH:null,D:null,focal:null,worldNose:null,worldAnkle:null,props:{}},
   hol: {active:false,loading:false,lm:null,dist:null,conf:0,fps:0,_fc:0,_lt:0,
-        pH:null,cH:null,D:null,poseLm:0,faceLm:0,lHandLm:0},
+        pH:null,cH:null,D:null,poseLm:0,faceLm:0,lHandLm:0,
+        bodyMaskPx:0,faceMaskArea:0,distFocal:null,distIPD:null,distSrc:'--'},
   face:{active:false,loading:false,lm:null,dist:null,conf:0,fps:0,_fc:0,_lt:0,n:0,ipdPx:0},
   hand:{active:false,loading:false,lm:null,dist:null,conf:0,fps:0,_fc:0,_lt:0,n:0,wDist:null},
   seg: {active:false,loading:false,lm:null,dist:null,conf:0,fps:0,_fc:0,_lt:0,px:0,bh:0},
@@ -819,6 +844,17 @@ async function initCam(){
     // Assumed focal from 70° FOV
     S.focal_assume=focalFromFOV(S.vW,70);
     SM('cam','done',`${S.vW}×${S.vH} · zoom=${S.cam_zoom} · focal≈${S.focal_assume.toFixed(0)}px`);
+    // Poll focusDistance every 800ms (AF updates asynchronously)
+    setInterval(()=>{
+      const track=S.stream?.getVideoTracks?.()?.[0];
+      if(!track)return;
+      const sets=track.getSettings?.()??{};
+      const fd=sets.focusDistance||null;
+      if(fd&&fd!==S.cam_focusDist){
+        S.cam_focusDist=fd;
+        LOG('l8',`AF update: focusDistance=${fd.toFixed(2)}m`,'info');
+      }
+    },800);
     return true;
   }catch(e){SM('cam','fail',e.message.slice(0,50));return false;}
 }
@@ -934,6 +970,7 @@ async function initHolistic(){
       minFaceDetectionConfidence:.5,minFacePresenceConfidence:.5,minFaceTrackingConfidence:.5,
       minPoseDetectionConfidence:.5,minPosePresenceConfidence:.5,minPoseTrackingConfidence:.5,
       minHandLandmarksConfidence:.5,
+      outputPoseSegmentationMasks:true,
     });
     S.hol.active=true;S.hol.loading=false;
     SM('hol','done','HolisticLandmarker ready');setBdg('b2','live','● Live');setDot('q2','live');
@@ -955,9 +992,19 @@ function runHolisticLoop(){
     try{
       const res=S.hol.lm.detectForVideo(vid,now);
       cv.width=S.vW;cv.height=S.vH;ctx.drawImage(vid,0,0,S.vW,S.vH);
+
+      // ── 1. BODY MASK (from poseSegmentationMasks) ──────────────
+      S.hol.bodyMaskPx=0;
+      if(res.poseSegmentationMasks?.[0]){
+        const mask=res.poseSegmentationMasks[0];
+        const mD=mask.getAsFloat32Array();
+        const {px}=drawBodyMask(ctx,mD,mask.width,mask.height,S.vW,S.vH,[0,245,196]);
+        S.hol.bodyMaskPx=px;
+        mask.close();
+      }
+
+      // ── 2. POSE SKELETON + world landmarks ─────────────────────
       S.hol.poseLm=res.poseLandmarks?.length?33:0;
-      S.hol.faceLm=res.faceLandmarks?.length?res.faceLandmarks[0].length:0;
-      S.hol.lHandLm=res.leftHandLandmarks?.length?21:0;
       if(res.poseLandmarks?.[0]){
         drawSkeleton(ctx,res.poseLandmarks[0],S.vW,S.vH);
         if(res.poseWorldLandmarks?.[0]){
@@ -967,14 +1014,93 @@ function runHolisticLoop(){
             const aky=(wLA&&wRA)?(wLA.y+wRA.y)/2:wLA.y;
             S.hol.pH=Math.abs(wN.y-aky);
             const cal=selfCalibrate(nlm,wlm,S.vH);
-            if(cal){S.hol.D=cal.D;S.hol.cH=Math.abs(aky)+.05;S.hol.conf=Math.min(.85,wN.visibility||.7);}
+            if(cal){S.hol.D=cal.D;S.hol.cH=Math.abs(aky)+.05;
+              if(!S.focal_pose)S.focal_pose=cal.focal;
+              S.hol.conf=Math.min(.85,wN.visibility||.7);}
             else S.hol.conf=.35;
           }
         }
       }else S.hol.conf=0;
-      if(res.faceLandmarks?.[0])drawFaceContours(ctx,res.faceLandmarks[0],S.vW,S.vH);
-      if(res.leftHandLandmarks?.[0])drawHand(ctx,res.leftHandLandmarks[0],S.vW,S.vH,'rgba(255,211,42,.85)');
-      if(res.rightHandLandmarks?.[0])drawHand(ctx,res.rightHandLandmarks[0],S.vW,S.vH,'rgba(196,77,255,.85)');
+
+      // ── 3. FACE MASK (constructed from oval landmarks) ──────────
+      S.hol.faceLm=res.faceLandmarks?.length?res.faceLandmarks[0].length:0;
+      S.hol.faceMaskArea=0;
+      if(res.faceLandmarks?.[0]){
+        const L=res.faceLandmarks[0];
+        // Draw filled face oval polygon = face mask
+        ctx.beginPath();
+        FACE_OVAL.forEach((i,j)=>{
+          if(L[i])j===0?ctx.moveTo(L[i].x*S.vW,L[i].y*S.vH):ctx.lineTo(L[i].x*S.vW,L[i].y*S.vH);
+        });
+        ctx.closePath();
+        ctx.fillStyle='rgba(91,143,255,.22)';ctx.fill();
+        ctx.strokeStyle='rgba(91,143,255,.7)';ctx.lineWidth=1.5;ctx.stroke();
+        // Draw detailed face contours on top
+        drawFaceContours(ctx,L,S.vW,S.vH);
+        // Estimate face mask area from bounding box of oval points
+        const ovals=FACE_OVAL.map(i=>L[i]).filter(Boolean);
+        if(ovals.length>2){
+          const xs=ovals.map(p=>p.x),ys=ovals.map(p=>p.y);
+          const fW=(Math.max(...xs)-Math.min(...xs))*S.vW;
+          const fH=(Math.max(...ys)-Math.min(...ys))*S.vH;
+          S.hol.faceMaskArea=Math.round(fW*fH*Math.PI/4); // approx ellipse area
+        }
+
+        // IPD-based distance from face
+        const lE=L[468]||L[33],rE=L[473]||L[263];
+        if(lE&&rE){
+          const dx=(rE.x-lE.x)*S.vW,dy=(rE.y-lE.y)*S.vH;
+          const ipdPx=Math.sqrt(dx*dx+dy*dy);
+          const f=S.focal_best||S.focal_pose||S.focal_assume;
+          if(f&&ipdPx>3)S.hol.distIPD=f*0.063/ipdPx;
+        }
+      }
+
+      // ── 4. HAND LANDMARKS + masks ──────────────────────────────
+      S.hol.lHandLm=res.leftHandLandmarks?.length?21:0;
+      if(res.leftHandLandmarks?.[0]){
+        const lm=res.leftHandLandmarks[0];
+        ctx.beginPath();
+        [0,1,5,9,13,17,0].forEach((i,j)=>{if(lm[i])j===0?ctx.moveTo(lm[i].x*S.vW,lm[i].y*S.vH):ctx.lineTo(lm[i].x*S.vW,lm[i].y*S.vH);});
+        ctx.fillStyle='rgba(255,211,42,.15)';ctx.fill();
+        drawHand(ctx,lm,S.vW,S.vH,'rgba(255,211,42,.85)');
+      }
+      if(res.rightHandLandmarks?.[0]){
+        const lm=res.rightHandLandmarks[0];
+        ctx.beginPath();
+        [0,1,5,9,13,17,0].forEach((i,j)=>{if(lm[i])j===0?ctx.moveTo(lm[i].x*S.vW,lm[i].y*S.vH):ctx.lineTo(lm[i].x*S.vW,lm[i].y*S.vH);});
+        ctx.fillStyle='rgba(196,77,255,.15)';ctx.fill();
+        drawHand(ctx,lm,S.vW,S.vH,'rgba(196,77,255,.85)');
+      }
+
+      // ── 5. DISTANCE: focusDistance + self-cal fusion ────────────
+      // Best distance = focusDistance (direct from camera AF) if available
+      // else self-calibrated geometry, else IPD
+      const fd=S.cam_focusDist;
+      if(fd&&fd>.2&&fd<20){
+        S.hol.distFocal=fd;
+        // Use focusDistance to derive precise focal_px
+        if(res.poseLandmarks?.[0]&&S.hol.pH){
+          const nlm=res.poseLandmarks[0];
+          const ankNorm=(nlm[27]&&nlm[28])?{y:(nlm[27].y+nlm[28].y)/2}:(nlm[27]||nlm[28]);
+          if(ankNorm){
+            const hPx=Math.abs(nlm[0].y-ankNorm.y)*S.vH;
+            if(hPx>20){
+              const fDerived=hPx*fd/S.hol.pH;
+              if(fDerived>100&&fDerived<5000)S.focal_pose=fDerived;
+            }
+          }
+        }
+        S.hol.dist=fd;
+        S.hol.distSrc='camera AF';
+      }else if(S.hol.D){
+        S.hol.dist=S.hol.D;
+        S.hol.distSrc='geometry';
+      }else if(S.hol.distIPD){
+        S.hol.dist=S.hol.distIPD;
+        S.hol.distSrc='IPD';
+      }else{S.hol.dist=null;S.hol.distSrc='--';}
+
     }catch(e){LOG('l2','Loop: '+e.message.slice(0,40),'err');}
     FP(S.hol);requestAnimationFrame(loop);
   };loop();
@@ -1277,7 +1403,11 @@ function fuse(){
   const dE=[];
   // Tier 1: direct metric (no assumed size)
   if(S.pose.active&&S.pose.D&&S.pose.D>.2)dE.push({v:S.pose.D,w:S.pose.conf*1.0});
-  if(S.hol.active&&S.hol.D&&S.hol.D>.2)dE.push({v:S.hol.D,w:S.hol.conf*.9});
+  if(S.hol.active&&S.hol.dist&&S.hol.dist>.2){
+    // camera focusDistance is highest quality — give it extra weight
+    const w=S.hol.distSrc==='camera AF'?1.1:0.9;
+    dE.push({v:S.hol.dist,w:S.hol.conf*w});
+  }
   if(S.hand.active&&S.hand.wDist&&S.hand.wDist>.1)dE.push({v:S.hand.wDist,w:S.hand.conf*.7});
   // Tier 2: focal-based (use only if focal is self-calibrated)
   if(S.focal_pose){
@@ -1358,7 +1488,10 @@ function renderLoop(){
   nm('fH',S.fusH,2);nm('fD',S.fusD,2);nm('fP',S.fusPH,2);
   const hSrc=[S.pose.active&&S.pose.cH?'POSE':null,S.hol.active&&S.hol.cH?'HOL':null,S.imu.active?'IMU':null].filter(Boolean);
   tx('fHs',(hSrc.join('+')||'PRIOR'));
-  const dSrc=[S.pose.active&&S.pose.D?'POSE✓':null,S.hol.active&&S.hol.D?'HOL✓':null,S.hand.active&&S.hand.wDist?'HAND✓':null,S.focal_pose?(S.face.active&&S.face.dist?'FACE':null):null].filter(Boolean);
+  const dSrc=[S.pose.active&&S.pose.D?'POSE✓':null,
+    S.hol.active&&S.hol.dist?(S.hol.distSrc==='camera AF'?'HOL(AF✓)':'HOL'):null,
+    S.hand.active&&S.hand.wDist?'HAND✓':null,
+    S.focal_pose?(S.face.active&&S.face.dist?'FACE':null):null].filter(Boolean);
   tx('fDs',dSrc.join('+')||'awaiting…');
   nm('fFocal',S.focal_best,0);tx('fFOV',S.focal_best?((2*Math.atan(S.vW/2/S.focal_best)*180/Math.PI).toFixed(1)):'--');
   setCB('cb0',S.pose.conf*100);setCB('cb1',S.hol.conf*100);setCB('cb2',S.face.conf*100);
@@ -1387,9 +1520,19 @@ function renderLoop(){
   }
 
   // ── T2 Holistic ──
-  nm('p2H',S.fusH,2);nm('p2D',S.hol.D,2);nm('p2P',S.hol.pH,2);
+  nm('p2H',S.fusH,2);nm('p2D',S.hol.dist,2);nm('p2P',S.hol.pH,2);
+  tx('p2Hs',S.imu.active?'IMU+pose':'pose');
+  tx('p2Ds',S.hol.distSrc);
   tx('p2pl',S.hol.poseLm||'--');tx('p2fl',S.hol.faceLm||'--');tx('p2lh',S.hol.lHandLm||'--');
   tx('p2fps',S.hol.fps+' fps');
+  tx('p2bm',S.hol.bodyMaskPx>0?'✓ ON':'✗ OFF');
+  tx('p2fm',S.hol.faceMaskArea>0?'✓ ON':'✗ OFF');
+  tx('p2bpx',S.hol.bodyMaskPx?S.hol.bodyMaskPx.toLocaleString():'--');
+  tx('p2farea',S.hol.faceMaskArea?S.hol.faceMaskArea.toLocaleString()+'px²':'--');
+  tx('p2dsc',S.hol.D?S.hol.D.toFixed(2)+'m':'--');
+  tx('p2dfd',S.cam_focusDist?S.cam_focusDist.toFixed(2)+'m':'N/A (check Android Chrome)');
+  tx('p2dipd',S.hol.distIPD?S.hol.distIPD.toFixed(2)+'m':'--');
+  tx('p2dsrc',S.hol.distSrc);
 
   // ── T3 Face ──
   nm('p3H',S.fusH,2);nm('p3D',S.face.dist,2);tx('p3N',String(S.face.n));
@@ -1420,24 +1563,31 @@ function renderLoop(){
 
   // ── T8 Optics ──
   const fBest=S.focal_best;
+  const fd8=S.cam_focusDist;
   nm('p8F',fBest,0);
-  tx('p8Fs',S.focal_pose?'pose self-cal':'assumed 70°');
+  tx('p8Fs',S.focal_pose?(fd8?'AF+pose':'pose self-cal'):'assumed 70°');
   tx('p8V',fBest?(2*Math.atan(S.vW/2/fBest)*180/Math.PI).toFixed(1)+'°':'--');
   tx('p8Z',S.cam_zoom.toFixed(2));
   tx('camW',S.cam_width||S.vW);tx('camH',S.cam_height||S.vH);
   tx('camAR',((S.cam_width||S.vW)/(S.cam_height||S.vH)).toFixed(2));
-  tx('camFD',S.cam_focusDist?S.cam_focusDist.toFixed(2)+'m':'N/A');
-  tx('camZ',S.cam_zoom.toFixed(2)+'×');tx('camFM','env');
+  tx('camFD',fd8?fd8.toFixed(2)+'m':'N/A');
+  tx('camZ',S.cam_zoom.toFixed(2)+'×');tx('camFM','environment');
   const fA=focalFromFOV(S.vW,70),fB=S.focal_pose,fC=S.focal_assume*S.cam_zoom;
+  // AF-based distance section
+  tx('o8fd',fd8?fd8.toFixed(2)+'m':'N/A – Android Chrome only');
+  tx('o8afd',fd8&&S.hol.distSrc==='camera AF'?fd8.toFixed(2)+'m ✓':'--');
+  tx('o8aff',fd8&&fB?fB.toFixed(0)+'px (AF-anchored)':(fd8?'need pose':'N/A'));
+  // Focal derivation table
   tx('fA',fA.toFixed(0)+'px');
   tx('fB',fB?fB.toFixed(0)+'px':'awaiting pose');
   tx('fC',fC.toFixed(0)+'px');
   tx('fBEST',fBest?fBest.toFixed(0)+'px':'--');
   tx('o8fp',fBest?fBest.toFixed(0)+'px':'--');
   tx('o8ma',fA.toFixed(0)+'px');
-  tx('o8mb',fB?fB.toFixed(0)+'px ✓':'(no pose yet)');
-  tx('o8mc',S.imu.active?'IMU active – horizon method TBD':'IMU inactive');
-  tx('o8d',S.fusD?S.fusD.toFixed(2)+'m':'--');
+  tx('o8mb',fB?fB.toFixed(0)+'px ✓':'awaiting pose');
+  tx('o8maf',fd8&&fB?fB.toFixed(0)+'px (refined)':(fd8?'need pose':'N/A'));
+  const dNote=S.fusD?S.fusD.toFixed(2)+'m'+(S.hol.distSrc==='camera AF'?' · AF':''):'--';
+  tx('o8d',dNote);
 
   S.animId=requestAnimationFrame(renderLoop);
 }

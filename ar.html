@@ -3,1010 +3,1064 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<title>SPATIAL · HOLISTIC</title>
+<title>SPATIAL</title>
 <link href="https://fonts.bunny.net/css?family=bebas-neue:400|ibm-plex-mono:400,500|barlow-condensed:400,600,700" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/exif-js@2.3.0/exif.js"></script>
 <style>
+/* ── RESET & TOKENS ─────────────────────────────── */
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 :root{
-  --ink:#080c11;--ink1:#0f1720;--ink2:#151f2c;
-  --a:#00f5c4;--b:#5b8fff;--c:#ff4757;--d:#ffd32a;--e:#c44dff;
-  --dim:rgba(0,245,196,.4);--bdr:rgba(0,245,196,.14);--bdr2:rgba(0,245,196,.06);
-  --txt:#cce8e0;--mut:rgba(180,220,210,.3);
-  --mono:'IBM Plex Mono',monospace;--cond:'Barlow Condensed',sans-serif;--disp:'Bebas Neue',sans-serif;
-  --sb:max(env(safe-area-inset-bottom,0px),8px);
+  --bg:#070a0e;--s1:#0c1118;--s2:#111822;
+  --g:#00e8b8;--b:#4882ff;--pu:#b060f0;--y:#f0b830;--r:#f04050;
+  --gd:rgba(0,232,184,.45);--gl:rgba(0,232,184,.13);--gf:rgba(0,232,184,.055);
+  --t:#c2e0d8;--tm:rgba(170,210,200,.32);
+  --FD:'Bebas Neue',sans-serif;
+  --FC:'Barlow Condensed',sans-serif;
+  --FM:'IBM Plex Mono',monospace;
+  --safe:max(env(safe-area-inset-bottom,0px),8px);
 }
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html,body{height:100%;overflow:hidden;background:var(--ink);color:var(--txt)}
-body{font-family:var(--mono);display:flex;flex-direction:column;height:100dvh}
-body::before{content:'';position:fixed;inset:0;pointer-events:none;
-  background:
-    radial-gradient(ellipse 60% 30% at 50% -5%,rgba(0,245,196,.05),transparent),
-    linear-gradient(rgba(0,245,196,.015) 1px,transparent 1px) 0 0/22px 22px,
-    linear-gradient(90deg,rgba(0,245,196,.015) 1px,transparent 1px) 0 0/22px 22px}
+html,body{height:100%;background:var(--bg);color:var(--t);font-family:var(--FM);overflow:hidden}
+body{display:flex;flex-direction:column;height:100dvh}
 
-/* ── LOADING ─────────────────────────────────────────── */
-#LS{position:fixed;inset:0;z-index:900;background:var(--ink);
-  display:flex;flex-direction:column;align-items:center;padding:24px 16px 16px;gap:12px;overflow-y:auto}
-.brand h1{font-family:var(--disp);font-size:56px;letter-spacing:10px;
-  background:linear-gradient(135deg,var(--a),var(--b));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.brand p{font-family:var(--cond);font-size:10px;font-weight:700;letter-spacing:3px;color:var(--dim);
-  text-align:center;text-transform:uppercase;margin-top:3px}
-.pgw{width:100%;max-width:400px}
-.pgl{display:flex;justify-content:space-between;font-size:8.5px;color:var(--dim);
-  margin-bottom:5px;font-family:var(--cond);font-weight:600;letter-spacing:.5px;text-transform:uppercase}
-.pgt{height:3px;background:rgba(0,245,196,.07);border-radius:2px;overflow:hidden}
-.pgb{height:100%;width:0%;background:linear-gradient(90deg,var(--a),var(--b));
-  border-radius:2px;transition:width .3s ease}
-.mods{width:100%;max-width:400px;display:flex;flex-direction:column;gap:4px}
-.mod{display:flex;align-items:center;gap:10px;background:rgba(0,245,196,.018);
-  border:1px solid var(--bdr2);border-radius:5px;padding:8px 10px;transition:all .25s}
-.mod.loading{border-color:rgba(0,245,196,.3);background:rgba(0,245,196,.03)}
-.mod.done{border-color:rgba(0,245,196,.28)}
-.mod.fail{border-color:rgba(255,71,87,.3);background:rgba(255,71,87,.03)}
-.mod.warn{border-color:rgba(255,211,42,.3);background:rgba(255,211,42,.02)}
-.mod-ico{font-size:16px;flex-shrink:0;width:24px;text-align:center}
-.mod-info{flex:1;min-width:0}
-.mod-name{font-family:var(--cond);font-size:11px;font-weight:700;letter-spacing:.3px}
-.mod-msg{font-size:7.5px;color:var(--mut);margin-top:2px;
+/* ── HOME ─────────────────────────────────────────── */
+#home{
+  position:fixed;inset:0;z-index:99;background:var(--bg);
+  display:flex;flex-direction:column;align-items:center;
+  padding:22px 14px 14px;overflow-y:auto;gap:12px
+}
+.ht{text-align:center}
+.ht h1{
+  font-family:var(--FD);font-size:58px;letter-spacing:10px;line-height:1;
+  background:linear-gradient(135deg,var(--g) 20%,var(--b) 80%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent
+}
+.ht p{
+  font-family:var(--FC);font-size:9px;font-weight:700;letter-spacing:3px;
+  color:var(--gd);text-transform:uppercase;margin-top:4px
+}
+
+/* progress */
+.pg-wrap{width:100%;max-width:430px}
+.pg-head{
+  display:flex;justify-content:space-between;align-items:center;
+  font-family:var(--FC);font-size:8px;font-weight:700;letter-spacing:.5px;
+  text-transform:uppercase;color:var(--gd);margin-bottom:5px
+}
+.pg-track{height:3px;background:rgba(0,232,184,.07);border-radius:2px;overflow:hidden;position:relative}
+.pg-fill{
+  height:100%;width:0%;
+  background:linear-gradient(90deg,var(--g),var(--b));
+  border-radius:2px;transition:width .3s cubic-bezier(.4,0,.2,1)
+}
+.pg-shine{
+  position:absolute;top:0;right:-50px;width:50px;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.55));
+  animation:shine 1s linear infinite;display:none
+}
+@keyframes shine{from{right:-50px}to{right:110%}}
+
+/* step rows */
+.steps{width:100%;max-width:430px;display:flex;flex-direction:column;gap:3px}
+.step{
+  display:flex;align-items:center;gap:8px;
+  background:var(--gf);border:1px solid rgba(0,232,184,.07);
+  border-radius:5px;padding:8px 10px;min-height:50px;transition:border-color .2s,background .2s
+}
+.step.s-loading{border-color:rgba(0,232,184,.3);background:rgba(0,232,184,.04)}
+.step.s-ok     {border-color:rgba(0,232,184,.24)}
+.step.s-fail   {border-color:rgba(240,64,80,.3);background:rgba(240,64,80,.04)}
+.step.s-skip   {border-color:rgba(240,184,48,.2);background:rgba(240,184,48,.02)}
+.step.s-wait   {opacity:.5}
+.st-ico{font-size:14px;width:20px;text-align:center;flex-shrink:0}
+.st-body{flex:1;min-width:0}
+.st-name{
+  font-family:var(--FC);font-size:10.5px;font-weight:700;letter-spacing:.3px;
+  display:flex;align-items:center;gap:5px;flex-wrap:wrap
+}
+.opt-tag{
+  font-size:6.5px;font-family:var(--FC);font-weight:800;padding:1px 5px;
+  border-radius:2px;border:1px solid rgba(240,184,48,.5);color:var(--y);
+  letter-spacing:.5px;text-transform:uppercase
+}
+.st-msg{font-size:7px;color:var(--tm);margin-top:2px;font-family:var(--FM);
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.mod-tag{font-size:7px;font-family:var(--cond);font-weight:700;padding:2px 7px;
-  border-radius:2px;border:1px solid currentColor;text-transform:uppercase;flex-shrink:0}
-.tag-w{color:var(--dim)}.tag-l{color:var(--a)}.tag-ok{color:var(--a)}.tag-f{color:var(--c)}.tag-n{color:var(--d)}
-#btn-start{background:var(--a);color:var(--ink);border:none;padding:16px;border-radius:4px;
-  font-family:var(--disp);font-size:22px;letter-spacing:5px;cursor:pointer;width:100%;max-width:400px}
-#btn-start:disabled{opacity:.35;cursor:not-allowed}
-#btn-start:active{opacity:.78}
-.ls-note{font-size:7px;color:var(--mut);text-align:center;line-height:2;max-width:380px}
+.st-right{display:flex;align-items:center;gap:5px;flex-shrink:0}
+.st-tag{
+  font-size:7px;font-family:var(--FC);font-weight:800;letter-spacing:.3px;
+  padding:2px 7px;border-radius:2px;border:1px solid currentColor;text-transform:uppercase
+}
+.tg-wait{color:var(--gd)}.tg-load{color:var(--g)}.tg-ok{color:var(--g)}
+.tg-fail{color:var(--r)}.tg-skip{color:var(--y)}
+.st-retry{
+  background:transparent;color:var(--r);border:1px solid rgba(240,64,80,.32);
+  padding:3px 8px;border-radius:2px;font-family:var(--FC);font-weight:800;
+  font-size:7px;letter-spacing:.4px;text-transform:uppercase;cursor:pointer;display:none
+}
+.st-retry:active{background:rgba(240,64,80,.12)}
 
-/* ── APP ─────────────────────────────────────────────── */
-#APP{display:none;flex-direction:column;height:100dvh;position:relative}
+/* buttons */
+.home-btns{width:100%;max-width:430px;display:flex;flex-direction:column;gap:5px}
+#btn-load{
+  width:100%;background:var(--g);color:#040709;border:none;
+  font-family:var(--FD);font-size:22px;letter-spacing:5px;
+  padding:14px;border-radius:3px;cursor:pointer
+}
+#btn-load:disabled{opacity:.3;cursor:not-allowed}
+#btn-load:active{opacity:.8}
+#btn-skip{
+  width:100%;background:transparent;border:1px solid var(--gl);
+  font-family:var(--FC);font-weight:700;font-size:9px;letter-spacing:2px;
+  text-transform:uppercase;padding:10px;border-radius:3px;
+  color:var(--tm);cursor:pointer;display:none
+}
+#btn-skip:active{background:rgba(0,232,184,.05)}
+.home-note{
+  font-size:7px;color:var(--tm);text-align:center;line-height:2;
+  max-width:420px;font-family:var(--FM)
+}
 
-/* 3:4 portrait camera box */
-.cambox{position:relative;flex-shrink:0;background:#000;overflow:hidden;
-  width:100%;aspect-ratio:3/4;max-height:58vh}
-.cambox video,.cambox canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.cambox canvas{pointer-events:none}
+/* ── APP SHELL ────────────────────────────────────── */
+#app{display:none;flex-direction:column;height:100dvh}
+
+/* tab bar */
+#tabs{
+  display:flex;flex-shrink:0;
+  background:var(--s1);border-bottom:1px solid var(--gl)
+}
+.tab{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:1px;height:46px;font-family:var(--FC);font-size:8.5px;font-weight:700;
+  letter-spacing:.8px;text-transform:uppercase;color:var(--tm);
+  border:none;background:transparent;cursor:pointer;
+  border-bottom:2px solid transparent;transition:color .15s,border-color .15s
+}
+.tab.on{color:var(--g);border-bottom-color:var(--g)}
+.ti{font-size:16px;line-height:1}
+
+/* panes */
+#panes{flex:1;position:relative;overflow:hidden}
+.pane{display:none;flex-direction:column;position:absolute;inset:0}
+.pane.on{display:flex}
+
+/* ── 3:4 CAMERA ──────────────────────────────────── */
+.cam{
+  position:relative;flex-shrink:0;width:100%;
+  aspect-ratio:3/4;max-height:58vh;background:#000;overflow:hidden
+}
+.cam video,.cam canvas{
+  position:absolute;inset:0;width:100%;height:100%;object-fit:cover
+}
+.cam canvas{pointer-events:none}
 /* corner brackets */
-.cb::before,.cb::after,.cb2::before,.cb2::after{
-  content:'';position:absolute;width:16px;height:16px;
-  border-style:solid;border-color:rgba(0,245,196,.6);pointer-events:none}
-.cb::before{top:6px;left:6px;border-width:2px 0 0 2px}
-.cb::after{top:6px;right:6px;border-width:2px 2px 0 0}
-.cb2::before{bottom:6px;left:6px;border-width:0 0 2px 2px}
-.cb2::after{bottom:6px;right:6px;border-width:0 2px 2px 0}
-/* scan line */
-.scanline{position:absolute;left:0;right:0;height:1px;
-  background:linear-gradient(90deg,transparent,rgba(0,245,196,.5),transparent);
-  animation:scn 4s linear infinite;opacity:0}
-@keyframes scn{0%{top:0;opacity:0}4%{opacity:.4}95%{opacity:.4}100%{top:100%;opacity:0}}
-/* HUD status chip */
-.hud-status{position:absolute;top:8px;left:50%;transform:translateX(-50%);
-  font-family:var(--cond);font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
-  padding:3px 10px;border-radius:2px;border:1px solid;pointer-events:none;
-  background:rgba(8,12,17,.7);backdrop-filter:blur(4px)}
-.hud-status.live{color:var(--a);border-color:rgba(0,245,196,.5)}
-.hud-status.wait{color:var(--d);border-color:rgba(255,211,42,.4)}
-.hud-status.fail{color:var(--c);border-color:rgba(255,71,87,.4)}
+.cam::before,.cam::after,
+.cam-b::before,.cam-b::after{
+  content:'';position:absolute;z-index:3;pointer-events:none;
+  width:16px;height:16px;border:1.5px solid rgba(0,232,184,.5)
+}
+.cam::before{top:7px;left:7px;border-right:none;border-bottom:none}
+.cam::after {top:7px;right:7px;border-left:none;border-bottom:none}
+.cam-b{position:absolute;inset:0;z-index:3;pointer-events:none}
+.cam-b::before{bottom:7px;left:7px;border-right:none;border-top:none}
+.cam-b::after {bottom:7px;right:7px;border-left:none;border-top:none}
+/* scan */
+.scanline{
+  position:absolute;left:0;right:0;height:1px;z-index:4;pointer-events:none;
+  background:linear-gradient(90deg,transparent,rgba(0,232,184,.55),transparent);
+  animation:scn 5s linear infinite;opacity:0
+}
+@keyframes scn{0%{top:0;opacity:0}3%{opacity:.4}95%{opacity:.4}100%{top:100%;opacity:0}}
+/* model status chip */
+.cam-chip{
+  position:absolute;top:7px;left:50%;transform:translateX(-50%);
+  z-index:5;pointer-events:none;white-space:nowrap;
+  font-family:var(--FC);font-size:8.5px;font-weight:800;letter-spacing:1.5px;
+  text-transform:uppercase;padding:3px 10px;border-radius:2px;border:1px solid;
+  background:rgba(6,9,14,.8);backdrop-filter:blur(6px)
+}
+.chip-wait{color:var(--y);border-color:rgba(240,184,48,.38)}
+.chip-live{color:var(--g);border-color:rgba(0,232,184,.45)}
+.chip-fail{color:var(--r);border-color:rgba(240,64,80,.38)}
 
-/* ── BIG 3-METRIC BAR ────────────────────────────────── */
-.metbar{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;
-  padding:5px 6px;flex-shrink:0}
-.met{background:var(--ink1);border:1px solid var(--bdr);border-radius:5px;
-  padding:6px 8px;position:relative;overflow:hidden}
-.met::after{content:'';position:absolute;top:0;left:0;right:0;height:1.5px;background:var(--a)}
-.met.b::after{background:var(--b)}.met.e::after{background:var(--e)}
-.ml{font-family:var(--cond);font-size:7px;font-weight:600;letter-spacing:.8px;
-  text-transform:uppercase;color:var(--dim);margin-bottom:2px}
-.mv{font-family:var(--disp);font-size:26px;color:var(--a);line-height:1}
-.mv.b{color:var(--b)}.mv.e{color:var(--e)}.mv.na{color:rgba(0,245,196,.25)}
-.mu{font-size:10px;color:var(--dim);margin-left:1px;font-family:var(--cond)}
-.ms{font-size:6.5px;color:rgba(0,245,196,.3);margin-top:2px;
-  font-family:var(--mono);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* ── 3 NUMBERS ───────────────────────────────────── */
+.nums{
+  display:grid;grid-template-columns:1fr 1fr 1fr;
+  gap:4px;padding:5px 6px;flex-shrink:0
+}
+.num{
+  background:var(--s1);border:1px solid var(--gl);
+  border-radius:4px;padding:6px 8px;position:relative;overflow:hidden
+}
+.num::before{content:'';position:absolute;top:0;left:0;right:0;height:1.5px}
+.n0::before{background:var(--g)}
+.n1::before{background:var(--b)}
+.n2::before{background:var(--pu)}
+.nk{font-family:var(--FC);font-size:7px;font-weight:700;letter-spacing:.6px;
+  text-transform:uppercase;color:var(--gd);display:block;margin-bottom:2px}
+.nv{font-family:var(--FD);font-size:27px;line-height:1}
+.nv.g{color:var(--g)}.nv.b{color:var(--b)}.nv.p{color:var(--pu)}
+.nu{font-size:10px;font-family:var(--FC);color:var(--gd)}
+.ns{font-size:6px;color:rgba(0,232,184,.28);margin-top:2px;
+  font-family:var(--FM);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
-/* ── DETAIL PANEL (scrolls) ──────────────────────────── */
-.det{flex:1;overflow-y:auto;min-height:0;padding:4px 6px 8px}
+/* ── DETAIL ──────────────────────────────────────── */
+.det{flex:1;overflow-y:auto;min-height:0;padding:4px 6px 6px}
 .det::-webkit-scrollbar{width:2px}
-.det::-webkit-scrollbar-thumb{background:var(--bdr);border-radius:1px}
-.sec{font-family:var(--cond);font-size:8px;font-weight:700;letter-spacing:2px;
-  text-transform:uppercase;color:var(--dim);margin:10px 0 4px;
-  display:flex;align-items:center;gap:6px}
+.det::-webkit-scrollbar-thumb{background:var(--gl)}
+.sec{
+  font-family:var(--FC);font-size:7.5px;font-weight:700;letter-spacing:2px;
+  text-transform:uppercase;color:var(--gd);
+  display:flex;align-items:center;gap:5px;margin:8px 0 4px
+}
 .sec:first-child{margin-top:0}
-.sec::after{content:'';flex:1;height:1px;background:var(--bdr2)}
-.g2{display:grid;grid-template-columns:1fr 1fr;gap:3px;margin-bottom:4px}
-.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:3px;margin-bottom:4px}
-.cell{background:rgba(0,245,196,.02);border:1px solid var(--bdr2);border-radius:3px;padding:5px 7px}
-.cl{font-size:6.5px;color:var(--dim);font-family:var(--cond);font-weight:600;
-  letter-spacing:.3px;margin-bottom:2px}
-.cv{font-family:var(--disp);font-size:16px;color:var(--a);line-height:1}
-.cv.b{color:var(--b)}.cv.c{color:var(--c)}.cv.d{color:var(--d)}.cv.e{color:var(--e)}
-.cu{font-size:7px;color:var(--dim)}
-.card{background:rgba(0,245,196,.015);border:1px solid var(--bdr);border-radius:4px;
-  padding:7px 9px;margin-bottom:4px}
-.row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:3px}
-.row:last-child{margin-bottom:0}
-.rk{font-size:7.5px;color:var(--mut);font-family:var(--cond);font-weight:600;flex-shrink:0;margin-right:8px}
-.rv{font-size:7.5px;color:var(--a);font-family:var(--mono);text-align:right}
-.rv.b{color:var(--b)}.rv.w{color:var(--d)}.rv.ok{color:var(--a)}.rv.f{color:var(--c)}.rv.dim{color:var(--mut)}
-/* confidence bars */
-.cbar{display:flex;align-items:center;gap:5px;margin-bottom:3px}
-.cbl{font-size:7px;color:var(--mut);width:72px;flex-shrink:0;font-family:var(--cond);font-weight:600}
-.cbt{flex:1;height:3px;background:rgba(0,245,196,.06);border-radius:2px;overflow:hidden}
-.cbf{height:100%;border-radius:2px;transition:width .5s ease;background:var(--a)}
-.cbf.b{background:var(--b)}.cbf.e{background:var(--e)}.cbf.w{background:var(--d)}
-.cbp{font-size:7px;color:var(--a);width:24px;text-align:right;flex-shrink:0;font-family:var(--mono)}
-/* source chips */
-.chips{display:flex;flex-wrap:wrap;gap:3px;margin-bottom:4px}
-.chip{font-size:7px;font-family:var(--cond);font-weight:700;letter-spacing:.5px;
-  padding:2px 7px;border-radius:2px;border:1px solid;text-transform:uppercase}
-.chip.ok{border-color:rgba(0,245,196,.4);color:var(--a);background:rgba(0,245,196,.07)}
-.chip.act{border-color:rgba(0,245,196,.7);color:var(--ink);background:var(--a)}
-.chip.w{border-color:rgba(255,211,42,.4);color:var(--d);background:rgba(255,211,42,.06)}
-.chip.off{border-color:var(--bdr2);color:var(--mut)}
-.chip.b{border-color:rgba(91,143,255,.4);color:var(--b);background:rgba(91,143,255,.07)}
-/* log */
-.log{background:var(--ink2);border:1px solid var(--bdr2);border-radius:3px;
-  padding:5px 7px;font-size:7px;color:var(--mut);line-height:2;
-  max-height:80px;overflow-y:auto;margin-bottom:4px}
-.log::-webkit-scrollbar{width:2px}
-.log::-webkit-scrollbar-thumb{background:var(--bdr)}
-.ll.ok{color:var(--a)}.ll.err{color:var(--c)}.ll.info{color:var(--b)}.ll.w{color:var(--d)}
-.safe{height:var(--sb)}
+.sec::after{content:'';flex:1;height:1px;background:rgba(0,232,184,.07)}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:3px;margin-bottom:3px}
+.cell{background:var(--gf);border:1px solid rgba(0,232,184,.07);border-radius:3px;padding:5px 7px}
+.ck{font-size:6.5px;color:var(--tm);font-family:var(--FC);font-weight:600;margin-bottom:1px}
+.cv{font-family:var(--FD);font-size:15px;color:var(--g);line-height:1}
+.cv.b{color:var(--b)}.cv.y{color:var(--y)}.cv.na{color:rgba(0,232,184,.2)}
+.cu{font-size:7px;color:var(--gd)}
+.kvc{
+  background:var(--gf);border:1px solid var(--gl);
+  border-radius:4px;padding:7px 9px;margin-bottom:3px
+}
+.kv{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:3px}
+.kv:last-child{margin-bottom:0}
+.kk{font-size:7.5px;color:var(--tm);font-family:var(--FC);font-weight:600;flex-shrink:0;margin-right:6px}
+.kv-v{font-size:7.5px;color:var(--g);font-family:var(--FM);text-align:right}
+.kv-v.b{color:var(--b)}.kv-v.y{color:var(--y)}.kv-v.na{color:var(--tm)}
+.safe{height:var(--safe)}
 </style>
 </head>
 <body>
 
-<!-- ═════════ LOADING ═════════ -->
-<div id="LS">
-  <div class="brand"><h1>SPATIAL</h1><p>HolisticLandmarker · Focus Distance · All Sensors</p></div>
-  <div class="pgw">
-    <div class="pgl"><span id="pg-label">Waiting</span><span id="pg-n">0/3</span></div>
-    <div class="pgt"><div class="pgb" id="pgb"></div></div>
+<!-- ════════════════ HOME SCREEN ════════════════ -->
+<div id="home">
+  <div class="ht">
+    <h1>SPATIAL</h1>
+    <p>Camera Height · Person Distance · Person Height</p>
   </div>
-  <div class="mods" id="mods"></div>
-  <div class="ls-note">
-    Camera focus distance via 4 methods: track API · EXIF takePhoto · applyConstraints · worldLandmarks self-cal<br>
-    DepthPro excluded: smallest ONNX = 572MB (3.5GB with data file) — not viable on smartphone<br>
-    HolisticLandmarker 13MB · body mask · face mask · hand masks · all landmarks
+
+  <!-- progress bar -->
+  <div class="pg-wrap">
+    <div class="pg-head">
+      <span id="pg-lbl">Ready to load</span>
+      <span id="pg-cnt">0 / 7</span>
+    </div>
+    <div class="pg-track">
+      <div class="pg-fill" id="pg-fill"></div>
+      <div class="pg-shine" id="pg-shine"></div>
+    </div>
   </div>
-  <button id="btn-start">▸ LOAD</button>
+
+  <!-- 7 step rows (built by JS) -->
+  <div class="steps" id="steps"></div>
+
+  <!-- action buttons -->
+  <div class="home-btns">
+    <div class="home-note">
+      Required: Camera · MediaPipe ESM · HolisticLandmarker<br>
+      Optional: EXIF focus · Camera AF · DeviceMotion IMU · applyConstraints<br>
+      All processing on-device · @mediapipe/tasks-vision@latest
+    </div>
+    <button id="btn-load" onclick="loadAll()">▸ LOAD ALL</button>
+    <button id="btn-skip" onclick="launch()">⟶ SKIP — launch with what's loaded</button>
+  </div>
 </div>
 
-<!-- ═════════ APP ═════════ -->
-<div id="APP">
-
-  <div class="cambox cb cb2">
-    <video id="vid" autoplay playsinline muted></video>
-    <canvas id="cvs"></canvas>
-    <div class="scanline"></div>
-    <div class="hud-status wait" id="hud">Loading…</div>
+<!-- ════════════════ APP ════════════════ -->
+<div id="app">
+  <div id="tabs">
+    <button class="tab on" id="tab0" onclick="GT(0)">
+      <span class="ti">🤸</span>HOLISTIC
+    </button>
+    <button class="tab" id="tab1" onclick="GT(1)">
+      <span class="ti">📷</span>FOCUS
+    </button>
   </div>
 
-  <div class="metbar">
-    <div class="met">
-      <div class="ml">Cam Height</div>
-      <span class="mv" id="mH">--</span><span class="mu">m</span>
-      <div class="ms" id="mHs">–</div>
-    </div>
-    <div class="met b">
-      <div class="ml">Distance</div>
-      <span class="mv b" id="mD">--</span><span class="mu">m</span>
-      <div class="ms" id="mDs">–</div>
-    </div>
-    <div class="met e">
-      <div class="ml">Person H</div>
-      <span class="mv e" id="mP">--</span><span class="mu">m</span>
-      <div class="ms">world lm</div>
-    </div>
-  </div>
+  <div id="panes">
 
-  <div class="det">
-    <!-- Focus distance sources -->
-    <div class="sec">Distance Sources</div>
-    <div class="chips" id="src-chips">
-      <span class="chip off" id="chip-af">TRACK AF</span>
-      <span class="chip off" id="chip-exif">EXIF PHOTO</span>
-      <span class="chip off" id="chip-geo">GEOMETRY</span>
-      <span class="chip off" id="chip-imu">IMU</span>
-    </div>
-    <div class="card">
-      <div class="row"><span class="rk">Track focusDistance</span><span class="rv b" id="d-af">N/A</span></div>
-      <div class="row"><span class="rk">EXIF SubjectDistance</span><span class="rv ok" id="d-exif">–</span></div>
-      <div class="row"><span class="rk">EXIF FocalLength35mm</span><span class="rv" id="d-fl35">–</span></div>
-      <div class="row"><span class="rk">Geometry self-cal</span><span class="rv ok" id="d-geo">–</span></div>
-      <div class="row"><span class="rk">IMU-anchored</span><span class="rv" id="d-imu">–</span></div>
-      <div class="row"><span class="rk">BEST focal_px</span><span class="rv ok" id="d-focal">–</span></div>
-    </div>
-
-    <!-- Holistic results -->
-    <div class="sec">Holistic Landmarks</div>
-    <div class="g3">
-      <div class="cell"><div class="cl">Pose lm</div><div class="cv" id="h-pl">--</div></div>
-      <div class="cell"><div class="cl">Face lm</div><div class="cv b" id="h-fl">--</div></div>
-      <div class="cell"><div class="cl">Hands</div><div class="cv e" id="h-hn">--</div></div>
-    </div>
-    <div class="g3">
-      <div class="cell"><div class="cl">Body mask</div><div class="cv" id="h-bm">--</div></div>
-      <div class="cell"><div class="cl">Face mask</div><div class="cv b" id="h-fm">--</div></div>
-      <div class="cell"><div class="cl">FPS</div><div class="cv" id="h-fps">--</div></div>
+    <!-- ══ TAB 0 HOLISTIC ══ -->
+    <div class="pane on" id="p0">
+      <div class="cam" id="cam0">
+        <video id="v0" autoplay playsinline muted></video>
+        <canvas id="c0"></canvas>
+        <div class="cam-b"></div>
+        <div class="scanline"></div>
+        <div class="cam-chip chip-wait" id="chip0">Loading…</div>
+      </div>
+      <div class="nums">
+        <div class="num n0">
+          <span class="nk">Cam Height</span>
+          <span class="nv g" id="H0">--</span><span class="nu"> m</span>
+          <div class="ns" id="H0s">ankle→ground</div>
+        </div>
+        <div class="num n1">
+          <span class="nk">Distance</span>
+          <span class="nv b" id="D0">--</span><span class="nu"> m</span>
+          <div class="ns" id="D0s">self-cal</div>
+        </div>
+        <div class="num n2">
+          <span class="nk">Person H</span>
+          <span class="nv p" id="P0">--</span><span class="nu"> m</span>
+          <div class="ns">world lm</div>
+        </div>
+      </div>
+      <div class="det">
+        <div class="sec">World Coordinates (metres · hip origin)</div>
+        <div class="g3">
+          <div class="cell"><div class="ck">Nose Y</div><div class="cv" id="wny">--<span class="cu">m</span></div></div>
+          <div class="cell"><div class="ck">Ankle Y</div><div class="cv" id="way">--<span class="cu">m</span></div></div>
+          <div class="cell"><div class="ck">Hip dist</div><div class="cv b" id="whd">--<span class="cu">m</span></div></div>
+        </div>
+        <div class="sec">Self-Calibration</div>
+        <div class="g3">
+          <div class="cell"><div class="ck">focal px</div><div class="cv" id="fp0">--</div></div>
+          <div class="cell"><div class="ck">FOV est</div><div class="cv b" id="fv0">--<span class="cu">°</span></div></div>
+          <div class="cell"><div class="ck">FPS</div><div class="cv" id="fps0">--</div></div>
+        </div>
+        <div class="safe"></div>
+      </div>
     </div>
 
-    <!-- Body world measurements -->
-    <div class="sec">World Measurements (metres)</div>
-    <div class="g3">
-      <div class="cell"><div class="cl">Nose Y</div><div class="cv" id="w-ny">--<span class="cu">m</span></div></div>
-      <div class="cell"><div class="cl">Ankle Y</div><div class="cv" id="w-ay">--<span class="cu">m</span></div></div>
-      <div class="cell"><div class="cl">Hip D (Z)</div><div class="cv b" id="w-d">--<span class="cu">m</span></div></div>
-    </div>
-    <div class="g3">
-      <div class="cell"><div class="cl">Shoulder W</div><div class="cv" id="w-sw">--<span class="cu">m</span></div></div>
-      <div class="cell"><div class="cl">Torso H</div><div class="cv" id="w-th">--<span class="cu">m</span></div></div>
-      <div class="cell"><div class="cl">Leg H</div><div class="cv" id="w-lh">--<span class="cu">m</span></div></div>
+    <!-- ══ TAB 1 FOCUS ══ -->
+    <div class="pane" id="p1">
+      <div class="cam" id="cam1">
+        <video id="v1" autoplay playsinline muted></video>
+        <canvas id="c1"></canvas>
+        <div class="cam-b"></div>
+        <div class="scanline"></div>
+        <div class="cam-chip chip-wait" id="chip1">Focus</div>
+      </div>
+      <div class="nums">
+        <div class="num n0">
+          <span class="nk">Cam Height</span>
+          <span class="nv g" id="H1">--</span><span class="nu"> m</span>
+          <div class="ns" id="H1s">–</div>
+        </div>
+        <div class="num n1">
+          <span class="nk">Distance</span>
+          <span class="nv b" id="D1">--</span><span class="nu"> m</span>
+          <div class="ns" id="D1s">–</div>
+        </div>
+        <div class="num n2">
+          <span class="nk">Person H</span>
+          <span class="nv p" id="P1">--</span><span class="nu"> m</span>
+          <div class="ns" id="P1s">–</div>
+        </div>
+      </div>
+      <div class="det">
+        <div class="sec">Focus Distance (3 methods)</div>
+        <div class="kvc">
+          <div class="kv"><span class="kk">① track.getSettings().focusDistance</span><span class="kv-v b" id="fd1">–</span></div>
+          <div class="kv"><span class="kk">② EXIF SubjectDistance (takePhoto)</span><span class="kv-v" id="fd2">–</span></div>
+          <div class="kv"><span class="kk">③ Geometry self-cal (worldLandmarks)</span><span class="kv-v" id="fd3">–</span></div>
+          <div class="kv"><span class="kk">▶ Best</span><span class="kv-v b" id="fdbest">–</span></div>
+          <div class="kv"><span class="kk">Source</span><span class="kv-v y" id="fdsrc">–</span></div>
+        </div>
+        <div class="sec">Focal Derivation</div>
+        <div class="kvc">
+          <div class="kv"><span class="kk">A · EXIF FocalLength35mm</span><span class="kv-v" id="foca">–</span></div>
+          <div class="kv"><span class="kk">B · Pose self-cal</span><span class="kv-v" id="focb">–</span></div>
+          <div class="kv"><span class="kk">C · Assumed 70° FOV</span><span class="kv-v na" id="focc">–</span></div>
+        </div>
+        <div class="sec">Camera Capabilities</div>
+        <div class="kvc">
+          <div class="kv"><span class="kk">focusDistance range</span><span class="kv-v" id="cap-fdr">–</span></div>
+          <div class="kv"><span class="kk">focusMode options</span><span class="kv-v" id="cap-fmo">–</span></div>
+          <div class="kv"><span class="kk">applyConstraints</span><span class="kv-v" id="cap-ac">–</span></div>
+        </div>
+        <div class="safe"></div>
+      </div>
     </div>
 
-    <!-- Confidence -->
-    <div class="sec">Confidence</div>
-    <div class="cbar"><div class="cbl">Holistic</div><div class="cbt"><div class="cbf" id="cb-h" style="width:0%"></div></div><div class="cbp" id="cbp-h">0%</div></div>
-    <div class="cbar"><div class="cbl">Focus dist</div><div class="cbt"><div class="cbf b" id="cb-f" style="width:0%"></div></div><div class="cbp b" id="cbp-f">0%</div></div>
-    <div class="cbar"><div class="cbl">IMU</div><div class="cbt"><div class="cbf w" id="cb-i" style="width:0%"></div></div><div class="cbp w" id="cbp-i">0%</div></div>
-
-    <!-- Camera track info -->
-    <div class="sec">Camera Track</div>
-    <div class="card">
-      <div class="row"><span class="rk">Resolution</span><span class="rv" id="cam-res">–</span></div>
-      <div class="row"><span class="rk">track.getSettings().focusDistance</span><span class="rv b" id="cam-fd">checking…</span></div>
-      <div class="row"><span class="rk">track.getCapabilities().focusDistance</span><span class="rv" id="cam-fdc">checking…</span></div>
-      <div class="row"><span class="rk">zoom</span><span class="rv" id="cam-z">–</span></div>
-      <div class="row"><span class="rk">focusMode capability</span><span class="rv" id="cam-fm">–</span></div>
-      <div class="row"><span class="rk">applyConstraints status</span><span class="rv" id="cam-ac">pending…</span></div>
-    </div>
-
-    <!-- IMU -->
-    <div class="sec">IMU / DeviceMotion</div>
-    <div class="g3">
-      <div class="cell"><div class="cl">Pitch</div><div class="cv" id="imu-p">--<span class="cu">°</span></div></div>
-      <div class="cell"><div class="cl">Tilt err</div><div class="cv w" id="imu-t">--<span class="cu">°</span></div></div>
-      <div class="cell"><div class="cl">Samples</div><div class="cv" id="imu-s">--</div></div>
-    </div>
-
-    <!-- Log -->
-    <div class="sec">Event Log</div>
-    <div class="log" id="log"></div>
-    <div class="safe"></div>
   </div>
 </div>
 
 <script type="module">
 'use strict';
-/* ═══════════════════════════════════════════════════════════
-   CONSTANTS — all verified 200 OK
-═══════════════════════════════════════════════════════════ */
-const MP_MJS  = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/vision_bundle.mjs';
-const MP_WASM_JS  = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm/vision_wasm_internal.js';
-const MP_WASM_BIN = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm/vision_wasm_internal.wasm';
-const HOLISTIC_URL = 'https://storage.googleapis.com/mediapipe-models/holistic_landmarker/holistic_landmarker/float16/latest/holistic_landmarker.task';
 
-/* ═══════════════════════════════════════════════════════════
-   STATE
-═══════════════════════════════════════════════════════════ */
+/* ════════════════════════════════════════════════
+   URLS  — exactly as specified by user
+════════════════════════════════════════════════ */
+const MP_MJS  = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/vision_bundle.mjs';
+const MP_WASM = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm';
+const HOLISTIC= 'https://storage.googleapis.com/mediapipe-models/holistic_landmarker/holistic_landmarker/float16/latest/holistic_landmarker.task';
+const DEG     = Math.PI / 180;
+
+/* ════════════════════════════════════════════════
+   STEP DEFINITIONS  (id · icon · label · required)
+════════════════════════════════════════════════ */
+const STEPS = [
+  {id:'cam', ico:'📷', name:'Camera (rear)',               req:true},
+  {id:'esm', ico:'⚙️', name:'MediaPipe Tasks @latest',      req:true},
+  {id:'hol', ico:'🤸', name:'HolisticLandmarker (13 MB)',   req:true},
+  {id:'ic',  ico:'📸', name:'ImageCapture + EXIF focus',    req:false},
+  {id:'afd', ico:'🔭', name:'Camera AF focusDistance',      req:false},
+  {id:'imu', ico:'📡', name:'DeviceMotion IMU',             req:false},
+  {id:'sk',  ico:'🔬', name:'applyConstraints focusMode',   req:false},
+];
+const St = {};
+STEPS.forEach(s => { St[s.id] = {state:'wait', msg:'Waiting…'}; });
+
+/* ════════════════════════════════════════════════
+   GLOBAL STATE
+════════════════════════════════════════════════ */
 const S = {
   stream:null, track:null, vW:0, vH:0,
-  ic:null,               // ImageCapture instance
-  MP:{},                 // MediaPipe ESM exports
-  holistic:null,         // HolisticLandmarker instance
-  active:false,
-  // Focus distance from 4 methods
-  fd_track:null,         // track.getSettings().focusDistance
-  fd_exif:null,          // EXIF SubjectDistance from takePhoto()
-  fd_geo:null,           // geometry self-calibration
-  fd_imu:null,           // IMU + geometry
-  fd_best:null,          // fused best estimate
-  fd_conf:0,             // focus distance confidence
-  // Focal length
-  focal_px:null,         // best focal in pixels
-  focal_from_exif:null,  // derived from EXIF FocalLengthIn35mmFilm
-  fl35:null,             // EXIF FocalLengthIn35mmFilm value
-  focal_geo:null,        // from self-calibration
-  focal_assume:null,     // from assumed 70° FOV
+  MP:{},           // {FilesetResolver, HolisticLandmarker, vision}
+  hol:null,        // HolisticLandmarker instance
+  holReady:false,
   // Measurements
-  personH:null, camH:null, D_geo:null,
-  worldNose:null, worldAnkle:null,
-  shoulderW:null, torsoH:null, legH:null,
-  hConf:0,
-  // Body mask
-  bodyMaskPx:0, faceMaskPx:0,
-  // Counts
-  poseLm:0, faceLm:0, handN:0,
-  fps:0, _fc:0, _lt:0,
+  camH:null, dist:null, personH:null,
+  wNose:null, wAnkle:null,
+  focalGeo:null, focalExif:null, focalAsm:null,
+  hConf:0, fps:0, _fc:0, _lt:0,
+  // Focus
+  fdTrack:null, fdExif:null, fdGeo:null,
+  fdBest:null, fdSrc:'–',
+  fl35:null,
+  // ImageCapture
+  ic:null, exifBusy:false,
   // IMU
-  imu:{active:false,pitch:0,tilt:90,conf:0,samples:0,buf:[],gx:0,gy:0,gz:0},
-  // Camera capabilities
-  cap_fd_range:null, cap_focusModes:[],
-  constraints_applied:false,
-  exif_running:false, exif_interval:null,
+  imu:{active:false, pitch:0, tilt:90, conf:0, samples:0, buf:[]},
 };
+let _loading = false;
 
-/* ═══════════════════════════════════════════════════════════
+/* ════════════════════════════════════════════════
    HELPERS
-═══════════════════════════════════════════════════════════ */
-const _=id=>document.getElementById(id);
-const tx=(id,v)=>{const e=_(id);if(e)e.textContent=v;};
-const nm=(id,v,d=2)=>{const e=_(id);if(e)e.textContent=(v==null||isNaN(v))?'--':Number(v).toFixed(d);};
-const ts=()=>{const d=new Date();return`${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}:${d.getSeconds().toString().padStart(2,'0')}`;};
-function LOG(msg,t='info'){
-  const el=_('log');if(!el)return;
-  const d=document.createElement('div');d.className='ll '+t;
-  d.textContent=`[${ts()}] ${msg}`;
-  el.appendChild(d);el.scrollTop=el.scrollHeight;
-  // Keep max 60 lines
-  while(el.children.length>60)el.removeChild(el.firstChild);
-}
-function setCB(id,pct,sid){
-  const p=Math.min(100,Math.max(0,Math.round(pct)));
-  const b=_(id+'f')||_(id);if(b)b.style.width=p+'%';
-  if(sid)tx(sid,p+'%');
-}
-function chip(id,cls){const e=_(id);if(e)e.className='chip '+cls;}
+════════════════════════════════════════════════ */
+const _   = id => document.getElementById(id);
+const tx  = (id, v) => { const e=_(id); if(e) e.textContent=v; };
+const nm  = (id, v, d=2) => tx(id, v==null||isNaN(v) ? '--' : (+v).toFixed(d));
+const focalFromFOV  = (w, fov=70) => (w/2) / Math.tan(fov/2 * DEG);
+const focalFromFL35 = (fl, w)     => (w/2) / Math.tan(Math.atan(18/fl));
 
-/* ═══════════════════════════════════════════════════════════
-   LOADING UI
-═══════════════════════════════════════════════════════════ */
-const MODS=[
-  {id:'cam',ico:'📷',name:'Camera (rear HD)'},
-  {id:'mp', ico:'⚙️', name:'MediaPipe Tasks Vision ESM'},
-  {id:'hol',ico:'🤸',name:'HolisticLandmarker (13MB float16)'},
-  {id:'imu',ico:'📡',name:'DeviceMotion IMU'},
-  {id:'ic', ico:'📸',name:'ImageCapture + EXIF focus'},
-];
-const mSt={},mMsg={};
-MODS.forEach(m=>{mSt[m.id]='wait';mMsg[m.id]='Waiting…';});
-
-function renderMods(){
-  _('mods').innerHTML=MODS.map(m=>{
-    const s=mSt[m.id];
-    const tc=s==='done'||s==='ok'?'tag-ok':s==='fail'?'tag-f':s==='warn'?'tag-n':s==='loading'?'tag-l':'tag-w';
-    const tt=s==='done'||s==='ok'?'OK':s==='fail'?'FAIL':s==='warn'?'WARN':s==='loading'?'···':'WAIT';
-    return `<div class="mod ${s}" id="md${m.id}">
-      <span class="mod-ico">${m.ico}</span>
-      <div class="mod-info">
-        <div class="mod-name">${m.name}</div>
-        <div class="mod-msg" id="mm${m.id}">${mMsg[m.id]}</div>
+/* ════════════════════════════════════════════════
+   HOME SCREEN — build step rows
+════════════════════════════════════════════════ */
+function buildSteps() {
+  _('steps').innerHTML = STEPS.map(s => `
+    <div class="step s-wait" id="sr-${s.id}">
+      <span class="st-ico">${s.ico}</span>
+      <div class="st-body">
+        <div class="st-name">
+          ${s.name}
+          ${s.req ? '' : '<span class="opt-tag">optional</span>'}
+        </div>
+        <div class="st-msg" id="sm-${s.id}">Waiting…</div>
       </div>
-      <span class="mod-tag ${tc}" id="mt${m.id}">${tt}</span>
-    </div>`;
-  }).join('');
+      <div class="st-right">
+        <button class="st-retry" id="rb-${s.id}" onclick="retryStep('${s.id}')">↻ Retry</button>
+        <span class="st-tag tg-wait" id="st-${s.id}">WAIT</span>
+      </div>
+    </div>`).join('');
 }
-function SM(id,st,msg){
-  mSt[id]=st;mMsg[id]=msg;
-  const md=_('md'+id),mm=_('mm'+id),mt=_('mt'+id);
-  if(md)md.className='mod '+st;if(mm)mm.textContent=msg;
-  if(mt){
-    const tc=st==='done'||st==='ok'?'tag-ok':st==='fail'?'tag-f':st==='warn'?'tag-n':st==='loading'?'tag-l':'tag-w';
-    const tt=st==='done'||st==='ok'?'OK':st==='fail'?'FAIL':st==='warn'?'WARN':st==='loading'?'···':'WAIT';
-    mt.className='mod-tag '+tc;mt.textContent=tt;
+
+function setStep(id, state, msg) {
+  St[id] = {state, msg};
+  const row = _('sr-'+id), smsg = _('sm-'+id), stag = _('st-'+id), rbtn = _('rb-'+id);
+  if (!row) return;
+  row.className = 'step s-'+state;
+  if (smsg) smsg.textContent = msg;
+  const TC = {wait:'tg-wait',loading:'tg-load',ok:'tg-ok',fail:'tg-fail',skip:'tg-skip'};
+  const TL = {wait:'WAIT',loading:'···',ok:'OK',fail:'FAIL',skip:'SKIP'};
+  if (stag) { stag.className = 'st-tag '+(TC[state]||'tg-wait'); stag.textContent = TL[state]||state; }
+  if (rbtn) rbtn.style.display = state === 'fail' ? 'block' : 'none';
+  updateProgress();
+}
+
+function updateProgress() {
+  const total  = STEPS.length;
+  const done   = STEPS.filter(s => ['ok','fail','skip'].includes(St[s.id].state)).length;
+  const active = STEPS.find(s => St[s.id].state === 'loading');
+  _('pg-fill').style.width  = Math.round(done/total*100) + '%';
+  _('pg-cnt').textContent   = `${done} / ${total}`;
+  _('pg-lbl').textContent   = active ? active.name+'…' : done===total ? 'Complete' : 'Ready to load';
+  _('pg-shine').style.display = active ? 'block' : 'none';
+  // Show SKIP once any loading has started
+  const started = STEPS.some(s => !['wait'].includes(St[s.id].state));
+  _('btn-skip').style.display = started ? 'block' : 'none';
+}
+
+/* ════════════════════════════════════════════════
+   RETRY MAP
+════════════════════════════════════════════════ */
+const RETRY = {
+  cam: () => initCamera().catch(()=>{}),
+  esm: () => initMP().catch(()=>{}),
+  hol: () => initHolistic().catch(()=>{}),
+  ic:  () => initEXIF().catch(()=>{}),
+  afd: () => initFocusDist().catch(()=>{}),
+  imu: () => initIMU().catch(()=>{}),
+  sk:  () => initApplyConstr().catch(()=>{}),
+};
+function retryStep(id) { RETRY[id]?.(); }
+window.retryStep = retryStep;
+
+/* ════════════════════════════════════════════════
+   INIT — CAMERA  (15s timeout guard)
+════════════════════════════════════════════════ */
+async function initCamera() {
+  setStep('cam','loading','Requesting rear camera…');
+  const timeout = new Promise((_,rej) =>
+    setTimeout(() => rej(new Error('Timed out 15s — check browser camera permissions')), 15000));
+  try {
+    S.stream = await Promise.race([
+      navigator.mediaDevices.getUserMedia({
+        video: {facingMode:'environment', width:{ideal:1280}, height:{ideal:1706}},
+        audio: false,
+      }),
+      timeout,
+    ]);
+    for (const id of ['v0','v1']) {
+      const v = _(id); v.srcObject = S.stream; v.play().catch(()=>{});
+    }
+    const v0 = _('v0');
+    await new Promise(r => { v0.onloadedmetadata = r; });
+    S.vW = v0.videoWidth; S.vH = v0.videoHeight;
+    S.track = S.stream.getVideoTracks()[0];
+    S.focalAsm = focalFromFOV(S.vW, 70);
+    setStep('cam','ok',`${S.vW}×${S.vH} · ${S.track.label?.slice(0,28)||'rear camera'}`);
+  } catch(e) {
+    setStep('cam','fail', String(e?.message||e).slice(0,80));
+    console.error('[Camera]', e); throw e;
   }
-  updProg();
-}
-function updProg(){
-  const tot=MODS.length,done=MODS.filter(m=>['done','fail','warn'].includes(mSt[m.id])).length;
-  const pct=Math.round(done/tot*100);
-  _('pgb').style.width=pct+'%';
-  _('pg-n').textContent=done+'/'+tot;
-  const ld=MODS.find(m=>mSt[m.id]==='loading');
-  _('pg-label').textContent=ld?ld.name+'…':done===tot?'Ready':'Waiting';
-  _('btn-start').disabled=mSt['cam']==='fail';
 }
 
-/* ═══════════════════════════════════════════════════════════
-   DRAWING CONSTANTS
-═══════════════════════════════════════════════════════════ */
-const POSE_CONN=[[0,1],[1,2],[2,3],[3,7],[0,4],[4,5],[5,6],[6,8],[9,10],
-  [11,12],[11,13],[13,15],[15,17],[15,19],[15,21],[17,19],
-  [12,14],[14,16],[16,18],[16,20],[16,22],[18,20],
-  [11,23],[12,24],[23,24],[23,25],[24,26],[25,27],[26,28],
-  [27,29],[28,30],[29,31],[30,32],[27,31],[28,32]];
-const HAND_CONN=[[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],
-  [5,9],[9,10],[10,11],[11,12],[9,13],[13,14],[14,15],[15,16],
-  [13,17],[17,18],[18,19],[19,20],[0,17]];
-const FACE_OVAL=[10,338,297,332,284,251,389,356,454,323,361,288,397,365,379,
-  378,400,377,152,148,176,149,150,136,172,58,132,93,234,127,162,21,54,103,67,109];
-const FACE_L_EYE=[33,7,163,144,145,153,154,155,133,173,157,158,159,160,161,246,33];
-const FACE_R_EYE=[362,382,381,380,374,373,390,249,263,466,388,387,386,385,384,398,362];
-const FACE_LIPS=[61,146,91,181,84,17,314,405,321,375,291,308,324,318,402,317,14,87,178,88,95,61];
-const NOSE_IDX=4,MOUTH_IDX=17;
+/* ════════════════════════════════════════════════
+   INIT — MEDIAPIPE ESM
+   Uses forVisionTasks(MP_WASM) as requested by user.
+   MP_WASM is the wasm/ directory base URL; the runtime
+   appends /vision_wasm_internal.js and .wasm automatically.
+════════════════════════════════════════════════ */
+async function initMP() {
+  setStep('esm','loading','Importing vision_bundle.mjs…');
+  try {
+    const mod = await import(MP_MJS);
+    setStep('esm','loading','Resolving WASM fileset…');
+    S.MP.FilesetResolver    = mod.FilesetResolver;
+    S.MP.HolisticLandmarker = mod.HolisticLandmarker;
+    S.MP.vision = await S.MP.FilesetResolver.forVisionTasks(MP_WASM);
+    setStep('esm','ok','MediaPipe Tasks @latest ready');
+    console.log('[MP] ESM + WASM loaded');
+  } catch(e) {
+    setStep('esm','fail', String(e?.message||e).slice(0,80));
+    console.error('[MP ESM]', e); throw e;
+  }
+}
 
-/* ═══════════════════════════════════════════════════════════
-   DRAW FUNCTIONS
-═══════════════════════════════════════════════════════════ */
-function drawSkeleton(ctx,lms,W,H){
-  ctx.strokeStyle='rgba(0,245,196,.75)';ctx.lineWidth=1.8;
-  POSE_CONN.forEach(([a,b])=>{
-    const la=lms[a],lb=lms[b];
-    if(la&&lb&&(la.visibility||1)>.3&&(lb.visibility||1)>.3){
-      ctx.beginPath();ctx.moveTo(la.x*W,la.y*H);ctx.lineTo(lb.x*W,lb.y*H);ctx.stroke();
-    }
-  });
-  lms.forEach(lm=>{
-    if(lm&&(lm.visibility||1)>.25){
-      ctx.beginPath();ctx.arc(lm.x*W,lm.y*H,2.5,0,Math.PI*2);
-      ctx.fillStyle='rgba(0,245,196,.9)';ctx.fill();
-    }
-  });
-}
-function drawHand(ctx,lms,W,H,col){
-  ctx.strokeStyle=col;ctx.lineWidth=1.6;
-  HAND_CONN.forEach(([a,b])=>{
-    ctx.beginPath();ctx.moveTo(lms[a].x*W,lms[a].y*H);ctx.lineTo(lms[b].x*W,lms[b].y*H);ctx.stroke();
-  });
-  lms.forEach(lm=>{
-    ctx.beginPath();ctx.arc(lm.x*W,lm.y*H,2.8,0,Math.PI*2);
-    ctx.fillStyle=col;ctx.fill();
-  });
-}
-function drawFaceMask(ctx,lms,W,H){
-  // Filled oval = face mask
-  ctx.beginPath();
-  FACE_OVAL.forEach((i,j)=>{
-    if(!lms[i])return;
-    j===0?ctx.moveTo(lms[i].x*W,lms[i].y*H):ctx.lineTo(lms[i].x*W,lms[i].y*H);
-  });
-  ctx.closePath();
-  ctx.fillStyle='rgba(91,143,255,.18)';ctx.fill();
-  ctx.strokeStyle='rgba(91,143,255,.6)';ctx.lineWidth=1.2;ctx.stroke();
-  // eye rings
-  const eye=(pts,col)=>{
-    ctx.beginPath();pts.forEach((i,j)=>{if(lms[i])j===0?ctx.moveTo(lms[i].x*W,lms[i].y*H):ctx.lineTo(lms[i].x*W,lms[i].y*H);});
-    ctx.strokeStyle=col;ctx.lineWidth=1;ctx.stroke();
+/* ════════════════════════════════════════════════
+   INIT — HOLISTIC LANDMARKER
+════════════════════════════════════════════════ */
+async function initHolistic() {
+  if (!S.MP.vision) throw new Error('MediaPipe not loaded — run step 2 first');
+  setStep('hol','loading','Creating HolisticLandmarker (GPU)…');
+  const opts = {
+    baseOptions: {modelAssetPath: HOLISTIC, delegate:'GPU'},
+    runningMode: 'VIDEO',
+    minFaceDetectionConfidence:  .5,
+    minFacePresenceConfidence:   .5,
+    minPoseDetectionConfidence:  .5,
+    minPosePresenceConfidence:   .5,
+    minHandLandmarksConfidence:  .5,
+    outputPoseSegmentationMasks: true,
   };
-  eye(FACE_L_EYE,'rgba(0,245,196,.7)');eye(FACE_R_EYE,'rgba(0,245,196,.7)');
-  eye(FACE_LIPS,'rgba(255,71,87,.55)');
-  // sparse landmark dots
-  ctx.fillStyle='rgba(91,143,255,.25)';
-  for(let i=0;i<lms.length;i+=4){
-    if(lms[i]){ctx.beginPath();ctx.arc(lms[i].x*W,lms[i].y*H,1,0,Math.PI*2);ctx.fill();}
-  }
-  // calculate face mask pixel area approximation
-  const ovals=FACE_OVAL.map(i=>lms[i]).filter(Boolean);
-  if(ovals.length>2){
-    const xs=ovals.map(p=>p.x),ys=ovals.map(p=>p.y);
-    const fw=(Math.max(...xs)-Math.min(...xs))*W;
-    const fh=(Math.max(...ys)-Math.min(...ys))*H;
-    S.faceMaskPx=Math.round(fw*fh*Math.PI/4);
-  }
-}
-function drawBodyMask(ctx,maskData,mW,mH,W,H){
-  const tmp=document.createElement('canvas');tmp.width=mW;tmp.height=mH;
-  const tc=tmp.getContext('2d');const id=tc.createImageData(mW,mH);
-  let px=0;
-  for(let i=0;i<mW*mH;i++){
-    const v=maskData[i];
-    if(v>0.4){px++;
-      id.data[i*4]=0;id.data[i*4+1]=245;id.data[i*4+2]=196;
-      id.data[i*4+3]=Math.round(v*80);}
-    else id.data[i*4+3]=0;
-  }
-  tc.putImageData(id,0,0);ctx.drawImage(tmp,0,0,W,H);
-  S.bodyMaskPx=px;
-}
-function drawHand2(ctx,lms,W,H,col,fillCol){
-  // hand silhouette
-  ctx.beginPath();
-  [0,1,5,9,13,17,0].forEach((i,j)=>{
-    if(lms[i])j===0?ctx.moveTo(lms[i].x*W,lms[i].y*H):ctx.lineTo(lms[i].x*W,lms[i].y*H);
-  });
-  ctx.fillStyle=fillCol;ctx.fill();
-  drawHand(ctx,lms,W,H,col);
-}
-function drawHUD(cv,vid,D,H,pH){
-  cv.width=vid.clientWidth||S.vW;cv.height=vid.clientHeight||S.vH;
-  const ctx=cv.getContext('2d'),W=cv.width,Hv=cv.height,cx=W/2,cy=Hv/2;
-  // don't redraw video — canvas is overlay only
-  ctx.clearRect(0,0,W,Hv);
-  // horizon guide
-  ctx.strokeStyle='rgba(0,245,196,.1)';ctx.lineWidth=1;ctx.setLineDash([4,8]);
-  ctx.beginPath();ctx.moveTo(0,cy);ctx.lineTo(W,cy);ctx.stroke();ctx.setLineDash([]);
-  // camera height bar (left edge)
-  if(H!=null){
-    const bH=Hv*.5,bY=cy-bH/2,fill=Math.min(1,H/2.5)*bH;
-    ctx.fillStyle='rgba(0,245,196,.05)';ctx.fillRect(4,bY,3,bH);
-    ctx.fillStyle='rgba(0,245,196,.55)';ctx.fillRect(4,bY+bH-fill,3,fill);
-    ctx.font='8px "IBM Plex Mono"';ctx.fillStyle='rgba(0,245,196,.8)';ctx.textAlign='left';
-    ctx.fillText(H.toFixed(2)+'m',9,bY+bH-fill+5);
-  }
-  // distance label
-  if(D!=null){
-    ctx.font='bold 14px "Bebas Neue"';ctx.fillStyle='rgba(91,143,255,.95)';ctx.textAlign='center';
-    ctx.fillText(D.toFixed(2)+'m',cx,cy-42);
-    // target ring
-    ctx.strokeStyle='rgba(91,143,255,.35)';ctx.lineWidth=1;
-    ctx.beginPath();ctx.arc(cx,cy,28,0,Math.PI*2);ctx.stroke();
-  }
-  // person height right edge
-  if(pH!=null){
-    ctx.font='10px "Bebas Neue"';ctx.fillStyle='rgba(196,77,255,.9)';ctx.textAlign='right';
-    ctx.fillText('↕ '+pH.toFixed(2)+'m',W-6,cy+4);
-  }
-}
-
-/* ═══════════════════════════════════════════════════════════
-   FOCAL LENGTH UTILITIES
-═══════════════════════════════════════════════════════════ */
-function focalFromFOV(w=S.vW,fovDeg=70){
-  return (w/2)/Math.tan(fovDeg/2*Math.PI/180);
-}
-function focalFromFL35(fl35mm,imgW=S.vW){
-  // Standard 35mm frame: 36mm × 24mm. HFOV = 2*atan(18/fl35mm)
-  const hfov=2*Math.atan(18/fl35mm);
-  return (imgW/2)/Math.tan(hfov/2);
-}
-// Self-calibrate: derive focal_px AND distance D from worldLandmarks + normalised landmarks
-function selfCalibrate(nlm,wlm,imgH=S.vH){
-  if(!nlm||!wlm||imgH<10)return null;
-  const nose=nlm[0],la=nlm[27],ra=nlm[28];
-  const wN=wlm[0],wLA=wlm[27],wRA=wlm[28];
-  if(!nose||!wN||!wLA)return null;
-  const ankNorm={y:la&&ra?(la.y+ra.y)/2:(la||ra)?.y};
-  const wAnk={y:wLA&&wRA?(wLA.y+wRA.y)/2:(wLA||wRA)?.y,
-              z:wLA&&wRA?(wLA.z+wRA.z)/2:(wLA||wRA)?.z||0};
-  if(!ankNorm.y||!wAnk.y)return null;
-  const dyN=(nose.y-.5)*imgH, dyA=(ankNorm.y-.5)*imgH;
-  if(Math.abs(dyN)<1||Math.abs(dyA)<1)return null;
-  const R=dyN/dyA,wNy=wN.y||0,wAy=wAnk.y||0,wNz=wN.z||0,wAz=wAnk.z||0;
-  if(Math.abs(wNy)<.01||Math.abs(wAy)<.01)return null;
-  const denom=R*wAy-wNy;
-  if(Math.abs(denom)<.001)return null;
-  const D=(wNy*wAz-R*wAy*wNz)/denom;
-  if(D<.3||D>20)return null;
-  const focal=dyN*(D+wNz)/wNy;
-  if(focal<80||focal>6000)return null;
-  return{D,focal};
-}
-
-/* ═══════════════════════════════════════════════════════════
-   CAMERA INIT
-═══════════════════════════════════════════════════════════ */
-async function initCam(){
-  SM('cam','loading','Requesting rear camera…');
-  try{
-    S.stream=await navigator.mediaDevices.getUserMedia({
-      video:{facingMode:'environment',width:{ideal:1280},height:{ideal:1720}},audio:false});
-    const vid=_('vid');
-    vid.srcObject=S.stream;
-    await new Promise(r=>{vid.onloadedmetadata=r;});
-    await vid.play();
-    S.vW=vid.videoWidth;S.vH=vid.videoHeight;
-    S.track=S.stream.getVideoTracks()[0];
-    S.focal_assume=focalFromFOV(S.vW,70);
-    SM('cam','done',`${S.vW}×${S.vH} — focal≈${S.focal_assume.toFixed(0)}px (70° assumed)`);
-    LOG(`Camera: ${S.vW}×${S.vH} facingMode=environment`,'ok');
-    tx('cam-res',`${S.vW}×${S.vH}`);
-    return true;
-  }catch(e){SM('cam','fail',e.message.slice(0,60));LOG('Camera error: '+e.message,'err');return false;}
-}
-
-/* ═══════════════════════════════════════════════════════════
-   FOCUS DISTANCE — METHOD 1: track.getSettings() + applyConstraints
-   The correct sequence on Android Chrome:
-   1. Check capabilities for focusDistance support
-   2. Try to set focusMode to continuous AF
-   3. Poll getSettings().focusDistance
-═══════════════════════════════════════════════════════════ */
-async function initFocusTrack(){
-  const track=S.track;if(!track)return;
-  try{
-    // Read capabilities
-    const caps=track.getCapabilities?.()??{};
-    S.cap_fd_range=caps.focusDistance||null;
-    S.cap_focusModes=caps.focusMode||[];
-    const hasFD=!!S.cap_fd_range;
-    const hasContinuous=S.cap_focusModes.includes?.('continuous');
-    const hasManual=S.cap_focusModes.includes?.('manual');
-    tx('cam-fdc',hasFD?`${S.cap_fd_range.min?.toFixed(1)}–${S.cap_fd_range.max?.toFixed(1)}m`:'NOT SUPPORTED');
-    tx('cam-fm',S.cap_focusModes.length?S.cap_focusModes.join(', '):'none');
-    LOG(`focusDistance cap: ${hasFD?JSON.stringify(S.cap_fd_range):'not supported'}`,'info');
-    LOG(`focusMode options: ${JSON.stringify(S.cap_focusModes)}`,'info');
-    if(!hasFD){
-      tx('cam-ac','focusDistance not in capabilities — EXIF fallback active');
-      tx('cam-fd','Not supported on this device/browser');
-      return;
+  let gpuErr = null;
+  try {
+    S.hol = await S.MP.HolisticLandmarker.createFromOptions(S.MP.vision, opts);
+  } catch(e) {
+    gpuErr = e;
+    console.warn('[Holistic GPU fail]', e.message);
+    setStep('hol','loading','GPU failed — trying CPU…');
+    try {
+      opts.baseOptions.delegate = 'CPU';
+      S.hol = await S.MP.HolisticLandmarker.createFromOptions(S.MP.vision, opts);
+    } catch(e2) {
+      const msg = `GPU: ${String(gpuErr?.message||'?').slice(0,35)} | CPU: ${String(e2?.message||'?').slice(0,35)}`;
+      setStep('hol','fail', msg);
+      console.error('[Holistic CPU]', e2); throw e2;
     }
-    // Step 1: apply continuous AF to ensure AF is running
-    if(hasContinuous){
-      try{
-        await track.applyConstraints({advanced:[{focusMode:'continuous'}]});
-        S.constraints_applied=true;
-        tx('cam-ac','✓ focusMode:continuous applied');
-        LOG('applyConstraints({focusMode:continuous}) OK','ok');
-      }catch(e){
-        LOG('applyConstraints continuous failed: '+e.message,'w');
-        tx('cam-ac','continuous failed: '+e.message.slice(0,40));
-      }
-    }
-    // Step 2: poll getSettings every 600ms
-    const pollFD=()=>{
-      if(!track.readyState||track.readyState!=='live')return;
-      const sets=track.getSettings?.()??{};
-      const fd=sets.focusDistance??null;
-      const prev=S.fd_track;
-      if(fd!=null&&fd>0&&fd<30){
-        S.fd_track=fd;
-        if(fd!==prev)LOG(`Track focusDistance: ${fd.toFixed(2)}m`,'ok');
-      }else{
-        S.fd_track=null;
-      }
-      tx('cam-fd',S.fd_track!=null?S.fd_track.toFixed(2)+'m':'no value (try focusing on subject)');
-    };
-    pollFD();setInterval(pollFD,600);
-    LOG('Track focusDistance polling started (600ms)','info');
-  }catch(e){LOG('Focus track setup error: '+e.message,'err');}
+  }
+  S.holReady = true;
+  const delegate = opts.baseOptions.delegate;
+  setStep('hol','ok',`HolisticLandmarker ready (${delegate})`);
+  const c = _('chip0'); c.className='cam-chip chip-live'; c.textContent=`LIVE · ${delegate}`;
+  console.log('[Holistic] ready', delegate);
 }
 
-/* ═══════════════════════════════════════════════════════════
-   FOCUS DISTANCE — METHOD 2: ImageCapture EXIF from takePhoto()
-   Works on Android even when getSettings().focusDistance returns null.
-   takePhoto() → JPEG Blob → URL.createObjectURL → EXIF.getData
-   → SubjectDistance (metres) + FocalLengthIn35mmFilm
-═══════════════════════════════════════════════════════════ */
-async function initImageCapture(){
-  SM('ic','loading','Setting up ImageCapture…');
-  if(!window.ImageCapture){
-    SM('ic','warn','ImageCapture not supported — EXIF unavailable');
-    LOG('ImageCapture API not available','w');return;
+/* ════════════════════════════════════════════════
+   INIT — EXIF FOCUS  (ImageCapture → takePhoto)
+   On Android: EXIF SubjectDistance = AF plane distance (metres)
+   EXIF FocalLengthIn35mmFilm → derive focal_px
+════════════════════════════════════════════════ */
+async function initEXIF() {
+  setStep('ic','loading','Setting up ImageCapture…');
+  if (!window.ImageCapture || !S.track) {
+    setStep('ic','skip','ImageCapture not supported'); return;
   }
-  try{
-    S.ic=new ImageCapture(S.track);
-    // First photo to warm up
-    await doExifPhoto();
-    SM('ic','done','ImageCapture ready — EXIF polling every 4s');
-    // Poll every 4s (takePhoto() is slow, ~200-500ms)
-    S.exif_interval=setInterval(doExifPhoto,4000);
-    LOG('EXIF photo polling started (4s interval)','ok');
-  }catch(e){
-    SM('ic','fail','ImageCapture error: '+e.message.slice(0,50));
-    LOG('ImageCapture error: '+e.message,'err');
+  try {
+    S.ic = new ImageCapture(S.track);
+    await doEXIF(); // first shot
+    setInterval(doEXIF, 4000);
+    setStep('ic','ok','EXIF polling active (every 4 s)');
+  } catch(e) {
+    setStep('ic','skip','EXIF unavailable: '+String(e?.message||e).slice(0,45));
   }
 }
-
-async function doExifPhoto(){
-  if(!S.ic||S.exif_running)return;
-  S.exif_running=true;
-  try{
-    // Use small image for speed, EXIF is in header regardless of size
-    const blob=await S.ic.takePhoto({imageWidth:320,imageHeight:240});
-    const objUrl=URL.createObjectURL(blob);
-    const img=new Image();
-    img.src=objUrl;
-    // EXIF.getData works with blob: URLs via FileReader internally
-    await new Promise((res)=>{
-      EXIF.getData(img,function(){
-        const subjectDist=EXIF.getTag(this,'SubjectDistance');
-        const fl35=EXIF.getTag(this,'FocalLengthIn35mmFilm');
-        const fl=EXIF.getTag(this,'FocalLength');
-        if(subjectDist!=null&&subjectDist>0&&subjectDist<30){
-          const prev=S.fd_exif;
-          S.fd_exif=subjectDist;
-          if(subjectDist!==prev)LOG(`EXIF SubjectDistance: ${subjectDist.toFixed(2)}m`,'ok');
-        }
-        if(fl35!=null&&fl35>0){
-          S.fl35=fl35;
-          S.focal_from_exif=focalFromFL35(fl35,S.vW);
-          LOG(`EXIF FL35mm=${fl35}mm → focal_px=${S.focal_from_exif.toFixed(0)}`,'info');
-        }
-        if(fl!=null&&fl>0)LOG(`EXIF FocalLength=${fl}mm`,'info');
+async function doEXIF() {
+  if (!S.ic || S.exifBusy) return;
+  S.exifBusy = true;
+  try {
+    const blob = await S.ic.takePhoto({imageWidth:240});
+    const url  = URL.createObjectURL(blob);
+    const img  = new Image(); img.src = url;
+    await new Promise(res => {
+      EXIF.getData(img, function() {
+        const sd = EXIF.getTag(this, 'SubjectDistance');
+        const fl = EXIF.getTag(this, 'FocalLengthIn35mmFilm');
+        if (sd != null && sd > 0.1 && sd < 30)  S.fdExif = sd;
+        if (fl != null && fl > 5) { S.fl35 = fl; S.focalExif = focalFromFL35(fl, S.vW); }
         res();
       });
     });
-    URL.revokeObjectURL(objUrl);
-  }catch(e){
-    if(!e.message.includes('abort'))LOG('EXIF photo error: '+e.message,'err');
-  }finally{S.exif_running=false;}
+    URL.revokeObjectURL(url);
+  } catch(_) {} finally { S.exifBusy = false; }
 }
 
-/* ═══════════════════════════════════════════════════════════
-   IMU
-═══════════════════════════════════════════════════════════ */
-async function initIMU(){
-  SM('imu','loading','Requesting DeviceMotion…');
-  if(!window.DeviceMotionEvent){SM('imu','warn','DeviceMotion not supported');return;}
-  const setup=()=>{
-    window.addEventListener('devicemotion',e=>{
-      const g=e.accelerationIncludingGravity;if(!g)return;
-      S.imu.gx=g.x||0;S.imu.gy=g.y||0;S.imu.gz=g.z||0;
-      S.imu.buf.push({x:S.imu.gx,y:S.imu.gy,z:S.imu.gz});
-      if(S.imu.buf.length>80)S.imu.buf.shift();
+/* ════════════════════════════════════════════════
+   INIT — CAMERA AF focusDistance
+   Must: check capabilities, applyConstraints → poll
+════════════════════════════════════════════════ */
+async function initFocusDist() {
+  setStep('afd','loading','Reading focusDistance capabilities…');
+  if (!S.track) { setStep('afd','skip','No camera track'); return; }
+  try {
+    const caps = S.track.getCapabilities?.() ?? {};
+    const fdr  = caps.focusDistance ?? null;
+    const fmo  = caps.focusMode ?? [];
+    tx('cap-fdr', fdr ? `${fdr.min?.toFixed(1)}–${fdr.max?.toFixed(1)} m` : 'not supported');
+    tx('cap-fmo', fmo.join(', ') || 'none');
+    if (!fdr) { setStep('afd','skip','focusDistance not in capabilities'); tx('fd1','not supported'); return; }
+    // Poll
+    const poll = () => {
+      const fd = S.track.getSettings?.()?.focusDistance ?? null;
+      S.fdTrack = (fd != null && fd > 0.05 && fd < 30) ? fd : null;
+    };
+    poll(); setInterval(poll, 500);
+    setStep('afd','ok',`Range: ${fdr.min?.toFixed(1)}–${fdr.max?.toFixed(1)} m`);
+  } catch(e) {
+    setStep('afd','fail', String(e?.message||e).slice(0,55));
+  }
+}
+
+/* ════════════════════════════════════════════════
+   INIT — applyConstraints focusMode
+   Calling focusMode:continuous BEFORE reading getSettings()
+   is required on Android Chrome for focusDistance to appear.
+════════════════════════════════════════════════ */
+async function initApplyConstr() {
+  setStep('sk','loading','Applying focusMode:continuous…');
+  if (!S.track) { setStep('sk','skip','No camera track'); return; }
+  try {
+    const caps = S.track.getCapabilities?.() ?? {};
+    const fmo  = caps.focusMode ?? [];
+    if (!fmo.length) { setStep('sk','skip','No focusMode capability'); tx('cap-ac','not supported'); return; }
+    const mode = fmo.includes('continuous') ? 'continuous' : fmo[0];
+    await S.track.applyConstraints({advanced: [{focusMode: mode}]});
+    tx('cap-ac', `✓ ${mode} applied`);
+    setStep('sk','ok', `focusMode:${mode} — getSettings() will now return focusDistance`);
+  } catch(e) {
+    tx('cap-ac', 'error: '+String(e?.message||e).slice(0,35));
+    setStep('sk','fail', String(e?.message||e).slice(0,60));
+  }
+}
+
+/* ════════════════════════════════════════════════
+   INIT — IMU DeviceMotion
+════════════════════════════════════════════════ */
+async function initIMU() {
+  setStep('imu','loading','Requesting DeviceMotion…');
+  if (!window.DeviceMotionEvent) { setStep('imu','skip','DeviceMotion not supported'); return; }
+  const setup = () => {
+    window.addEventListener('devicemotion', e => {
+      const g = e.accelerationIncludingGravity; if (!g) return;
+      S.imu.buf.push({x:g.x||0, y:g.y||0, z:g.z||0});
+      if (S.imu.buf.length > 80) S.imu.buf.shift();
       S.imu.samples++;
-      const n=S.imu.buf.length;
-      const ax=S.imu.buf.reduce((a,b)=>a+b.x,0)/n;
-      const ay=S.imu.buf.reduce((a,b)=>a+b.y,0)/n;
-      const az=S.imu.buf.reduce((a,b)=>a+b.z,0)/n;
-      S.imu.pitch=Math.atan2(ay,Math.sqrt(ax*ax+az*az))*180/Math.PI;
-      S.imu.tilt=Math.abs(90-Math.abs(S.imu.pitch));
-      S.imu.conf=Math.min(1,n/80)*Math.max(0,1-S.imu.tilt/40)*.7;
-      S.imu.active=true;
-    },{passive:true});
-    SM('imu','done','DeviceMotion active');LOG('IMU active','ok');
+      const n  = S.imu.buf.length;
+      const ay = S.imu.buf.reduce((a,b)=>a+b.y,0)/n;
+      const ax = S.imu.buf.reduce((a,b)=>a+b.x,0)/n;
+      const az = S.imu.buf.reduce((a,b)=>a+b.z,0)/n;
+      S.imu.pitch = Math.atan2(ay, Math.sqrt(ax*ax+az*az)) / DEG;
+      S.imu.tilt  = Math.abs(90 - Math.abs(S.imu.pitch));
+      S.imu.conf  = Math.min(1, n/80) * Math.max(0, 1 - S.imu.tilt/40) * 0.7;
+      S.imu.active = true;
+    }, {passive:true});
+    setStep('imu','ok','DeviceMotion active');
   };
-  try{
-    if(typeof DeviceMotionEvent.requestPermission==='function'){
-      const r=await DeviceMotionEvent.requestPermission();
-      if(r==='granted')setup();else{SM('imu','fail','Permission denied');LOG('IMU denied','err');}
-    }else setup();
-  }catch(e){SM('imu','fail',e.message);LOG('IMU: '+e.message,'err');}
+  try {
+    if (typeof DeviceMotionEvent.requestPermission === 'function') {
+      const r = await DeviceMotionEvent.requestPermission();
+      r === 'granted' ? setup() : setStep('imu','skip','Permission denied');
+    } else { setup(); }
+  } catch(e) { setStep('imu','skip', String(e?.message||e).slice(0,50)); }
 }
 
-/* ═══════════════════════════════════════════════════════════
-   MEDIAPIPE TASKS
-═══════════════════════════════════════════════════════════ */
-async function loadMP(){
-  SM('mp','loading','Importing vision_bundle.mjs…');
-  try{
-    const mod=await import(MP_MJS);
-    S.MP.FilesetResolver=mod.FilesetResolver;
-    S.MP.HolisticLandmarker=mod.HolisticLandmarker;
-    // Explicit WasmFileset — bypasses forVisionTasks() path/SIMD issues on Android
-    S.MP.vision={wasmLoaderPath:MP_WASM_JS,wasmBinaryPath:MP_WASM_BIN};
-    SM('mp','done','MediaPipe Tasks ready');LOG('MP Tasks ESM loaded','ok');
-    return true;
-  }catch(e){SM('mp','fail','ESM import failed: '+e.message.slice(0,50));LOG('MP ESM fail: '+e.message,'err');return false;}
+/* ════════════════════════════════════════════════
+   GEOMETRY  — self-calibrate focal + distance
+   Solves: given worldLandmarks (metres, hip origin)
+   + normalised landmarks (pixels), find D and focal_px
+   without any prior knowledge.
+════════════════════════════════════════════════ */
+function selfCal(nlm, wlm) {
+  const wN=wlm[0], wLA=wlm[27], wRA=wlm[28];
+  const nN=nlm[0], nLA=nlm[27], nRA=nlm[28];
+  if (!wN||!wLA||!nN||!nLA) return null;
+  const ankY = wRA ? (wLA.y+wRA.y)/2 : wLA.y;
+  const ankZ = wRA ? (wLA.z+wRA.z)/2 : (wLA.z||0);
+  const nAY  = nRA ? (nLA.y+nRA.y)/2 : nLA.y;
+  const dyN  = (nN.y - 0.5) * S.vH;
+  const dyA  = (nAY  - 0.5) * S.vH;
+  if (Math.abs(dyN)<2 || Math.abs(dyA)<2) return null;
+  const R   = dyN/dyA;
+  const wNy = wN.y||0, wAy = ankY||0, wNz = wN.z||0, wAz = ankZ;
+  if (Math.abs(wNy)<.01 || Math.abs(wAy)<.01) return null;
+  const den = R*wAy - wNy;
+  if (Math.abs(den)<.001) return null;
+  const D = (wNy*wAz - R*wAy*wNz) / den;
+  if (D<0.3||D>20) return null;
+  const f = dyN*(D+wNz)/wNy;
+  if (f<80||f>6000) return null;
+  return {D, focal:f};
 }
 
-async function initHolistic(){
-  SM('hol','loading','Loading HolisticLandmarker (13MB)…');
-  try{
-    let inst;
-    try{
-      inst=await S.MP.HolisticLandmarker.createFromOptions(S.MP.vision,{
-        baseOptions:{modelAssetPath:HOLISTIC_URL,delegate:'GPU'},
-        runningMode:'VIDEO',
-        minFaceDetectionConfidence:.5,minFacePresenceConfidence:.5,minFaceTrackingConfidence:.5,
-        minPoseDetectionConfidence:.5,minPosePresenceConfidence:.5,minPoseTrackingConfidence:.5,
-        minHandLandmarksConfidence:.5,
-        outputPoseSegmentationMasks:true,
-      });
-    }catch(_){
-      inst=await S.MP.HolisticLandmarker.createFromOptions(S.MP.vision,{
-        baseOptions:{modelAssetPath:HOLISTIC_URL,delegate:'CPU'},
-        runningMode:'VIDEO',
-        minFaceDetectionConfidence:.5,minFacePresenceConfidence:.5,minFaceTrackingConfidence:.5,
-        minPoseDetectionConfidence:.5,minPosePresenceConfidence:.5,minPoseTrackingConfidence:.5,
-        minHandLandmarksConfidence:.5,
-        outputPoseSegmentationMasks:true,
-      });
+/* ════════════════════════════════════════════════
+   DRAWING CONSTANTS
+════════════════════════════════════════════════ */
+const PC = [
+  [0,1],[1,2],[2,3],[3,7],[0,4],[4,5],[5,6],[6,8],[9,10],
+  [11,12],[11,13],[13,15],[15,17],[17,19],[15,21],
+  [12,14],[14,16],[16,18],[18,20],[16,22],
+  [11,23],[12,24],[23,24],[23,25],[24,26],
+  [25,27],[26,28],[27,29],[28,30],[29,31],[30,32],[27,31],[28,32],
+];
+const HC = [
+  [0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],
+  [5,9],[9,10],[10,11],[11,12],[9,13],[13,14],[14,15],[15,16],
+  [13,17],[17,18],[18,19],[19,20],[0,17],
+];
+const FOVAL = [10,338,297,332,284,251,389,356,454,323,361,288,397,365,379,378,
+               400,377,152,148,176,149,150,136,172,58,132,93,234,127,162,21,54,103,67,109];
+const FLEYE = [33,7,163,144,145,153,154,155,133,173,157,158,159,160,161,246,33];
+const FREYE = [362,382,381,380,374,373,390,249,263,466,388,387,386,385,384,398,362];
+const FLIPS = [61,146,91,181,84,17,314,405,321,375,291,308,324,318,402,317,14,87,178,88,95,61];
+
+/* ════════════════════════════════════════════════
+   DRAW OVERLAYS
+════════════════════════════════════════════════ */
+function drawOverlays(ctx, res) {
+  const W = ctx.canvas.width, H = ctx.canvas.height;
+
+  // Body mask — from poseSegmentationMasks
+  if (res.poseSegmentationMasks?.[0]) {
+    const mask = res.poseSegmentationMasks[0];
+    const d = mask.getAsFloat32Array(), mW = mask.width, mH = mask.height;
+    const tmp = document.createElement('canvas'); tmp.width=mW; tmp.height=mH;
+    const tc = tmp.getContext('2d'), id = tc.createImageData(mW, mH);
+    for (let i=0; i<mW*mH; i++) {
+      const v=d[i], r=i*4;
+      if (v>0.4){ id.data[r]=0; id.data[r+1]=220; id.data[r+2]=180; id.data[r+3]=Math.round(v*68); }
     }
-    S.holistic=inst;S.active=true;
-    SM('hol','done','HolisticLandmarker ready');LOG('HolisticLandmarker ready (GPU→CPU fallback)','ok');
-    _('hud').className='hud-status live';_('hud').textContent='LIVE';
-    startLoop();
-  }catch(e){
-    SM('hol','fail',e.message.slice(0,60));LOG('Holistic fail: '+e.message,'err');
-    _('hud').className='hud-status fail';_('hud').textContent='FAILED';
+    tc.putImageData(id,0,0); ctx.drawImage(tmp,0,0,W,H); mask.close();
+  }
+
+  // Face mask — filled oval from faceLandmarks FACE_OVAL contour
+  if (res.faceLandmarks?.[0]) {
+    const L = res.faceLandmarks[0];
+    ctx.beginPath();
+    FOVAL.forEach((i,j) => {
+      if (!L[i]) return;
+      j===0 ? ctx.moveTo(L[i].x*W, L[i].y*H) : ctx.lineTo(L[i].x*W, L[i].y*H);
+    });
+    ctx.closePath();
+    ctx.fillStyle='rgba(72,130,255,.18)'; ctx.fill();
+    ctx.strokeStyle='rgba(72,130,255,.6)'; ctx.lineWidth=1.2; ctx.stroke();
+    const contour = (pts, col, lw=1) => {
+      ctx.beginPath();
+      pts.forEach((i,j) => { if(!L[i])return; j===0?ctx.moveTo(L[i].x*W,L[i].y*H):ctx.lineTo(L[i].x*W,L[i].y*H); });
+      ctx.strokeStyle=col; ctx.lineWidth=lw; ctx.stroke();
+    };
+    contour(FLEYE,'rgba(0,220,175,.7)'); contour(FREYE,'rgba(0,220,175,.7)');
+    contour(FLIPS,'rgba(245,80,90,.55)');
+  }
+
+  // Pose skeleton
+  if (res.poseLandmarks?.[0]) {
+    const L = res.poseLandmarks[0];
+    ctx.strokeStyle='rgba(0,220,175,.72)'; ctx.lineWidth=1.8;
+    PC.forEach(([a,b]) => {
+      const la=L[a], lb=L[b];
+      if (!la||!lb||(la.visibility??1)<.3||(lb.visibility??1)<.3) return;
+      ctx.beginPath(); ctx.moveTo(la.x*W,la.y*H); ctx.lineTo(lb.x*W,lb.y*H); ctx.stroke();
+    });
+    L.forEach(lm => {
+      if (!lm||(lm.visibility??1)<.25) return;
+      ctx.beginPath(); ctx.arc(lm.x*W,lm.y*H,2.4,0,Math.PI*2);
+      ctx.fillStyle='rgba(0,220,175,.9)'; ctx.fill();
+    });
+  }
+
+  // Hands — mask + skeleton
+  const hand = (lms, col, fill) => {
+    // palm fill
+    ctx.beginPath();
+    [0,1,5,9,13,17,0].forEach((i,j) => {
+      if(!lms[i])return; j===0?ctx.moveTo(lms[i].x*W,lms[i].y*H):ctx.lineTo(lms[i].x*W,lms[i].y*H);
+    });
+    ctx.fillStyle=fill; ctx.fill();
+    // connections
+    ctx.strokeStyle=col; ctx.lineWidth=1.6;
+    HC.forEach(([a,b]) => {
+      ctx.beginPath(); ctx.moveTo(lms[a].x*W,lms[a].y*H); ctx.lineTo(lms[b].x*W,lms[b].y*H); ctx.stroke();
+    });
+    // dots
+    lms.forEach(lm => {
+      ctx.beginPath(); ctx.arc(lm.x*W,lm.y*H,2.5,0,Math.PI*2);
+      ctx.fillStyle=col; ctx.fill();
+    });
+  };
+  if (res.leftHandLandmarks?.[0])
+    hand(res.leftHandLandmarks[0], 'rgba(240,185,50,.9)', 'rgba(240,185,50,.12)');
+  if (res.rightHandLandmarks?.[0])
+    hand(res.rightHandLandmarks[0],'rgba(176,96,240,.9)', 'rgba(176,96,240,.12)');
+}
+
+// HUD: camera-height bar (left), distance label (centre), person-height (right)
+function drawHUD(ctx, D, camH, pH) {
+  const W=ctx.canvas.width, Hv=ctx.canvas.height, cx=W/2, cy=Hv/2;
+  // Height bar (left edge)
+  if (camH != null) {
+    const bH=Hv*.46, bY=cy-bH/2, fill=Math.min(1, camH/2.5)*bH;
+    ctx.fillStyle='rgba(0,220,175,.04)'; ctx.fillRect(4,bY,3,bH);
+    ctx.fillStyle='rgba(0,220,175,.55)'; ctx.fillRect(4,bY+bH-fill,3,fill);
+    ctx.font='8px "IBM Plex Mono"'; ctx.fillStyle='rgba(0,220,175,.78)'; ctx.textAlign='left';
+    ctx.fillText(camH.toFixed(2)+'m', 10, bY+bH-fill+5);
+  }
+  // Distance (centre)
+  if (D != null) {
+    ctx.font='bold 15px "Bebas Neue"'; ctx.fillStyle='rgba(72,130,255,.92)'; ctx.textAlign='center';
+    ctx.fillText(D.toFixed(2)+' m', cx, cy-44);
+    ctx.strokeStyle='rgba(72,130,255,.28)'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.arc(cx,cy,22,0,Math.PI*2); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx-5,cy); ctx.lineTo(cx+5,cy); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx,cy-5); ctx.lineTo(cx,cy+5); ctx.stroke();
+  }
+  // Person height (right)
+  if (pH != null) {
+    ctx.font='11px "Bebas Neue"'; ctx.fillStyle='rgba(176,96,240,.88)'; ctx.textAlign='right';
+    ctx.fillText('↕ '+pH.toFixed(2)+'m', W-7, cy+5);
   }
 }
 
-/* ═══════════════════════════════════════════════════════════
-   MAIN INFERENCE LOOP
-═══════════════════════════════════════════════════════════ */
-let _lastT=0;
-function startLoop(){
-  const vid=_('vid'),cv=_('cvs'),ctx=cv.getContext('2d');
-  const loop=()=>{
-    if(!S.active||!S.holistic){requestAnimationFrame(loop);return;}
-    if(!vid||vid.readyState<2){requestAnimationFrame(loop);return;}
-    const now=performance.now();
-    // ~14fps cap for holistic (heavy model)
-    if(now-_lastT<70){requestAnimationFrame(loop);return;}
-    _lastT=now;
-    try{
-      const res=S.holistic.detectForVideo(vid,now);
-      cv.width=S.vW;cv.height=S.vH;
-      ctx.drawImage(vid,0,0,S.vW,S.vH);
-
-      /* ── BODY MASK ── */
-      S.bodyMaskPx=0;
-      if(res.poseSegmentationMasks?.[0]){
-        const mask=res.poseSegmentationMasks[0];
-        drawBodyMask(ctx,mask.getAsFloat32Array(),mask.width,mask.height,S.vW,S.vH);
-        mask.close();
-      }
-
-      /* ── POSE SKELETON + world measurements ── */
-      S.poseLm=res.poseLandmarks?.length?33:0;
-      S.personH=null;S.D_geo=null;S.camH=null;S.worldNose=null;S.worldAnkle=null;
-      if(res.poseLandmarks?.[0]){
-        drawSkeleton(ctx,res.poseLandmarks[0],S.vW,S.vH);
-        const nlm=res.poseLandmarks[0];
-        if(res.poseWorldLandmarks?.[0]){
-          const wlm=res.poseWorldLandmarks[0];
-          const wN=wlm[0],wLA=wlm[27],wRA=wlm[28];
-          const wLS=wlm[11],wRS=wlm[12],wLH=wlm[23],wRH=wlm[24];
-          if(wN&&wLA){
-            const aky=(wLA&&wRA?(wLA.y+wRA.y)/2:wLA.y);
-            const akz=(wLA&&wRA?(wLA.z+wRA.z)/2:wLA.z||0);
-            S.personH=Math.abs(wN.y-aky);
-            S.worldNose=wN;S.worldAnkle={y:aky,z:akz};
-            S.camH=Math.abs(aky)+.05;
-            // body proportions
-            if(wLS&&wRS)S.shoulderW=Math.abs(wLS.x-wRS.x);
-            if(wN&&wLH)S.torsoH=Math.abs(wN.y-wLH.y)*.6;
-            if(wLH&&wLA)S.legH=Math.abs(wLH.y-aky);
-            // self-calibrate focal + distance
-            const cal=selfCalibrate(nlm,wlm,S.vH);
-            if(cal){
-              S.focal_geo=cal.focal;S.D_geo=cal.D;
-              S.hConf=Math.min(.88,wN.visibility||.7);
-            }else S.hConf=.35;
-          }
+/* ════════════════════════════════════════════════
+   HOLISTIC INFERENCE LOOP
+════════════════════════════════════════════════ */
+let _lastT = 0;
+function startHolistic() {
+  const vid=_('v0'), cv=_('c0');
+  const loop = () => {
+    if (!S.holReady||!S.hol||vid.readyState<2) { requestAnimationFrame(loop); return; }
+    const now = performance.now();
+    if (now-_lastT < 70) { requestAnimationFrame(loop); return; }
+    _lastT = now;
+    try {
+      const res = S.hol.detectForVideo(vid, now);
+      // Draw at display resolution
+      cv.width  = vid.clientWidth  || S.vW;
+      cv.height = vid.clientHeight || S.vH;
+      const ctx = cv.getContext('2d');
+      // Draw video then overlays at video resolution via offscreen canvas
+      const tmp = document.createElement('canvas'); tmp.width=S.vW; tmp.height=S.vH;
+      const tc  = tmp.getContext('2d');
+      tc.drawImage(vid, 0, 0, S.vW, S.vH);
+      drawOverlays(tc, res);
+      ctx.drawImage(tmp, 0, 0, cv.width, cv.height);
+      // Measurements from worldLandmarks
+      S.camH=null; S.dist=null; S.personH=null; S.wNose=null; S.wAnkle=null;
+      if (res.poseLandmarks?.[0] && res.poseWorldLandmarks?.[0]) {
+        const nlm=res.poseLandmarks[0], wlm=res.poseWorldLandmarks[0];
+        const wN=wlm[0], wLA=wlm[27], wRA=wlm[28];
+        if (wN && wLA) {
+          const aky = wRA?(wLA.y+wRA.y)/2:wLA.y;
+          S.personH = Math.abs(wN.y - aky);   // direct metres
+          S.camH    = Math.abs(aky) + 0.05;    // ankle ≈ ground
+          S.wNose   = wN; S.wAnkle = {y:aky, z:wLA.z||0};
+          const cal = selfCal(nlm, wlm);
+          if (cal) { S.dist=cal.D; S.focalGeo=cal.focal; S.fdGeo=cal.D; S.hConf=Math.min(.88,wN.visibility??0.7); }
+          else S.hConf = 0.35;
         }
-      }else S.hConf=0;
-
-      /* ── FACE MASK + contours ── */
-      S.faceLm=res.faceLandmarks?.length?res.faceLandmarks[0].length:0;
-      S.faceMaskPx=0;
-      if(res.faceLandmarks?.[0])drawFaceMask(ctx,res.faceLandmarks[0],S.vW,S.vH);
-
-      /* ── HAND MASKS + landmarks ── */
-      S.handN=(res.leftHandLandmarks?.length?1:0)+(res.rightHandLandmarks?.length?1:0);
-      if(res.leftHandLandmarks?.[0])
-        drawHand2(ctx,res.leftHandLandmarks[0],S.vW,S.vH,'rgba(255,211,42,.9)','rgba(255,211,42,.12)');
-      if(res.rightHandLandmarks?.[0])
-        drawHand2(ctx,res.rightHandLandmarks[0],S.vW,S.vH,'rgba(196,77,255,.9)','rgba(196,77,255,.12)');
-
-    }catch(e){LOG('Loop: '+e.message.slice(0,50),'err');}
-    // FPS
-    S._fc++;if(now-S._lt>=1000){S.fps=S._fc;S._fc=0;S._lt=now;}
+      } else S.hConf = 0;
+      drawHUD(ctx, S.dist, S.camH, S.personH);
+    } catch(_) {}
+    S._fc++;
+    if (performance.now()-S._lt>=1000) { S.fps=S._fc; S._fc=0; S._lt=performance.now(); }
     requestAnimationFrame(loop);
-  };loop();
+  };
+  loop();
 }
 
-/* ═══════════════════════════════════════════════════════════
-   FOCUS FUSION — combine all 4 distance methods
-═══════════════════════════════════════════════════════════ */
-function fuseFocus(){
-  // Focal length priority: EXIF > self-cal-geo > assumed-70°
-  S.focal_px=S.focal_from_exif||S.focal_geo||S.focal_assume;
-
-  // Distance priority: track AF > EXIF subject dist > geometry > IMU-anchored
-  // Each gets weighted confidence
-  const sources=[];
-  if(S.fd_track!=null&&S.fd_track>.15&&S.fd_track<20)
-    sources.push({v:S.fd_track,w:0.9,id:'af'});  // direct from hardware
-  if(S.fd_exif!=null&&S.fd_exif>.1&&S.fd_exif<30)
-    sources.push({v:S.fd_exif,w:0.85,id:'exif'}); // from EXIF SubjectDistance
-  if(S.D_geo!=null&&S.D_geo>.2)
-    sources.push({v:S.D_geo,w:S.hConf*.7,id:'geo'});
-  // IMU-anchored: if IMU confirms phone is vertical, camera_height ≈ 1.4m
-  // and focal is known → compute distance from pixel-height of person
-  if(S.focal_px&&S.personH&&S.poseLm&&S.imu.active&&S.imu.tilt<15){
-    const worldL=_('vid');
-    if(worldL){
-      // person height in pixels (from normalised landmarks via stored worldNose/Ankle)
-      // If we have focal and person height in world metres, and pixel height, solve D
-      // Actually just use stored self-cal D with IMU tilt correction
-      if(S.D_geo){
-        const tiltRad=S.imu.pitch*Math.PI/180;
-        const corrected=S.D_geo*Math.cos(tiltRad);
-        if(corrected>.2&&corrected<20)
-          sources.push({v:corrected,w:S.imu.conf*.55,id:'imu'});
+/* ════════════════════════════════════════════════
+   FOCUS LOOP  (Tab 1 — live video + distance HUD)
+════════════════════════════════════════════════ */
+function startFocusLoop() {
+  const vid=_('v1'), cv=_('c1');
+  const loop = () => {
+    if (vid.readyState >= 2) {
+      cv.width=vid.clientWidth||S.vW; cv.height=vid.clientHeight||S.vH;
+      const ctx=cv.getContext('2d');
+      ctx.drawImage(vid,0,0,cv.width,cv.height);
+      if (S.fdBest!=null) {
+        const W=cv.width, Hv=cv.height, cx=W/2, cy=Hv/2;
+        ctx.font='bold 15px "Bebas Neue"'; ctx.fillStyle='rgba(72,130,255,.92)'; ctx.textAlign='center';
+        ctx.fillText(S.fdBest.toFixed(2)+' m', cx, cy-44);
+        ctx.strokeStyle='rgba(72,130,255,.28)'; ctx.lineWidth=1;
+        ctx.beginPath(); ctx.arc(cx,cy,22,0,Math.PI*2); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(cx-5,cy); ctx.lineTo(cx+5,cy); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(cx,cy-5); ctx.lineTo(cx,cy+5); ctx.stroke();
       }
     }
-  }
-  if(!sources.length){S.fd_best=null;S.fd_conf=0;return;}
-  const wSum=sources.reduce((s,e)=>s+e.w,0);
-  S.fd_best=sources.reduce((s,e)=>s+e.v*e.w,0)/wSum;
-  S.fd_conf=Math.min(1,wSum);
-  // which source is dominant?
-  const best=sources.reduce((a,b)=>a.w>b.w?a:b);
-  return best.id;
+    requestAnimationFrame(loop);
+  };
+  loop();
 }
 
-/* ═══════════════════════════════════════════════════════════
-   RENDER UI LOOP
-═══════════════════════════════════════════════════════════ */
-function renderUI(){
-  const srcId=fuseFocus();
+/* ════════════════════════════════════════════════
+   FOCUS FUSION
+════════════════════════════════════════════════ */
+function fuseFocus() {
+  const srcs = [];
+  if (S.fdTrack!=null&&S.fdTrack>.05) srcs.push({v:S.fdTrack, w:0.9,  id:'Track AF'});
+  if (S.fdExif !=null&&S.fdExif>.05)  srcs.push({v:S.fdExif,  w:0.85, id:'EXIF'});
+  if (S.fdGeo  !=null&&S.fdGeo>.1)    srcs.push({v:S.fdGeo,   w:0.7*Math.max(.1,S.hConf), id:'Geometry'});
+  if (!srcs.length) { S.fdBest=null; S.fdSrc='–'; return; }
+  const ws = srcs.reduce((a,b)=>a+b.w,0);
+  S.fdBest = srcs.reduce((a,b)=>a+b.v*b.w,0) / ws;
+  S.fdSrc  = srcs.reduce((a,b)=>a.w>b.w?a:b).id;
+}
 
-  // Big metrics
-  nm('mH',S.camH,2);
-  tx('mHs',S.hConf>.4?'pose world lm':(S.imu.active?'IMU prior':'–'));
-  nm('mD',S.fd_best,2);
-  const dsrc=srcId==='af'?'track AF':srcId==='exif'?'EXIF SubjDist':srcId==='geo'?'geometry':srcId==='imu'?'IMU-corrected':'–';
-  tx('mDs',dsrc);
-  nm('mP',S.personH,2);
+/* ════════════════════════════════════════════════
+   RENDER UI  (rAF driven)
+════════════════════════════════════════════════ */
+function renderUI() {
+  fuseFocus();
+  const focal = S.focalExif ?? S.focalGeo ?? S.focalAsm;
 
-  // HUD
-  const cv=_('cvs'),vid=_('vid');
-  if(cv&&vid&&vid.readyState>=2)drawHUD(cv,vid,S.fd_best,S.camH,S.personH);
+  // Tab 0 — Holistic
+  nm('H0', S.camH);    tx('H0s', S.camH?'ankle→ground':'–');
+  nm('D0', S.dist);    tx('D0s', S.dist?'self-cal':'–');
+  nm('P0', S.personH);
+  nm('wny', S.wNose?.y, 3);
+  nm('way', S.wAnkle?.y, 3);
+  nm('whd', S.dist, 2);
+  nm('fp0', focal, 0);
+  tx('fv0', focal ? (2*Math.atan(S.vW/2/focal)/DEG).toFixed(1) : '--');
+  tx('fps0', S.fps+' fps');
 
-  // Focus source chips
-  chip('chip-af',S.fd_track!=null?(srcId==='af'?'act':'ok'):'off');
-  chip('chip-exif',S.fd_exif!=null?(srcId==='exif'?'act':'ok'):'off');
-  chip('chip-geo',S.D_geo!=null?(srcId==='geo'?'act':'b'):'off');
-  chip('chip-imu',S.imu.active&&S.imu.tilt<15?(srcId==='imu'?'act':'w'):'off');
+  // Tab 1 — Focus
+  nm('H1', S.camH??1.4);   tx('H1s', S.camH?'world lm':'prior 1.4m');
+  nm('D1', S.fdBest);       tx('D1s', S.fdSrc);
+  nm('P1', S.personH);      tx('P1s', S.personH?'world lm':'–');
 
-  // Focus cards
-  tx('d-af',S.fd_track!=null?S.fd_track.toFixed(2)+'m':'N/A – EXIF fallback active');
-  tx('d-exif',S.fd_exif!=null?S.fd_exif.toFixed(2)+'m':'–');
-  tx('d-fl35',S.fl35!=null?`${S.fl35}mm → focal ${S.focal_from_exif?.toFixed(0)||'?'}px`:'–');
-  tx('d-geo',S.D_geo!=null?S.D_geo.toFixed(2)+'m':'–');
-  tx('d-imu',S.imu.active&&S.D_geo?((S.D_geo*Math.cos(S.imu.pitch*Math.PI/180)).toFixed(2)+'m'):'–');
-  tx('d-focal',S.focal_px!=null?S.focal_px.toFixed(0)+'px'+(S.focal_from_exif?' (EXIF)':S.focal_geo?' (geo)':' (assumed)'):'–');
+  tx('fd1', S.fdTrack!=null ? S.fdTrack.toFixed(2)+' m' : 'N/A');
+  tx('fd2', S.fdExif !=null ? S.fdExif.toFixed(2)+' m'  : '–');
+  tx('fd3', S.fdGeo  !=null ? S.fdGeo.toFixed(2)+' m'   : '–');
+  tx('fdbest', S.fdBest!=null ? S.fdBest.toFixed(2)+' m' : '–');
+  tx('fdsrc', S.fdSrc);
+  tx('foca', S.focalExif ? `${S.fl35}mm → ${S.focalExif.toFixed(0)}px` : '–');
+  tx('focb', S.focalGeo  ? S.focalGeo.toFixed(0)+'px' : '–');
+  tx('focc', S.focalAsm  ? S.focalAsm.toFixed(0)+'px' : '–');
 
-  // Holistic
-  tx('h-pl',S.poseLm||'–');
-  tx('h-fl',S.faceLm||'–');
-  tx('h-hn',S.handN||'–');
-  tx('h-bm',S.bodyMaskPx>0?'✓ '+S.bodyMaskPx.toLocaleString()+'px':'–');
-  tx('h-fm',S.faceMaskPx>0?'✓ ~'+S.faceMaskPx.toLocaleString()+'px':'–');
-  tx('h-fps',S.fps+' fps');
-
-  // World measurements
-  nm('w-ny',S.worldNose?.y,3);nm('w-ay',S.worldAnkle?.y,3);nm('w-d',S.D_geo,2);
-  nm('w-sw',S.shoulderW,2);nm('w-th',S.torsoH,2);nm('w-lh',S.legH,2);
-
-  // Confidence bars
-  const hp=Math.round(S.hConf*100);
-  const fp=Math.round(S.fd_conf*100);
-  const ip=Math.round(S.imu.conf*100);
-  _('cb-h').style.width=hp+'%';tx('cbp-h',hp+'%');
-  _('cb-f').style.width=fp+'%';tx('cbp-f',fp+'%');
-  _('cb-i').style.width=ip+'%';tx('cbp-i',ip+'%');
-
-  // IMU
-  nm('imu-p',S.imu.pitch,1);nm('imu-t',S.imu.tilt,1);tx('imu-s',S.imu.samples);
-
-  // Camera track live update
-  if(S.track?.readyState==='live'){
-    const sets=S.track.getSettings?.()??{};
-    tx('cam-fd',sets.focusDistance!=null?sets.focusDistance.toFixed(2)+'m':'no value returned');
-    tx('cam-z',(sets.zoom||1).toFixed(2)+'×');
-  }
+  // Focus chip
+  const ch1=_('chip1');
+  if (S.fdBest!=null) { ch1.className='cam-chip chip-live'; ch1.textContent=S.fdBest.toFixed(2)+'m · '+S.fdSrc; }
 
   requestAnimationFrame(renderUI);
 }
 
-/* ═══════════════════════════════════════════════════════════
-   BOOT
-═══════════════════════════════════════════════════════════ */
-async function boot(){
-  _('btn-start').disabled=true;_('btn-start').textContent='LOADING…';
+/* ════════════════════════════════════════════════
+   TAB SWITCH
+════════════════════════════════════════════════ */
+function GT(n) {
+  [0,1].forEach(i => {
+    _('tab'+i).classList.toggle('on', i===n);
+    _('p'+i).classList.toggle('on', i===n);
+  });
+}
+window.GT = GT;
 
-  const camOk=await initCam();
-  if(!camOk){_('btn-start').textContent='CAMERA FAILED';_('btn-start').disabled=false;
-    _('btn-start').onclick=boot;return;}
-
-  // Focus track setup (non-blocking)
-  initFocusTrack().catch(e=>LOG('focusTrack: '+e.message,'err'));
-
-  // IMU (non-blocking)
-  initIMU().catch(e=>LOG('IMU: '+e.message,'err'));
-
-  // Load MP Tasks
-  const mpOk=await loadMP();
-  if(!mpOk){
-    SM('hol','fail','MP Tasks failed to load');
-    _('hud').className='hud-status fail';_('hud').textContent='MP FAILED';
-    _('btn-start').textContent='RETRY';_('btn-start').disabled=false;_('btn-start').onclick=boot;
-    return;
-  }
-
-  // Init holistic (heavy, may take 5-10s on phone)
-  SM('hol','loading','Loading model weights…');
-  initHolistic();  // fires startLoop() on success
-
-  // ImageCapture EXIF (after camera is ready)
-  initImageCapture().catch(e=>LOG('IC: '+e.message,'err'));
-
-  // Switch to app view immediately, show loading HUD
-  _('LS').style.display='none';
-  _('APP').style.display='flex';
+/* ════════════════════════════════════════════════
+   LAUNCH  (go to app view)
+════════════════════════════════════════════════ */
+function launch() {
+  _('home').style.display='none';
+  _('app').style.display='flex';
+  startHolistic();
+  startFocusLoop();
   renderUI();
 }
+window.launch = launch;
 
-renderMods();
-_('btn-start').addEventListener('click',boot);
-document.addEventListener('visibilitychange',()=>{
-  if(!document.hidden&&S.active)LOG('App foregrounded','info');
-});
+/* ════════════════════════════════════════════════
+   LOAD ALL  (sequential required, parallel optional)
+════════════════════════════════════════════════ */
+async function loadAll() {
+  if (_loading) return;
+  _loading = true;
+  _('btn-load').disabled = true;
+  _('btn-load').textContent = 'LOADING…';
+  _('btn-skip').style.display = 'block';
+  _('btn-skip').textContent = '⟶ Skip — launch with what\'s loaded';
+
+  try {
+    // Required (sequential — each depends on previous)
+    if (St.cam.state !== 'ok') await initCamera();
+    if (St.esm.state !== 'ok') await initMP();
+    if (St.hol.state !== 'ok') await initHolistic();
+
+    // Optional (parallel — failures don't block)
+    await Promise.allSettled([
+      St.ic.state  !== 'ok' ? initEXIF()        : Promise.resolve(),
+      St.afd.state !== 'ok' ? initFocusDist()   : Promise.resolve(),
+      St.sk.state  !== 'ok' ? initApplyConstr()  : Promise.resolve(),
+      St.imu.state !== 'ok' ? initIMU()          : Promise.resolve(),
+    ]);
+
+    _('btn-load').textContent = '▸ LAUNCH';
+    _('btn-load').disabled = false;
+    _('btn-load').onclick = launch;
+    _('btn-skip').textContent = '⟶ Launch now';
+
+  } catch(e) {
+    // A required step failed — show which one + retry
+    const failed = STEPS.filter(s=>s.req).find(s=>St[s.id].state==='fail');
+    _('btn-load').textContent = `↻ RETRY${failed?' ('+failed.name.slice(0,20)+'…)':''}`;
+    _('btn-load').disabled = false;
+    _('btn-load').onclick = () => { _loading=false; _('btn-load').onclick=null; loadAll(); };
+    _('btn-skip').textContent = '⟶ Skip — launch with what\'s loaded';
+    // Still run IMU even if required steps fail
+    if (St.imu.state==='wait') initIMU().catch(()=>{});
+  }
+
+  _loading = false;
+}
+window.loadAll = loadAll;
+
+/* ════════════════════════════════════════════════
+   BOOT
+════════════════════════════════════════════════ */
+buildSteps();
+updateProgress();
 </script>
 </body>
 </html>

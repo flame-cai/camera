@@ -4,228 +4,237 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>BODY · POSE · FACE · DEPTH</title>
+<title>SPATIAL</title>
+<link rel="preconnect" href="https://fonts.bunny.net">
+<link href="https://fonts.bunny.net/css?family=bebas-neue:400|ibm-plex-mono:400,500|barlow-condensed:400,600,700" rel="stylesheet">
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600;700&family=Share+Tech+Mono&display=swap');
-:root{
-  --bg:#060c10;--bg1:#0a1820;--bg2:#0e2030;
-  --c0:#00e8ff;--c1:#00ff99;--c2:#ff3d6b;--c3:#ffd600;--c4:#bf5af2;--c5:#ff9500;
-  --dim:rgba(0,232,255,.4);--bdr:rgba(0,232,255,.15);--bdr2:rgba(0,232,255,.07);
-  --txt:#cceeff;--mut:rgba(200,238,255,.36);
-  --mono:'Share Tech Mono',monospace;--hd:'Rajdhani',sans-serif;--dp:'Bebas Neue',sans-serif;
+/* ─── DESIGN SYSTEM ───────────────────────────────────── */
+:root {
+  --ink:#0a0e14; --ink1:#111720; --ink2:#182030;
+  --a:#00f5c4; --b:#5b8fff; --c:#ff4757; --d:#ffd32a; --e:#c44dff;
+  --dim:rgba(0,245,196,.35); --bdr:rgba(0,245,196,.12); --bdr2:rgba(0,245,196,.05);
+  --txt:#d0f0e8; --mut:rgba(208,240,232,.32);
+  --mono:'IBM Plex Mono',monospace;
+  --cond:'Barlow Condensed',sans-serif;
+  --disp:'Bebas Neue',sans-serif;
+  --safe-b:max(env(safe-area-inset-bottom,0px),6px);
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--txt)}
+html,body{height:100%;overflow:hidden;background:var(--ink);color:var(--txt)}
 body{font-family:var(--mono);display:flex;flex-direction:column;height:100dvh}
-body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9998;
-  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.018) 2px,rgba(0,0,0,.018) 4px)}
-
-/* ─── LOADING SCREEN ─── */
-#LS{position:fixed;inset:0;z-index:500;background:var(--bg);display:flex;flex-direction:column;
-  align-items:center;justify-content:flex-start;padding:16px 14px 12px;overflow-y:auto;gap:0}
-#LS::before{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
   background:
-    radial-gradient(ellipse 55% 30% at 10% 5%,rgba(0,232,255,.08),transparent 60%),
-    radial-gradient(ellipse 40% 55% at 92% 95%,rgba(0,255,153,.05),transparent 60%),
-    linear-gradient(rgba(0,232,255,.022) 1px,transparent 1px) 0 0/26px 26px,
-    linear-gradient(90deg,rgba(0,232,255,.022) 1px,transparent 1px) 0 0/26px 26px}
-.ls-title{font-family:var(--dp);font-size:32px;letter-spacing:5px;line-height:1;text-align:center;
-  background:linear-gradient(130deg,var(--c0) 20%,var(--c1));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:3px}
-.ls-sub{font-family:var(--hd);font-size:9px;font-weight:600;letter-spacing:3px;
-  color:var(--dim);text-transform:uppercase;text-align:center;margin-bottom:12px}
+    radial-gradient(ellipse 80% 40% at 50% -10%,rgba(0,245,196,.04),transparent 60%),
+    linear-gradient(rgba(0,245,196,.018) 1px,transparent 1px) 0 0/20px 20px,
+    linear-gradient(90deg,rgba(0,245,196,.018) 1px,transparent 1px) 0 0/20px 20px}
 
-/* Progress bar */
-.pg{width:100%;max-width:400px;margin-bottom:9px}
-.pg-row{display:flex;justify-content:space-between;font-size:8px;color:var(--dim);
-  margin-bottom:4px;font-family:var(--hd);font-weight:600;text-transform:uppercase;letter-spacing:1px}
-.pg-track{height:7px;background:rgba(0,232,255,.06);border-radius:4px;border:1px solid var(--bdr);overflow:hidden;position:relative}
-.pg-fill{height:100%;background:linear-gradient(90deg,var(--c0),var(--c1));border-radius:4px;width:0%;transition:width .4s ease}
-.pg-sh{position:absolute;top:0;right:-40px;width:40px;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.28));animation:psh 1.1s linear infinite;display:none}
-@keyframes psh{from{right:-40px}to{right:110%}}
+/* ─── LOADING ──────────────────────────────────────────── */
+#LS{position:fixed;inset:0;z-index:900;background:var(--ink);
+  display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
+  padding:20px 16px 16px;overflow-y:auto;gap:0}
+.ls-brand{text-align:center;margin-bottom:14px}
+.ls-brand h1{font-family:var(--disp);font-size:52px;letter-spacing:8px;line-height:1;
+  background:linear-gradient(135deg,var(--a) 0%,var(--b) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.ls-brand p{font-family:var(--cond);font-size:11px;font-weight:600;letter-spacing:3px;
+  color:var(--dim);text-transform:uppercase;margin-top:4px}
 
-/* Module grid 2-col */
-.mg{width:100%;max-width:400px;display:grid;grid-template-columns:1fr 1fr;gap:3px;margin-bottom:9px}
-.mc{display:flex;align-items:center;gap:6px;background:rgba(0,232,255,.02);
-  border:1px solid var(--bdr2);border-radius:5px;padding:5px 7px;transition:all .3s;min-width:0}
-.mc.loading{border-color:rgba(0,232,255,.25);background:rgba(0,232,255,.04)}
-.mc.done   {border-color:rgba(0,255,153,.26);background:rgba(0,255,153,.03)}
-.mc.fail   {border-color:rgba(255,61,107,.24);background:rgba(255,61,107,.03)}
-.mc.na     {opacity:.32}
-.mc-ico{font-size:12px;flex-shrink:0}
-.mc-info{flex:1;min-width:0}
-.mc-name{font-family:var(--hd);font-size:9.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.mc-msg{font-size:7px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
-.mc-bdg{font-size:7px;font-family:var(--hd);font-weight:700;padding:1px 5px;border-radius:10px;
-  border:1px solid currentColor;flex-shrink:0;text-transform:uppercase}
-.bw{color:var(--dim)}.bok{color:var(--c1)}.bfail{color:var(--c2)}.bna{color:var(--mut)}
+.pg-wrap{width:100%;max-width:420px;margin-bottom:10px}
+.pg-label{display:flex;justify-content:space-between;font-size:9px;color:var(--dim);
+  margin-bottom:4px;font-family:var(--cond);font-weight:600;text-transform:uppercase;letter-spacing:1px}
+.pg-track{height:3px;background:rgba(0,245,196,.08);border-radius:2px;overflow:hidden;position:relative}
+.pg-bar{height:100%;background:linear-gradient(90deg,var(--a),var(--b));border-radius:2px;
+  width:0%;transition:width .35s cubic-bezier(.4,0,.2,1)}
+.pg-shine{position:absolute;top:0;right:-30px;width:30px;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.4));
+  animation:psh 1s linear infinite;display:none}
+@keyframes psh{from{right:-30px}to{right:110%}}
 
-/* Buttons */
-.ls-btns{width:100%;max-width:400px;display:flex;flex-direction:column;gap:5px}
-#btn-go{background:linear-gradient(130deg,var(--c0),var(--c1));color:#010d14;border:none;
-  padding:13px;border-radius:5px;font-family:var(--dp);font-size:18px;letter-spacing:3px;
-  cursor:pointer;width:100%;transition:opacity .2s}
-#btn-go:active{opacity:.8}#btn-go:disabled{opacity:.42;cursor:not-allowed}
-#btn-retry{background:transparent;color:var(--c2);border:1px solid rgba(255,61,107,.36);
-  padding:8px;border-radius:5px;font-family:var(--hd);font-weight:700;font-size:9px;
+.mg{width:100%;max-width:420px;display:grid;grid-template-columns:1fr 1fr;gap:3px;margin-bottom:10px}
+.mc{display:flex;align-items:center;gap:7px;background:rgba(0,245,196,.02);
+  border:1px solid var(--bdr2);border-radius:4px;padding:6px 8px;transition:all .25s;min-width:0}
+.mc.loading{border-color:rgba(0,245,196,.2);background:rgba(0,245,196,.03)}
+.mc.done   {border-color:rgba(0,245,196,.22);background:rgba(0,245,196,.025)}
+.mc.fail   {border-color:rgba(255,71,87,.22);background:rgba(255,71,87,.025)}
+.mc.na     {opacity:.28}
+.mc-ico{font-size:13px;flex-shrink:0}
+.mc-body{flex:1;min-width:0}
+.mc-name{font-family:var(--cond);font-size:10px;font-weight:700;letter-spacing:.3px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mc-msg{font-size:7px;color:var(--mut);margin-top:1px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:var(--mono)}
+.mc-st{font-size:7px;font-family:var(--cond);font-weight:700;padding:1px 5px;
+  border-radius:2px;border:1px solid currentColor;flex-shrink:0;text-transform:uppercase}
+.st-w{color:var(--dim)}.st-ok{color:var(--a)}.st-f{color:var(--c)}.st-na{color:var(--mut)}
+
+.ls-btns{width:100%;max-width:420px;display:flex;flex-direction:column;gap:6px}
+#btn-go{background:var(--a);color:var(--ink);border:none;padding:14px;border-radius:3px;
+  font-family:var(--disp);font-size:20px;letter-spacing:4px;cursor:pointer;width:100%}
+#btn-go:disabled{opacity:.4;cursor:not-allowed}#btn-go:active{opacity:.82}
+#btn-retry{background:transparent;color:var(--c);border:1px solid rgba(255,71,87,.3);
+  padding:9px;border-radius:3px;font-family:var(--cond);font-weight:700;font-size:10px;
   letter-spacing:2px;cursor:pointer;width:100%;display:none;text-transform:uppercase}
-.ls-note{font-size:7px;color:var(--mut);text-align:center;line-height:1.7}
+.ls-note{font-size:7.5px;color:var(--mut);text-align:center;line-height:1.8;
+  font-family:var(--mono)}
 
-/* ─── APP SHELL ─── */
-#APP{display:none;flex-direction:column;height:100dvh}
-#TABS{display:flex;background:var(--bg1);border-bottom:1px solid var(--bdr);
-  flex-shrink:0;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+/* ─── APP SHELL ────────────────────────────────────────── */
+#APP{display:none;flex-direction:column;height:100dvh;position:relative;z-index:1}
+
+/* Tab bar */
+#TABS{flex-shrink:0;background:var(--ink1);border-bottom:1px solid var(--bdr);
+  display:flex;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
 #TABS::-webkit-scrollbar{display:none}
-.tb{flex:0 0 auto;min-width:55px;height:46px;padding:0 7px;
+.tb{flex:0 0 auto;min-width:58px;height:44px;padding:0 10px;
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;
-  font-family:var(--hd);font-size:7px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;
+  font-family:var(--cond);font-size:7.5px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;
   color:var(--mut);border:none;background:transparent;cursor:pointer;
-  border-bottom:2px solid transparent;transition:all .2s;position:relative;white-space:nowrap}
-.tb.on{color:var(--c0);border-bottom-color:var(--c0)}
-.tb .ti{font-size:15px;line-height:1}
-.dot{position:absolute;top:5px;right:5px;width:5px;height:5px;border-radius:50%;
-  background:var(--dim);transition:background .3s}
-.dot.live{background:var(--c0);animation:dp 1.4s ease-in-out infinite}
-.dot.ok{background:var(--c1)}.dot.fail{background:var(--c2)}.dot.off{opacity:.3}
-@keyframes dp{0%,100%{opacity:.3;transform:scale(.7)}50%{opacity:1;transform:scale(1.3)}}
+  border-bottom:2px solid transparent;transition:all .18s;position:relative;white-space:nowrap}
+.tb.on{color:var(--a);border-bottom-color:var(--a)}
+.tb .ti{font-size:15px;line-height:1;margin-bottom:1px}
+.dot{position:absolute;top:6px;right:7px;width:4px;height:4px;border-radius:50%;
+  background:var(--dim);transition:background .25s}
+.dot.live{background:var(--a);animation:dp 1.3s ease-in-out infinite}
+.dot.ok{background:var(--a);opacity:.6}.dot.fail{background:var(--c)}.dot.off{opacity:.2}
+@keyframes dp{0%,100%{opacity:.25;transform:scale(.7)}50%{opacity:1;transform:scale(1.35)}}
 
 /* Pages */
 #PGS{flex:1;overflow:hidden;position:relative}
-.pane{display:none;position:absolute;inset:0;flex-direction:column;background:var(--bg);overflow:hidden}
+.pane{display:none;position:absolute;inset:0;flex-direction:column;overflow:hidden;background:var(--ink)}
 .pane.on{display:flex}
 
-/* ─── 3:4 PORTRAIT CAMERA VIEWPORT ─── */
-.cam-wrap{
+/* ─── 3:4 CAMERA VIEWPORT ─────────────────────────────── */
+.cambox{
   position:relative;flex-shrink:0;background:#000;overflow:hidden;
-  /* 3:4 portrait aspect ratio */
   width:100%;
+  /* 3:4 portrait - clips to 60vh max */
   aspect-ratio:3/4;
   max-height:60vh;
 }
-.cam-wrap video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.cam-wrap .cv-ml{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
-.cam-wrap .cv-hud{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.cambox video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.cambox canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
 
-/* HUD decorations */
-.hx{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
-  width:40px;height:40px;pointer-events:none}
-.hx::before,.hx::after{content:'';position:absolute;background:var(--c0);opacity:.45}
-.hx::before{width:1px;height:100%;left:50%;margin-left:-.5px}
-.hx::after{height:1px;width:100%;top:50%;margin-top:-.5px}
-.hr{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
-  width:50px;height:50px;border:1.5px solid var(--c0);border-radius:50%;
-  opacity:.36;pointer-events:none;animation:rp 2.2s ease-in-out infinite}
-@keyframes rp{0%,100%{opacity:.22;transform:translate(-50%,-50%) scale(1)}50%{opacity:.6;transform:translate(-50%,-50%) scale(1.1)}}
-.hs{position:absolute;left:0;right:0;height:1px;
-  background:linear-gradient(90deg,transparent,var(--c0),transparent);
-  opacity:0;pointer-events:none;animation:sc 4s linear infinite}
-@keyframes sc{0%{top:0;opacity:0}3%{opacity:.42}97%{opacity:.42}100%{top:100%;opacity:0}}
-.dc{position:absolute;width:12px;height:12px;border-color:var(--c0);border-style:solid;opacity:.5;pointer-events:none}
-.dc.tl{top:6px;left:6px;border-width:1.5px 0 0 1.5px}.dc.tr{top:6px;right:6px;border-width:1.5px 1.5px 0 0}
-.dc.bl{bottom:6px;left:6px;border-width:0 0 1.5px 1.5px}.dc.br{bottom:6px;right:6px;border-width:0 1.5px 1.5px 0}
+/* HUD layer drawn on top */
+.hud-overlay{position:absolute;inset:0;pointer-events:none}
+/* Crosshair */
+.crosshair{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:36px;height:36px;pointer-events:none}
+.crosshair::before,.crosshair::after{content:'';position:absolute;background:var(--a);opacity:.5}
+.crosshair::before{width:1px;height:100%;left:50%;margin-left:-.5px}
+.crosshair::after{height:1px;width:100%;top:50%;margin-top:-.5px}
+/* Corner brackets */
+.corn{position:absolute;width:14px;height:14px;border-color:var(--a);border-style:solid;opacity:.55;pointer-events:none}
+.corn.tl{top:6px;left:6px;border-width:2px 0 0 2px}
+.corn.tr{top:6px;right:6px;border-width:2px 2px 0 0}
+.corn.bl{bottom:6px;left:6px;border-width:0 0 2px 2px}
+.corn.br{bottom:6px;right:6px;border-width:0 2px 2px 0}
+/* Scanline animation */
+.scanline{position:absolute;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--a),transparent);
+  opacity:0;animation:scn 5s linear infinite}
+@keyframes scn{0%{top:0;opacity:0}3%{opacity:.35}96%{opacity:.35}100%{top:100%;opacity:0}}
+/* Warn banner inside cam */
+.camwarn{position:absolute;bottom:6px;left:6px;right:6px;
+  background:rgba(255,71,87,.18);border:1px solid rgba(255,71,87,.45);border-radius:3px;
+  padding:4px 8px;font-size:7.5px;color:var(--c);font-family:var(--cond);
+  font-weight:700;text-align:center;display:none}
 
-/* HUD text overlays */
-.hud-h{position:absolute;left:8px;top:50%;transform:translateY(-50%);
-  font-family:var(--mono);font-size:8px;color:rgba(0,232,255,.8);
-  text-shadow:0 0 8px rgba(0,232,255,.5);pointer-events:none;writing-mode:vertical-lr;
-  transform:translateY(-50%) rotate(180deg)}
-.hud-d{position:absolute;top:50%;left:50%;transform:translate(-50%,-70px);
-  font-family:var(--dp);font-size:14px;color:rgba(0,255,153,.95);
-  text-shadow:0 0 10px rgba(0,255,153,.5);pointer-events:none;text-align:center;white-space:nowrap}
-.hud-warn{position:absolute;bottom:6px;left:6px;right:6px;
-  background:rgba(255,61,107,.14);border:1px solid rgba(255,61,107,.4);
-  border-radius:4px;padding:4px 8px;font-size:7.5px;color:var(--c2);
-  font-family:var(--hd);font-weight:600;display:none;text-align:center}
-
-/* ─── METRICS ROW ─── */
-.mrow{display:grid;grid-template-columns:1fr 1fr;gap:5px;padding:5px 6px 0;flex-shrink:0}
-.met{background:var(--bg1);border:1px solid var(--bdr);border-radius:6px;
-  padding:5px 8px;position:relative;overflow:hidden}
-.met::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
-  background:linear-gradient(90deg,var(--c0),var(--c1))}
-.ml{font-family:var(--hd);font-size:7.5px;font-weight:700;letter-spacing:1.2px;
+/* ─── METRIC BAR ───────────────────────────────────────── */
+.metbar{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;
+  padding:5px 6px 0;flex-shrink:0}
+.met{background:var(--ink1);border:1px solid var(--bdr);border-radius:4px;
+  padding:5px 7px;position:relative;overflow:hidden}
+.met::after{content:'';position:absolute;top:0;left:0;right:0;height:1.5px;
+  background:var(--a)}
+.met.b::after{background:var(--b)}
+.met.c::after{background:var(--e)}
+.ml{font-family:var(--cond);font-size:7px;font-weight:600;letter-spacing:1px;
   text-transform:uppercase;color:var(--dim);margin-bottom:1px}
-.mv{font-family:var(--dp);font-size:28px;color:var(--c0);line-height:1;letter-spacing:.5px}
-.mu{font-size:10px;color:var(--dim);margin-left:1px;font-family:var(--hd)}
-.ms{font-size:6.5px;color:rgba(0,232,255,.26);margin-top:1px;font-family:var(--mono);
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mv{font-family:var(--disp);font-size:24px;color:var(--a);line-height:1}
+.mv.b{color:var(--b)}.mv.e{color:var(--e)}
+.mu{font-size:9px;color:var(--dim);margin-left:1px;font-family:var(--cond)}
+.ms{font-size:6px;color:rgba(0,245,196,.22);margin-top:1px;
+  font-family:var(--mono);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
-/* ─── DETAIL PANEL ─── */
+/* ─── DETAIL SCROLL ────────────────────────────────────── */
 .det{flex:1;overflow-y:auto;padding:5px 6px 8px;min-height:0}
 .det::-webkit-scrollbar{width:2px}
 .det::-webkit-scrollbar-thumb{background:var(--bdr);border-radius:1px}
-.dh{font-family:var(--hd);font-size:7.5px;font-weight:700;letter-spacing:2px;
-  text-transform:uppercase;color:var(--dim);margin-bottom:5px;margin-top:7px;
+.dh{font-family:var(--cond);font-size:8px;font-weight:700;letter-spacing:2px;
+  text-transform:uppercase;color:var(--dim);margin:8px 0 4px;
   display:flex;align-items:center;gap:5px}
 .dh:first-child{margin-top:0}
 .dh::after{content:'';flex:1;height:1px;background:var(--bdr2)}
-.g2{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:5px}
-.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-bottom:5px}
-.cell{background:rgba(0,232,255,.025);border:1px solid var(--bdr2);border-radius:4px;padding:5px 6px}
-.cl{font-size:7px;color:var(--dim);font-family:var(--hd);font-weight:600;letter-spacing:.3px;margin-bottom:1px}
-.cv2{font-family:var(--dp);font-size:16px;color:var(--c0);line-height:1}
-.cu{font-size:6.5px;color:var(--dim)}
-.scard{background:rgba(0,232,255,.025);border:1px solid var(--bdr);border-radius:5px;padding:6px 8px;margin-bottom:5px}
-.sr{display:flex;justify-content:space-between;align-items:center;margin-bottom:2px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:3px;margin-bottom:4px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:3px;margin-bottom:4px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:3px;margin-bottom:4px}
+.cell{background:rgba(0,245,196,.02);border:1px solid var(--bdr2);
+  border-radius:3px;padding:5px 6px}
+.cl{font-size:6.5px;color:var(--dim);font-family:var(--cond);font-weight:600;
+  letter-spacing:.3px;margin-bottom:1px}
+.cv{font-family:var(--disp);font-size:15px;color:var(--a);line-height:1}
+.cv.b{color:var(--b)}.cv.c{color:var(--c)}.cv.d{color:var(--d)}.cv.e{color:var(--e)}
+.cu{font-size:6px;color:var(--dim)}
+.scard{background:rgba(0,245,196,.02);border:1px solid var(--bdr);
+  border-radius:4px;padding:6px 8px;margin-bottom:4px}
+.sr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:2px}
 .sr:last-child{margin-bottom:0}
-.sk{font-size:7.5px;color:var(--mut);font-family:var(--hd);font-weight:600}
-.sv{font-size:7.5px;color:var(--c0);font-family:var(--mono)}
-.sv.ok{color:var(--c1)}.sv.warn{color:var(--c3)}.sv.fail{color:var(--c2)}
-.bdg{display:inline-flex;align-items:center;gap:4px;font-family:var(--hd);font-weight:700;
-  font-size:8px;letter-spacing:.6px;padding:2px 8px;border-radius:20px;border:1px solid;
+.sk{font-size:7.5px;color:var(--mut);font-family:var(--cond);font-weight:600;flex-shrink:0;margin-right:6px}
+.sv{font-size:7.5px;color:var(--a);font-family:var(--mono);text-align:right}
+.sv.b{color:var(--b)}.sv.w{color:var(--d)}.sv.ok{color:var(--a)}.sv.fail{color:var(--c)}
+.bdg{display:inline-flex;align-items:center;gap:3px;font-family:var(--cond);font-weight:700;
+  font-size:8.5px;letter-spacing:.5px;padding:3px 9px;border-radius:2px;border:1px solid;
   margin-bottom:5px;text-transform:uppercase}
-.bdg.live{border-color:var(--c0);color:var(--c0);background:rgba(0,232,255,.07)}
-.bdg.ok  {border-color:var(--c1);color:var(--c1);background:rgba(0,255,153,.07)}
-.bdg.fail{border-color:var(--c2);color:var(--c2);background:rgba(255,61,107,.07)}
+.bdg.live{border-color:var(--a);color:var(--a);background:rgba(0,245,196,.06)}
+.bdg.ok  {border-color:var(--a);color:var(--a);background:rgba(0,245,196,.05)}
+.bdg.fail{border-color:var(--c);color:var(--c);background:rgba(255,71,87,.06)}
 .bdg.wait{border-color:var(--dim);color:var(--dim)}
 .bdt{width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0}
-.bdt.p{animation:dp 1.2s ease-in-out infinite}
-.retb{background:transparent;color:var(--c2);border:1px solid rgba(255,61,107,.3);
-  padding:4px 11px;border-radius:20px;font-family:var(--hd);font-weight:700;font-size:8px;
+.bdt.p{animation:dp 1.1s ease-in-out infinite}
+.retb{background:transparent;color:var(--c);border:1px solid rgba(255,71,87,.28);
+  padding:4px 11px;border-radius:2px;font-family:var(--cond);font-weight:700;font-size:8px;
   letter-spacing:1px;text-transform:uppercase;cursor:pointer;margin-bottom:5px;display:none}
 .retb.show{display:inline-flex;align-items:center;gap:3px}
-.retb:active{background:rgba(255,61,107,.1)}
-.log{background:var(--bg2);border:1px solid var(--bdr2);border-radius:4px;padding:5px;
-  font-size:7px;color:var(--mut);line-height:1.85;max-height:75px;overflow-y:auto;margin-bottom:5px}
-.log::-webkit-scrollbar{width:2px}
-.log::-webkit-scrollbar-thumb{background:var(--bdr);border-radius:1px}
-.ll.ok{color:var(--c1)}.ll.err{color:var(--c2)}.ll.info{color:var(--c0)}.ll.warn{color:var(--c3)}
-.mini{width:100%;border-radius:4px;border:1px solid var(--bdr2);background:var(--bg2);display:block;margin-bottom:5px}
-.cbar{display:flex;align-items:center;gap:5px;margin-bottom:3px}
-.cbn{font-size:7px;color:var(--mut);width:72px;flex-shrink:0;font-family:var(--hd);font-weight:600}
-.cbt{flex:1;height:3px;background:rgba(0,232,255,.06);border-radius:2px;overflow:hidden}
-.cbf{height:100%;border-radius:2px;transition:width .5s ease}
-.cbf.h{background:linear-gradient(90deg,var(--c0),var(--c1))}
-.cbf.m{background:linear-gradient(90deg,var(--c4),var(--c0))}
-.cbf.l{background:linear-gradient(90deg,var(--c2),var(--c4))}
-.cbp{font-size:7px;color:var(--c0);width:22px;text-align:right;font-family:var(--mono);flex-shrink:0}
-.cbr{font-size:7px;color:var(--mut);width:40px;text-align:right;font-family:var(--mono);flex-shrink:0}
-.safe{height:max(env(safe-area-inset-bottom,0px),6px);flex-shrink:0}
+.retb:active{background:rgba(255,71,87,.1)}
+.logbx{background:var(--ink2);border:1px solid var(--bdr2);border-radius:3px;
+  padding:5px 6px;font-size:7px;color:var(--mut);line-height:1.85;
+  max-height:70px;overflow-y:auto;margin-bottom:4px;font-family:var(--mono)}
+.logbx::-webkit-scrollbar{width:2px}
+.logbx::-webkit-scrollbar-thumb{background:var(--bdr)}
+.ll.ok{color:var(--a)}.ll.err{color:var(--c)}.ll.info{color:var(--b)}.ll.warn{color:var(--d)}
+.safe{height:var(--safe-b);flex-shrink:0}
 
-/* Blendshape bars */
-.bsrow{display:flex;align-items:center;gap:4px;margin-bottom:2px}
-.bsn{font-size:6.5px;color:var(--mut);width:90px;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:var(--mono)}
-.bst{flex:1;height:3px;background:rgba(0,232,255,.06);border-radius:2px;overflow:hidden}
-.bsf{height:100%;background:var(--c4);border-radius:2px;transition:width .3s ease}
-.bsv{font-size:6.5px;color:var(--c4);width:26px;text-align:right;font-family:var(--mono);flex-shrink:0}
+/* Confidence bars */
+.cbar{display:flex;align-items:center;gap:5px;margin-bottom:3px}
+.cbn{font-size:7px;color:var(--mut);width:64px;flex-shrink:0;font-family:var(--cond);font-weight:600}
+.cbt{flex:1;height:2.5px;background:rgba(0,245,196,.06);border-radius:2px;overflow:hidden}
+.cbf{height:100%;border-radius:2px;transition:width .4s ease;background:var(--a)}
+.cbf.b{background:var(--b)}.cbf.e{background:var(--e)}
+.cbp{font-size:7px;color:var(--a);width:22px;text-align:right;flex-shrink:0;font-family:var(--mono)}
+
+/* Body proportion bars */
+.proprow{display:flex;align-items:center;gap:5px;margin-bottom:3px}
+.propn{font-size:7px;color:var(--mut);width:75px;flex-shrink:0;font-family:var(--cond)}
+.propt{flex:1;height:3px;background:rgba(91,143,255,.08);border-radius:2px;overflow:hidden}
+.propf{height:100%;border-radius:2px;background:var(--b);transition:width .4s}
+.propv{font-size:7px;color:var(--b);width:32px;text-align:right;flex-shrink:0;font-family:var(--mono)}
 </style>
 </head>
 <body>
 
 <!-- ═══════════ LOADING ═══════════ -->
 <div id="LS">
-  <div class="ls-title">BODY · POSE · FACE · DEPTH</div>
-  <div class="ls-sub">Every body measurement model · Portrait 3:4 · Real-time</div>
-
-  <div class="pg">
-    <div class="pg-row"><span id="pgl">Ready to initialize</span><span id="pgn">0/0</span></div>
-    <div class="pg-track"><div class="pg-fill" id="pgf"></div><div class="pg-sh" id="pgs"></div></div>
+  <div class="ls-brand">
+    <h1>SPATIAL</h1>
+    <p>Camera Height · Person Distance · Body Measurement</p>
   </div>
-
+  <div class="pg-wrap">
+    <div class="pg-label"><span id="pgl">Initialising</span><span id="pgn">0/0</span></div>
+    <div class="pg-track"><div class="pg-bar" id="pgb"></div><div class="pg-shine" id="pgs"></div></div>
+  </div>
   <div class="mg" id="MG"></div>
-
   <div class="ls-btns">
-    <div class="ls-note">All models on-device · Portrait 3:4 live camera on every tab · No AR · No WebXR</div>
-    <button id="btn-go">⚡ LOAD ALL MODELS</button>
+    <div class="ls-note">All models run on-device · 3:4 portrait camera · Zero prior knowledge needed</div>
+    <button id="btn-go">▸ LOAD ALL MODELS</button>
     <button id="btn-retry">↻ RETRY FAILED</button>
   </div>
 </div>
@@ -233,1224 +242,971 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9998;
 <!-- ═══════════ APP ═══════════ -->
 <div id="APP">
   <div id="TABS">
-    <button class="tb on"  data-p="t0"  onclick="GT('t0')"><span class="ti">🎯</span>FUSED<span class="dot" id="d0"></span></button>
-    <button class="tb"     data-p="t1"  onclick="GT('t1')"><span class="ti">🤸</span>POSE·L<span class="dot" id="d1"></span></button>
-    <button class="tb"     data-p="t2"  onclick="GT('t2')"><span class="ti">💪</span>POSE·F<span class="dot" id="d2"></span></button>
-    <button class="tb"     data-p="t3"  onclick="GT('t3')"><span class="ti">🕴</span>HOLISTIC<span class="dot" id="d3"></span></button>
-    <button class="tb"     data-p="t4"  onclick="GT('t4')"><span class="ti">😶</span>FACE<span class="dot" id="d4"></span></button>
-    <button class="tb"     data-p="t5"  onclick="GT('t5')"><span class="ti">😊</span>FACE·BS<span class="dot" id="d5"></span></button>
-    <button class="tb"     data-p="t6"  onclick="GT('t6')"><span class="ti">✂️</span>SEG·S<span class="dot" id="d6"></span></button>
-    <button class="tb"     data-p="t7"  onclick="GT('t7')"><span class="ti">🎭</span>SEG·HQ<span class="dot" id="d7"></span></button>
-    <button class="tb"     data-p="t8"  onclick="GT('t8')"><span class="ti">💈</span>HAIR<span class="dot" id="d8"></span></button>
-    <button class="tb"     data-p="t9"  onclick="GT('t9')"><span class="ti">🎨</span>DEEPLAB<span class="dot" id="d9"></span></button>
-    <button class="tb"     data-p="t10" onclick="GT('t10')"><span class="ti">🐾</span>BPIX<span class="dot" id="d10"></span></button>
-    <button class="tb"     data-p="t11" onclick="GT('t11')"><span class="ti">🧠</span>DEPTH<span class="dot" id="d11"></span></button>
-    <button class="tb"     data-p="t12" onclick="GT('t12')"><span class="ti">📡</span>IMU<span class="dot" id="d12"></span></button>
+    <button class="tb on" data-p="t0" onclick="GT('t0')"><span class="ti">⊕</span>FUSED<span class="dot" id="q0"></span></button>
+    <button class="tb"    data-p="t1" onclick="GT('t1')"><span class="ti">🤸</span>POSE<span class="dot"    id="q1"></span></button>
+    <button class="tb"    data-p="t2" onclick="GT('t2')"><span class="ti">🕴</span>HOLISTIC<span class="dot" id="q2"></span></button>
+    <button class="tb"    data-p="t3" onclick="GT('t3')"><span class="ti">😶</span>FACE<span class="dot"    id="q3"></span></button>
+    <button class="tb"    data-p="t4" onclick="GT('t4')"><span class="ti">🖐</span>HAND<span class="dot"    id="q4"></span></button>
+    <button class="tb"    data-p="t5" onclick="GT('t5')"><span class="ti">✂️</span>SEG<span class="dot"     id="q5"></span></button>
+    <button class="tb"    data-p="t6" onclick="GT('t6')"><span class="ti">🐾</span>BPIX<span class="dot"   id="q6"></span></button>
+    <button class="tb"    data-p="t7" onclick="GT('t7')"><span class="ti">📡</span>IMU<span class="dot"     id="q7"></span></button>
+    <button class="tb"    data-p="t8" onclick="GT('t8')"><span class="ti">📷</span>OPTICS<span class="dot" id="q8"></span></button>
   </div>
 
   <div id="PGS">
 
-    <!-- T0: FUSED overview -->
+    <!-- T0: FUSED -->
     <div class="pane on" id="t0">
-      <div class="cam-wrap">
+      <div class="cambox">
         <video id="v0" autoplay playsinline muted></video>
-        <canvas class="cv-hud" id="cv0h"></canvas>
-        <canvas class="cv-ml"  id="cv0m"></canvas>
-        <div class="hr"></div><div class="hx"></div><div class="hs"></div>
-        <div class="dc tl"></div><div class="dc tr"></div><div class="dc bl"></div><div class="dc br"></div>
-        <div class="hud-warn" id="tw0">⚠ Hold phone vertical — portrait, perpendicular to ground</div>
+        <canvas id="c0"></canvas>
+        <div class="corn tl"></div><div class="corn tr"></div>
+        <div class="corn bl"></div><div class="corn br"></div>
+        <div class="crosshair"></div><div class="scanline"></div>
+        <div class="camwarn" id="w0">⚠ Hold phone vertical — portrait mode</div>
       </div>
-      <div class="mrow">
-        <div class="met"><div class="ml">Camera Height</div>
-          <span class="mv" id="fH">--</span><span class="mu">m</span>
-          <div class="ms" id="fHs">awaiting sensors</div></div>
-        <div class="met"><div class="ml">Person Distance</div>
-          <span class="mv" id="fD">--</span><span class="mu">m</span>
-          <div class="ms" id="fDs">awaiting models</div></div>
+      <div class="metbar">
+        <div class="met">    <div class="ml">Height</div><span class="mv" id="fH">--</span><span class="mu">m</span><div class="ms" id="fHs">camera</div></div>
+        <div class="met b">  <div class="ml">Distance</div><span class="mv b" id="fD">--</span><span class="mu">m</span><div class="ms" id="fDs">person</div></div>
+        <div class="met c">  <div class="ml">Person H</div><span class="mv e" id="fP">--</span><span class="mu">m</span><div class="ms" id="fPs">est</div></div>
       </div>
       <div class="det">
         <div class="dh">All source confidence</div>
-        <div id="allcbars"></div>
+        <div id="fcbars"></div>
+        <div class="dh">Focal length</div>
+        <div class="g2">
+          <div class="cell"><div class="cl">Derived focal px</div><div class="cv" id="fFocal">--</div></div>
+          <div class="cell"><div class="cl">Assumed FOV</div><div class="cv b" id="fFOV">--°</div></div>
+        </div>
         <div class="safe"></div>
       </div>
     </div>
 
-    <!-- T1: PoseLandmarker LITE + mask -->
+    <!-- T1: POSE FULL -->
     <div class="pane" id="t1">
-      <div class="cam-wrap">
+      <div class="cambox">
         <video id="v1" autoplay playsinline muted></video>
-        <canvas class="cv-ml" id="cv1"></canvas>
-        <div class="hx"></div><div class="hs"></div>
-        <div class="dc tl"></div><div class="dc tr"></div><div class="dc bl"></div><div class="dc br"></div>
+        <canvas id="c1"></canvas>
+        <div class="corn tl"></div><div class="corn tr"></div>
+        <div class="corn bl"></div><div class="corn br"></div>
+        <div class="crosshair"></div><div class="scanline"></div>
       </div>
-      <div class="mrow">
-        <div class="met"><div class="ml">Cam Height</div><span class="mv" id="h1">--</span><span class="mu">m</span><div class="ms" id="h1s">fusion</div></div>
-        <div class="met"><div class="ml">Person Dist</div><span class="mv" id="d1v">--</span><span class="mu">m</span><div class="ms" id="d1s">head↔ankle</div></div>
-      </div>
-      <div class="det">
-        <div class="bdg wait" id="b1"><span class="bdt p"></span>Loading PoseLandmarker Lite</div>
-        <button class="retb" id="r1" onclick="RY('pose_lite')">↻ Retry</button>
-        <div class="g3">
-          <div class="cell"><div class="cl">Head↔Ankle</div><div class="cv2" id="p1ht">--<span class="cu">px</span></div></div>
-          <div class="cell"><div class="cl">Visibility</div><div class="cv2" id="p1vis">--</div></div>
-          <div class="cell"><div class="cl">FPS</div><div class="cv2" id="p1fps">--</div></div>
-        </div>
-        <div class="scard">
-          <div class="sr"><span class="sk">Model</span><span class="sv">pose_landmarker_lite (5.5MB)</span></div>
-          <div class="sr"><span class="sk">Landmarks</span><span class="sv">33 body + world coords</span></div>
-          <div class="sr"><span class="sk">Segmentation</span><span class="sv ok" id="p1seg">mask enabled</span></div>
-          <div class="sr"><span class="sk">Distance method</span><span class="sv">focal × 1.7m ÷ head-ankle-px</span></div>
-          <div class="sr"><span class="sk">Conf</span><span class="sv" id="p1c">0%</span></div>
-        </div>
-        <div class="log" id="l1"></div><div class="safe"></div>
-      </div>
-    </div>
-
-    <!-- T2: PoseLandmarker FULL + mask -->
-    <div class="pane" id="t2">
-      <div class="cam-wrap">
-        <video id="v2" autoplay playsinline muted></video>
-        <canvas class="cv-ml" id="cv2"></canvas>
-        <div class="hx"></div><div class="hs"></div>
-        <div class="dc tl"></div><div class="dc tr"></div><div class="dc bl"></div><div class="dc br"></div>
-      </div>
-      <div class="mrow">
-        <div class="met"><div class="ml">Cam Height</div><span class="mv" id="h2">--</span><span class="mu">m</span><div class="ms">fusion</div></div>
-        <div class="met"><div class="ml">Person Dist</div><span class="mv" id="d2v">--</span><span class="mu">m</span><div class="ms" id="d2s">head↔ankle</div></div>
+      <div class="metbar">
+        <div class="met">    <div class="ml">Cam Height</div><span class="mv" id="p1H">--</span><span class="mu">m</span><div class="ms">fused</div></div>
+        <div class="met b">  <div class="ml">Distance</div><span class="mv b" id="p1D">--</span><span class="mu">m</span><div class="ms" id="p1Ds">self-cal</div></div>
+        <div class="met c">  <div class="ml">Person H</div><span class="mv e" id="p1P">--</span><span class="mu">m</span><div class="ms">world lm</div></div>
       </div>
       <div class="det">
-        <div class="bdg wait" id="b2"><span class="bdt p"></span>Loading PoseLandmarker Full</div>
-        <button class="retb" id="r2" onclick="RY('pose_full')">↻ Retry</button>
+        <div class="bdg wait" id="b1"><span class="bdt p"></span>Loading PoseLandmarker Full</div>
+        <button class="retb" id="r1" onclick="RY('pose')">↻ Retry</button>
+        <div class="dh">World Landmarks (metres, hip origin)</div>
         <div class="g3">
-          <div class="cell"><div class="cl">Head↔Ankle</div><div class="cv2" id="p2ht">--<span class="cu">px</span></div></div>
-          <div class="cell"><div class="cl">Visibility</div><div class="cv2" id="p2vis">--</div></div>
-          <div class="cell"><div class="cl">FPS</div><div class="cv2" id="p2fps">--</div></div>
+          <div class="cell"><div class="cl">Nose Y</div><div class="cv" id="p1ny">--<span class="cu">m</span></div></div>
+          <div class="cell"><div class="cl">Ankle Y</div><div class="cv" id="p1ay">--<span class="cu">m</span></div></div>
+          <div class="cell"><div class="cl">Visibility</div><div class="cv b" id="p1vis">--</div></div>
+        </div>
+        <div class="dh">Body Proportions</div>
+        <div id="p1props"></div>
+        <div class="dh">Focal Self-Calibration</div>
+        <div class="g3">
+          <div class="cell"><div class="cl">focal px</div><div class="cv" id="p1fpx">--</div></div>
+          <div class="cell"><div class="cl">D (hip)</div><div class="cv b" id="p1dhip">--<span class="cu">m</span></div></div>
+          <div class="cell"><div class="cl">FPS</div><div class="cv" id="p1fps">--</div></div>
         </div>
         <div class="scard">
           <div class="sr"><span class="sk">Model</span><span class="sv">pose_landmarker_full (9MB)</span></div>
-          <div class="sr"><span class="sk">Landmarks</span><span class="sv">33 body + world coords</span></div>
-          <div class="sr"><span class="sk">Segmentation</span><span class="sv ok">full-body mask</span></div>
-          <div class="sr"><span class="sk">Quality</span><span class="sv ok">Higher accuracy than Lite</span></div>
+          <div class="sr"><span class="sk">World coords</span><span class="sv ok">metres, hip origin, GHUM 3D</span></div>
+          <div class="sr"><span class="sk">Self-calib</span><span class="sv ok">derives focal + D from geometry</span></div>
+          <div class="sr"><span class="sk">Body mask</span><span class="sv ok">outputSegmentationMasks:true</span></div>
         </div>
-        <div class="log" id="l2"></div><div class="safe"></div>
+        <div class="logbx" id="l1"></div><div class="safe"></div>
       </div>
     </div>
 
-    <!-- T3: HolisticLandmarker (pose+face+hands) -->
-    <div class="pane" id="t3">
-      <div class="cam-wrap">
-        <video id="v3" autoplay playsinline muted></video>
-        <canvas class="cv-ml" id="cv3"></canvas>
-        <div class="hx"></div><div class="hs"></div>
-        <div class="dc tl"></div><div class="dc tr"></div><div class="dc bl"></div><div class="dc br"></div>
+    <!-- T2: HOLISTIC -->
+    <div class="pane" id="t2">
+      <div class="cambox">
+        <video id="v2" autoplay playsinline muted></video>
+        <canvas id="c2"></canvas>
+        <div class="corn tl"></div><div class="corn tr"></div>
+        <div class="corn bl"></div><div class="corn br"></div>
+        <div class="crosshair"></div><div class="scanline"></div>
       </div>
-      <div class="mrow">
-        <div class="met"><div class="ml">Cam Height</div><span class="mv" id="h3">--</span><span class="mu">m</span><div class="ms">fusion</div></div>
-        <div class="met"><div class="ml">Person Dist</div><span class="mv" id="d3v">--</span><span class="mu">m</span><div class="ms">holistic pose</div></div>
+      <div class="metbar">
+        <div class="met">    <div class="ml">Cam Height</div><span class="mv" id="p2H">--</span><span class="mu">m</span><div class="ms">fused</div></div>
+        <div class="met b">  <div class="ml">Distance</div><span class="mv b" id="p2D">--</span><span class="mu">m</span><div class="ms">self-cal</div></div>
+        <div class="met c">  <div class="ml">Person H</div><span class="mv e" id="p2P">--</span><span class="mu">m</span><div class="ms">world lm</div></div>
       </div>
       <div class="det">
-        <div class="bdg wait" id="b3"><span class="bdt p"></span>Loading HolisticLandmarker</div>
-        <button class="retb" id="r3" onclick="RY('holistic')">↻ Retry</button>
-        <div class="g3">
-          <div class="cell"><div class="cl">Pose lm</div><div class="cv2" id="p3pl">--</div></div>
-          <div class="cell"><div class="cl">Face lm</div><div class="cv2" id="p3fl">--</div></div>
-          <div class="cell"><div class="cl">FPS</div><div class="cv2" id="p3fps">--</div></div>
+        <div class="bdg wait" id="b2"><span class="bdt p"></span>Loading HolisticLandmarker</div>
+        <button class="retb" id="r2" onclick="RY('holistic')">↻ Retry</button>
+        <div class="g4">
+          <div class="cell"><div class="cl">Pose lm</div><div class="cv" id="p2pl">--</div></div>
+          <div class="cell"><div class="cl">Face lm</div><div class="cv b" id="p2fl">--</div></div>
+          <div class="cell"><div class="cl">L hand</div><div class="cv e" id="p2lh">--</div></div>
+          <div class="cell"><div class="cl">FPS</div><div class="cv" id="p2fps">--</div></div>
         </div>
         <div class="scard">
           <div class="sr"><span class="sk">Model</span><span class="sv">holistic_landmarker (13MB)</span></div>
-          <div class="sr"><span class="sk">Outputs</span><span class="sv">33 pose + 478 face + L/R hands</span></div>
-          <div class="sr"><span class="sk">Single inference</span><span class="sv ok">Full body in one pass</span></div>
+          <div class="sr"><span class="sk">Outputs</span><span class="sv ok">pose33 + face478 + hands21 × 2</span></div>
         </div>
-        <div class="log" id="l3"></div><div class="safe"></div>
+        <div class="logbx" id="l2"></div><div class="safe"></div>
       </div>
     </div>
 
-    <!-- T4: FaceLandmarker (478 pts) -->
-    <div class="pane" id="t4">
-      <div class="cam-wrap">
-        <video id="v4" autoplay playsinline muted></video>
-        <canvas class="cv-ml" id="cv4"></canvas>
-        <div class="hx"></div><div class="hs"></div>
-        <div class="dc tl"></div><div class="dc tr"></div><div class="dc bl"></div><div class="dc br"></div>
+    <!-- T3: FACE -->
+    <div class="pane" id="t3">
+      <div class="cambox">
+        <video id="v3" autoplay playsinline muted></video>
+        <canvas id="c3"></canvas>
+        <div class="corn tl"></div><div class="corn tr"></div>
+        <div class="corn bl"></div><div class="corn br"></div>
+        <div class="crosshair"></div><div class="scanline"></div>
       </div>
-      <div class="mrow">
-        <div class="met"><div class="ml">Cam Height</div><span class="mv" id="h4">--</span><span class="mu">m</span><div class="ms">fusion</div></div>
-        <div class="met"><div class="ml">Face Dist</div><span class="mv" id="d4v">--</span><span class="mu">m</span><div class="ms">IPD method</div></div>
+      <div class="metbar">
+        <div class="met">    <div class="ml">Cam Height</div><span class="mv" id="p3H">--</span><span class="mu">m</span><div class="ms">fused</div></div>
+        <div class="met b">  <div class="ml">Face Dist</div><span class="mv b" id="p3D">--</span><span class="mu">m</span><div class="ms">IPD focal</div></div>
+        <div class="met c">  <div class="ml">Faces</div><span class="mv e" id="p3N">--</span><span class="mu"></span><div class="ms">detected</div></div>
       </div>
       <div class="det">
-        <div class="bdg wait" id="b4"><span class="bdt p"></span>Loading FaceLandmarker</div>
-        <button class="retb" id="r4" onclick="RY('face')">↻ Retry</button>
+        <div class="bdg wait" id="b3"><span class="bdt p"></span>Loading FaceLandmarker</div>
+        <button class="retb" id="r3" onclick="RY('face')">↻ Retry</button>
         <div class="g3">
-          <div class="cell"><div class="cl">Faces</div><div class="cv2" id="p4n">--</div></div>
-          <div class="cell"><div class="cl">Eye dist px</div><div class="cv2" id="p4ipd">--</div></div>
-          <div class="cell"><div class="cl">FPS</div><div class="cv2" id="p4fps">--</div></div>
+          <div class="cell"><div class="cl">Eye dist px</div><div class="cv" id="p3ipd">--</div></div>
+          <div class="cell"><div class="cl">Focal px</div><div class="cv b" id="p3fp">--</div></div>
+          <div class="cell"><div class="cl">FPS</div><div class="cv" id="p3fps">--</div></div>
         </div>
         <div class="scard">
           <div class="sr"><span class="sk">Model</span><span class="sv">face_landmarker (1.4MB)</span></div>
-          <div class="sr"><span class="sk">Landmarks</span><span class="sv">478 pts incl. iris</span></div>
-          <div class="sr"><span class="sk">Face contour</span><span class="sv ok">Full oval + mesh drawn</span></div>
-          <div class="sr"><span class="sk">Distance method</span><span class="sv">focal × 0.063m (IPD) ÷ eye-px</span></div>
+          <div class="sr"><span class="sk">Landmarks</span><span class="sv">478 pts + iris [468][473]</span></div>
+          <div class="sr"><span class="sk">Method</span><span class="sv b">focal × 0.063m (IPD) ÷ eye-px</span></div>
+          <div class="sr"><span class="sk">Focal src</span><span class="sv w">requires external focal input</span></div>
         </div>
-        <div class="log" id="l4"></div><div class="safe"></div>
+        <div class="logbx" id="l3"></div><div class="safe"></div>
       </div>
     </div>
 
-    <!-- T5: FaceLandmarker v2 + blendshapes -->
+    <!-- T4: HAND -->
+    <div class="pane" id="t4">
+      <div class="cambox">
+        <video id="v4" autoplay playsinline muted></video>
+        <canvas id="c4"></canvas>
+        <div class="corn tl"></div><div class="corn tr"></div>
+        <div class="corn bl"></div><div class="corn br"></div>
+        <div class="crosshair"></div><div class="scanline"></div>
+      </div>
+      <div class="metbar">
+        <div class="met">    <div class="ml">Cam Height</div><span class="mv" id="p4H">--</span><span class="mu">m</span><div class="ms">fused</div></div>
+        <div class="met b">  <div class="ml">Hand Dist</div><span class="mv b" id="p4D">--</span><span class="mu">m</span><div class="ms">world lm</div></div>
+        <div class="met c">  <div class="ml">Hands</div><span class="mv e" id="p4N">--</span><span class="mu"></span><div class="ms">detected</div></div>
+      </div>
+      <div class="det">
+        <div class="bdg wait" id="b4"><span class="bdt p"></span>Loading HandLandmarker</div>
+        <button class="retb" id="r4" onclick="RY('hand')">↻ Retry</button>
+        <div class="g3">
+          <div class="cell"><div class="cl">Wrist dist</div><div class="cv" id="p4wd">--<span class="cu">m</span></div></div>
+          <div class="cell"><div class="cl">Span px</div><div class="cv b" id="p4sp">--</div></div>
+          <div class="cell"><div class="cl">FPS</div><div class="cv" id="p4fps">--</div></div>
+        </div>
+        <div class="scard">
+          <div class="sr"><span class="sk">Model</span><span class="sv">hand_landmarker (7.5MB)</span></div>
+          <div class="sr"><span class="sk">World lm</span><span class="sv ok">metres, origin at wrist</span></div>
+          <div class="sr"><span class="sk">Distance</span><span class="sv ok">sqrt(wx²+wy²+wz²) direct</span></div>
+        </div>
+        <div class="logbx" id="l4"></div><div class="safe"></div>
+      </div>
+    </div>
+
+    <!-- T5: SEGMENTER -->
     <div class="pane" id="t5">
-      <div class="cam-wrap">
+      <div class="cambox">
         <video id="v5" autoplay playsinline muted></video>
-        <canvas class="cv-ml" id="cv5"></canvas>
-        <div class="hx"></div><div class="hs"></div>
-        <div class="dc tl"></div><div class="dc tr"></div><div class="dc bl"></div><div class="dc br"></div>
+        <canvas id="c5"></canvas>
+        <div class="corn tl"></div><div class="corn tr"></div>
+        <div class="corn bl"></div><div class="corn br"></div>
+        <div class="crosshair"></div><div class="scanline"></div>
       </div>
-      <div class="mrow">
-        <div class="met"><div class="ml">Cam Height</div><span class="mv" id="h5">--</span><span class="mu">m</span><div class="ms">fusion</div></div>
-        <div class="met"><div class="ml">Face Dist</div><span class="mv" id="d5v">--</span><span class="mu">m</span><div class="ms">IPD method</div></div>
+      <div class="metbar">
+        <div class="met">    <div class="ml">Cam Height</div><span class="mv" id="p5H">--</span><span class="mu">m</span><div class="ms">fused</div></div>
+        <div class="met b">  <div class="ml">Person Dist</div><span class="mv b" id="p5D">--</span><span class="mu">m</span><div class="ms">bbox+focal</div></div>
+        <div class="met c">  <div class="ml">Coverage</div><span class="mv e" id="p5C">--</span><span class="mu">%</span><div class="ms">body mask</div></div>
       </div>
       <div class="det">
-        <div class="bdg wait" id="b5"><span class="bdt p"></span>Loading FaceLandmarker v2</div>
-        <button class="retb" id="r5" onclick="RY('face_bs')">↻ Retry</button>
+        <div class="bdg wait" id="b5"><span class="bdt p"></span>Loading ImageSegmenter</div>
+        <button class="retb" id="r5" onclick="RY('seg')">↻ Retry</button>
         <div class="g3">
-          <div class="cell"><div class="cl">Faces</div><div class="cv2" id="p5n">--</div></div>
-          <div class="cell"><div class="cl">Eye dist px</div><div class="cv2" id="p5ipd">--</div></div>
-          <div class="cell"><div class="cl">FPS</div><div class="cv2" id="p5fps">--</div></div>
+          <div class="cell"><div class="cl">Person px</div><div class="cv" id="p5px">--</div></div>
+          <div class="cell"><div class="cl">Bbox H px</div><div class="cv b" id="p5bh">--</div></div>
+          <div class="cell"><div class="cl">FPS</div><div class="cv" id="p5fps">--</div></div>
         </div>
         <div class="scard">
-          <div class="sr"><span class="sk">Model</span><span class="sv">face_landmarker_v2 (3.6MB)</span></div>
-          <div class="sr"><span class="sk">Blendshapes</span><span class="sv ok">52 ARKit blendshapes</span></div>
+          <div class="sr"><span class="sk">Model</span><span class="sv">selfie_segmentation (243KB)</span></div>
+          <div class="sr"><span class="sk">Method</span><span class="sv w">needs focal (from pose self-cal)</span></div>
         </div>
-        <div class="dh">Top Blendshapes</div>
-        <div id="bsrows"></div>
-        <div class="log" id="l5"></div><div class="safe"></div>
+        <div class="logbx" id="l5"></div><div class="safe"></div>
       </div>
     </div>
 
-    <!-- T6: ImageSegmenter selfie (fast 243KB) -->
+    <!-- T6: BODYPIX -->
     <div class="pane" id="t6">
-      <div class="cam-wrap">
+      <div class="cambox">
         <video id="v6" autoplay playsinline muted></video>
-        <canvas class="cv-ml" id="cv6"></canvas>
-        <div class="hx"></div><div class="hs"></div>
-        <div class="dc tl"></div><div class="dc tr"></div><div class="dc bl"></div><div class="dc br"></div>
+        <canvas id="c6"></canvas>
+        <div class="corn tl"></div><div class="corn tr"></div>
+        <div class="corn bl"></div><div class="corn br"></div>
+        <div class="crosshair"></div><div class="scanline"></div>
       </div>
-      <div class="mrow">
-        <div class="met"><div class="ml">Cam Height</div><span class="mv" id="h6">--</span><span class="mu">m</span><div class="ms">fusion</div></div>
-        <div class="met"><div class="ml">Person Dist</div><span class="mv" id="d6v">--</span><span class="mu">m</span><div class="ms">mask bbox</div></div>
+      <div class="metbar">
+        <div class="met">    <div class="ml">Cam Height</div><span class="mv" id="p6H">--</span><span class="mu">m</span><div class="ms">fused</div></div>
+        <div class="met b">  <div class="ml">Person Dist</div><span class="mv b" id="p6D">--</span><span class="mu">m</span><div class="ms">bbox+focal</div></div>
+        <div class="met c">  <div class="ml">Parts</div><span class="mv e" id="p6N">--</span><span class="mu">/24</span><div class="ms">detected</div></div>
       </div>
       <div class="det">
-        <div class="bdg wait" id="b6"><span class="bdt p"></span>Loading Selfie Segmenter (fast)</div>
-        <button class="retb" id="r6" onclick="RY('seg_fast')">↻ Retry</button>
+        <div class="bdg wait" id="b6"><span class="bdt p"></span>Loading BodyPix (TF.js)</div>
+        <button class="retb" id="r6" onclick="RY('bpix')">↻ Retry</button>
         <div class="g3">
-          <div class="cell"><div class="cl">Person px</div><div class="cv2" id="p6px">--</div></div>
-          <div class="cell"><div class="cl">Bbox H px</div><div class="cv2" id="p6bh">--</div></div>
-          <div class="cell"><div class="cl">FPS</div><div class="cv2" id="p6fps">--</div></div>
+          <div class="cell"><div class="cl">Person px</div><div class="cv" id="p6px">--</div></div>
+          <div class="cell"><div class="cl">Bbox H px</div><div class="cv b" id="p6bh">--</div></div>
+          <div class="cell"><div class="cl">FPS</div><div class="cv" id="p6fps">--</div></div>
         </div>
         <div class="scard">
-          <div class="sr"><span class="sk">Model</span><span class="sv">selfie_segmentation.tflite (243KB)</span></div>
-          <div class="sr"><span class="sk">Output</span><span class="sv">Full-body confidence mask</span></div>
-          <div class="sr"><span class="sk">Visualization</span><span class="sv ok">Green body outline + contour</span></div>
+          <div class="sr"><span class="sk">Model</span><span class="sv">BodyPix MobileNetV1 TF.js</span></div>
+          <div class="sr"><span class="sk">Parts</span><span class="sv ok">24 body segments per-pixel</span></div>
+          <div class="sr"><span class="sk">Method</span><span class="sv w">needs focal (from pose self-cal)</span></div>
         </div>
-        <div class="log" id="l6"></div><div class="safe"></div>
+        <div class="logbx" id="l6"></div><div class="safe"></div>
       </div>
     </div>
 
-    <!-- T7: ImageSegmenter selfie HQ (144×256) -->
+    <!-- T7: IMU -->
     <div class="pane" id="t7">
-      <div class="cam-wrap">
+      <div class="cambox">
         <video id="v7" autoplay playsinline muted></video>
-        <canvas class="cv-ml" id="cv7"></canvas>
-        <div class="hx"></div><div class="hs"></div>
-        <div class="dc tl"></div><div class="dc tr"></div><div class="dc bl"></div><div class="dc br"></div>
+        <canvas id="c7"></canvas>
+        <div class="corn tl"></div><div class="corn tr"></div>
+        <div class="corn bl"></div><div class="corn br"></div>
+        <div class="crosshair"></div><div class="scanline"></div>
+        <div class="camwarn" id="w7">⚠ Hold phone vertical for accurate tilt reading</div>
       </div>
-      <div class="mrow">
-        <div class="met"><div class="ml">Cam Height</div><span class="mv" id="h7">--</span><span class="mu">m</span><div class="ms">fusion</div></div>
-        <div class="met"><div class="ml">Person Dist</div><span class="mv" id="d7v">--</span><span class="mu">m</span><div class="ms">mask bbox</div></div>
-      </div>
-      <div class="det">
-        <div class="bdg wait" id="b7"><span class="bdt p"></span>Loading Selfie Segmenter HQ</div>
-        <button class="retb" id="r7" onclick="RY('seg_hq')">↻ Retry</button>
-        <div class="g3">
-          <div class="cell"><div class="cl">Person px</div><div class="cv2" id="p7px">--</div></div>
-          <div class="cell"><div class="cl">Bbox H px</div><div class="cv2" id="p7bh">--</div></div>
-          <div class="cell"><div class="cl">FPS</div><div class="cv2" id="p7fps">--</div></div>
-        </div>
-        <div class="scard">
-          <div class="sr"><span class="sk">Model</span><span class="sv">selfie_segm_144_256_3.tflite (298KB)</span></div>
-          <div class="sr"><span class="sk">Resolution</span><span class="sv">144×256 portrait-optimized</span></div>
-          <div class="sr"><span class="sk">Visualization</span><span class="sv ok">Cyan contour + filled mask</span></div>
-        </div>
-        <div class="log" id="l7"></div><div class="safe"></div>
-      </div>
-    </div>
-
-    <!-- T8: Hair segmentation -->
-    <div class="pane" id="t8">
-      <div class="cam-wrap">
-        <video id="v8" autoplay playsinline muted></video>
-        <canvas class="cv-ml" id="cv8"></canvas>
-        <div class="hx"></div><div class="hs"></div>
-        <div class="dc tl"></div><div class="dc tr"></div><div class="dc bl"></div><div class="dc br"></div>
-      </div>
-      <div class="mrow">
-        <div class="met"><div class="ml">Cam Height</div><span class="mv" id="h8">--</span><span class="mu">m</span><div class="ms">fusion</div></div>
-        <div class="met"><div class="ml">Hair px</div><span class="mv" id="d8v">--</span><span class="mu">k</span><div class="ms">hair coverage</div></div>
+      <div class="metbar">
+        <div class="met">    <div class="ml">Cam Height</div><span class="mv" id="p7H">--</span><span class="mu">m</span><div class="ms">gravity</div></div>
+        <div class="met b">  <div class="ml">Tilt</div><span class="mv b" id="p7T">--</span><span class="mu">°</span><div class="ms">from vert</div></div>
+        <div class="met c">  <div class="ml">Conf</div><span class="mv e" id="p7C">--</span><span class="mu">%</span><div class="ms">imu</div></div>
       </div>
       <div class="det">
-        <div class="bdg wait" id="b8"><span class="bdt p"></span>Loading Hair Segmenter</div>
-        <button class="retb" id="r8" onclick="RY('hair')">↻ Retry</button>
+        <div class="bdg wait" id="b7"><span class="bdt p"></span>Requesting DeviceMotion</div>
+        <button class="retb" id="r7" onclick="RY('imu')">↻ Retry IMU</button>
         <div class="g3">
-          <div class="cell"><div class="cl">Hair px</div><div class="cv2" id="p8hp">--</div></div>
-          <div class="cell"><div class="cl">Coverage</div><div class="cv2" id="p8cov">--%</div></div>
-          <div class="cell"><div class="cl">FPS</div><div class="cv2" id="p8fps">--</div></div>
-        </div>
-        <div class="scard">
-          <div class="sr"><span class="sk">Model</span><span class="sv">hair_segmentation.tflite (763KB)</span></div>
-          <div class="sr"><span class="sk">Output</span><span class="sv">Per-pixel hair confidence mask</span></div>
-          <div class="sr"><span class="sk">Visualization</span><span class="sv ok">Purple hair overlay</span></div>
-        </div>
-        <div class="log" id="l8"></div><div class="safe"></div>
-      </div>
-    </div>
-
-    <!-- T9: DeepLabV3 (full scene segmentation) -->
-    <div class="pane" id="t9">
-      <div class="cam-wrap">
-        <video id="v9" autoplay playsinline muted></video>
-        <canvas class="cv-ml" id="cv9"></canvas>
-        <div class="hx"></div><div class="hs"></div>
-        <div class="dc tl"></div><div class="dc tr"></div><div class="dc bl"></div><div class="dc br"></div>
-      </div>
-      <div class="mrow">
-        <div class="met"><div class="ml">Cam Height</div><span class="mv" id="h9">--</span><span class="mu">m</span><div class="ms">fusion</div></div>
-        <div class="met"><div class="ml">Person Dist</div><span class="mv" id="d9v">--</span><span class="mu">m</span><div class="ms">person class bbox</div></div>
-      </div>
-      <div class="det">
-        <div class="bdg wait" id="b9"><span class="bdt p"></span>Loading DeepLabV3</div>
-        <button class="retb" id="r9" onclick="RY('deeplab')">↻ Retry</button>
-        <div class="g3">
-          <div class="cell"><div class="cl">Person px</div><div class="cv2" id="p9pp">--</div></div>
-          <div class="cell"><div class="cl">Classes</div><div class="cv2" id="p9cls" style="font-size:10px">--</div></div>
-          <div class="cell"><div class="cl">FPS</div><div class="cv2" id="p9fps">--</div></div>
-        </div>
-        <div class="scard">
-          <div class="sr"><span class="sk">Model</span><span class="sv">deeplabv3.tflite (2.7MB)</span></div>
-          <div class="sr"><span class="sk">Output</span><span class="sv">21-class semantic segmentation</span></div>
-          <div class="sr"><span class="sk">Person class</span><span class="sv ok">Class 15 = person</span></div>
-          <div class="sr"><span class="sk">Visualization</span><span class="sv ok">Per-class color map</span></div>
-        </div>
-        <div class="log" id="l9"></div><div class="safe"></div>
-      </div>
-    </div>
-
-    <!-- T10: BodyPix 24-part segmentation -->
-    <div class="pane" id="t10">
-      <div class="cam-wrap">
-        <video id="v10" autoplay playsinline muted></video>
-        <canvas class="cv-ml" id="cv10"></canvas>
-        <div class="hx"></div><div class="hs"></div>
-        <div class="dc tl"></div><div class="dc tr"></div><div class="dc bl"></div><div class="dc br"></div>
-      </div>
-      <div class="mrow">
-        <div class="met"><div class="ml">Cam Height</div><span class="mv" id="h10">--</span><span class="mu">m</span><div class="ms">fusion</div></div>
-        <div class="met"><div class="ml">Person Dist</div><span class="mv" id="d10v">--</span><span class="mu">m</span><div class="ms">mask bbox</div></div>
-      </div>
-      <div class="det">
-        <div class="bdg wait" id="b10"><span class="bdt p"></span>Loading BodyPix (TF.js)</div>
-        <button class="retb" id="r10" onclick="RY('bpix')">↻ Retry</button>
-        <div class="g3">
-          <div class="cell"><div class="cl">Person</div><div class="cv2" id="p10det">--</div></div>
-          <div class="cell"><div class="cl">Bbox H</div><div class="cv2" id="p10bh">--<span class="cu">px</span></div></div>
-          <div class="cell"><div class="cl">FPS</div><div class="cv2" id="p10fps">--</div></div>
-        </div>
-        <div class="scard">
-          <div class="sr"><span class="sk">Model</span><span class="sv">BodyPix MobileNetV1 (TF.js)</span></div>
-          <div class="sr"><span class="sk">Parts</span><span class="sv ok">24 body-part segments colored</span></div>
-          <div class="sr"><span class="sk">Outputs</span><span class="sv">Per-pixel part ID + person mask</span></div>
-        </div>
-        <div class="log" id="l10"></div><div class="safe"></div>
-      </div>
-    </div>
-
-    <!-- T11: Depth-Anything -->
-    <div class="pane" id="t11">
-      <div class="cam-wrap">
-        <video id="v11" autoplay playsinline muted></video>
-        <canvas class="cv-ml" id="cv11"></canvas>
-        <div class="hx"></div><div class="hs"></div>
-        <div class="dc tl"></div><div class="dc tr"></div><div class="dc bl"></div><div class="dc br"></div>
-      </div>
-      <div class="mrow">
-        <div class="met"><div class="ml">Cam Height</div><span class="mv" id="h11">--</span><span class="mu">m</span><div class="ms">fusion</div></div>
-        <div class="met"><div class="ml">Center Depth</div><span class="mv" id="d11v">--</span><span class="mu">rel</span><div class="ms">monocular</div></div>
-      </div>
-      <div class="det">
-        <div class="bdg wait" id="b11"><span class="bdt p"></span>Loading Depth-Anything (~27MB)</div>
-        <button class="retb" id="r11" onclick="RY('depth')">↻ Retry</button>
-        <canvas id="dcv" class="mini" height="80"></canvas>
-        <div class="g3">
-          <div class="cell"><div class="cl">Center</div><div class="cv2" id="p11c">--</div></div>
-          <div class="cell"><div class="cl">Infer ms</div><div class="cv2" id="p11ms">--</div></div>
-          <div class="cell"><div class="cl">FPS</div><div class="cv2" id="p11fps">--</div></div>
-        </div>
-        <div class="scard">
-          <div class="sr"><span class="sk">Model</span><span class="sv">Xenova/depth-anything-small-hf</span></div>
-          <div class="sr"><span class="sk">Source</span><span class="sv">HuggingFace Hub (Transformers.js)</span></div>
-          <div class="sr"><span class="sk">First load</span><span class="sv warn">~27MB, then browser-cached</span></div>
-          <div class="sr"><span class="sk">Colormap</span><span class="sv ok">Turbo (near=warm, far=cool)</span></div>
-        </div>
-        <div class="log" id="l11"></div><div class="safe"></div>
-      </div>
-    </div>
-
-    <!-- T12: IMU -->
-    <div class="pane" id="t12">
-      <div class="cam-wrap">
-        <video id="v12" autoplay playsinline muted></video>
-        <canvas class="cv-hud" id="cv12h"></canvas>
-        <div class="hx"></div><div class="hs"></div>
-        <div class="dc tl"></div><div class="dc tr"></div><div class="dc bl"></div><div class="dc br"></div>
-        <div class="hud-warn" id="tw12">⚠ Hold phone vertical — portrait, perpendicular to ground</div>
-      </div>
-      <div class="mrow">
-        <div class="met"><div class="ml">Cam Height est</div><span class="mv" id="h12">--</span><span class="mu">m</span><div class="ms">prior+tilt</div></div>
-        <div class="met"><div class="ml">Tilt from vert</div><span class="mv" id="t12v">--</span><span class="mu">°</span><div class="ms">want &lt;15°</div></div>
-      </div>
-      <div class="det">
-        <div class="bdg wait" id="b12"><span class="bdt p"></span>Requesting DeviceMotion</div>
-        <button class="retb" id="r12" onclick="RY('imu')">↻ Retry</button>
-        <div class="dh">Gravity vector (80-sample avg)</div>
-        <div class="g3">
-          <div class="cell"><div class="cl">Grav X</div><div class="cv2" id="ix">--</div></div>
-          <div class="cell"><div class="cl">Grav Y</div><div class="cv2" id="iy">--</div></div>
-          <div class="cell"><div class="cl">Grav Z</div><div class="cv2" id="iz">--</div></div>
+          <div class="cell"><div class="cl">Grav X</div><div class="cv" id="ix">--</div></div>
+          <div class="cell"><div class="cl">Grav Y</div><div class="cv b" id="iy">--</div></div>
+          <div class="cell"><div class="cl">Grav Z</div><div class="cv e" id="iz">--</div></div>
         </div>
         <div class="scard">
           <div class="sr"><span class="sk">Pitch</span><span class="sv" id="ipitch">--°</span></div>
-          <div class="sr"><span class="sk">Alpha/Beta/Gamma</span><span class="sv" id="iabg">--/--/--°</span></div>
-          <div class="sr"><span class="sk">Confidence</span><span class="sv" id="iconf">0%</span></div>
+          <div class="sr"><span class="sk">α/β/γ</span><span class="sv" id="iabg">--/--/--°</span></div>
           <div class="sr"><span class="sk">Buffer</span><span class="sv" id="ibuf">0/80</span></div>
+          <div class="sr"><span class="sk">Height src</span><span class="sv w">prior 1.4m + tilt correction</span></div>
         </div>
-        <div class="log" id="l12"></div><div class="safe"></div>
+        <div class="logbx" id="l7"></div><div class="safe"></div>
+      </div>
+    </div>
+
+    <!-- T8: OPTICS (classical geometry) -->
+    <div class="pane" id="t8">
+      <div class="cambox">
+        <video id="v8" autoplay playsinline muted></video>
+        <canvas id="c8"></canvas>
+        <div class="corn tl"></div><div class="corn tr"></div>
+        <div class="corn bl"></div><div class="corn br"></div>
+        <div class="crosshair"></div><div class="scanline"></div>
+      </div>
+      <div class="metbar">
+        <div class="met">    <div class="ml">Focal px</div><span class="mv" id="p8F">--</span><span class="mu">px</span><div class="ms" id="p8Fs">derived</div></div>
+        <div class="met b">  <div class="ml">FOV est</div><span class="mv b" id="p8V">--</span><span class="mu">°</span><div class="ms">horizontal</div></div>
+        <div class="met c">  <div class="ml">Zoom</div><span class="mv e" id="p8Z">--</span><span class="mu">×</span><div class="ms">track api</div></div>
+      </div>
+      <div class="det">
+        <div class="dh">Camera Track Settings</div>
+        <div class="g3">
+          <div class="cell"><div class="cl">Width px</div><div class="cv" id="camW">--</div></div>
+          <div class="cell"><div class="cl">Height px</div><div class="cv b" id="camH">--</div></div>
+          <div class="cell"><div class="cl">Aspect</div><div class="cv" id="camAR">--</div></div>
+        </div>
+        <div class="g3">
+          <div class="cell"><div class="cl">Focus dist</div><div class="cv e" id="camFD">--<span class="cu">m</span></div></div>
+          <div class="cell"><div class="cl">Zoom</div><div class="cv" id="camZ">--<span class="cu">×</span></div></div>
+          <div class="cell"><div class="cl">FaceMode</div><div class="cv b" id="camFM">--</div></div>
+        </div>
+        <div class="dh">Focal Derivation Sources</div>
+        <div id="focaldiv"></div>
+        <div class="dh">Pinhole Model (with derived focal)</div>
+        <div class="scard">
+          <div class="sr"><span class="sk">focal_px</span><span class="sv" id="o8fp">--</span></div>
+          <div class="sr"><span class="sk">Method A: 70° FOV assumption</span><span class="sv" id="o8ma">--</span></div>
+          <div class="sr"><span class="sk">Method B: pose self-calibration</span><span class="sv ok" id="o8mb">--</span></div>
+          <div class="sr"><span class="sk">Method C: IMU horizon angle</span><span class="sv" id="o8mc">--</span></div>
+          <div class="sr"><span class="sk">Distance (best focal)</span><span class="sv b" id="o8d">--</span></div>
+        </div>
+        <div class="logbx" id="l8"></div><div class="safe"></div>
       </div>
     </div>
 
   </div><!-- PGS -->
 </div><!-- APP -->
-
 <script type="module">
 'use strict';
-// ══════════════════════════════════════════════════════
-// VERIFIED CDN + MODEL URLS (all 200 OK confirmed)
-// ══════════════════════════════════════════════════════
+/* ═══════════════════════════════════════════════════════════
+   VERIFIED CDN CONSTANTS  (all 200 OK)
+═══════════════════════════════════════════════════════════ */
 const MP_MJS  = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs';
 const MP_WASM = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm';
 const GS      = 'https://storage.googleapis.com/mediapipe-tasks';
 const GS2     = 'https://storage.googleapis.com/mediapipe-models';
 
 const MODELS = {
-  POSE_LITE: `${GS}/pose_landmarker/pose_landmarker_lite.task`,       // 5.5MB
-  POSE_FULL: `${GS}/pose_landmarker/pose_landmarker_full.task`,       // 9MB
+  POSE_FULL: `${GS}/pose_landmarker/pose_landmarker_full.task`,          // 9.2MB
   HOLISTIC:  `${GS2}/holistic_landmarker/holistic_landmarker/float16/latest/holistic_landmarker.task`, // 13MB
-  FACE:      `${GS}/face_landmarker/face_landmarker.task`,             // 1.4MB
-  FACE_BS:   `${GS}/face_landmarker/face_landmarker_v2_with_blendshapes.task`, // 3.6MB
-  SEG_FAST:  `${GS}/image_segmenter/selfie_segmentation.tflite`,      // 243KB ← fastest
-  SEG_HQ:    `${GS}/image_segmenter/selfie_segm_144_256_3.tflite`,    // 298KB portrait-optimized
-  HAIR:      `${GS}/image_segmenter/hair_segmentation.tflite`,         // 763KB
-  DEEPLAB:   `${GS}/image_segmenter/deeplabv3.tflite`,                // 2.7MB
+  FACE:      `${GS}/face_landmarker/face_landmarker.task`,                // 1.4MB
+  HAND:      `${GS}/hand_landmarker/hand_landmarker.task`,                // 7.5MB
+  SEG:       `${GS}/image_segmenter/selfie_segmentation.tflite`,          // 243KB
 };
 const CDN_TF   = 'https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.17.0/dist/tf.min.js';
 const CDN_BPIX = 'https://cdn.jsdelivr.net/npm/@tensorflow-models/body-pix@2.2.0/dist/body-pix.min.js';
-const CDN_XFM  = 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2/dist/transformers.min.js';
-const PH = 1.4; // prior camera height
 
-// DeepLab 21-class color palette (PASCAL VOC)
-const DEEPLAB_COLORS = [
-  [0,0,0],[128,0,0],[0,128,0],[128,128,0],[0,0,128],[128,0,128],[0,128,128],[128,128,128],
-  [64,0,0],[192,0,0],[64,128,0],[192,128,0],[64,0,128],[192,0,128],[64,128,128],[192,128,128],
-  [0,64,0],[128,64,0],[0,192,0],[128,192,0],[0,64,128]
-];
-// BodyPix 24-part colors
-const BPIX_PART_COLORS = [
-  [110,64,170],[143,61,178],[178,60,178],[210,62,167],[238,67,149],[255,78,125],
-  [255,94,99],[255,115,75],[255,140,56],[239,167,47],[217,194,49],[194,219,64],
-  [175,240,91],[135,245,87],[96,245,84],[64,243,115],[47,234,172],[51,219,217],
-  [74,202,240],[113,185,253],[149,168,253],[186,153,243],[219,141,221],[243,132,196]
-];
-
-// ══════════════════════════════════════════════════════
-// STATE
-// ══════════════════════════════════════════════════════
+/* ═══════════════════════════════════════════════════════════
+   GLOBAL STATE
+═══════════════════════════════════════════════════════════ */
 const S = {
-  stream:null, vW:0, vH:0, focal:800,
-  MP:{}, // mediapipe classes from ESM import
-  // models
-  poseLite:{active:false,loading:false,lm:null,dist:null,conf:0,fps:0,_fc:0,_lt:0,htPx:0,vis:0,hasSeg:false},
-  poseFull:{active:false,loading:false,lm:null,dist:null,conf:0,fps:0,_fc:0,_lt:0,htPx:0,vis:0},
-  holistic:{active:false,loading:false,lm:null,dist:null,conf:0,fps:0,_fc:0,_lt:0,poseLm:0,faceLm:0},
-  face:    {active:false,loading:false,lm:null,dist:null,conf:0,fps:0,_fc:0,_lt:0,n:0,ipdPx:0},
-  faceBs:  {active:false,loading:false,lm:null,dist:null,conf:0,fps:0,_fc:0,_lt:0,n:0,ipdPx:0,bs:[]},
-  segFast: {active:false,loading:false,lm:null,dist:null,conf:0,fps:0,_fc:0,_lt:0,px:0,bh:0},
-  segHQ:   {active:false,loading:false,lm:null,dist:null,conf:0,fps:0,_fc:0,_lt:0,px:0,bh:0},
-  hair:    {active:false,loading:false,lm:null,fps:0,_fc:0,_lt:0,px:0,cov:0},
-  deeplab: {active:false,loading:false,lm:null,dist:null,conf:0,fps:0,_fc:0,_lt:0,personPx:0,classes:[]},
-  bpix:    {active:false,loading:false,inst:null,dist:null,conf:0,fps:0,_fc:0,_lt:0,bh:0,found:false},
-  depth:   {active:false,loading:false,pipe:null,dist:null,conf:0,fps:0,_fc:0,_lt:0,center:null,ms:0},
-  imu:     {active:false,height:PH,pitch:0,conf:0,samples:0,buf:[],gx:0,gy:0,gz:0,alpha:0,beta:0,gamma:0},
-  fusH:null, fusD:null,
-  tfLoaded:false, tfP:null,
-  animId:null,
+  stream:null, vW:0, vH:0,
+  MP:{},       // MP Tasks classes from ESM
+  // derived focal (self-calibrated from pose worldLandmarks)
+  focal_pose:null,      // from PoseLandmarker geometry
+  focal_assume:null,    // from assumed 70° FOV
+  focal_best:null,      // best available focal
+  // Camera track settings
+  cam_zoom:1, cam_focusDist:null, cam_width:0, cam_height:0,
+  // Per-model state
+  pose:{active:false,loading:false,lm:null,dist:null,conf:0,fps:0,_fc:0,_lt:0,
+        pH:null,cH:null,D:null,focal:null,worldNose:null,worldAnkle:null,props:{}},
+  hol: {active:false,loading:false,lm:null,dist:null,conf:0,fps:0,_fc:0,_lt:0,
+        pH:null,cH:null,D:null,poseLm:0,faceLm:0,lHandLm:0},
+  face:{active:false,loading:false,lm:null,dist:null,conf:0,fps:0,_fc:0,_lt:0,n:0,ipdPx:0},
+  hand:{active:false,loading:false,lm:null,dist:null,conf:0,fps:0,_fc:0,_lt:0,n:0,wDist:null},
+  seg: {active:false,loading:false,lm:null,dist:null,conf:0,fps:0,_fc:0,_lt:0,px:0,bh:0},
+  bpix:{active:false,loading:false,inst:null,dist:null,conf:0,fps:0,_fc:0,_lt:0,px:0,bh:0,parts:0},
+  imu: {active:false,height:1.4,pitch:0,conf:0,samples:0,buf:[],gx:0,gy:0,gz:0,alpha:0,beta:0,gamma:0,tilt:90},
+  // Fused outputs
+  fusH:null, fusD:null, fusPH:null,
+  animId:null, tfLoaded:false, tfP:null,
 };
 
-// ══════════════════════════════════════════════════════
-// MODULE DEFINITIONS
-// ══════════════════════════════════════════════════════
+/* ═══════════════════════════════════════════════════════════
+   LOADING SCREEN
+═══════════════════════════════════════════════════════════ */
 const MODS = [
-  {id:'cam',     ico:'📷', name:'Camera (rear, 3:4 portrait)'},
-  {id:'pose_l',  ico:'🤸', name:'PoseLandmarker Lite + mask'},
-  {id:'pose_f',  ico:'💪', name:'PoseLandmarker Full + mask'},
-  {id:'holistic',ico:'🕴', name:'HolisticLandmarker (all-in-one)'},
-  {id:'face',    ico:'😶', name:'FaceLandmarker (478 pts)'},
-  {id:'face_bs', ico:'😊', name:'FaceLandmarker v2 + blendshapes'},
-  {id:'seg_fast',ico:'✂️', name:'Selfie Segmenter fast (243KB)'},
-  {id:'seg_hq',  ico:'🎭', name:'Selfie Segmenter HQ (144×256)'},
-  {id:'hair',    ico:'💈', name:'Hair Segmenter (763KB)'},
-  {id:'deeplab', ico:'🎨', name:'DeepLabV3 scene segmentation'},
-  {id:'bpix',    ico:'🐾', name:'BodyPix 24-part (TF.js)'},
-  {id:'depth',   ico:'🧠', name:'Depth-Anything small (27MB)'},
-  {id:'imu',     ico:'📡', name:'IMU DeviceMotion'},
+  {id:'cam',  ico:'📷', name:'Camera (rear, HD)'},
+  {id:'pose', ico:'🤸', name:'PoseLandmarker Full'},
+  {id:'hol',  ico:'🕴', name:'HolisticLandmarker'},
+  {id:'face', ico:'😶', name:'FaceLandmarker'},
+  {id:'hand', ico:'🖐', name:'HandLandmarker'},
+  {id:'seg',  ico:'✂️', name:'ImageSegmenter'},
+  {id:'bpix', ico:'🐾', name:'BodyPix (TF.js)'},
+  {id:'imu',  ico:'📡', name:'DeviceMotion IMU'},
 ];
 const mSt={}, mMsg={};
 MODS.forEach(m=>{mSt[m.id]='wait';mMsg[m.id]='Waiting…';});
 
 function renderMods(){
-  document.getElementById('MG').innerHTML = MODS.map(m=>{
+  _('MG').innerHTML=MODS.map(m=>{
     const s=mSt[m.id];
-    const bc=s==='done'?'bok':s==='fail'?'bfail':s==='na'?'bna':'bw';
+    const bc=s==='done'?'st-ok':s==='fail'?'st-f':s==='na'?'st-na':'st-w';
     const bt=s==='done'?'OK':s==='fail'?'FAIL':s==='na'?'N/A':s==='loading'?'···':'WAIT';
     return `<div class="mc ${s}" id="mc${m.id}">
       <span class="mc-ico">${m.ico}</span>
-      <div class="mc-info"><div class="mc-name">${m.name}</div>
+      <div class="mc-body"><div class="mc-name">${m.name}</div>
         <div class="mc-msg" id="mm${m.id}">${mMsg[m.id]}</div></div>
-      <div class="mc-bdg ${bc}" id="mb${m.id}">${bt}</div></div>`;
+      <div class="mc-st ${bc}" id="mb${m.id}">${bt}</div></div>`;
   }).join('');
 }
 function SM(id,st,msg){
   mSt[id]=st; mMsg[id]=msg;
   const el=_('mc'+id),ml=_('mm'+id),mb=_('mb'+id);
-  if(el) el.className='mc '+st;
-  if(ml&&msg) ml.textContent=msg;
-  if(mb){
-    const bc=st==='done'?'bok':st==='fail'?'bfail':st==='na'?'bna':'bw';
+  if(el)el.className='mc '+st;
+  if(ml&&msg)ml.textContent=msg;
+  if(mb){const bc=st==='done'?'st-ok':st==='fail'?'st-f':st==='na'?'st-na':'st-w';
     const bt=st==='done'?'OK':st==='fail'?'FAIL':st==='na'?'N/A':st==='loading'?'···':'WAIT';
-    mb.className='mc-bdg '+bc; mb.textContent=bt;
-  }
+    mb.className='mc-st '+bc;mb.textContent=bt;}
   updProg();
 }
 function updProg(){
-  const tot=MODS.length, done=MODS.filter(m=>['done','fail','na'].includes(mSt[m.id])).length;
-  const pct=tot?Math.round(done/tot*100):0;
-  _('pgf').style.width=pct+'%'; _('pgn').textContent=done+'/'+tot;
+  const tot=MODS.length,done=MODS.filter(m=>['done','fail','na'].includes(mSt[m.id])).length;
+  const pct=Math.round(done/tot*100);
+  _('pgb').style.width=pct+'%'; _('pgn').textContent=done+'/'+tot;
   const ld=MODS.find(m=>mSt[m.id]==='loading');
-  _('pgl').textContent=ld?'Loading '+ld.name+'…':done===tot?'All checked':'Initializing…';
+  _('pgl').textContent=ld?ld.name+'…':done===tot?'Ready':'Initialising…';
   _('pgs').style.display=ld?'block':'none';
   _('btn-retry').style.display=MODS.some(m=>mSt[m.id]==='fail')?'block':'none';
 }
 
-// ══════════════════════════════════════════════════════
-// HELPERS
-// ══════════════════════════════════════════════════════
-const _ = id=>document.getElementById(id);
-const tx = (id,v)=>{ const e=_(id); if(e) e.textContent=v; };
-const nm = (id,v,d=2)=>{ const e=_(id); if(e) e.textContent=(v==null||isNaN(v))?'--':Number(v).toFixed(d); };
-function setBdg(id,cls,txt){ const e=_(id); if(!e)return; e.className='bdg '+cls; e.innerHTML=`<span class="bdt${cls==='live'?' p':''}"></span>${txt}`; }
-function setDot(id,cls){ const e=_(id); if(e) e.className='dot '+cls; }
-function LOG(lid,msg,t='info'){ const el=_(lid); if(!el)return; const d=new Date(),ts=`${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}:${d.getSeconds().toString().padStart(2,'0')}`; const ln=document.createElement('div'); ln.className='ll '+t; ln.textContent=`[${ts}] ${msg}`; el.appendChild(ln); el.scrollTop=el.scrollHeight; }
-function FP(m){ m._fc++; if(Date.now()-m._lt>=1000){m.fps=m._fc;m._fc=0;m._lt=Date.now();} }
-function fD(realM,px){ return(!px||px<2)?null:(S.focal*realM)/px; }
-function ldJS(src){ return new Promise((res,rej)=>{ if(document.querySelector(`script[src="${src}"]`)){res();return;} const s=document.createElement('script'); s.src=src; s.crossOrigin='anonymous'; s.onload=res; s.onerror=()=>rej(new Error('Failed: '+src.split('/').pop())); document.head.appendChild(s); }); }
-async function ensureTF(){ if(S.tfLoaded)return; if(S.tfP)return S.tfP; S.tfP=(async()=>{ await ldJS(CDN_TF); await tf.ready(); try{await tf.setBackend('webgl');}catch(_){await tf.setBackend('cpu');} S.tfLoaded=true; })(); return S.tfP; }
+/* ═══════════════════════════════════════════════════════════
+   HELPERS
+═══════════════════════════════════════════════════════════ */
+const _=id=>document.getElementById(id);
+const tx=(id,v)=>{const e=_(id);if(e)e.textContent=v;};
+const nm=(id,v,d=2)=>{const e=_(id);if(e)e.textContent=(v==null||isNaN(v))?'--':Number(v).toFixed(d);};
+function setBdg(id,cls,txt){const e=_(id);if(!e)return;e.className='bdg '+cls;e.innerHTML=`<span class="bdt${cls==='live'?' p':''}"></span>${txt}`;}
+function setDot(id,cls){const e=_(id);if(e)e.className='dot '+cls;}
+function LOG(lid,msg,t='info'){const el=_(lid);if(!el)return;const d=new Date(),ts=`${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}:${d.getSeconds().toString().padStart(2,'0')}`;const ln=document.createElement('div');ln.className='ll '+t;ln.textContent=`[${ts}] ${msg}`;el.appendChild(ln);el.scrollTop=el.scrollHeight;}
+function FP(m){m._fc++;if(Date.now()-m._lt>=1000){m.fps=m._fc;m._fc=0;m._lt=Date.now();}}
+function ldJS(src){return new Promise((res,rej)=>{if(document.querySelector(`script[src="${src}"]`)){res();return;}const s=document.createElement('script');s.src=src;s.crossOrigin='anonymous';s.onload=res;s.onerror=()=>rej(new Error('CDN fail: '+src.split('/').pop()));document.head.appendChild(s);});}
+async function ensureTF(){if(S.tfLoaded)return;if(S.tfP)return S.tfP;S.tfP=(async()=>{await ldJS(CDN_TF);await tf.ready();try{await tf.setBackend('webgl');}catch(_){await tf.setBackend('cpu');}S.tfLoaded=true;})();return S.tfP;}
 
-// Draw pose skeleton helper
-const POSE_CONN=[[0,1],[1,2],[2,3],[3,7],[0,4],[4,5],[5,6],[6,8],[9,10],[11,12],[11,13],[13,15],[15,17],[15,19],[15,21],[17,19],[12,14],[14,16],[16,18],[16,20],[16,22],[18,20],[11,23],[12,24],[23,24],[23,25],[24,26],[25,27],[26,28],[27,29],[28,30],[29,31],[30,32],[27,31],[28,32]];
-function drawPose(ctx,lms,W,H,color='rgba(0,255,153,.8)'){
-  ctx.strokeStyle=color; ctx.lineWidth=2;
-  POSE_CONN.forEach(([a,b])=>{ if(lms[a]&&lms[b]){ ctx.beginPath(); ctx.moveTo(lms[a].x*W,lms[a].y*H); ctx.lineTo(lms[b].x*W,lms[b].y*H); ctx.stroke(); } });
-  lms.forEach(lm=>{ ctx.beginPath(); ctx.arc(lm.x*W,lm.y*H,3,0,Math.PI*2); ctx.fillStyle='rgba(0,232,255,.88)'; ctx.fill(); });
+/* ═══════════════════════════════════════════════════════════
+   FOCAL LENGTH DERIVATION
+═══════════════════════════════════════════════════════════ */
+const DEG2RAD = Math.PI/180;
+// Method A: assumed FOV
+function focalFromFOV(w=S.vW, fovDeg=70){ return (w/2)/Math.tan(fovDeg/2*DEG2RAD); }
+
+// Method B: self-calibration from PoseLandmarker worldLandmarks + normalised landmarks
+// Solves for D (hip-to-camera distance) and focal_px simultaneously.
+// Works when nose and ankle have different world-z offsets from hip.
+function selfCalibrate(normLm, worldLm, imgH){
+  if(!normLm||!worldLm||imgH<10) return null;
+  const nose=normLm[0], lA=normLm[27], rA=normLm[28];
+  const wN=worldLm[0], wA=worldLm[27], wRA=worldLm[28];
+  if(!nose||!wN||!wA) return null;
+
+  const ankNorm = (lA&&rA)?{y:(lA.y+rA.y)/2}:(lA||rA);
+  const wAnk    = (wA&&wRA)?{y:(wA.y+wRA.y)/2,z:(wA.z+wRA.z)/2}:(wA||wRA);
+  if(!ankNorm||!wAnk) return null;
+
+  // pixel offsets from image centre
+  const dyN = (nose.y   - 0.5)*imgH;
+  const dyA = (ankNorm.y - 0.5)*imgH;
+  if(Math.abs(dyN)<1||Math.abs(dyA)<1) return null;
+
+  const wNy=wN.y||0, wAy=wAnk.y||0;
+  const wNz=wN.z||0, wAz=wAnk.z||0;
+  if(Math.abs(wNy)<0.01||Math.abs(wAy)<0.01) return null;
+
+  // R = ratio of pixel positions
+  const R = dyN/dyA;
+  const denom = R*wAy - wNy;
+  if(Math.abs(denom)<0.001) return null;
+
+  const D = (wNy*wAz - R*wAy*wNz) / denom;
+  if(D<0.3||D>20) return null;  // sanity clamp
+
+  const focal = dyN*(D+wNz)/wNy;
+  if(focal<100||focal>5000) return null;
+  return {D, focal};
 }
-function getPoseHtAndDist(lms,W,H){ const nose=lms[0],lA=lms[27],rA=lms[28]; const ankY=(lA&&rA)?(lA.y+rA.y)/2*H:(lA?lA.y*H:(rA?rA.y*H:null)); if(nose&&ankY!==null){ const htPx=Math.abs(ankY-nose.y*H); return{htPx,dist:fD(1.7,htPx),vis:nose.visibility||0.5}; } return null; }
-const HC=[[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[5,9],[9,10],[10,11],[11,12],[9,13],[13,14],[14,15],[15,16],[13,17],[17,18],[18,19],[19,20],[0,17]];
-function drawHand(ctx,lms,W,H,color='rgba(255,210,0,.8)'){ ctx.strokeStyle=color; ctx.lineWidth=1.5; HC.forEach(([a,b])=>{ctx.beginPath();ctx.moveTo(lms[a].x*W,lms[a].y*H);ctx.lineTo(lms[b].x*W,lms[b].y*H);ctx.stroke();}); lms.forEach(lm=>{ctx.beginPath();ctx.arc(lm.x*W,lm.y*H,2.5,0,Math.PI*2);ctx.fillStyle=color;ctx.fill();}); }
 
-// ══════════════════════════════════════════════════════
-// CAMERA
-// ══════════════════════════════════════════════════════
+// Method C: IMU horizon geometry
+// If phone is portrait vertical (pitch≈90°) the horizon should be near centre
+// With known camera height h and ground visible at pitch-angle:
+// tan(angle_below_horizon) = ground_distance / camera_height
+// This gives focal if we know where the ground line is (limited usefulness alone)
+
+/* ═══════════════════════════════════════════════════════════
+   DRAWING UTILITIES
+═══════════════════════════════════════════════════════════ */
+const POSE_CONN=[[0,1],[1,2],[2,3],[3,7],[0,4],[4,5],[5,6],[6,8],[9,10],
+  [11,12],[11,13],[13,15],[15,17],[15,19],[15,21],[17,19],
+  [12,14],[14,16],[16,18],[16,20],[16,22],[18,20],
+  [11,23],[12,24],[23,24],[23,25],[24,26],[25,27],[26,28],
+  [27,29],[28,30],[29,31],[30,32],[27,31],[28,32]];
+const HC=[[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[5,9],[9,10],[10,11],[11,12],
+  [9,13],[13,14],[14,15],[15,16],[13,17],[17,18],[18,19],[19,20],[0,17]];
+
+function drawSkeleton(ctx,lms,W,H,col='rgba(0,245,196,.8)'){
+  ctx.strokeStyle=col;ctx.lineWidth=1.8;
+  POSE_CONN.forEach(([a,b])=>{
+    if(lms[a]&&lms[b]){ctx.beginPath();ctx.moveTo(lms[a].x*W,lms[a].y*H);ctx.lineTo(lms[b].x*W,lms[b].y*H);ctx.stroke();}
+  });
+  lms.forEach(lm=>{if(lm.visibility==null||lm.visibility>.25){ctx.beginPath();ctx.arc(lm.x*W,lm.y*H,2.5,0,Math.PI*2);ctx.fillStyle='rgba(0,245,196,.85)';ctx.fill();}});
+}
+function drawHand(ctx,lms,W,H,col='rgba(255,211,42,.85)'){
+  ctx.strokeStyle=col;ctx.lineWidth=1.5;
+  HC.forEach(([a,b])=>{ctx.beginPath();ctx.moveTo(lms[a].x*W,lms[a].y*H);ctx.lineTo(lms[b].x*W,lms[b].y*H);ctx.stroke();});
+  lms.forEach(lm=>{ctx.beginPath();ctx.arc(lm.x*W,lm.y*H,2.5,0,Math.PI*2);ctx.fillStyle=col;ctx.fill();});
+}
+// face contour paths
+const FACE_OVAL=[10,338,297,332,284,251,389,356,454,323,361,288,397,365,379,378,400,377,152,148,176,149,150,136,172,58,132,93,234,127,162,21,54,103,67,109,10];
+const FACE_L_EYE=[33,7,163,144,145,153,154,155,133,173,157,158,159,160,161,246,33];
+const FACE_R_EYE=[362,382,381,380,374,373,390,249,263,466,388,387,386,385,384,398,362];
+const FACE_LIPS=[61,146,91,181,84,17,314,405,321,375,291,308,324,318,402,317,14,87,178,88,95,61];
+function drawFaceContours(ctx,lms,W,H){
+  const path=(pts,col,lw=1.2)=>{ctx.strokeStyle=col;ctx.lineWidth=lw;ctx.beginPath();pts.forEach((i,j)=>{if(lms[i])j===0?ctx.moveTo(lms[i].x*W,lms[i].y*H):ctx.lineTo(lms[i].x*W,lms[i].y*H);});ctx.stroke();};
+  path(FACE_OVAL,'rgba(91,143,255,.55)');
+  path(FACE_L_EYE,'rgba(0,245,196,.7)');
+  path(FACE_R_EYE,'rgba(0,245,196,.7)');
+  path(FACE_LIPS,'rgba(255,71,87,.6)');
+  // sparse dots
+  ctx.fillStyle='rgba(91,143,255,.22)';
+  for(let i=0;i<lms.length;i+=3){if(lms[i]){ctx.beginPath();ctx.arc(lms[i].x*W,lms[i].y*H,0.9,0,Math.PI*2);ctx.fill();}}
+}
+function drawBodyMask(ctx,maskData,mW,mH,W,H,color){
+  const tmp=document.createElement('canvas');tmp.width=mW;tmp.height=mH;
+  const tc=tmp.getContext('2d');const id=tc.createImageData(mW,mH);
+  const [r,g,b]=color;
+  let px=0,minY=mH,maxY=0;
+  for(let i=0;i<mW*mH;i++){
+    const v=maskData[i],ri=i*4,y=Math.floor(i/mW);
+    if(v>0.45){px++;if(y<minY)minY=y;if(y>maxY)maxY=y;
+      id.data[ri]=r;id.data[ri+1]=g;id.data[ri+2]=b;id.data[ri+3]=Math.round(v*90);}
+    else id.data[ri+3]=0;
+  }
+  tc.putImageData(id,0,0);ctx.drawImage(tmp,0,0,W,H);
+  return {px,minY,maxY,bh:maxY-minY};
+}
+// BodyPix 24-part palette
+const BPIX_COLS=[[110,64,170],[143,61,178],[178,60,178],[210,62,167],[238,67,149],[255,78,125],[255,94,99],[255,115,75],[255,140,56],[239,167,47],[217,194,49],[194,219,64],[175,240,91],[135,245,87],[96,245,84],[64,243,115],[47,234,172],[51,219,217],[74,202,240],[113,185,253],[149,168,253],[186,153,243],[219,141,221],[243,132,196]];
+
+/* HUD overlay drawing */
+function drawHUD(cv,vid,D,H,pH){
+  cv.width=vid.clientWidth;cv.height=vid.clientHeight;
+  const ctx=cv.getContext('2d'),W=cv.width,Hh=cv.height,CX=W/2,CY=Hh/2;
+  ctx.clearRect(0,0,W,Hh);
+  // horizon dashes
+  ctx.strokeStyle='rgba(0,245,196,.12)';ctx.lineWidth=1;ctx.setLineDash([3,6]);
+  ctx.beginPath();ctx.moveTo(0,CY);ctx.lineTo(W,CY);ctx.stroke();ctx.setLineDash([]);
+  // height bar left edge
+  if(H!=null){
+    const bH=Hh*.5,bY=CY-bH/2,fill=Math.min(1,H/3)*bH;
+    ctx.fillStyle='rgba(0,245,196,.04)';ctx.fillRect(5,bY,3,bH);
+    ctx.fillStyle='rgba(0,245,196,.5)';ctx.fillRect(5,bY+bH-fill,3,fill);
+    ctx.font='7px "IBM Plex Mono"';ctx.fillStyle='rgba(0,245,196,.7)';ctx.textAlign='left';
+    ctx.fillText(H.toFixed(2)+'m',10,bY+bH-fill+4);
+  }
+  // distance label above crosshair
+  if(D!=null){
+    ctx.font='bold 12px "Bebas Neue"';ctx.fillStyle='rgba(91,143,255,.95)';ctx.textAlign='center';
+    ctx.fillText(D.toFixed(2)+'m',CX,CY-36);
+  }
+  // person height right side
+  if(pH!=null){
+    ctx.font='9px "Bebas Neue"';ctx.fillStyle='rgba(196,77,255,.85)';ctx.textAlign='right';
+    ctx.fillText('↕ '+pH.toFixed(2)+'m',W-6,CY+4);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CAMERA
+═══════════════════════════════════════════════════════════ */
 async function initCam(){
   SM('cam','loading','Requesting rear camera…');
   try{
     S.stream=await navigator.mediaDevices.getUserMedia({
-      video:{facingMode:'environment',width:{ideal:1080},height:{ideal:1440}}, // 3:4 preferred
-      audio:false
-    });
-    for(let i=0;i<=12;i++){ const v=_('v'+i); if(v){v.srcObject=S.stream;v.play().catch(()=>{});} }
+      video:{facingMode:'environment',width:{ideal:1080},height:{ideal:1440}},audio:false});
+    for(let i=0;i<=8;i++){const v=_('v'+i);if(v){v.srcObject=S.stream;v.play().catch(()=>{});}}
     const vid=_('v0');
     await new Promise(r=>{vid.onloadedmetadata=r;});
-    S.vW=vid.videoWidth; S.vH=vid.videoHeight;
-    S.focal=(S.vW/2)/Math.tan(70*Math.PI/360);
-    SM('cam','done',`${S.vW}×${S.vH} (${(S.vW/S.vH).toFixed(2)} ratio) · f≈${S.focal.toFixed(0)}px`);
+    S.vW=vid.videoWidth;S.vH=vid.videoHeight;
+    // Read camera track settings
+    const track=S.stream.getVideoTracks()[0];
+    if(track){
+      const caps=track.getCapabilities?.()??{};
+      const sets=track.getSettings?.()??{};
+      S.cam_width=sets.width||S.vW;
+      S.cam_height=sets.height||S.vH;
+      S.cam_zoom=sets.zoom||1;
+      S.cam_focusDist=sets.focusDistance||null;
+      // focusDistance is available on some Android Chrome devices
+      LOG('l8',`Track: ${S.cam_width}×${S.cam_height} zoom=${S.cam_zoom} fd=${S.cam_focusDist?.toFixed(2)||'N/A'}m`,'ok');
+    }
+    // Assumed focal from 70° FOV
+    S.focal_assume=focalFromFOV(S.vW,70);
+    SM('cam','done',`${S.vW}×${S.vH} · zoom=${S.cam_zoom} · focal≈${S.focal_assume.toFixed(0)}px`);
     return true;
-  }catch(e){ SM('cam','fail',e.message.slice(0,50)); return false; }
+  }catch(e){SM('cam','fail',e.message.slice(0,50));return false;}
 }
 
-// ══════════════════════════════════════════════════════
-// LOAD MediaPipe Tasks Vision ESM
-// ══════════════════════════════════════════════════════
+/* ═══════════════════════════════════════════════════════════
+   LOAD MediaPipe Tasks Vision ESM
+═══════════════════════════════════════════════════════════ */
 async function loadMP(){
   try{
     const mod=await import(MP_MJS);
-    S.MP.FilesetResolver   = mod.FilesetResolver;
-    S.MP.PoseLandmarker    = mod.PoseLandmarker;
-    S.MP.FaceLandmarker    = mod.FaceLandmarker;
-    S.MP.ImageSegmenter    = mod.ImageSegmenter;
-    S.MP.HolisticLandmarker= mod.HolisticLandmarker;
-    S.MP.vision = await S.MP.FilesetResolver.forVisionTasks(MP_WASM);
-    LOG('l1','MediaPipe Tasks Vision 0.10.14 loaded (ESM)','ok');
+    S.MP.FilesetResolver    =mod.FilesetResolver;
+    S.MP.PoseLandmarker     =mod.PoseLandmarker;
+    S.MP.FaceLandmarker     =mod.FaceLandmarker;
+    S.MP.HandLandmarker     =mod.HandLandmarker;
+    S.MP.HolisticLandmarker =mod.HolisticLandmarker;
+    S.MP.ImageSegmenter     =mod.ImageSegmenter;
+    S.MP.vision=await S.MP.FilesetResolver.forVisionTasks(MP_WASM);
     return true;
-  }catch(e){ LOG('l1','MP Tasks ESM import failed: '+e.message,'err'); return false; }
+  }catch(e){console.error('MP load fail:',e);return false;}
+}
+async function createMP(Ctor,opts){
+  try{return await Ctor.createFromOptions(S.MP.vision,{...opts,baseOptions:{...opts.baseOptions,delegate:'GPU'}});}
+  catch(_){return await Ctor.createFromOptions(S.MP.vision,{...opts,baseOptions:{...opts.baseOptions,delegate:'CPU'}});}
 }
 
-// Shared MP model creator with GPU→CPU fallback
-async function createMP(ctor,opts){
-  try{ return await ctor.createFromOptions(S.MP.vision,{...opts,baseOptions:{...opts.baseOptions,delegate:'GPU'}}); }
-  catch(_){ return await ctor.createFromOptions(S.MP.vision,{...opts,baseOptions:{...opts.baseOptions,delegate:'CPU'}}); }
-}
-
-// ══════════════════════════════════════════════════════
-// T1: PoseLandmarker LITE + segmentation mask
-// ══════════════════════════════════════════════════════
-async function initPoseLite(){
-  if(S.poseLite.loading)return; S.poseLite.loading=true;
-  SM('pose_l','loading','Creating PoseLandmarker Lite…'); setBdg('b1','wait','Loading…');
+/* ═══════════════════════════════════════════════════════════
+   T1 — PoseLandmarker FULL (self-calibrating)
+═══════════════════════════════════════════════════════════ */
+async function initPose(){
+  if(S.pose.loading)return;S.pose.loading=true;
+  SM('pose','loading','Loading PoseLandmarker Full (9MB)…');setBdg('b1','wait','Loading…');
   try{
-    S.poseLite.lm=await createMP(S.MP.PoseLandmarker,{
-      baseOptions:{modelAssetPath:MODELS.POSE_LITE},
-      runningMode:'VIDEO',numPoses:1,
-      minPoseDetectionConfidence:0.5,minPosePresenceConfidence:0.5,minTrackingConfidence:0.5,
-      outputSegmentationMasks:true,
-    });
-    S.poseLite.active=true; S.poseLite.loading=false; S.poseLite.hasSeg=true;
-    SM('pose_l','done','PoseLandmarker Lite ready');setBdg('b1','live','● Live');setDot('d1','live');
-    _('r1').classList.remove('show'); LOG('l1','PoseLandmarker Lite ready + segmentation mask','ok');
-    runPoseLiteLoop();
-  }catch(e){
-    S.poseLite.loading=false;SM('pose_l','fail',e.message.slice(0,50));
-    setBdg('b1','fail','Failed');setDot('d1','fail');_('r1').classList.add('show');LOG('l1','Fatal: '+e.message,'err');
-  }
-}
-
-let _pL=0;
-async function runPoseLiteLoop(){
-  const vid=_('v1'),cv=_('cv1'),ctx=cv.getContext('2d');
-  const loop=()=>{
-    if(!S.poseLite.active||!S.poseLite.lm)return;
-    if(!vid||vid.readyState<2||vid.paused){requestAnimationFrame(loop);return;}
-    const now=performance.now();
-    if(now-_pL<66){requestAnimationFrame(loop);return;}
-    _pL=now;
-    try{
-      const res=S.poseLite.lm.detectForVideo(vid,now);
-      cv.width=S.vW;cv.height=S.vH;ctx.drawImage(vid,0,0,S.vW,S.vH);
-      // Draw segmentation mask first (underneath skeleton)
-      if(res.segmentationMasks&&res.segmentationMasks[0]){
-        const mask=res.segmentationMasks[0];
-        const mData=mask.getAsFloat32Array();
-        const mW=mask.width,mH=mask.height;
-        const tmp=document.createElement('canvas');tmp.width=mW;tmp.height=mH;
-        const tc=tmp.getContext('2d');
-        const id=tc.createImageData(mW,mH);
-        for(let i=0;i<mW*mH;i++){
-          const v=mData[i],r=i*4;
-          if(v>0.5){id.data[r]=0;id.data[r+1]=255;id.data[r+2]=120;id.data[r+3]=Math.round(v*90);}
-          else id.data[r+3]=0;
-        }
-        tc.putImageData(id,0,0);ctx.drawImage(tmp,0,0,S.vW,S.vH);
-        mask.close();
-      }
-      if(res.landmarks&&res.landmarks.length>0){
-        drawPose(ctx,res.landmarks[0],S.vW,S.vH);
-        const r2=getPoseHtAndDist(res.landmarks[0],S.vW,S.vH);
-        if(r2){S.poseLite.htPx=r2.htPx;S.poseLite.dist=r2.dist;S.poseLite.conf=Math.min(.82,r2.vis);S.poseLite.vis=r2.vis;}
-        else S.poseLite.conf=0;
-      }else S.poseLite.conf=0;
-    }catch(e){LOG('l1','Loop: '+e.message.slice(0,40),'err');}
-    FP(S.poseLite);requestAnimationFrame(loop);
-  };loop();
-}
-
-// ══════════════════════════════════════════════════════
-// T2: PoseLandmarker FULL + segmentation mask
-// ══════════════════════════════════════════════════════
-async function initPoseFull(){
-  if(S.poseFull.loading)return; S.poseFull.loading=true;
-  SM('pose_f','loading','Creating PoseLandmarker Full (9MB)…');setBdg('b2','wait','Loading…');
-  try{
-    S.poseFull.lm=await createMP(S.MP.PoseLandmarker,{
+    S.pose.lm=await createMP(S.MP.PoseLandmarker,{
       baseOptions:{modelAssetPath:MODELS.POSE_FULL},
       runningMode:'VIDEO',numPoses:1,
-      minPoseDetectionConfidence:0.5,minPosePresenceConfidence:0.5,minTrackingConfidence:0.5,
+      minPoseDetectionConfidence:.5,minPosePresenceConfidence:.5,minTrackingConfidence:.5,
       outputSegmentationMasks:true,
     });
-    S.poseFull.active=true;S.poseFull.loading=false;
-    SM('pose_f','done','PoseLandmarker Full ready');setBdg('b2','live','● Live');setDot('d2','live');
-    _('r2').classList.remove('show');LOG('l2','PoseLandmarker Full ready','ok');runPoseFullLoop();
+    S.pose.active=true;S.pose.loading=false;
+    SM('pose','done','PoseLandmarker Full ready');setBdg('b1','live','● Live');setDot('q1','live');
+    _('r1').classList.remove('show');LOG('l1','PoseLandmarker Full ready (segmentation mask ON)','ok');
+    runPoseLoop();
   }catch(e){
-    S.poseFull.loading=false;SM('pose_f','fail',e.message.slice(0,50));
-    setBdg('b2','fail','Failed');setDot('d2','fail');_('r2').classList.add('show');LOG('l2','Fatal: '+e.message,'err');
+    S.pose.loading=false;SM('pose','fail',e.message.slice(0,50));
+    setBdg('b1','fail','Failed');setDot('q1','fail');_('r1').classList.add('show');
+    LOG('l1','Fatal: '+e.message,'err');
   }
 }
 
-let _pF=0;
-async function runPoseFullLoop(){
-  const vid=_('v2'),cv=_('cv2'),ctx=cv.getContext('2d');
+let _pT=0;
+function runPoseLoop(){
+  const vid=_('v1'),cv=_('c1'),ctx=cv.getContext('2d');
   const loop=()=>{
-    if(!S.poseFull.active||!S.poseFull.lm)return;
-    if(!vid||vid.readyState<2||vid.paused){requestAnimationFrame(loop);return;}
-    const now=performance.now();if(now-_pF<80){requestAnimationFrame(loop);return;}_pF=now;
+    if(!S.pose.active||!S.pose.lm)return;
+    if(!vid||vid.readyState<2){requestAnimationFrame(loop);return;}
+    const now=performance.now();if(now-_pT<66){requestAnimationFrame(loop);return;}_pT=now;
     try{
-      const res=S.poseFull.lm.detectForVideo(vid,now);
+      const res=S.pose.lm.detectForVideo(vid,now);
       cv.width=S.vW;cv.height=S.vH;ctx.drawImage(vid,0,0,S.vW,S.vH);
-      if(res.segmentationMasks&&res.segmentationMasks[0]){
+      // body mask first
+      if(res.segmentationMasks?.[0]){
         const mask=res.segmentationMasks[0];
-        const mData=mask.getAsFloat32Array(),mW=mask.width,mH=mask.height;
-        const tmp=document.createElement('canvas');tmp.width=mW;tmp.height=mH;
-        const tc=tmp.getContext('2d'),id=tc.createImageData(mW,mH);
-        for(let i=0;i<mW*mH;i++){
-          const v=mData[i],r=i*4;
-          if(v>0.5){id.data[r]=0;id.data[r+1]=200;id.data[r+2]=255;id.data[r+3]=Math.round(v*85);}
-          else id.data[r+3]=0;
-        }
-        tc.putImageData(id,0,0);ctx.drawImage(tmp,0,0,S.vW,S.vH);mask.close();
+        const mD=mask.getAsFloat32Array();
+        drawBodyMask(ctx,mD,mask.width,mask.height,S.vW,S.vH,[0,245,196]);
+        mask.close();
       }
-      if(res.landmarks&&res.landmarks.length>0){
-        drawPose(ctx,res.landmarks[0],S.vW,S.vH,'rgba(0,200,255,.85)');
-        const r2=getPoseHtAndDist(res.landmarks[0],S.vW,S.vH);
-        if(r2){S.poseFull.htPx=r2.htPx;S.poseFull.dist=r2.dist;S.poseFull.conf=Math.min(.85,r2.vis);}
-        else S.poseFull.conf=0;
-      }else S.poseFull.conf=0;
-    }catch(e){LOG('l2','Loop: '+e.message.slice(0,40),'err');}
-    FP(S.poseFull);requestAnimationFrame(loop);
+      if(res.landmarks?.[0]){
+        drawSkeleton(ctx,res.landmarks[0],S.vW,S.vH);
+        // self-calibrate focal + distance
+        if(res.worldLandmarks?.[0]){
+          const wlm=res.worldLandmarks[0],nlm=res.landmarks[0];
+          const wN=wlm[0],wLA=wlm[27],wRA=wlm[28];
+          if(wN&&wLA){
+            const aky=(wLA&&wRA)?(wLA.y+wRA.y)/2:(wLA?.y||wRA?.y||0);
+            S.pose.pH=Math.abs(wN.y-aky); // person height direct from world
+            S.pose.worldNose=wN;S.pose.worldAnkle={y:aky,z:wLA?.z||0};
+            // self-calibration
+            const cal=selfCalibrate(nlm,wlm,S.vH);
+            if(cal){
+              S.pose.D=cal.D;S.pose.focal=cal.focal;
+              S.focal_pose=cal.focal;
+              // camera height: ankle is ~1.0m below hip (GHUM prior), camera at ankle level + ankle_world_y
+              // ankle.y in world is negative (below hip), so ground is at (hip - ankle_world_y)
+              // camera_height ≈ |ankle.y| + typical_ankle_to_ground (0)
+              S.pose.cH=Math.abs(aky)+0.05; // ankle≈ground level
+              S.pose.conf=Math.min(.88,wN.visibility||.7);
+            }else{S.pose.conf=0.4;}
+            // body proportions
+            const props={};
+            const seg=(a,b,n)=>{const wa=wlm[a],wb=wlm[b];if(wa&&wb){const d=Math.sqrt((wa.x-wb.x)**2+(wa.y-wb.y)**2+(wa.z-wb.z)**2);props[n]=d;}};
+            seg(0,11,'Head-Shoulder');seg(11,12,'Shoulders');seg(11,23,'L Torso');
+            seg(12,24,'R Torso');seg(23,27,'L Leg');seg(24,28,'R Leg');
+            seg(11,15,'L Arm');seg(12,16,'R Arm');
+            S.pose.props=props;
+          }
+        }
+      }else S.pose.conf=0;
+    }catch(e){LOG('l1','Loop: '+e.message.slice(0,40),'err');}
+    FP(S.pose);requestAnimationFrame(loop);
   };loop();
 }
 
-// ══════════════════════════════════════════════════════
-// T3: HolisticLandmarker
-// ══════════════════════════════════════════════════════
+/* ═══════════════════════════════════════════════════════════
+   T2 — HolisticLandmarker
+═══════════════════════════════════════════════════════════ */
 async function initHolistic(){
-  if(S.holistic.loading)return;S.holistic.loading=true;
-  SM('holistic','loading','Creating HolisticLandmarker (13MB)…');setBdg('b3','wait','Loading…');
+  if(S.hol.loading)return;S.hol.loading=true;
+  SM('hol','loading','Loading HolisticLandmarker (13MB)…');setBdg('b2','wait','Loading…');
   try{
-    S.holistic.lm=await createMP(S.MP.HolisticLandmarker,{
+    S.hol.lm=await createMP(S.MP.HolisticLandmarker,{
       baseOptions:{modelAssetPath:MODELS.HOLISTIC},
       runningMode:'VIDEO',
-      minFaceDetectionConfidence:0.5,minFacePresenceConfidence:0.5,minFaceTrackingConfidence:0.5,
-      minPoseDetectionConfidence:0.5,minPosePresenceConfidence:0.5,minPoseTrackingConfidence:0.5,
-      minHandLandmarksConfidence:0.5,
+      minFaceDetectionConfidence:.5,minFacePresenceConfidence:.5,minFaceTrackingConfidence:.5,
+      minPoseDetectionConfidence:.5,minPosePresenceConfidence:.5,minPoseTrackingConfidence:.5,
+      minHandLandmarksConfidence:.5,
     });
-    S.holistic.active=true;S.holistic.loading=false;
-    SM('holistic','done','HolisticLandmarker ready');setBdg('b3','live','● Live');setDot('d3','live');
-    _('r3').classList.remove('show');LOG('l3','HolisticLandmarker ready (pose+face+hands)','ok');runHolisticLoop();
+    S.hol.active=true;S.hol.loading=false;
+    SM('hol','done','HolisticLandmarker ready');setBdg('b2','live','● Live');setDot('q2','live');
+    _('r2').classList.remove('show');LOG('l2','HolisticLandmarker ready (pose+face+hands)','ok');
+    runHolisticLoop();
   }catch(e){
-    S.holistic.loading=false;SM('holistic','fail',e.message.slice(0,50));
-    setBdg('b3','fail','Failed');setDot('d3','fail');_('r3').classList.add('show');LOG('l3','Fatal: '+e.message,'err');
+    S.hol.loading=false;SM('hol','fail',e.message.slice(0,50));
+    setBdg('b2','fail','Failed');setDot('q2','fail');_('r2').classList.add('show');LOG('l2','Fatal: '+e.message,'err');
   }
 }
 
-let _hol=0;
+let _hT=0;
 function runHolisticLoop(){
-  const vid=_('v3'),cv=_('cv3'),ctx=cv.getContext('2d');
+  const vid=_('v2'),cv=_('c2'),ctx=cv.getContext('2d');
   const loop=()=>{
-    if(!S.holistic.active||!S.holistic.lm)return;
-    if(!vid||vid.readyState<2||vid.paused){requestAnimationFrame(loop);return;}
-    const now=performance.now();if(now-_hol<90){requestAnimationFrame(loop);return;}_hol=now;
+    if(!S.hol.active||!S.hol.lm)return;
+    if(!vid||vid.readyState<2){requestAnimationFrame(loop);return;}
+    const now=performance.now();if(now-_hT<80){requestAnimationFrame(loop);return;}_hT=now;
     try{
-      const res=S.holistic.lm.detectForVideo(vid,now);
+      const res=S.hol.lm.detectForVideo(vid,now);
       cv.width=S.vW;cv.height=S.vH;ctx.drawImage(vid,0,0,S.vW,S.vH);
-      S.holistic.poseLm=res.poseLandmarks?.length?33:0;
-      S.holistic.faceLm=res.faceLandmarks?.length?res.faceLandmarks[0].length:0;
-      // Draw pose
-      if(res.poseLandmarks?.length){
-        drawPose(ctx,res.poseLandmarks[0],S.vW,S.vH,'rgba(0,255,153,.8)');
-        const r2=getPoseHtAndDist(res.poseLandmarks[0],S.vW,S.vH);
-        if(r2){S.holistic.dist=r2.dist;S.holistic.conf=Math.min(.80,r2.vis);}else S.holistic.conf=0;
-      }else S.holistic.conf=0;
-      // Draw face mesh (sparse)
-      if(res.faceLandmarks?.length){
-        ctx.fillStyle='rgba(0,232,255,.25)';
-        res.faceLandmarks[0].forEach((lm,i)=>{ if(i%4===0){ctx.beginPath();ctx.arc(lm.x*S.vW,lm.y*S.vH,1,0,Math.PI*2);ctx.fill();} });
-      }
-      // Draw hands
-      if(res.leftHandLandmarks?.length)drawHand(ctx,res.leftHandLandmarks[0],S.vW,S.vH,'rgba(255,180,0,.8)');
-      if(res.rightHandLandmarks?.length)drawHand(ctx,res.rightHandLandmarks[0],S.vW,S.vH,'rgba(255,100,100,.8)');
-    }catch(e){LOG('l3','Loop: '+e.message.slice(0,40),'err');}
-    FP(S.holistic);requestAnimationFrame(loop);
+      S.hol.poseLm=res.poseLandmarks?.length?33:0;
+      S.hol.faceLm=res.faceLandmarks?.length?res.faceLandmarks[0].length:0;
+      S.hol.lHandLm=res.leftHandLandmarks?.length?21:0;
+      if(res.poseLandmarks?.[0]){
+        drawSkeleton(ctx,res.poseLandmarks[0],S.vW,S.vH);
+        if(res.poseWorldLandmarks?.[0]){
+          const wlm=res.poseWorldLandmarks[0],nlm=res.poseLandmarks[0];
+          const wN=wlm[0],wLA=wlm[27],wRA=wlm[28];
+          if(wN&&wLA){
+            const aky=(wLA&&wRA)?(wLA.y+wRA.y)/2:wLA.y;
+            S.hol.pH=Math.abs(wN.y-aky);
+            const cal=selfCalibrate(nlm,wlm,S.vH);
+            if(cal){S.hol.D=cal.D;S.hol.cH=Math.abs(aky)+.05;S.hol.conf=Math.min(.85,wN.visibility||.7);}
+            else S.hol.conf=.35;
+          }
+        }
+      }else S.hol.conf=0;
+      if(res.faceLandmarks?.[0])drawFaceContours(ctx,res.faceLandmarks[0],S.vW,S.vH);
+      if(res.leftHandLandmarks?.[0])drawHand(ctx,res.leftHandLandmarks[0],S.vW,S.vH,'rgba(255,211,42,.85)');
+      if(res.rightHandLandmarks?.[0])drawHand(ctx,res.rightHandLandmarks[0],S.vW,S.vH,'rgba(196,77,255,.85)');
+    }catch(e){LOG('l2','Loop: '+e.message.slice(0,40),'err');}
+    FP(S.hol);requestAnimationFrame(loop);
   };loop();
 }
 
-// ══════════════════════════════════════════════════════
-// T4: FaceLandmarker (478 pts + iris)
-// ══════════════════════════════════════════════════════
+/* ═══════════════════════════════════════════════════════════
+   T3 — FaceLandmarker (IPD-based distance, needs focal)
+═══════════════════════════════════════════════════════════ */
 async function initFace(){
   if(S.face.loading)return;S.face.loading=true;
-  SM('face','loading','Creating FaceLandmarker (1.4MB)…');setBdg('b4','wait','Loading…');
+  SM('face','loading','Loading FaceLandmarker (1.4MB)…');setBdg('b3','wait','Loading…');
   try{
     S.face.lm=await createMP(S.MP.FaceLandmarker,{
       baseOptions:{modelAssetPath:MODELS.FACE},
       runningMode:'VIDEO',numFaces:2,
-      minFaceDetectionConfidence:0.5,minFacePresenceConfidence:0.5,minTrackingConfidence:0.5,
+      minFaceDetectionConfidence:.5,minFacePresenceConfidence:.5,minTrackingConfidence:.5,
     });
     S.face.active=true;S.face.loading=false;
-    SM('face','done','FaceLandmarker ready');setBdg('b4','live','● Live');setDot('d4','live');
-    _('r4').classList.remove('show');LOG('l4','FaceLandmarker ready (478 pts incl. iris)','ok');runFaceLoop();
+    SM('face','done','FaceLandmarker ready');setBdg('b3','live','● Live');setDot('q3','live');
+    _('r3').classList.remove('show');LOG('l3','FaceLandmarker ready (478 pts + iris)','ok');
+    runFaceLoop();
   }catch(e){
     S.face.loading=false;SM('face','fail',e.message.slice(0,50));
-    setBdg('b4','fail','Failed');setDot('d4','fail');_('r4').classList.add('show');LOG('l4','Fatal: '+e.message,'err');
+    setBdg('b3','fail','Failed');setDot('q3','fail');_('r3').classList.add('show');LOG('l3','Fatal: '+e.message,'err');
   }
 }
-// FaceMesh contour connections (oval + features)
-const FACE_OVAL=[10,338,297,332,284,251,389,356,454,323,361,288,397,365,379,378,400,377,152,148,176,149,150,136,172,58,132,93,234,127,162,21,54,103,67,109,10];
-const FACE_LIPS_OUTER=[61,146,91,181,84,17,314,405,321,375,291,308,324,318,402,317,14,87,178,88,95,61];
-const FACE_L_EYE=[33,7,163,144,145,153,154,155,133,173,157,158,159,160,161,246,33];
-const FACE_R_EYE=[362,382,381,380,374,373,390,249,263,466,388,387,386,385,384,398,362];
 
-function drawFaceContours(ctx,L,W,H){
-  ctx.lineWidth=1.2;
-  const drawPath=(pts,color)=>{
-    ctx.strokeStyle=color;ctx.beginPath();
-    pts.forEach((i,j)=>{ j===0?ctx.moveTo(L[i].x*W,L[i].y*H):ctx.lineTo(L[i].x*W,L[i].y*H); });
-    ctx.stroke();
-  };
-  drawPath(FACE_OVAL,'rgba(0,255,153,.6)');
-  drawPath(FACE_LIPS_OUTER,'rgba(255,100,100,.6)');
-  drawPath(FACE_L_EYE,'rgba(0,200,255,.7)');
-  drawPath(FACE_R_EYE,'rgba(0,200,255,.7)');
-  // All 478 dots (very small)
-  ctx.fillStyle='rgba(0,232,255,.18)';
-  L.forEach((lm,i)=>{ if(i%2===0){ctx.beginPath();ctx.arc(lm.x*W,lm.y*H,.8,0,Math.PI*2);ctx.fill();} });
-}
-function getIPD(L,W,H){ const lE=L[468]||L[33],rE=L[473]||L[263]; if(!lE||!rE)return null; const dx=(rE.x-lE.x)*W,dy=(rE.y-lE.y)*H; const ipd=Math.sqrt(dx*dx+dy*dy); return{ipdPx:ipd,dist:fD(0.063,ipd)}; }
-
-let _fa=0;
+let _fT=0;
 function runFaceLoop(){
-  const vid=_('v4'),cv=_('cv4'),ctx=cv.getContext('2d');
+  const vid=_('v3'),cv=_('c3'),ctx=cv.getContext('2d');
   const loop=()=>{
     if(!S.face.active||!S.face.lm)return;
-    if(!vid||vid.readyState<2||vid.paused){requestAnimationFrame(loop);return;}
-    const now=performance.now();if(now-_fa<80){requestAnimationFrame(loop);return;}_fa=now;
+    if(!vid||vid.readyState<2){requestAnimationFrame(loop);return;}
+    const now=performance.now();if(now-_fT<80){requestAnimationFrame(loop);return;}_fT=now;
     try{
       const res=S.face.lm.detectForVideo(vid,now);
       cv.width=S.vW;cv.height=S.vH;ctx.drawImage(vid,0,0,S.vW,S.vH);
       S.face.n=res.faceLandmarks?.length||0;
       if(S.face.n>0){
-        res.faceLandmarks.forEach(L=>drawFaceContours(ctx,L,S.vW,S.vH));
-        const ipd=getIPD(res.faceLandmarks[0],S.vW,S.vH);
-        if(ipd){S.face.ipdPx=ipd.ipdPx;S.face.dist=ipd.dist;S.face.conf=ipd.ipdPx>5?0.72:0;}
-        else S.face.conf=0;
+        res.faceLandmarks.forEach(lms=>{
+          // face mask: draw filled oval
+          ctx.beginPath();
+          FACE_OVAL.forEach((i,j)=>{if(lms[i])j===0?ctx.moveTo(lms[i].x*S.vW,lms[i].y*S.vH):ctx.lineTo(lms[i].x*S.vW,lms[i].y*S.vH);});
+          ctx.fillStyle='rgba(91,143,255,.12)';ctx.fill();
+          drawFaceContours(ctx,lms,S.vW,S.vH);
+        });
+        const L=res.faceLandmarks[0];
+        const lE=L[468]||L[33],rE=L[473]||L[263];
+        if(lE&&rE){
+          const dx=(rE.x-lE.x)*S.vW,dy=(rE.y-lE.y)*S.vH;
+          S.face.ipdPx=Math.sqrt(dx*dx+dy*dy);
+          // distance = focal × 0.063 / ipdPx  (avg IPD = 63mm)
+          const f=S.focal_best||S.focal_pose||S.focal_assume;
+          if(f&&S.face.ipdPx>3){
+            S.face.dist=f*0.063/S.face.ipdPx;
+            S.face.conf=Math.min(.72,S.face.ipdPx>5?.7:.3);
+          }else S.face.conf=0;
+          // draw eye markers
+          ctx.strokeStyle='rgba(0,245,196,.9)';ctx.lineWidth=2;
+          ctx.beginPath();ctx.moveTo(lE.x*S.vW,lE.y*S.vH);ctx.lineTo(rE.x*S.vW,rE.y*S.vH);ctx.stroke();
+          [lE,rE].forEach(e=>{ctx.beginPath();ctx.arc(e.x*S.vW,e.y*S.vH,5,0,Math.PI*2);ctx.fillStyle='rgba(0,245,196,.9)';ctx.fill();});
+        }
       }else S.face.conf=0;
-    }catch(e){LOG('l4','Loop: '+e.message.slice(0,40),'err');}
+    }catch(e){LOG('l3','Loop: '+e.message.slice(0,40),'err');}
     FP(S.face);requestAnimationFrame(loop);
   };loop();
 }
 
-// ══════════════════════════════════════════════════════
-// T5: FaceLandmarker v2 + blendshapes
-// ══════════════════════════════════════════════════════
-async function initFaceBS(){
-  if(S.faceBs.loading)return;S.faceBs.loading=true;
-  SM('face_bs','loading','Creating FaceLandmarker v2+BS (3.6MB)…');setBdg('b5','wait','Loading…');
+/* ═══════════════════════════════════════════════════════════
+   T4 — HandLandmarker (worldLandmarks = metric distance)
+═══════════════════════════════════════════════════════════ */
+async function initHand(){
+  if(S.hand.loading)return;S.hand.loading=true;
+  SM('hand','loading','Loading HandLandmarker (7.5MB)…');setBdg('b4','wait','Loading…');
   try{
-    S.faceBs.lm=await createMP(S.MP.FaceLandmarker,{
-      baseOptions:{modelAssetPath:MODELS.FACE_BS},
-      runningMode:'VIDEO',numFaces:1,
-      minFaceDetectionConfidence:0.5,minFacePresenceConfidence:0.5,minTrackingConfidence:0.5,
-      outputFaceBlendshapes:true,
-      outputFacialTransformationMatrixes:false,
+    S.hand.lm=await createMP(S.MP.HandLandmarker,{
+      baseOptions:{modelAssetPath:MODELS.HAND},
+      runningMode:'VIDEO',numHands:2,
+      minHandDetectionConfidence:.5,minHandPresenceConfidence:.5,minTrackingConfidence:.5,
     });
-    S.faceBs.active=true;S.faceBs.loading=false;
-    SM('face_bs','done','FaceLandmarker v2 ready');setBdg('b5','live','● Live');setDot('d5','live');
-    _('r5').classList.remove('show');LOG('l5','FaceLandmarker v2 + 52 blendshapes ready','ok');
-    buildBSRows();runFaceBSLoop();
+    S.hand.active=true;S.hand.loading=false;
+    SM('hand','done','HandLandmarker ready');setBdg('b4','live','● Live');setDot('q4','live');
+    _('r4').classList.remove('show');LOG('l4','HandLandmarker ready (worldLandmarks in metres)','ok');
+    runHandLoop();
   }catch(e){
-    S.faceBs.loading=false;SM('face_bs','fail',e.message.slice(0,50));
-    setBdg('b5','fail','Failed');setDot('d5','fail');_('r5').classList.add('show');LOG('l5','Fatal: '+e.message,'err');
+    S.hand.loading=false;SM('hand','fail',e.message.slice(0,50));
+    setBdg('b4','fail','Failed');setDot('q4','fail');_('r4').classList.add('show');LOG('l4','Fatal: '+e.message,'err');
   }
 }
-function buildBSRows(){
-  const el=_('bsrows');if(!el)return;
-  el.innerHTML=Array.from({length:12},(_,i)=>`
-    <div class="bsrow">
-      <div class="bsn" id="bsn${i}">--</div>
-      <div class="bst"><div class="bsf" id="bsf${i}" style="width:0%"></div></div>
-      <div class="bsv" id="bsv${i}">0.00</div>
-    </div>`).join('');
-}
-function updateBSRows(bs){
-  if(!bs||!bs.length)return;
-  const top=bs.slice().sort((a,b)=>b.score-a.score).slice(0,12);
-  top.forEach((b,i)=>{
-    const n=_('bsn'+i),f=_('bsf'+i),v=_('bsv'+i);
-    if(n)n.textContent=b.categoryName.replace('_','').slice(0,14);
-    if(f)f.style.width=Math.round(b.score*100)+'%';
-    if(v)v.textContent=b.score.toFixed(2);
-  });
-}
-let _fb=0;
-function runFaceBSLoop(){
-  const vid=_('v5'),cv=_('cv5'),ctx=cv.getContext('2d');
+
+let _hndT=0;
+function runHandLoop(){
+  const vid=_('v4'),cv=_('c4'),ctx=cv.getContext('2d');
   const loop=()=>{
-    if(!S.faceBs.active||!S.faceBs.lm)return;
-    if(!vid||vid.readyState<2||vid.paused){requestAnimationFrame(loop);return;}
-    const now=performance.now();if(now-_fb<80){requestAnimationFrame(loop);return;}_fb=now;
+    if(!S.hand.active||!S.hand.lm)return;
+    if(!vid||vid.readyState<2){requestAnimationFrame(loop);return;}
+    const now=performance.now();if(now-_hndT<80){requestAnimationFrame(loop);return;}_hndT=now;
     try{
-      const res=S.faceBs.lm.detectForVideo(vid,now);
+      const res=S.hand.lm.detectForVideo(vid,now);
       cv.width=S.vW;cv.height=S.vH;ctx.drawImage(vid,0,0,S.vW,S.vH);
-      S.faceBs.n=res.faceLandmarks?.length||0;
-      if(S.faceBs.n>0){
-        res.faceLandmarks.forEach(L=>drawFaceContours(ctx,L,S.vW,S.vH));
-        const ipd=getIPD(res.faceLandmarks[0],S.vW,S.vH);
-        if(ipd){S.faceBs.ipdPx=ipd.ipdPx;S.faceBs.dist=ipd.dist;S.faceBs.conf=ipd.ipdPx>5?0.72:0;}
-        if(res.faceBlendshapes?.length){ S.faceBs.bs=res.faceBlendshapes[0]; updateBSRows(S.faceBs.bs); }
-      }else S.faceBs.conf=0;
-    }catch(e){LOG('l5','Loop: '+e.message.slice(0,40),'err');}
-    FP(S.faceBs);requestAnimationFrame(loop);
-  };loop();
-}
-
-// ══════════════════════════════════════════════════════
-// SHARED SEGMENTER LOOP FACTORY
-// ══════════════════════════════════════════════════════
-function makeSegLoop(state,vidId,cvId,logId,color,outlineColor,timer=100){
-  let _last=0;
-  return ()=>{
-    const vid=_(vidId),cv=_(cvId),ctx=cv.getContext('2d');
-    const loop=()=>{
-      if(!state.active||!state.lm)return;
-      if(!vid||vid.readyState<2||vid.paused){requestAnimationFrame(loop);return;}
-      const now=performance.now();if(now-_last<timer){requestAnimationFrame(loop);return;}_last=now;
-      try{
-        state.lm.segmentForVideo(vid,now,(res)=>{
-          cv.width=S.vW;cv.height=S.vH;ctx.drawImage(vid,0,0,S.vW,S.vH);
-          const masks=res.confidenceMasks;
-          if(masks&&masks.length>0){
-            const mask=masks[0];
-            const mData=mask.getAsFloat32Array(),mW=mask.width,mH=mask.height;
-            const tmp=document.createElement('canvas');tmp.width=mW;tmp.height=mH;
-            const tc=tmp.getContext('2d'),id=tc.createImageData(mW,mH);
-            let px=0,minY=mH,maxY=0;
-            const [cr,cg,cb]=color;
-            for(let i=0;i<mW*mH;i++){
-              const v=mData[i],r=i*4,y=Math.floor(i/mW);
-              if(v>0.45){px++;if(y<minY)minY=y;if(y>maxY)maxY=y;id.data[r]=cr;id.data[r+1]=cg;id.data[r+2]=cb;id.data[r+3]=Math.round(v*95);}
-              else id.data[r+3]=0;
-            }
-            tc.putImageData(id,0,0);ctx.drawImage(tmp,0,0,S.vW,S.vH);
-            // Draw outline (border of mask)
-            if(px>100&&outlineColor){
-              ctx.strokeStyle=outlineColor;ctx.lineWidth=2;
-              ctx.drawImage(tmp,0,0,S.vW,S.vH);
-            }
-            mask.close();
-            state.px=px;state.bh=maxY-minY;
-            const scaledBH=state.bh*(S.vH/mH);
-            state.dist=(px>200&&state.bh>20)?fD(1.7,scaledBH):null;
-            state.conf=(px>200&&state.bh>20)?Math.min(.68,px/(mW*mH*0.25)):0;
-          }else state.conf=0;
-          FP(state);
+      S.hand.n=res.landmarks?.length||0;
+      if(S.hand.n>0){
+        res.landmarks.forEach((lms,hi)=>{
+          const col=hi===0?'rgba(255,211,42,.85)':'rgba(196,77,255,.85)';
+          // hand mask: fill convex hull approximation
+          ctx.beginPath();
+          [0,1,5,9,13,17,0].forEach((i,j)=>{if(lms[i])j===0?ctx.moveTo(lms[i].x*S.vW,lms[i].y*S.vH):ctx.lineTo(lms[i].x*S.vW,lms[i].y*S.vH);});
+          ctx.fillStyle=hi===0?'rgba(255,211,42,.12)':'rgba(196,77,255,.12)';ctx.fill();
+          drawHand(ctx,lms,S.vW,S.vH,col);
         });
-      }catch(e){LOG(logId,'Loop: '+e.message.slice(0,40),'err');}
-      requestAnimationFrame(loop);
-    };loop();
-  };
+        // world distance to first hand (wrist = origin)
+        if(res.worldLandmarks?.[0]){
+          const w=res.worldLandmarks[0][0]; // wrist
+          if(w)S.hand.wDist=Math.sqrt(w.x*w.x+w.y*w.y+w.z*w.z);
+        }
+        S.hand.dist=S.hand.wDist;
+        S.hand.conf=S.hand.wDist&&S.hand.wDist>.1?Math.min(.72,1/S.hand.wDist*.5):.0;
+        const lms0=res.landmarks[0];
+        const dx=(lms0[12].x-lms0[0].x)*S.vW,dy=(lms0[12].y-lms0[0].y)*S.vH;
+        S.hand.spanPx=Math.sqrt(dx*dx+dy*dy);
+      }else{S.hand.conf=0;S.hand.wDist=null;}
+    }catch(e){LOG('l4','Loop: '+e.message.slice(0,40),'err');}
+    FP(S.hand);requestAnimationFrame(loop);
+  };loop();
 }
 
-// ══════════════════════════════════════════════════════
-// T6: Selfie Segmenter FAST (selfie_segmentation.tflite)
-// ══════════════════════════════════════════════════════
-async function initSegFast(){
-  if(S.segFast.loading)return;S.segFast.loading=true;
-  SM('seg_fast','loading','Creating Selfie Segmenter fast (243KB)…');setBdg('b6','wait','Loading…');
+/* ═══════════════════════════════════════════════════════════
+   T5 — ImageSegmenter selfie (needs focal from pose)
+═══════════════════════════════════════════════════════════ */
+async function initSeg(){
+  if(S.seg.loading)return;S.seg.loading=true;
+  SM('seg','loading','Loading ImageSegmenter (243KB)…');setBdg('b5','wait','Loading…');
   try{
-    S.segFast.lm=await createMP(S.MP.ImageSegmenter,{
-      baseOptions:{modelAssetPath:MODELS.SEG_FAST},
+    S.seg.lm=await createMP(S.MP.ImageSegmenter,{
+      baseOptions:{modelAssetPath:MODELS.SEG},
       runningMode:'VIDEO',outputCategoryMask:false,outputConfidenceMasks:true,
     });
-    S.segFast.active=true;S.segFast.loading=false;
-    SM('seg_fast','done','Selfie Segmenter fast ready');setBdg('b6','live','● Live');setDot('d6','live');
-    _('r6').classList.remove('show');LOG('l6','Selfie Segmenter fast ready (243KB)','ok');
-    makeSegLoop(S.segFast,'v6','cv6','l6',[0,255,120],'rgba(0,255,120,.9)',90)();
+    S.seg.active=true;S.seg.loading=false;
+    SM('seg','done','ImageSegmenter ready');setBdg('b5','live','● Live');setDot('q5','live');
+    _('r5').classList.remove('show');LOG('l5','ImageSegmenter ready (243KB selfie)','ok');
+    runSegLoop();
   }catch(e){
-    S.segFast.loading=false;SM('seg_fast','fail',e.message.slice(0,50));
-    setBdg('b6','fail','Failed');setDot('d6','fail');_('r6').classList.add('show');LOG('l6','Fatal: '+e.message,'err');
+    S.seg.loading=false;SM('seg','fail',e.message.slice(0,50));
+    setBdg('b5','fail','Failed');setDot('q5','fail');_('r5').classList.add('show');LOG('l5','Fatal: '+e.message,'err');
   }
 }
 
-// ══════════════════════════════════════════════════════
-// T7: Selfie Segmenter HQ (144×256 portrait)
-// ══════════════════════════════════════════════════════
-async function initSegHQ(){
-  if(S.segHQ.loading)return;S.segHQ.loading=true;
-  SM('seg_hq','loading','Creating Selfie Segmenter HQ (298KB)…');setBdg('b7','wait','Loading…');
-  try{
-    S.segHQ.lm=await createMP(S.MP.ImageSegmenter,{
-      baseOptions:{modelAssetPath:MODELS.SEG_HQ},
-      runningMode:'VIDEO',outputCategoryMask:false,outputConfidenceMasks:true,
-    });
-    S.segHQ.active=true;S.segHQ.loading=false;
-    SM('seg_hq','done','Selfie Segmenter HQ ready');setBdg('b7','live','● Live');setDot('d7','live');
-    _('r7').classList.remove('show');LOG('l7','Selfie Segmenter HQ ready (144×256)','ok');
-    makeSegLoop(S.segHQ,'v7','cv7','l7',[0,200,255],'rgba(0,200,255,.9)',100)();
-  }catch(e){
-    S.segHQ.loading=false;SM('seg_hq','fail',e.message.slice(0,50));
-    setBdg('b7','fail','Failed');setDot('d7','fail');_('r7').classList.add('show');LOG('l7','Fatal: '+e.message,'err');
-  }
-}
-
-// ══════════════════════════════════════════════════════
-// T8: Hair Segmenter
-// ══════════════════════════════════════════════════════
-async function initHair(){
-  if(S.hair.loading)return;S.hair.loading=true;
-  SM('hair','loading','Creating Hair Segmenter (763KB)…');setBdg('b8','wait','Loading…');
-  try{
-    S.hair.lm=await createMP(S.MP.ImageSegmenter,{
-      baseOptions:{modelAssetPath:MODELS.HAIR},
-      runningMode:'VIDEO',outputCategoryMask:false,outputConfidenceMasks:true,
-    });
-    S.hair.active=true;S.hair.loading=false;
-    SM('hair','done','Hair Segmenter ready');setBdg('b8','live','● Live');setDot('d8','live');
-    _('r8').classList.remove('show');LOG('l8','Hair Segmenter ready','ok');runHairLoop();
-  }catch(e){
-    S.hair.loading=false;SM('hair','fail',e.message.slice(0,50));
-    setBdg('b8','fail','Failed');setDot('d8','fail');_('r8').classList.add('show');LOG('l8','Fatal: '+e.message,'err');
-  }
-}
-
-let _ha=0;
-function runHairLoop(){
-  const vid=_('v8'),cv=_('cv8'),ctx=cv.getContext('2d');
+let _sT=0;
+function runSegLoop(){
+  const vid=_('v5'),cv=_('c5'),ctx=cv.getContext('2d');
   const loop=()=>{
-    if(!S.hair.active||!S.hair.lm)return;
-    if(!vid||vid.readyState<2||vid.paused){requestAnimationFrame(loop);return;}
-    const now=performance.now();if(now-_ha<100){requestAnimationFrame(loop);return;}_ha=now;
+    if(!S.seg.active||!S.seg.lm)return;
+    if(!vid||vid.readyState<2){requestAnimationFrame(loop);return;}
+    const now=performance.now();if(now-_sT<90){requestAnimationFrame(loop);return;}_sT=now;
     try{
-      S.hair.lm.segmentForVideo(vid,now,(res)=>{
+      S.seg.lm.segmentForVideo(vid,now,(res)=>{
         cv.width=S.vW;cv.height=S.vH;ctx.drawImage(vid,0,0,S.vW,S.vH);
-        if(res.confidenceMasks&&res.confidenceMasks[0]){
+        if(res.confidenceMasks?.[0]){
           const mask=res.confidenceMasks[0];
-          const mData=mask.getAsFloat32Array(),mW=mask.width,mH=mask.height;
-          const tmp=document.createElement('canvas');tmp.width=mW;tmp.height=mH;
-          const tc=tmp.getContext('2d'),id=tc.createImageData(mW,mH);
-          let px=0;
-          for(let i=0;i<mW*mH;i++){
-            const v=mData[i],r=i*4;
-            if(v>0.4){px++;id.data[r]=191;id.data[r+1]=90;id.data[r+2]=242;id.data[r+3]=Math.round(v*130);}
-            else id.data[r+3]=0;
-          }
-          tc.putImageData(id,0,0);ctx.drawImage(tmp,0,0,S.vW,S.vH);mask.close();
-          S.hair.px=px;S.hair.cov=Math.round(px/(mW*mH)*100);
-        }
-        FP(S.hair);
+          const mD=mask.getAsFloat32Array();
+          const {px,bh}=drawBodyMask(ctx,mD,mask.width,mask.height,S.vW,S.vH,[0,245,196]);
+          mask.close();
+          S.seg.px=px;S.seg.bh=bh;
+          const f=S.focal_best||S.focal_pose||S.focal_assume;
+          if(f&&bh>20&&px>100){
+            S.seg.dist=f*1.7/(bh*(S.vH/mask.height));
+            S.seg.conf=Math.min(.65,px/(mask.width*mask.height*.25));
+          }else S.seg.conf=0;
+        }else S.seg.conf=0;
+        FP(S.seg);
       });
-    }catch(e){LOG('l8','Loop: '+e.message.slice(0,40),'err');}
+    }catch(e){LOG('l5','Loop: '+e.message.slice(0,40),'err');}
     requestAnimationFrame(loop);
   };loop();
 }
 
-// ══════════════════════════════════════════════════════
-// T9: DeepLabV3 (category mask - 21 classes)
-// ══════════════════════════════════════════════════════
-async function initDeepLab(){
-  if(S.deeplab.loading)return;S.deeplab.loading=true;
-  SM('deeplab','loading','Creating DeepLabV3 (2.7MB)…');setBdg('b9','wait','Loading…');
-  try{
-    S.deeplab.lm=await createMP(S.MP.ImageSegmenter,{
-      baseOptions:{modelAssetPath:MODELS.DEEPLAB},
-      runningMode:'VIDEO',outputCategoryMask:true,outputConfidenceMasks:false,
-    });
-    S.deeplab.active=true;S.deeplab.loading=false;
-    SM('deeplab','done','DeepLabV3 ready (21 classes)');setBdg('b9','live','● Live');setDot('d9','live');
-    _('r9').classList.remove('show');LOG('l9','DeepLabV3 ready (PASCAL VOC 21 classes, person=class15)','ok');runDeepLabLoop();
-  }catch(e){
-    S.deeplab.loading=false;SM('deeplab','fail',e.message.slice(0,50));
-    setBdg('b9','fail','Failed');setDot('d9','fail');_('r9').classList.add('show');LOG('l9','Fatal: '+e.message,'err');
-  }
-}
-
-const DEEPLAB_LABELS=['bg','aeroplane','bicycle','bird','boat','bottle','bus','car','cat','chair','cow','diningtable','dog','horse','motorbike','person','pottedplant','sheep','sofa','train','tvmonitor'];
-let _dl=0;
-function runDeepLabLoop(){
-  const vid=_('v9'),cv=_('cv9'),ctx=cv.getContext('2d');
-  const loop=()=>{
-    if(!S.deeplab.active||!S.deeplab.lm)return;
-    if(!vid||vid.readyState<2||vid.paused){requestAnimationFrame(loop);return;}
-    const now=performance.now();if(now-_dl<130){requestAnimationFrame(loop);return;}_dl=now;
-    try{
-      S.deeplab.lm.segmentForVideo(vid,now,(res)=>{
-        cv.width=S.vW;cv.height=S.vH;ctx.drawImage(vid,0,0,S.vW,S.vH);
-        if(res.categoryMask){
-          const mask=res.categoryMask;
-          const mData=mask.getAsUInt8Array?mask.getAsUInt8Array():mask.getAsFloat32Array();
-          const mW=mask.width,mH=mask.height;
-          const tmp=document.createElement('canvas');tmp.width=mW;tmp.height=mH;
-          const tc=tmp.getContext('2d'),id=tc.createImageData(mW,mH);
-          let personPx=0,minY=mH,maxY=0;
-          const classCounts={};
-          for(let i=0;i<mW*mH;i++){
-            const cls=Math.round(mData[i]),r=i*4,y=Math.floor(i/mW);
-            classCounts[cls]=(classCounts[cls]||0)+1;
-            const col=DEEPLAB_COLORS[cls%21];
-            id.data[r]=col[0];id.data[r+1]=col[1];id.data[r+2]=col[2];
-            if(cls===0)id.data[r+3]=0; // transparent background
-            else{id.data[r+3]=140;if(cls===15){personPx++;if(y<minY)minY=y;if(y>maxY)maxY=y;}}
-          }
-          tc.putImageData(id,0,0);ctx.drawImage(tmp,0,0,S.vW,S.vH);mask.close();
-          S.deeplab.personPx=personPx;
-          const topClasses=Object.entries(classCounts).filter(([k])=>k!='0').sort((a,b)=>b[1]-a[1]).slice(0,3).map(([k])=>DEEPLAB_LABELS[k]||k).join(',');
-          S.deeplab.classes=[topClasses];
-          const personBH=maxY-minY;
-          S.deeplab.dist=(personPx>100&&personBH>20)?fD(1.7,personBH*(S.vH/mH)):null;
-          S.deeplab.conf=(personPx>100&&personBH>20)?Math.min(.60,personPx/(mW*mH*0.2)):0;
-        }
-        FP(S.deeplab);
-      });
-    }catch(e){LOG('l9','Loop: '+e.message.slice(0,40),'err');}
-    requestAnimationFrame(loop);
-  };loop();
-}
-
-// ══════════════════════════════════════════════════════
-// T10: BodyPix 24-part (TF.js)
-// ══════════════════════════════════════════════════════
-let _bpixInst=null;
+/* ═══════════════════════════════════════════════════════════
+   T6 — BodyPix TF.js (24-part, needs focal)
+═══════════════════════════════════════════════════════════ */
+let _bpInst=null;
 async function initBPix(){
   if(S.bpix.loading)return;S.bpix.loading=true;
-  SM('bpix','loading','Loading TF.js…');setBdg('b10','wait','Loading…');
+  SM('bpix','loading','Loading TF.js…');setBdg('b6','wait','Loading…');
   try{
-    await ensureTF();SM('bpix','loading','Loading BodyPix (24 parts)…');
+    await ensureTF();SM('bpix','loading','Loading BodyPix weights…');
     await ldJS(CDN_BPIX);
-    _bpixInst=await bodyPix.load({architecture:'MobileNetV1',outputStride:16,multiplier:0.75,quantBytes:2});
+    _bpInst=await bodyPix.load({architecture:'MobileNetV1',outputStride:16,multiplier:0.75,quantBytes:2});
     S.bpix.active=true;S.bpix.loading=false;
-    SM('bpix','done','BodyPix 24-part ready');setBdg('b10','live','● Live');setDot('d10','live');
-    _('r10').classList.remove('show');LOG('l10','BodyPix ready (MobileNetV1, 24 body parts)','ok');runBPixLoop();
+    SM('bpix','done','BodyPix ready');setBdg('b6','live','● Live');setDot('q6','live');
+    _('r6').classList.remove('show');LOG('l6','BodyPix ready (MobileNetV1 24-part)','ok');
+    runBPixLoop();
   }catch(e){
     S.bpix.loading=false;SM('bpix','fail',e.message.slice(0,50));
-    setBdg('b10','fail','Failed');setDot('d10','fail');_('r10').classList.add('show');LOG('l10','Fatal: '+e.message,'err');
+    setBdg('b6','fail','Failed');setDot('q6','fail');_('r6').classList.add('show');LOG('l6','Fatal: '+e.message,'err');
   }
 }
 async function runBPixLoop(){
-  const vid=_('v10'),cv=_('cv10'),ctx=cv.getContext('2d');
+  const vid=_('v6'),cv=_('c6'),ctx=cv.getContext('2d');
   const loop=async()=>{
-    if(!S.bpix.active||!_bpixInst)return;
+    if(!S.bpix.active||!_bpInst)return;
     if(!vid||vid.readyState<2){setTimeout(loop,300);return;}
     try{
-      // segmentPersonParts returns 24-part per-pixel labels
-      const partSeg=await _bpixInst.segmentPersonParts(vid,{
-        flipHorizontal:false,internalResolution:'medium',segmentationThreshold:0.7,
-      });
-      cv.width=partSeg.width;cv.height=partSeg.height;
-      const img=ctx.createImageData(partSeg.width,partSeg.height);
-      let minY=partSeg.height,maxY=0,found=false;
-      for(let i=0;i<partSeg.data.length;i++){
-        const r=i*4,partId=partSeg.data[i],y=Math.floor(i/partSeg.width);
-        if(partId!==-1){
-          found=true;if(y<minY)minY=y;if(y>maxY)maxY=y;
-          const col=BPIX_PART_COLORS[partId%24];
-          img.data[r]=col[0];img.data[r+1]=col[1];img.data[r+2]=col[2];img.data[r+3]=160;
-        }else{img.data[r]=6;img.data[r+1]=14;img.data[r+2]=22;img.data[r+3]=180;}
+      const seg=await _bpInst.segmentPersonParts(vid,{flipHorizontal:false,internalResolution:'medium',segmentationThreshold:.7});
+      cv.width=seg.width;cv.height=seg.height;
+      const img=ctx.createImageData(seg.width,seg.height);
+      let parts=new Set(),minY=seg.height,maxY=0,px=0;
+      for(let i=0;i<seg.data.length;i++){
+        const r=i*4,partId=seg.data[i],y=Math.floor(i/seg.width);
+        if(partId!==-1){parts.add(partId);px++;if(y<minY)minY=y;if(y>maxY)maxY=y;
+          const col=BPIX_COLS[partId%24];
+          img.data[r]=col[0];img.data[r+1]=col[1];img.data[r+2]=col[2];img.data[r+3]=155;}
+        else{img.data[r]=6;img.data[r+1]=10;img.data[r+2]=18;img.data[r+3]=175;}
       }
       ctx.putImageData(img,0,0);
-      S.bpix.found=found;S.bpix.bh=maxY-minY;
-      S.bpix.dist=(found&&S.bpix.bh>20)?fD(1.7,S.bpix.bh*(S.vH/partSeg.height)):null;
-      S.bpix.conf=(found&&S.bpix.bh>20)?Math.min(.68,S.bpix.bh/partSeg.height):0;
+      S.bpix.px=px;S.bpix.bh=maxY-minY;S.bpix.parts=parts.size;
+      const f=S.focal_best||S.focal_pose||S.focal_assume;
+      if(f&&S.bpix.bh>20&&px>100){
+        S.bpix.dist=f*1.7/(S.bpix.bh*(S.vH/seg.height));
+        S.bpix.conf=Math.min(.68,px/(seg.width*seg.height*.2));
+      }else S.bpix.conf=0;
       FP(S.bpix);
-    }catch(e){LOG('l10','Loop: '+e.message.slice(0,40),'err');}
-    setTimeout(loop,330);
+    }catch(e){LOG('l6','Loop: '+e.message.slice(0,40),'err');}
+    setTimeout(loop,320);
   };loop();
 }
 
-// ══════════════════════════════════════════════════════
-// T11: Depth-Anything
-// ══════════════════════════════════════════════════════
-async function initDepth(){
-  if(S.depth.loading)return;S.depth.loading=true;
-  SM('depth','loading','Loading Transformers.js…');setBdg('b11','wait','Loading…');
-  try{
-    await ldJS(CDN_XFM);
-    let tries=0;while(!window.transformers&&tries<25){await new Promise(r=>setTimeout(r,300));tries++;}
-    if(!window.transformers)throw new Error('transformers global not found');
-    transformers.env.allowLocalModels=false;transformers.env.useBrowserCache=true;
-    SM('depth','loading','Downloading depth-anything-small (~27MB, cached after first load)…');
-    LOG('l11','Downloading from HuggingFace (~27MB)…','warn');
-    S.depth.pipe=await transformers.pipeline('depth-estimation','Xenova/depth-anything-small-hf');
-    S.depth.active=true;S.depth.loading=false;
-    SM('depth','done','Depth-Anything ready');setBdg('b11','live','● Live');setDot('d11','live');
-    _('r11').classList.remove('show');LOG('l11','depth-anything-small-hf ready','ok');runDepthLoop();
-  }catch(e){
-    S.depth.loading=false;SM('depth','fail',e.message.slice(0,50));
-    setBdg('b11','fail','Failed');setDot('d11','fail');_('r11').classList.add('show');LOG('l11','Fatal: '+e.message,'err');
-  }
-}
-async function runDepthLoop(){
-  const vid=_('v11'),cv=_('cv11'),ctx=cv.getContext('2d');
-  const dc=_('dcv'),dctx=dc.getContext('2d');
-  const tmp=document.createElement('canvas');tmp.width=256;tmp.height=341; // 3:4
-  const tc=tmp.getContext('2d');
-  const loop=async()=>{
-    if(!S.depth.active||!S.depth.pipe)return;
-    if(!vid||vid.readyState<2){setTimeout(loop,600);return;}
-    try{
-      tc.drawImage(vid,0,0,256,341);
-      const url=tmp.toDataURL('image/jpeg',0.75);
-      const t0=performance.now();
-      const result=await S.depth.pipe(url);
-      S.depth.ms=performance.now()-t0;
-      if(result?.depth){
-        const dep=result.depth,W=dep.width||256,H=dep.height||341;
-        dc.width=W;dc.height=H;
-        const img=dctx.createImageData(W,H);const vals=dep.data||[];
-        let mn=Infinity,mx=-Infinity,cs=0,cn=0;
-        const cx1=Math.floor(W*.35),cx2=Math.floor(W*.65),cy1=Math.floor(H*.3),cy2=Math.floor(H*.7);
-        for(let i=0;i<W*H;i++){
-          const v=vals[i]||0;if(v<mn)mn=v;if(v>mx)mx=v;
-          const px=i%W,py=Math.floor(i/W);
-          if(px>=cx1&&px<=cx2&&py>=cy1&&py<=cy2){cs+=v;cn++;}
-          const t2=Math.min(1,Math.max(0,(v-mn)/(mx-mn+.001))),r=i*4;
-          // Turbo colormap: near=yellow/red, far=blue/purple
-          img.data[r]  =Math.min(255,Math.round(255*(t2<.5?1:2-2*t2)));
-          img.data[r+1]=Math.min(255,Math.round(255*(t2<.5?2*t2:2-2*t2)));
-          img.data[r+2]=Math.min(255,Math.round(255*(t2<.5?0:2*t2-1)));
-          img.data[r+3]=215;
-        }
-        dctx.putImageData(img,0,0);
-        const sc=S.fusH?S.fusH/PH:1;
-        S.depth.center=cn>0?(cs/cn)*sc:null;
-        S.depth.dist=S.depth.center;S.depth.conf=S.depth.center?0.58:0;
-        // Mirror depth to main canvas
-        cv.width=S.vW;cv.height=S.vH;ctx.drawImage(vid,0,0,S.vW,S.vH);
-        ctx.drawImage(dc,0,0,S.vW,S.vH); // full overlay with low opacity
-        // Redraw at right corner
-        const hw=S.vW*.35;ctx.drawImage(dc,S.vW-hw-4,4,hw,hw*(H/W));
-      }
-      FP(S.depth);
-    }catch(e){LOG('l11','Loop: '+e.message.slice(0,40),'err');}
-    setTimeout(loop,700);
-  };loop();
-}
-
-// ══════════════════════════════════════════════════════
-// IMU
-// ══════════════════════════════════════════════════════
+/* ═══════════════════════════════════════════════════════════
+   T7 — IMU
+═══════════════════════════════════════════════════════════ */
 async function initIMU(){
-  SM('imu','loading','Requesting DeviceMotion…');setBdg('b12','wait','Requesting…');
-  if(!window.DeviceMotionEvent){SM('imu','na','Not supported');setBdg('b12','fail','N/A');setDot('d12','off');return;}
+  SM('imu','loading','Requesting DeviceMotion…');setBdg('b7','wait','Requesting…');
+  if(!window.DeviceMotionEvent){SM('imu','na','Not supported');setBdg('b7','fail','N/A');setDot('q7','off');return;}
   const setup=()=>{
     window.addEventListener('devicemotion',e=>{
       const g=e.accelerationIncludingGravity;if(!g)return;
@@ -1460,199 +1216,235 @@ async function initIMU(){
       const n=S.imu.buf.length,avg=S.imu.buf.reduce((a,b)=>({x:a.x+b.x,y:a.y+b.y,z:a.z+b.z}),{x:0,y:0,z:0});
       const ax=avg.x/n,ay=avg.y/n,az=avg.z/n;
       S.imu.pitch=Math.atan2(ay,Math.sqrt(ax*ax+az*az))*180/Math.PI;
-      const tv=Math.abs(90-Math.abs(S.imu.pitch));
-      S.imu.conf=Math.min(1,n/80)*Math.max(0,1-tv/30)*.70;
-      S.imu.height=S.fusH||PH;
-      const sw=tv>20;
-      _('tw0').style.display=sw?'flex':'none';
-      _('tw12').style.display=sw?'flex':'none';
+      S.imu.tilt=Math.abs(90-Math.abs(S.imu.pitch));
+      S.imu.conf=Math.min(1,n/80)*Math.max(0,1-S.imu.tilt/35)*.72;
+      S.imu.height=S.fusH||1.4; // keep as prior
+      const tilted=S.imu.tilt>20;
+      _('w0').style.display=tilted?'flex':'none';
+      _('w7').style.display=tilted?'flex':'none';
     },{passive:true});
-    window.addEventListener('deviceorientation',e=>{S.imu.alpha=e.alpha||0;S.imu.beta=e.beta||0;S.imu.gamma=e.gamma||0;},{passive:true});
+    window.addEventListener('deviceorientation',e=>{
+      S.imu.alpha=e.alpha||0;S.imu.beta=e.beta||0;S.imu.gamma=e.gamma||0;
+    },{passive:true});
     S.imu.active=true;SM('imu','done','IMU active');
-    setBdg('b12','live','● Live');setDot('d12','live');
-    _('r12').classList.remove('show');LOG('l12','DeviceMotion active','ok');
+    setBdg('b7','live','● Live');setDot('q7','live');
+    _('r7').classList.remove('show');LOG('l7','DeviceMotion active','ok');
   };
   try{
-    if(typeof DeviceMotionEvent.requestPermission==='function'){const r=await DeviceMotionEvent.requestPermission();if(r==='granted')setup();else throw new Error('Denied');}
-    else setup();
-  }catch(e){SM('imu','fail',e.message);setBdg('b12','fail','Denied');setDot('d12','fail');_('r12').classList.add('show');LOG('l12','Denied: '+e.message,'err');}
+    if(typeof DeviceMotionEvent.requestPermission==='function'){
+      const r=await DeviceMotionEvent.requestPermission();
+      if(r==='granted')setup();else throw new Error('Permission denied');
+    }else setup();
+  }catch(e){SM('imu','fail',e.message);setBdg('b7','fail','Denied');setDot('q7','fail');_('r7').classList.add('show');LOG('l7','Denied: '+e.message,'err');}
 }
 
-// ══════════════════════════════════════════════════════
-// RETRY MAP
-// ══════════════════════════════════════════════════════
-function RY(key){
-  const close=lm=>{if(lm){try{lm.close();}catch(_){}};return null;};
+/* ═══════════════════════════════════════════════════════════
+   RETRY MAP
+═══════════════════════════════════════════════════════════ */
+function RY(k){
+  const c=lm=>{if(lm){try{lm.close();}catch(_){}}return null;};
   const map={
-    pose_lite:()=>{S.poseLite.loading=false;S.poseLite.active=false;S.poseLite.lm=close(S.poseLite.lm);initPoseLite();},
-    pose_full:()=>{S.poseFull.loading=false;S.poseFull.active=false;S.poseFull.lm=close(S.poseFull.lm);initPoseFull();},
-    holistic: ()=>{S.holistic.loading=false;S.holistic.active=false;S.holistic.lm=close(S.holistic.lm);initHolistic();},
-    face:     ()=>{S.face.loading=false;S.face.active=false;S.face.lm=close(S.face.lm);initFace();},
-    face_bs:  ()=>{S.faceBs.loading=false;S.faceBs.active=false;S.faceBs.lm=close(S.faceBs.lm);initFaceBS();},
-    seg_fast: ()=>{S.segFast.loading=false;S.segFast.active=false;S.segFast.lm=close(S.segFast.lm);initSegFast();},
-    seg_hq:   ()=>{S.segHQ.loading=false;S.segHQ.active=false;S.segHQ.lm=close(S.segHQ.lm);initSegHQ();},
-    hair:     ()=>{S.hair.loading=false;S.hair.active=false;S.hair.lm=close(S.hair.lm);initHair();},
-    deeplab:  ()=>{S.deeplab.loading=false;S.deeplab.active=false;S.deeplab.lm=close(S.deeplab.lm);initDeepLab();},
-    bpix:     ()=>{S.bpix.loading=false;S.bpix.active=false;_bpixInst=null;initBPix();},
-    depth:    ()=>{S.depth.loading=false;S.depth.active=false;S.depth.pipe=null;initDepth();},
-    imu:      ()=>initIMU(),
+    pose:   ()=>{S.pose.loading=false;S.pose.active=false;S.pose.lm=c(S.pose.lm);initPose();},
+    holistic:()=>{S.hol.loading=false;S.hol.active=false;S.hol.lm=c(S.hol.lm);initHolistic();},
+    face:   ()=>{S.face.loading=false;S.face.active=false;S.face.lm=c(S.face.lm);initFace();},
+    hand:   ()=>{S.hand.loading=false;S.hand.active=false;S.hand.lm=c(S.hand.lm);initHand();},
+    seg:    ()=>{S.seg.loading=false;S.seg.active=false;S.seg.lm=c(S.seg.lm);initSeg();},
+    bpix:   ()=>{S.bpix.loading=false;S.bpix.active=false;_bpInst=null;initBPix();},
+    imu:    ()=>initIMU(),
   };
-  if(map[key])map[key]();
+  if(map[k])map[k]();
 }
-window.RY=RY; window.GT=GT;
+window.RY=RY;window.GT=GT;
 
-// ══════════════════════════════════════════════════════
-// SENSOR FUSION
-// ══════════════════════════════════════════════════════
+/* ═══════════════════════════════════════════════════════════
+   FUSION
+═══════════════════════════════════════════════════════════ */
 function fuse(){
-  const hE=[];
-  if(S.imu.active)hE.push({v:S.imu.height,w:S.imu.conf});
-  [S.poseLite,S.poseFull,S.holistic].forEach(m=>{
-    if(m.active&&m.dist&&m.dist>.2&&m.dist<15)hE.push({v:Math.min(2.2,Math.max(.5,m.dist*.23)),w:m.conf*.3});
-  });
-  if(!hE.length)hE.push({v:PH,w:.05});
-  const wH=hE.reduce((s,e)=>s+e.w,0);S.fusH=hE.reduce((s,e)=>s+e.v*e.w,0)/wH;
+  // Best focal: pose self-calibration first, then assumed
+  S.focal_best=S.focal_pose||S.focal_assume;
 
+  // Height sources
+  const hE=[];
+  if(S.imu.active)hE.push({v:S.imu.height,w:S.imu.conf*.6});
+  if(S.pose.active&&S.pose.cH)hE.push({v:S.pose.cH,w:S.pose.conf*.9});
+  if(S.hol.active&&S.hol.cH)hE.push({v:S.hol.cH,w:S.hol.conf*.8});
+  if(!hE.length)hE.push({v:1.4,w:.05});
+  const wH=hE.reduce((s,e)=>s+e.w,0);
+  S.fusH=hE.reduce((s,e)=>s+e.v*e.w,0)/wH;
+  S.imu.height=S.fusH; // update IMU height with fused estimate
+
+  // Distance sources — ONLY models that give reliable readings
   const dE=[];
-  const all=[S.poseLite,S.poseFull,S.holistic,S.face,S.faceBs,S.segFast,S.segHQ,S.deeplab,S.bpix,S.depth];
-  all.forEach(m=>{if(m.active&&m.dist&&m.conf>0)dE.push({v:m.dist,w:m.conf});});
+  // Tier 1: direct metric (no assumed size)
+  if(S.pose.active&&S.pose.D&&S.pose.D>.2)dE.push({v:S.pose.D,w:S.pose.conf*1.0});
+  if(S.hol.active&&S.hol.D&&S.hol.D>.2)dE.push({v:S.hol.D,w:S.hol.conf*.9});
+  if(S.hand.active&&S.hand.wDist&&S.hand.wDist>.1)dE.push({v:S.hand.wDist,w:S.hand.conf*.7});
+  // Tier 2: focal-based (use only if focal is self-calibrated)
+  if(S.focal_pose){
+    if(S.face.active&&S.face.dist&&S.face.dist>.2)dE.push({v:S.face.dist,w:S.face.conf*.6});
+    if(S.seg.active&&S.seg.dist&&S.seg.dist>.2)dE.push({v:S.seg.dist,w:S.seg.conf*.5});
+    if(S.bpix.active&&S.bpix.dist&&S.bpix.dist>.2)dE.push({v:S.bpix.dist,w:S.bpix.conf*.5});
+  }
   if(dE.length){const wD=dE.reduce((s,e)=>s+e.w,0);S.fusD=dE.reduce((s,e)=>s+e.v*e.w,0)/wD;}
   else S.fusD=null;
+
+  // Person height — pose world is the only direct metric source
+  if(S.pose.active&&S.pose.pH)S.fusPH=S.pose.pH;
+  else if(S.hol.active&&S.hol.pH)S.fusPH=S.hol.pH;
+  else S.fusPH=null;
 }
 
-// ══════════════════════════════════════════════════════
-// CONFIDENCE BARS
-// ══════════════════════════════════════════════════════
+/* ═══════════════════════════════════════════════════════════
+   BUILD CONFIDENCE BARS
+═══════════════════════════════════════════════════════════ */
 function buildCBars(){
   const rows=[
-    {id:'c0',lbl:'Pose Lite',g:'h'},{id:'c1',lbl:'Pose Full',g:'h'},
-    {id:'c2',lbl:'Holistic', g:'h'},{id:'c3',lbl:'Face',      g:'h'},
-    {id:'c4',lbl:'Face+BS',  g:'h'},{id:'c5',lbl:'Seg Fast',  g:'m'},
-    {id:'c6',lbl:'Seg HQ',   g:'m'},{id:'c7',lbl:'DeepLab',   g:'m'},
-    {id:'c8',lbl:'BodyPix',  g:'l'},{id:'c9',lbl:'Depth-Any', g:'l'},
-    {id:'ca',lbl:'IMU',      g:'h'},
+    {id:'cb0',lbl:'Pose Full', g:''},
+    {id:'cb1',lbl:'Holistic',  g:''},
+    {id:'cb2',lbl:'Face',      g:'b'},
+    {id:'cb3',lbl:'Hand',      g:'b'},
+    {id:'cb4',lbl:'Seg',       g:''},
+    {id:'cb5',lbl:'BodyPix',   g:'e'},
+    {id:'cb6',lbl:'IMU',       g:''},
   ];
-  _('allcbars').innerHTML=rows.map(r=>`
+  _('fcbars').innerHTML=rows.map(r=>`
     <div class="cbar">
       <div class="cbn">${r.lbl}</div>
       <div class="cbt"><div class="cbf ${r.g}" id="${r.id}f" style="width:0%"></div></div>
       <div class="cbp" id="${r.id}p">0%</div>
-      <div class="cbr" id="${r.id}r">--</div>
     </div>`).join('');
 }
-function setCB(id,pct,raw){
+function setCB(id,pct){
   const p=Math.min(100,Math.max(0,Math.round(pct)));
-  const b=_(id+'f'),pe=_(id+'p'),re=_(id+'r');
-  if(b)b.style.width=p+'%';if(pe)pe.textContent=p+'%';if(re)re.textContent=raw||'--';
+  const b=_(id+'f'),pe=_(id+'p');
+  if(b)b.style.width=p+'%';if(pe)pe.textContent=p+'%';
 }
 
-// ══════════════════════════════════════════════════════
-// RENDER LOOP
-// ══════════════════════════════════════════════════════
+/* ═══════════════════════════════════════════════════════════
+   BODY PROPORTION DISPLAY
+═══════════════════════════════════════════════════════════ */
+function buildProps(){
+  const el=_('p1props');if(!el)return;
+  const names=['Head-Shoulder','Shoulders','L Torso','R Torso','L Leg','R Leg','L Arm','R Arm'];
+  el.innerHTML=names.map(n=>`
+    <div class="proprow">
+      <div class="propn">${n}</div>
+      <div class="propt"><div class="propf" id="pf${n.replace(/[\s-]/g,'')}" style="width:0%"></div></div>
+      <div class="propv" id="pv${n.replace(/[\s-]/g,'')}">--m</div>
+    </div>`).join('');
+}
+
+/* ═══════════════════════════════════════════════════════════
+   FOCAL DERIVATION TABLE
+═══════════════════════════════════════════════════════════ */
+function buildFocalDiv(){
+  const el=_('focaldiv');if(!el)return;
+  el.innerHTML=`
+    <div class="scard">
+      <div class="sr"><span class="sk">A: Assumed 70° FOV</span><span class="sv" id="fA">--</span></div>
+      <div class="sr"><span class="sk">B: Pose self-cal (no priors)</span><span class="sv ok" id="fB">--</span></div>
+      <div class="sr"><span class="sk">C: zoom×base guess</span><span class="sv" id="fC">--</span></div>
+      <div class="sr"><span class="sk">BEST (B→A→C)</span><span class="sv ok" id="fBEST">--</span></div>
+    </div>`;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   RENDER LOOP
+═══════════════════════════════════════════════════════════ */
 function renderLoop(){
   fuse();
 
-  // Fused tab
-  nm('fH',S.fusH,2);nm('fD',S.fusD,2);
-  const hSrc=[S.imu.active?'IMU':null,S.poseLite.active&&S.poseLite.dist?'POSE-L':null,S.poseFull.active&&S.poseFull.dist?'POSE-F':null].filter(Boolean);
-  tx('fHs',(hSrc.join('+')||'PRIOR')+' · '+(S.fusH?(S.fusH*100).toFixed(0):'-')+'cm');
-  const dSrc=[S.poseLite.dist?'PL':null,S.poseFull.dist?'PF':null,S.holistic.dist?'HOL':null,S.face.dist?'FACE':null,S.segFast.dist?'SEG':null,S.deeplab.dist?'DL':null,S.bpix.dist?'BPIX':null,S.depth.dist?'DEPTH':null].filter(Boolean);
-  tx('fDs',dSrc.length?dSrc.join('+'):'waiting for models…');
-  setCB('c0',S.poseLite.conf*100,S.poseLite.dist?.toFixed(2)+'m');
-  setCB('c1',S.poseFull.conf*100,S.poseFull.dist?.toFixed(2)+'m');
-  setCB('c2',S.holistic.conf*100,S.holistic.dist?.toFixed(2)+'m');
-  setCB('c3',S.face.conf*100,    S.face.dist?.toFixed(2)+'m');
-  setCB('c4',S.faceBs.conf*100,  S.faceBs.dist?.toFixed(2)+'m');
-  setCB('c5',S.segFast.conf*100, S.segFast.dist?.toFixed(2)+'m');
-  setCB('c6',S.segHQ.conf*100,   S.segHQ.dist?.toFixed(2)+'m');
-  setCB('c7',S.deeplab.conf*100, S.deeplab.dist?.toFixed(2)+'m');
-  setCB('c8',S.bpix.conf*100,    S.bpix.dist?.toFixed(2)+'m');
-  setCB('c9',S.depth.conf*100,   S.depth.dist?.toFixed(2)+'m');
-  setCB('ca',S.imu.conf*100,     S.imu.height?.toFixed(2)+'m');
-  setDot('d0',(S.poseLite.active||S.segFast.active||S.deeplab.active)?'live':'ok');
-  drawFusedHUD();
+  // ── Fused tab ──
+  nm('fH',S.fusH,2);nm('fD',S.fusD,2);nm('fP',S.fusPH,2);
+  const hSrc=[S.pose.active&&S.pose.cH?'POSE':null,S.hol.active&&S.hol.cH?'HOL':null,S.imu.active?'IMU':null].filter(Boolean);
+  tx('fHs',(hSrc.join('+')||'PRIOR'));
+  const dSrc=[S.pose.active&&S.pose.D?'POSE✓':null,S.hol.active&&S.hol.D?'HOL✓':null,S.hand.active&&S.hand.wDist?'HAND✓':null,S.focal_pose?(S.face.active&&S.face.dist?'FACE':null):null].filter(Boolean);
+  tx('fDs',dSrc.join('+')||'awaiting…');
+  nm('fFocal',S.focal_best,0);tx('fFOV',S.focal_best?((2*Math.atan(S.vW/2/S.focal_best)*180/Math.PI).toFixed(1)):'--');
+  setCB('cb0',S.pose.conf*100);setCB('cb1',S.hol.conf*100);setCB('cb2',S.face.conf*100);
+  setCB('cb3',S.hand.conf*100);setCB('cb4',S.seg.conf*100);setCB('cb5',S.bpix.conf*100);setCB('cb6',S.imu.conf*100);
+  setDot('q0',S.pose.active||S.hol.active?'live':'ok');
+  // Draw fused HUD
+  const cv0=_('c0'),vid0=_('v0');
+  if(cv0&&vid0&&vid0.readyState>=2)drawHUD(cv0,vid0,S.fusD,S.fusH,S.fusPH);
 
-  // Per-tab height
-  ['h1','h2','h3','h4','h5','h6','h7','h8','h9','h10','h11'].forEach(id=>nm(id,S.fusH,2));
+  // ── T1 Pose ──
+  nm('p1H',S.fusH,2);nm('p1D',S.pose.D,2);nm('p1P',S.pose.pH,2);
+  tx('p1Ds',S.pose.D?'self-cal':'awaiting');
+  nm('p1ny',S.pose.worldNose?.y,3);nm('p1ay',S.pose.worldAnkle?.y,3);
+  nm('p1vis',S.pose.worldNose?.visibility,2);
+  nm('p1fpx',S.pose.focal,0);nm('p1dhip',S.pose.D,2);tx('p1fps',S.pose.fps+' fps');
+  tx('p1c',Math.round(S.pose.conf*100)+'%');
+  // body props
+  if(S.pose.props){
+    Object.entries(S.pose.props).forEach(([n,v])=>{
+      const key=n.replace(/[\s-]/g,'');
+      const maxV=0.8,pct=Math.min(100,v/maxV*100);
+      const bf=_('pf'+key),bv=_('pv'+key);
+      if(bf)bf.style.width=pct+'%';
+      if(bv)bv.textContent=v.toFixed(2)+'m';
+    });
+  }
 
-  // T1 Pose Lite
-  nm('d1v',S.poseLite.dist,2);tx('d1s',S.poseLite.htPx?S.poseLite.htPx.toFixed(0)+'px':'--');
-  nm('p1ht',S.poseLite.htPx,0);nm('p1vis',S.poseLite.vis,2);tx('p1fps',S.poseLite.fps+' fps');tx('p1c',Math.round(S.poseLite.conf*100)+'%');
+  // ── T2 Holistic ──
+  nm('p2H',S.fusH,2);nm('p2D',S.hol.D,2);nm('p2P',S.hol.pH,2);
+  tx('p2pl',S.hol.poseLm||'--');tx('p2fl',S.hol.faceLm||'--');tx('p2lh',S.hol.lHandLm||'--');
+  tx('p2fps',S.hol.fps+' fps');
 
-  // T2 Pose Full
-  nm('d2v',S.poseFull.dist,2);tx('d2s',S.poseFull.htPx?S.poseFull.htPx.toFixed(0)+'px':'--');
-  nm('p2ht',S.poseFull.htPx,0);nm('p2vis',S.poseFull.vis||0,2);tx('p2fps',S.poseFull.fps+' fps');
+  // ── T3 Face ──
+  nm('p3H',S.fusH,2);nm('p3D',S.face.dist,2);tx('p3N',String(S.face.n));
+  nm('p3ipd',S.face.ipdPx,0);nm('p3fp',S.focal_best,0);tx('p3fps',S.face.fps+' fps');
 
-  // T3 Holistic
-  nm('d3v',S.holistic.dist,2);tx('p3pl',S.holistic.poseLm?'33':'--');tx('p3fl',S.holistic.faceLm||'--');tx('p3fps',S.holistic.fps+' fps');
+  // ── T4 Hand ──
+  nm('p4H',S.fusH,2);nm('p4D',S.hand.wDist,2);tx('p4N',String(S.hand.n));
+  nm('p4wd',S.hand.wDist,2);nm('p4sp',S.hand.spanPx,0);tx('p4fps',S.hand.fps+' fps');
 
-  // T4 Face
-  nm('d4v',S.face.dist,2);tx('p4n',String(S.face.n));nm('p4ipd',S.face.ipdPx,0);tx('p4fps',S.face.fps+' fps');
+  // ── T5 Seg ──
+  nm('p5H',S.fusH,2);nm('p5D',S.seg.dist,2);
+  tx('p5C',S.seg.px&&S.vW&&S.vH?Math.round(S.seg.px/(S.vW*S.vH)*100)+'':'--');
+  tx('p5px',S.seg.px?S.seg.px.toLocaleString():'--');nm('p5bh',S.seg.bh,0);tx('p5fps',S.seg.fps+' fps');
 
-  // T5 Face+BS
-  nm('d5v',S.faceBs.dist,2);tx('p5n',String(S.faceBs.n));nm('p5ipd',S.faceBs.ipdPx,0);tx('p5fps',S.faceBs.fps+' fps');
+  // ── T6 BodyPix ──
+  nm('p6H',S.fusH,2);nm('p6D',S.bpix.dist,2);tx('p6N',String(S.bpix.parts));
+  tx('p6px',S.bpix.px?S.bpix.px.toLocaleString():'--');nm('p6bh',S.bpix.bh,0);tx('p6fps',S.bpix.fps+' fps');
 
-  // T6 Seg Fast
-  nm('d6v',S.segFast.dist,2);tx('p6px',S.segFast.px?S.segFast.px.toLocaleString():'--');nm('p6bh',S.segFast.bh,0);tx('p6fps',S.segFast.fps+' fps');
-
-  // T7 Seg HQ
-  nm('d7v',S.segHQ.dist,2);tx('p7px',S.segHQ.px?S.segHQ.px.toLocaleString():'--');nm('p7bh',S.segHQ.bh,0);tx('p7fps',S.segHQ.fps+' fps');
-
-  // T8 Hair
-  tx('d8v',S.hair.px?(S.hair.px/1000).toFixed(1):'--');
-  tx('p8hp',S.hair.px?S.hair.px.toLocaleString():'--');tx('p8cov',S.hair.cov+'%');tx('p8fps',S.hair.fps+' fps');
-
-  // T9 DeepLab
-  nm('d9v',S.deeplab.dist,2);tx('p9pp',S.deeplab.personPx?S.deeplab.personPx.toLocaleString():'--');tx('p9cls',S.deeplab.classes[0]||'--');tx('p9fps',S.deeplab.fps+' fps');
-
-  // T10 BPix
-  nm('d10v',S.bpix.dist,2);tx('p10det',S.bpix.found?'✓ YES':'--');nm('p10bh',S.bpix.bh,0);tx('p10fps',S.bpix.fps+' fps');
-
-  // T11 Depth
-  nm('d11v',S.depth.center,3);nm('p11c',S.depth.center,3);nm('p11ms',S.depth.ms,0);tx('p11fps',S.depth.fps+' fps');
-
-  // T12 IMU
-  nm('h12',S.imu.height,2);nm('t12v',Math.abs(90-Math.abs(S.imu.pitch)),1);
+  // ── T7 IMU ──
+  nm('p7H',S.imu.height,2);nm('p7T',S.imu.tilt,1);tx('p7C',Math.round(S.imu.conf*100));
   nm('ix',S.imu.gx,2);nm('iy',S.imu.gy,2);nm('iz',S.imu.gz,2);
   tx('ipitch',S.imu.pitch.toFixed(1)+'°');
   tx('iabg',S.imu.alpha.toFixed(0)+'°/'+S.imu.beta.toFixed(0)+'°/'+S.imu.gamma.toFixed(0)+'°');
-  tx('iconf',Math.round(S.imu.conf*100)+'%');tx('ibuf',S.imu.samples+'/80');
+  tx('ibuf',S.imu.samples+'/80');
+  // IMU HUD
+  const cv7=_('c7'),vid7=_('v7');
+  if(cv7&&vid7&&vid7.readyState>=2)drawHUD(cv7,vid7,null,S.imu.height,null);
+
+  // ── T8 Optics ──
+  const fBest=S.focal_best;
+  nm('p8F',fBest,0);
+  tx('p8Fs',S.focal_pose?'pose self-cal':'assumed 70°');
+  tx('p8V',fBest?(2*Math.atan(S.vW/2/fBest)*180/Math.PI).toFixed(1)+'°':'--');
+  tx('p8Z',S.cam_zoom.toFixed(2));
+  tx('camW',S.cam_width||S.vW);tx('camH',S.cam_height||S.vH);
+  tx('camAR',((S.cam_width||S.vW)/(S.cam_height||S.vH)).toFixed(2));
+  tx('camFD',S.cam_focusDist?S.cam_focusDist.toFixed(2)+'m':'N/A');
+  tx('camZ',S.cam_zoom.toFixed(2)+'×');tx('camFM','env');
+  const fA=focalFromFOV(S.vW,70),fB=S.focal_pose,fC=S.focal_assume*S.cam_zoom;
+  tx('fA',fA.toFixed(0)+'px');
+  tx('fB',fB?fB.toFixed(0)+'px':'awaiting pose');
+  tx('fC',fC.toFixed(0)+'px');
+  tx('fBEST',fBest?fBest.toFixed(0)+'px':'--');
+  tx('o8fp',fBest?fBest.toFixed(0)+'px':'--');
+  tx('o8ma',fA.toFixed(0)+'px');
+  tx('o8mb',fB?fB.toFixed(0)+'px ✓':'(no pose yet)');
+  tx('o8mc',S.imu.active?'IMU active – horizon method TBD':'IMU inactive');
+  tx('o8d',S.fusD?S.fusD.toFixed(2)+'m':'--');
 
   S.animId=requestAnimationFrame(renderLoop);
 }
 
-// ══════════════════════════════════════════════════════
-// FUSED HUD DRAW
-// ══════════════════════════════════════════════════════
-function drawFusedHUD(){
-  const cv=_('cv0h'),vid=_('v0');if(!cv||!vid)return;
-  cv.width=vid.clientWidth;cv.height=vid.clientHeight;
-  const ctx=cv.getContext('2d'),W=cv.width,H=cv.height,CX=W/2,CY=H/2;
-  ctx.clearRect(0,0,W,H);
-  // Horizon line
-  ctx.beginPath();ctx.moveTo(0,CY);ctx.lineTo(W,CY);
-  ctx.strokeStyle='rgba(0,232,255,.15)';ctx.lineWidth=1;ctx.setLineDash([4,8]);ctx.stroke();ctx.setLineDash([]);
-  // Height bar (left edge, vertical)
-  if(S.fusH){
-    const bH=H*.55,bY=CY-bH/2,fill=Math.min(1,S.fusH/3)*bH;
-    ctx.fillStyle='rgba(0,232,255,.04)';ctx.fillRect(5,bY,4,bH);
-    ctx.fillStyle='rgba(0,232,255,.52)';ctx.fillRect(5,bY+bH-fill,4,fill);
-    ctx.font='7.5px "Share Tech Mono"';ctx.fillStyle='rgba(0,232,255,.75)';ctx.textAlign='left';
-    ctx.fillText(S.fusH.toFixed(2)+'m',11,bY+bH-fill+4);
-  }
-  // Distance label
-  if(S.fusD){
-    ctx.font='bold 13px "Share Tech Mono"';ctx.fillStyle='rgba(0,255,153,.92)';ctx.textAlign='center';
-    ctx.fillText(S.fusD.toFixed(2)+'m',CX,CY-38);
-  }
-  // Active models indicator bottom-right
-  const act=[S.poseLite.active?'PL':null,S.poseFull.active?'PF':null,S.holistic.active?'HOL':null,S.segFast.active?'SEG':null,S.deeplab.active?'DL':null,S.bpix.active?'BPIX':null,S.depth.active?'DEPTH':null].filter(Boolean);
-  if(act.length){ctx.font='7px "Share Tech Mono"';ctx.fillStyle='rgba(0,232,255,.42)';ctx.textAlign='right';ctx.fillText(act.join('·'),W-7,H-7);}
-}
-
-// ══════════════════════════════════════════════════════
-// TAB SWITCHING
-// ══════════════════════════════════════════════════════
+/* ═══════════════════════════════════════════════════════════
+   TAB SWITCHING
+═══════════════════════════════════════════════════════════ */
 function GT(pid){
   document.querySelectorAll('.pane').forEach(p=>p.classList.remove('on'));
   document.querySelectorAll('.tb').forEach(b=>b.classList.remove('on'));
@@ -1660,41 +1452,33 @@ function GT(pid){
   if(pane)pane.classList.add('on');if(btn)btn.classList.add('on');
 }
 
-// ══════════════════════════════════════════════════════
-// BOOT
-// ══════════════════════════════════════════════════════
+/* ═══════════════════════════════════════════════════════════
+   BOOT
+═══════════════════════════════════════════════════════════ */
 async function initAll(){
-  _('btn-go').disabled=true;_('btn-go').textContent='⏳ LOADING…';_('pgs').style.display='block';
+  _('btn-go').disabled=true;_('btn-go').textContent='LOADING…';_('pgs').style.display='block';
 
   const camOk=await initCam();
-  if(!camOk){_('btn-go').textContent='Camera failed — retry';_('btn-go').disabled=false;return;}
+  if(!camOk){_('btn-go').textContent='CAMERA FAILED – RETRY';_('btn-go').disabled=false;return;}
 
-  // Load MediaPipe ESM bundle (needed for 9 models)
-  SM('pose_l','loading','Importing MP Tasks ESM…');
-  SM('pose_f','loading','Importing MP Tasks ESM…');
+  SM('pose','loading','Importing MP Tasks…');SM('hol','loading','…');
+  SM('face','loading','…');SM('hand','loading','…');SM('seg','loading','…');
+
   const mpOk=await loadMP();
-  if(!mpOk){
-    ['pose_l','pose_f','holistic','face','face_bs','seg_fast','seg_hq','hair','deeplab'].forEach(id=>SM(id,'fail','MP Tasks ESM failed'));
-  }
+  if(!mpOk){['pose','hol','face','hand','seg'].forEach(id=>SM(id,'fail','MP Tasks ESM failed'));}
 
-  // Launch all model initialisers in parallel
   await Promise.allSettled([
-    mpOk ? initPoseLite()  : Promise.resolve(),
-    mpOk ? initPoseFull()  : Promise.resolve(),
-    mpOk ? initHolistic()  : Promise.resolve(),
-    mpOk ? initFace()      : Promise.resolve(),
-    mpOk ? initFaceBS()    : Promise.resolve(),
-    mpOk ? initSegFast()   : Promise.resolve(),
-    mpOk ? initSegHQ()     : Promise.resolve(),
-    mpOk ? initHair()      : Promise.resolve(),
-    mpOk ? initDeepLab()   : Promise.resolve(),
+    mpOk?initPose()   :Promise.resolve(),
+    mpOk?initHolistic():Promise.resolve(),
+    mpOk?initFace()   :Promise.resolve(),
+    mpOk?initHand()   :Promise.resolve(),
+    mpOk?initSeg()    :Promise.resolve(),
     initBPix(),
-    initDepth(),
     initIMU(),
   ]);
 
   _('pgs').style.display='none';updProg();
-  _('btn-go').textContent='▶ LAUNCH';
+  _('btn-go').textContent='▸ LAUNCH';
   _('btn-go').disabled=false;
   _('btn-go').onclick=launch;
 }
@@ -1702,11 +1486,10 @@ async function initAll(){
 function launch(){
   _('LS').style.display='none';
   _('APP').style.display='flex';
-  buildCBars();
+  buildCBars();buildProps();buildFocalDiv();
   renderLoop();
 }
-
-function retryAll(){ MODS.forEach(m=>{ if(mSt[m.id]==='fail')SM(m.id,'wait','Retrying…'); }); initAll(); }
+function retryAll(){MODS.forEach(m=>{if(mSt[m.id]==='fail')SM(m.id,'wait','Retrying…');});initAll();}
 window.retryAll=retryAll;
 
 renderMods();

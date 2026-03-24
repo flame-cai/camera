@@ -450,23 +450,29 @@ function updateProgress() {
 ═══════════════════════════════════════════════════ */
 async function initCamera() {
   setStep('cam','loading','Requesting rear camera…');
+  const TIMEOUT = new Promise((_,r) =>
+    setTimeout(()=>r(new Error('Timed out (15 s) — check browser camera permissions')), 15000));
   try {
-    S.stream = await navigator.mediaDevices.getUserMedia({
-      video:{ facingMode:'environment', width:{ideal:1280}, height:{ideal:1706} },
-      audio:false
-    });
+    S.stream = await Promise.race([
+      navigator.mediaDevices.getUserMedia({
+        video:{ facingMode:'environment', width:{ideal:1280}, height:{ideal:1706} },
+        audio:false
+      }),
+      TIMEOUT
+    ]);
     for (const id of ['v0','v1']) {
-      const v = _(id); v.srcObject = S.stream;
-      v.play().catch(()=>{});
+      const v = _(id); v.srcObject = S.stream; v.play().catch(()=>{});
     }
     const v0 = _('v0');
     await new Promise(r => { v0.onloadedmetadata = r; });
     S.vW = v0.videoWidth; S.vH = v0.videoHeight;
     S.track = S.stream.getVideoTracks()[0];
     S.focal_assume = focalFromFOV(S.vW, 70);
-    setStep('cam','ok', `${S.vW}×${S.vH} · ${S.track.label?.slice(0,30)||'rear'}`);
+    setStep('cam','ok', `${S.vW}×${S.vH} · ${S.track.label?.slice(0,28)||'rear camera'}`);
   } catch(e) {
-    setStep('cam','fail', e.message.slice(0,55));
+    const msg = (e?.message || String(e)).slice(0, 75);
+    setStep('cam','fail', msg);
+    console.error('[Camera]', e);
     throw e;
   }
 }
@@ -479,17 +485,20 @@ async function initMP() {
   setStep('esm','loading','Importing vision_bundle.mjs…');
   try {
     _MP = await import(MP_MJS);
+    setStep('esm','loading','Resolving WASM runtime…');
     _MP.vision = await _MP.FilesetResolver.forVisionTasks(MP_WASM);
-    setStep('esm','ok','MediaPipe Tasks 0.10.34 ready');
+    setStep('esm','ok',`MediaPipe Tasks 0.10.34 · WASM ready`);
   } catch(e) {
-    setStep('esm','fail', e.message.slice(0,55));
+    const msg = (e?.message || String(e)).slice(0, 80);
+    setStep('esm','fail', msg);
+    console.error('[MP ESM]', e);
     throw e;
   }
 }
 
 async function initHolistic() {
-  if (!_MP) throw new Error('MP not loaded');
-  setStep('hol','loading','Loading model weights (13 MB)…');
+  if (!_MP) throw new Error('MediaPipe ESM not loaded — load step 2 first');
+  setStep('hol','loading','Creating HolisticLandmarker (GPU)…');
   const opts = {
     baseOptions:{ modelAssetPath:HOLISTIC, delegate:'GPU' },
     runningMode:'VIDEO',
@@ -498,19 +507,31 @@ async function initHolistic() {
     minHandLandmarksConfidence:.5,
     outputPoseSegmentationMasks:true,
   };
+  let gpuErr = null;
+  // Try GPU first
   try {
-    try {
-      S.holistic = await _MP.HolisticLandmarker.createFromOptions(_MP.vision, opts);
-    } catch(_) {
-      opts.baseOptions.delegate = 'CPU';
-      S.holistic = await _MP.HolisticLandmarker.createFromOptions(_MP.vision, opts);
-    }
+    S.holistic = await _MP.HolisticLandmarker.createFromOptions(_MP.vision, opts);
     S.holReady = true;
-    setStep('hol','ok','HolisticLandmarker ready (GPU→CPU fallback)');
-    _('stat0').className = 'cam-status live'; _('stat0').textContent = 'LIVE';
+    setStep('hol','ok','HolisticLandmarker ready (GPU delegate)');
+    _('stat0').className='cam-status live'; _('stat0').textContent='LIVE · GPU';
+    return;
   } catch(e) {
-    setStep('hol','fail', e.message.slice(0,55));
-    _('stat0').className = 'cam-status fail'; _('stat0').textContent = 'FAILED';
+    gpuErr = e;
+    console.warn('[Holistic GPU]', e);
+    setStep('hol','loading',`GPU failed: ${(e?.message||'').slice(0,40)} — trying CPU…`);
+  }
+  // Fallback CPU
+  try {
+    opts.baseOptions.delegate = 'CPU';
+    S.holistic = await _MP.HolisticLandmarker.createFromOptions(_MP.vision, opts);
+    S.holReady = true;
+    setStep('hol','ok','HolisticLandmarker ready (CPU delegate)');
+    _('stat0').className='cam-status live'; _('stat0').textContent='LIVE · CPU';
+  } catch(e) {
+    const msg = `GPU: ${(gpuErr?.message||'?').slice(0,35)} | CPU: ${(e?.message||'?').slice(0,35)}`;
+    setStep('hol','fail', msg);
+    _('stat0').className='cam-status fail'; _('stat0').textContent='FAILED';
+    console.error('[Holistic CPU]', e);
     throw e;
   }
 }
@@ -961,20 +982,21 @@ async function loadAll() {
   if (loading) return;
   loading = true;
   _('btn-load').disabled = true;
+  _('btn-load').textContent = 'LOADING…';
   _('btn-skip').style.display = 'block';
   _('btn-skip').textContent = '⟶ Skip — launch with loaded';
 
   try {
-    // 1. Camera — required
+    // 1. Camera — required, blocks everything
     if (St['cam'].state !== 'ok') await initCamera();
 
     // 2. MediaPipe ESM — required
     if (St['esm'].state !== 'ok') await initMP();
 
-    // 3. Holistic model — required
+    // 3. Holistic model — required (downloads 13MB + 11MB WASM)
     if (St['hol'].state !== 'ok') await initHolistic();
 
-    // 4-7. Optional — all in parallel, failures don't block
+    // 4-7. Optional in parallel — failures don't block
     await Promise.allSettled([
       St['ic'].state  !== 'ok' ? initImageCapture()     : Promise.resolve(),
       St['afd'].state !== 'ok' ? initFocusDistance()    : Promise.resolve(),
@@ -988,11 +1010,17 @@ async function loadAll() {
     _('btn-skip').textContent = '⟶ Launch now';
 
   } catch(e) {
-    // Required step failed — show retry
-    _('btn-load').textContent = '↻ RETRY REQUIRED';
+    // A required step failed — show which one failed + retry
+    const failedStep = STEPS.find(s => St[s.id].state === 'fail');
+    const hint = failedStep ? `${failedStep.name} failed` : (e?.message||'').slice(0,50);
+    _('btn-load').textContent = `↻ RETRY (${hint.slice(0,28)}…)`;
     _('btn-load').disabled = false;
-    _('btn-load').onclick = () => { loading=false; loadAll(); };
+    _('btn-load').onclick = () => { loading = false; _('btn-load').textContent='↻ RETRY'; loadAll(); };
     _('btn-skip').textContent = '⟶ Skip — launch with what loaded';
+    // Still run optionals even if required step failed (e.g. camera failed but IMU can init)
+    Promise.allSettled([
+      St['imu'].state !== 'ok' ? initIMU() : Promise.resolve(),
+    ]).catch(()=>{});
   }
 
   loading = false;

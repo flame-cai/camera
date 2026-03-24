@@ -596,17 +596,27 @@ async function initHolistic() {
 ════════════════════════════════════════════════ */
 async function initEXIF() {
   setStep('ic','loading','Setting up ImageCapture…');
-  if (!window.ImageCapture || !S.track) {
-    setStep('ic','skip','ImageCapture not supported'); return;
+  if (!window.ImageCapture) {
+    setStep('ic','skip','ImageCapture API not available in this browser'); return;
+  }
+  if (!S.track) {
+    setStep('ic','skip','No camera track — load camera first'); return;
   }
   try {
     S.ic = new ImageCapture(S.track);
-    await doEXIF(); // first shot
-    setInterval(doEXIF, 4000);
-    setStep('ic','ok','EXIF polling active (every 4 s)');
   } catch(e) {
-    setStep('ic','skip','EXIF unavailable: '+String(e?.message||e).slice(0,45));
+    setStep('ic','fail','new ImageCapture() failed: '+String(e?.message||e).slice(0,50));
+    return;
   }
+  // Wait for camera to stabilise — takePhoto too soon after track start throws on Android
+  setStep('ic','loading','Camera stabilising…');
+  await new Promise(r => setTimeout(r, 500));
+  setStep('ic','loading','Taking first EXIF photo…');
+  // First shot failure is non-fatal — interval will keep retrying
+  try { await doEXIF(); } catch(e) { console.warn('[EXIF] first shot:', e?.message); }
+  // Always start polling regardless of first-shot result
+  setInterval(doEXIF, 4000);
+  setStep('ic','ok','EXIF polling active (every 4 s)');
 }
 async function doEXIF() {
   if (!S.ic || S.exifBusy) return;
@@ -1028,12 +1038,18 @@ async function loadAll() {
     if (St.esm.state !== 'ok') await initMP();
     if (St.hol.state !== 'ok') await initHolistic();
 
-    // Optional (parallel — failures don't block)
+    // Optional camera steps — must run in order:
+    // 1. Read capabilities first (no side effects)
+    // 2. applyConstraints (changes track state — must be before takePhoto)
+    // 3. EXIF / takePhoto (needs stable track state after constraints applied)
+    // IMU is independent — run in parallel
     await Promise.allSettled([
-      St.ic.state  !== 'ok' ? initEXIF()        : Promise.resolve(),
-      St.afd.state !== 'ok' ? initFocusDist()   : Promise.resolve(),
-      St.sk.state  !== 'ok' ? initApplyConstr()  : Promise.resolve(),
-      St.imu.state !== 'ok' ? initIMU()          : Promise.resolve(),
+      (async () => {
+        if (St.afd.state !== 'ok') await initFocusDist().catch(()=>{});
+        if (St.sk.state  !== 'ok') await initApplyConstr().catch(()=>{});
+        if (St.ic.state  !== 'ok') await initEXIF().catch(()=>{});
+      })(),
+      St.imu.state !== 'ok' ? initIMU().catch(()=>{}) : Promise.resolve(),
     ]);
 
     _('btn-load').textContent = '▸ LAUNCH';

@@ -529,6 +529,8 @@ const S = {
   // Fixed-focus height method
   ffHeight:null, ffBox:null, _lastPoseLm:null,
   maskSpan:null,   // {topY,bottomY,leftX,rightX,spanY} from segmentation mask
+  // Video crop offset (portrait clip from landscape video)
+  cropSx:0, cropSy:0, cropSw:0, cropSh:0,
   // Measurement lock
   locked:null,
   // ImageCapture
@@ -620,9 +622,23 @@ async function initCamera() {
   try {
     S.stream = await Promise.race([
       navigator.mediaDevices.getUserMedia({
-        video: {facingMode:'environment', width:{ideal:1280}, height:{ideal:1706}},
+        // Request true portrait: aspectRatio 3:4, manual focus
+        video: {
+          facingMode: 'environment',
+          aspectRatio: {ideal: 0.75},   // 3:4 portrait (width/height)
+          width:  {ideal: 1080},
+          height: {ideal: 1440},
+          advanced: [{focusMode: 'manual'}],
+        },
         audio: false,
-      }),
+      }).catch(() =>
+        // Fallback without advanced constraints if manual focus not supported
+        navigator.mediaDevices.getUserMedia({
+          video: {facingMode:'environment', aspectRatio:{ideal:0.75},
+                  width:{ideal:1080}, height:{ideal:1440}},
+          audio: false,
+        })
+      ),
       timeout,
     ]);
     for (const id of ['v0','v1']) {
@@ -633,6 +649,10 @@ async function initCamera() {
     S.vW = v0.videoWidth; S.vH = v0.videoHeight;
     S.track = S.stream.getVideoTracks()[0];
     S.focalAsm = focalFromFOV(S.vW, 70);
+    // Try to apply manual focus via applyConstraints (more reliable than getUserMedia)
+    if (S.track.getCapabilities?.()?.focusMode) {
+      S.track.applyConstraints({advanced:[{focusMode:'manual'}]}).catch(()=>{});
+    }
     setStep('cam','ok',`${S.vW}×${S.vH} · ${S.track.label?.slice(0,28)||'rear camera'}`);
   } catch(e) {
     setStep('cam','fail', String(e?.message||e).slice(0,80));
@@ -855,24 +875,32 @@ async function initIMU() {
 ════════════════════════════════════════════════ */
 function worldLandmarkDistances(nlm, wlm) {
   let DA = null, focal = null, DB = null;
+  // Effective display height and crop offsets
+  const esh = S.cropSh || S.vH;   // effective (cropped) display height in video pixels
+  const esy = S.cropSy || 0;      // crop top offset
 
-  // A: vertical solve using nose and ankle
+  // A: nose/ankle vertical solve
+  // pixel Y measured from display centre (using cropped frame coordinates)
   const wN=wlm[0],  wLA=wlm[27], wRA=wlm[28];
   const nN=nlm[0],  nLA=nlm[27], nRA=nlm[28];
   if (wN && wLA && nN && nLA) {
     const ankY = wRA ? (wLA.y+wRA.y)/2 : wLA.y;
     const ankZ = wRA ? (wLA.z+wRA.z)/2 : (wLA.z||0);
     const nAY  = nRA ? (nLA.y+nRA.y)/2 : nLA.y;
-    const dyN  = (nN.y - 0.5) * S.vH;
-    const dyA  = (nAY  - 0.5) * S.vH;
+    // pixel offset from display centre (positive = below centre)
+    const dyN  = nN.y  * S.vH - esy - esh*0.5;
+    const dyA  = nAY   * S.vH - esy - esh*0.5;
     if (Math.abs(dyN) >= 2 && Math.abs(dyA) >= 2) {
       const R   = dyN / dyA;
-      const wNy = wN.y||0, wAy = ankY||0, wNz = wN.z||0, wAz = ankZ;
-      if (Math.abs(wNy) >= .01 && Math.abs(wAy) >= .01) {
+      const wNy = wN.y, wAy = ankY, wNz = wN.z||0, wAz = ankZ;
+      // Both wNy and wAy must be non-zero and have opposite signs (nose above, ankles below hips)
+      if (Math.abs(wNy) >= .01 && Math.abs(wAy) >= .01 && wNy * wAy < 0) {
         const den = R*wAy - wNy;
         if (Math.abs(den) >= .001) {
           const D = (wNy*wAz - R*wAy*wNz) / den;
           if (D >= 0.3 && D <= 20) {
+            // focal: from nose projection f = dyN*(D+wNz)/wNy
+            // wNy is negative, dyN is negative → f = (-)(+)/(-) = positive ✓
             const f = dyN*(D+wNz)/wNy;
             if (f >= 80 && f <= 6000) { DA = D; focal = f; }
           }
@@ -923,6 +951,9 @@ const FLIPS = [61,146,91,181,84,17,314,405,321,375,291,308,324,318,402,317,14,87
 ════════════════════════════════════════════════ */
 function drawOverlays(ctx, res) {
   const W = ctx.canvas.width, H = ctx.canvas.height;
+  // Landmark pixel helpers: remap from full-frame normalised to cropped canvas pixels
+  const lx = lm => lm.x * S.vW - S.cropSx;
+  const ly = lm => lm.y * S.vH - S.cropSy;
 
   // Body mask — from poseSegmentationMasks
   if (res.poseSegmentationMasks?.[0]) {
@@ -975,14 +1006,14 @@ function drawOverlays(ctx, res) {
     ctx.beginPath();
     FOVAL.forEach((i,j) => {
       if (!L[i]) return;
-      j===0 ? ctx.moveTo(L[i].x*W, L[i].y*H) : ctx.lineTo(L[i].x*W, L[i].y*H);
+      j===0 ? ctx.moveTo(lx(L[i]), ly(L[i])) : ctx.lineTo(lx(L[i]), ly(L[i]));
     });
     ctx.closePath();
     ctx.fillStyle='rgba(72,130,255,.18)'; ctx.fill();
     ctx.strokeStyle='rgba(72,130,255,.6)'; ctx.lineWidth=1.2; ctx.stroke();
     const contour = (pts, col, lw=1) => {
       ctx.beginPath();
-      pts.forEach((i,j) => { if(!L[i])return; j===0?ctx.moveTo(L[i].x*W,L[i].y*H):ctx.lineTo(L[i].x*W,L[i].y*H); });
+      pts.forEach((i,j) => { if(!L[i])return; j===0?ctx.moveTo(lx(L[i]),ly(L[i])):ctx.lineTo(lx(L[i]),ly(L[i])); });
       ctx.strokeStyle=col; ctx.lineWidth=lw; ctx.stroke();
     };
     contour(FLEYE,'rgba(0,220,175,.7)'); contour(FREYE,'rgba(0,220,175,.7)');
@@ -996,31 +1027,28 @@ function drawOverlays(ctx, res) {
     PC.forEach(([a,b]) => {
       const la=L[a], lb=L[b];
       if (!la||!lb||(la.visibility??1)<.3||(lb.visibility??1)<.3) return;
-      ctx.beginPath(); ctx.moveTo(la.x*W,la.y*H); ctx.lineTo(lb.x*W,lb.y*H); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(lx(la),ly(la)); ctx.lineTo(lx(lb),ly(lb)); ctx.stroke();
     });
     L.forEach(lm => {
       if (!lm||(lm.visibility??1)<.25) return;
-      ctx.beginPath(); ctx.arc(lm.x*W,lm.y*H,2.4,0,Math.PI*2);
+      ctx.beginPath(); ctx.arc(lx(lm),ly(lm),2.4,0,Math.PI*2);
       ctx.fillStyle='rgba(0,220,175,.9)'; ctx.fill();
     });
   }
 
   // Hands — mask + skeleton
   const hand = (lms, col, fill) => {
-    // palm fill
     ctx.beginPath();
     [0,1,5,9,13,17,0].forEach((i,j) => {
-      if(!lms[i])return; j===0?ctx.moveTo(lms[i].x*W,lms[i].y*H):ctx.lineTo(lms[i].x*W,lms[i].y*H);
+      if(!lms[i])return; j===0?ctx.moveTo(lx(lms[i]),ly(lms[i])):ctx.lineTo(lx(lms[i]),ly(lms[i]));
     });
     ctx.fillStyle=fill; ctx.fill();
-    // connections
     ctx.strokeStyle=col; ctx.lineWidth=1.6;
     HC.forEach(([a,b]) => {
-      ctx.beginPath(); ctx.moveTo(lms[a].x*W,lms[a].y*H); ctx.lineTo(lms[b].x*W,lms[b].y*H); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(lx(lms[a]),ly(lms[a])); ctx.lineTo(lx(lms[b]),ly(lms[b])); ctx.stroke();
     });
-    // dots
     lms.forEach(lm => {
-      ctx.beginPath(); ctx.arc(lm.x*W,lm.y*H,2.5,0,Math.PI*2);
+      ctx.beginPath(); ctx.arc(lx(lm),ly(lm),2.5,0,Math.PI*2);
       ctx.fillStyle=col; ctx.fill();
     });
   };
@@ -1070,14 +1098,30 @@ function startHolistic() {
     _lastT = now;
     try {
       const res = S.hol.detectForVideo(vid, now);
-      // Draw at display resolution
+      // Draw at display resolution — portrait crop to match CSS object-fit:cover
       cv.width  = vid.clientWidth  || S.vW;
       cv.height = vid.clientHeight || S.vH;
       const ctx = cv.getContext('2d');
-      // Draw video then overlays at video resolution via offscreen canvas
-      const tmp = document.createElement('canvas'); tmp.width=S.vW; tmp.height=S.vH;
+      // Portrait crop: if video is wider than 3:4 (landscape delivery),
+      // clip to the center portrait region to match what the video element shows
+      const dispAR = cv.width / cv.height;           // display aspect ratio
+      const vidAR  = S.vW / S.vH;                    // video aspect ratio
+      let sx = 0, sy = 0, sw = S.vW, sh = S.vH;
+      if (vidAR > dispAR + 0.01) {
+        // Video is wider than display: clip left/right (matches object-fit:cover)
+        sw = Math.round(S.vH * dispAR);
+        sx = Math.round((S.vW - sw) / 2);
+      } else if (vidAR < dispAR - 0.01) {
+        // Video is taller than display: clip top/bottom
+        sh = Math.round(S.vW / dispAR);
+        sy = Math.round((S.vH - sh) / 2);
+      }
+      // Store crop offset for landmark remapping
+      S.cropSx = sx; S.cropSy = sy; S.cropSw = sw; S.cropSh = sh;
+      // Draw video at offscreen resolution then scale to display
+      const tmp = document.createElement('canvas'); tmp.width=sw; tmp.height=sh;
       const tc  = tmp.getContext('2d');
-      tc.drawImage(vid, 0, 0, S.vW, S.vH);
+      tc.drawImage(vid, sx, sy, sw, sh, 0, 0, sw, sh);
       drawOverlays(tc, res);
       ctx.drawImage(tmp, 0, 0, cv.width, cv.height);
       // Measurements from worldLandmarks
@@ -1088,8 +1132,17 @@ function startHolistic() {
         const wN=wlm[0], wLA=wlm[27], wRA=wlm[28];
         if (wN && wLA) {
           const aky = wRA?(wLA.y+wRA.y)/2:wLA.y;
-          S.personH = Math.abs(wN.y - aky);
-          S.camH    = Math.abs(aky) + 0.05;
+          // personH: nose-to-ankle in world frame (direct metric, no reference needed)
+          // Label honestly as nose-to-ankle; add ~11% for full head-to-floor estimate
+          const noseToAnkle = Math.abs(wN.y - aky);
+          S.personH = noseToAnkle;   // direct worldLandmarks metric (nose→ankle)
+          // camH: hip is at height |aky| above ankles; ankles ≈ floor
+          // hip height from floor = |aky| ≈ 0.45–0.55m
+          // We can't get camera height without knowing camera pitch,
+          // so use ankle height as proxy: camH ≈ distance below camera to ankle
+          // This is only valid if camera is roughly at ankle height (ground shot)
+          // Better: leave camH as null unless IMU is available
+          S.camH = null;   // cannot compute accurately without IMU pitch
           S.wNose   = wN; S.wAnkle = {y:aky, z:wLA.z||0};
           const cal = worldLandmarkDistances(nlm, wlm);
           if (cal.focal) {

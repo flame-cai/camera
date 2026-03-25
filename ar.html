@@ -810,20 +810,29 @@ async function initFocusDist() {
 
 /* ════════════════════════════════════════════════
    INIT — applyConstraints focusMode
-   Calling focusMode:continuous BEFORE reading getSettings()
-   is required on Android Chrome for focusDistance to appear.
+   Force MANUAL focus so focusDistance stays fixed
+   at whatever the user/slider sets.
 ════════════════════════════════════════════════ */
 async function initApplyConstr() {
-  setStep('sk','loading','Applying focusMode:continuous…');
+  setStep('sk','loading','Applying focusMode:manual…');
   if (!S.track) { setStep('sk','skip','No camera track'); return; }
   try {
     const caps = S.track.getCapabilities?.() ?? {};
     const fmo  = caps.focusMode ?? [];
     if (!fmo.length) { setStep('sk','skip','No focusMode capability'); tx('cap-ac','not supported'); return; }
-    const mode = fmo.includes('continuous') ? 'continuous' : fmo[0];
-    await S.track.applyConstraints({advanced: [{focusMode: mode}]});
-    tx('cap-ac', `✓ ${mode} applied`);
-    setStep('sk','ok', `focusMode:${mode} — getSettings() will now return focusDistance`);
+    if (!fmo.includes('manual')) {
+      setStep('sk','skip','manual focus not available on this device');
+      tx('cap-fmo', fmo.join(', '));
+      tx('cap-ac', 'manual not supported');
+      return;
+    }
+    await S.track.applyConstraints({advanced:[{focusMode:'manual'}]});
+    tx('cap-ac', '✓ manual applied');
+    tx('cap-fmo', fmo.join(', '));
+    if (caps.focusDistance) {
+      tx('cap-fdr', `${caps.focusDistance.min}–${caps.focusDistance.max} m (step ${caps.focusDistance.step})`);
+    }
+    setStep('sk','ok','focusMode:manual — focus locked');
   } catch(e) {
     tx('cap-ac', 'error: '+String(e?.message||e).slice(0,35));
     setStep('sk','fail', String(e?.message||e).slice(0,60));
@@ -1098,32 +1107,36 @@ function startHolistic() {
     _lastT = now;
     try {
       const res = S.hol.detectForVideo(vid, now);
-      // Draw at display resolution — portrait crop to match CSS object-fit:cover
-      cv.width  = vid.clientWidth  || S.vW;
-      cv.height = vid.clientHeight || S.vH;
+      // Canvas size = cam div CSS size (always 3:4 portrait from CSS).
+      // NEVER use vid.clientWidth/clientHeight — those can be 0 or landscape.
+      const camDiv = _('cam0');
+      const dispW = camDiv.clientWidth  || 390;
+      const dispH = camDiv.clientHeight || 520;
+      cv.width  = dispW;
+      cv.height = dispH;
       const ctx = cv.getContext('2d');
-      // Portrait crop: if video is wider than 3:4 (landscape delivery),
-      // clip to the center portrait region to match what the video element shows
-      const dispAR = cv.width / cv.height;           // display aspect ratio
-      const vidAR  = S.vW / S.vH;                    // video aspect ratio
+      // Portrait crop: clip center of video to match object-fit:cover on the video element.
+      // dispAR = portrait (e.g. 0.75). vidAR = whatever camera delivers.
+      const dispAR = dispW / dispH;
+      const vidAR  = S.vW / S.vH;
       let sx = 0, sy = 0, sw = S.vW, sh = S.vH;
       if (vidAR > dispAR + 0.01) {
-        // Video is wider than display: clip left/right (matches object-fit:cover)
+        // Video wider than display (e.g. landscape 16:9 → portrait 3:4)
         sw = Math.round(S.vH * dispAR);
         sx = Math.round((S.vW - sw) / 2);
       } else if (vidAR < dispAR - 0.01) {
-        // Video is taller than display: clip top/bottom
+        // Video taller than display
         sh = Math.round(S.vW / dispAR);
         sy = Math.round((S.vH - sh) / 2);
       }
-      // Store crop offset for landmark remapping
       S.cropSx = sx; S.cropSy = sy; S.cropSw = sw; S.cropSh = sh;
-      // Draw video at offscreen resolution then scale to display
-      const tmp = document.createElement('canvas'); tmp.width=sw; tmp.height=sh;
+      // Draw the cropped region into an offscreen canvas at native crop resolution
+      const tmp = document.createElement('canvas'); tmp.width = sw; tmp.height = sh;
       const tc  = tmp.getContext('2d');
       tc.drawImage(vid, sx, sy, sw, sh, 0, 0, sw, sh);
       drawOverlays(tc, res);
-      ctx.drawImage(tmp, 0, 0, cv.width, cv.height);
+      // Scale offscreen → display canvas. sw/sh and dispW/dispH have same AR → no stretch.
+      ctx.drawImage(tmp, 0, 0, dispW, dispH);
       // Measurements from worldLandmarks
       S.camH=null; S.dist=null; S.distA=null; S.distB=null;
       S.personH=null; S.wNose=null; S.wAnkle=null;
@@ -1166,10 +1179,6 @@ function startHolistic() {
   loop();
 }
 
-
-/* ════════════════════════════════════════════════
-   FOCUS LOOP — live video on c1 + distance HUD
-════════════════════════════════════════════════ */
 /* ════════════════════════════════════════════════
    LOCK MEASURE — freeze best holistic reading on tap
    Guidance: full body (head to ankles) in frame.
@@ -1177,7 +1186,7 @@ function startHolistic() {
 ════════════════════════════════════════════════ */
 function lockMeasure() {
   const btn = _('btn-measure'), status = _('lock-status');
-  if (!S.personH || S.personH < 0.3 || !S.camH) {
+  if (!S.personH || S.personH < 0.3) {
     if (status) status.textContent = '\u26a0 No pose \u2014 ensure full body is visible';
     setTimeout(() => { if(status) status.textContent = ''; }, 2500);
     return;
@@ -1207,10 +1216,24 @@ function startFocusLoop() {
   const vid = _('v1'), cv = _('c1');
   const loop = () => {
     if (vid.readyState >= 2) {
-      cv.width  = vid.clientWidth  || S.vW;
-      cv.height = vid.clientHeight || S.vH;
-      const ctx = cv.getContext('2d'), W = cv.width, H = cv.height, cx = W/2, cy = H/2;
-      ctx.drawImage(vid, 0, 0, W, H);
+      // Use cam div size — always portrait 3:4 from CSS, never vid.clientWidth
+      const camDiv = _('cam1');
+      const W = camDiv.clientWidth  || 390;
+      const H = camDiv.clientHeight || 520;
+      cv.width = W; cv.height = H;
+      const ctx = cv.getContext('2d'), cx = W/2, cy = H/2;
+      // Draw portrait-cropped video center (same crop as holistic tab)
+      const dispAR = W / H;
+      const vidAR  = S.vW / S.vH;
+      let sx = 0, sy = 0, sw = S.vW, sh = S.vH;
+      if (vidAR > dispAR + 0.01) {
+        sw = Math.round(S.vH * dispAR);
+        sx = Math.round((S.vW - sw) / 2);
+      } else if (vidAR < dispAR - 0.01) {
+        sh = Math.round(S.vW / dispAR);
+        sy = Math.round((S.vH - sh) / 2);
+      }
+      ctx.drawImage(vid, sx, sy, sw, sh, 0, 0, W, H);
       // Crosshair
       ctx.strokeStyle = 'rgba(0,232,184,.5)'; ctx.lineWidth = 1;
       ctx.beginPath(); ctx.moveTo(cx-10,cy); ctx.lineTo(cx+10,cy); ctx.stroke();

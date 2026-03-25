@@ -229,27 +229,8 @@ body{display:flex;flex-direction:column;height:100dvh}
 .kv-v{font-size:7.5px;color:var(--g);font-family:var(--FM);text-align:right}
 .kv-v.b{color:var(--b)}.kv-v.y{color:var(--y)}.kv-v.na{color:var(--tm)}
 .safe{height:var(--safe)}
-
-/* MEASURE button */
-#btn-measure{
-  width:100%;padding:13px;margin-bottom:5px;
-  background:linear-gradient(135deg,rgba(0,232,184,.2),rgba(0,232,184,.08));
-  border:1.5px solid rgba(0,232,184,.55);border-radius:4px;
-  font-family:var(--FD);font-size:20px;letter-spacing:4px;
-  color:var(--g);cursor:pointer;transition:background .15s
-}
-#btn-measure:active{background:rgba(0,232,184,.3)}
-#lock-status{font-size:7.5px;color:var(--gd);font-family:var(--FC);font-weight:600;
-  letter-spacing:.5px;text-align:center;min-height:14px;margin-bottom:4px}
-/* locked chip on canvas */
-.lock-chip{
-  position:absolute;bottom:9px;left:50%;transform:translateX(-50%);
-  z-index:5;pointer-events:none;white-space:nowrap;
-  font-family:var(--FC);font-size:9px;font-weight:800;letter-spacing:1.5px;
-  text-transform:uppercase;padding:3px 11px;border-radius:2px;
-  border:1px solid rgba(240,184,48,.5);color:var(--y);
-  background:rgba(6,9,14,.8);backdrop-filter:blur(6px)
-}
+.ff-note{font-size:7.5px;color:var(--tm);font-family:var(--FC);
+  line-height:1.4;margin-bottom:5px;padding:4px 0}
 
 /* measure / scan button */
 #btn-scan{
@@ -350,18 +331,18 @@ body{display:flex;flex-direction:column;height:100dvh}
         <div class="cam-b"></div>
         <div class="scanline"></div>
         <div class="cam-chip chip-wait" id="chip0">Loading…</div>
-        <div class="lock-chip" id="lock-chip" style="display:none"></div>
+        <div id="lock-chip" style="display:none;position:absolute;bottom:9px;left:50%;transform:translateX(-50%);white-space:nowrap;font-family:var(--FC);font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;padding:3px 11px;border-radius:2px;border:1px solid rgba(240,184,48,.5);color:var(--y);background:rgba(6,9,14,.85);pointer-events:none"></div>
       </div>
       <div class="nums">
         <div class="num n0">
           <span class="nk">Cam Height</span>
           <span class="nv g" id="H0">--</span><span class="nu"> m</span>
-          <div class="ns" id="H0s">–</div>
+          <div class="ns" id="H0s">ankle→ground</div>
         </div>
         <div class="num n1">
           <span class="nk">Distance</span>
           <span class="nv b" id="D0">--</span><span class="nu"> m</span>
-          <div class="ns" id="D0s">–</div>
+          <div class="ns" id="D0s">self-cal</div>
         </div>
         <div class="num n2">
           <span class="nk">Person H</span>
@@ -371,29 +352,32 @@ body{display:flex;flex-direction:column;height:100dvh}
       </div>
       <div class="det">
         <!-- MEASURE BUTTON -->
-        <button id="btn-measure" onclick="lockMeasure()">&#128248; MEASURE</button>
-        <div id="lock-status"></div>
-
-        <!-- Locked result -->
+        <button id="btn-measure" onclick="lockMeasure()" style="width:100%;padding:13px;margin-bottom:5px;background:linear-gradient(135deg,rgba(0,232,184,.2),rgba(0,232,184,.08));border:1.5px solid rgba(0,232,184,.55);border-radius:4px;font-family:var(--FD);font-size:20px;letter-spacing:4px;color:var(--g);cursor:pointer">&#128248; MEASURE</button>
+        <div id="lock-status" style="font-size:7.5px;color:var(--gd);font-family:var(--FC);font-weight:600;letter-spacing:.5px;text-align:center;min-height:14px;margin-bottom:4px"></div>
         <div class="sec" id="sec-locked" style="display:none">Locked Measurement</div>
         <div class="kvc" id="kvc-locked" style="display:none">
-          <div class="kv"><span class="kk">Person height</span><span class="kv-v b" id="lk-h">–</span></div>
-          <div class="kv"><span class="kk">Distance</span><span class="kv-v" id="lk-d">–</span></div>
-          <div class="kv"><span class="kk">Camera height</span><span class="kv-v" id="lk-c">–</span></div>
-          <div class="kv"><span class="kk">Confidence</span><span class="kv-v y" id="lk-conf">–</span></div>
-          <div class="kv"><span class="kk">Locked at</span><span class="kv-v na" id="lk-t">–</span></div>
+          <div class="kv"><span class="kk">Person height</span><span class="kv-v b" id="lk-h">&ndash;</span></div>
+          <div class="kv"><span class="kk">Distance</span><span class="kv-v" id="lk-d">&ndash;</span></div>
+          <div class="kv"><span class="kk">Camera height</span><span class="kv-v" id="lk-c">&ndash;</span></div>
+          <div class="kv"><span class="kk">Confidence</span><span class="kv-v y" id="lk-conf">&ndash;</span></div>
+          <div class="kv"><span class="kk">Locked at</span><span class="kv-v na" id="lk-t">&ndash;</span></div>
         </div>
-
-        <div class="sec">Live World Coordinates (metres)</div>
+        <div class="sec">Distance &mdash; worldLandmarks only</div>
+        <div class="kvc">
+          <div class="kv"><span class="kk">A &middot; Nose/ankle vertical solve</span><span class="kv-v b" id="dA">&ndash;</span></div>
+          <div class="kv"><span class="kk">B &middot; Hip-width projection</span><span class="kv-v" id="dB">&ndash;</span></div>
+          <div class="kv"><span class="kk">&#9654; Fused (A&times;60% + B&times;40%)</span><span class="kv-v b" id="dFused">&ndash;</span></div>
+        </div>
+        <div class="sec">World Coordinates (hip origin)</div>
         <div class="g3">
           <div class="cell"><div class="ck">Nose Y</div><div class="cv" id="wny">--<span class="cu">m</span></div></div>
           <div class="cell"><div class="ck">Ankle Y</div><div class="cv" id="way">--<span class="cu">m</span></div></div>
-          <div class="cell"><div class="ck">Hip dist</div><div class="cv b" id="whd">--<span class="cu">m</span></div></div>
+          <div class="cell"><div class="ck">Nose Z</div><div class="cv b" id="whd">--<span class="cu">m</span></div></div>
         </div>
         <div class="sec">Self-Calibration</div>
         <div class="g3">
           <div class="cell"><div class="ck">focal px</div><div class="cv" id="fp0">--</div></div>
-          <div class="cell"><div class="ck">FOV est</div><div class="cv b" id="fv0">--<span class="cu">°</span></div></div>
+          <div class="cell"><div class="ck">FOV est</div><div class="cv b" id="fv0">--<span class="cu">&deg;</span></div></div>
           <div class="cell"><div class="ck">FPS</div><div class="cv" id="fps0">--</div></div>
         </div>
         <div class="safe"></div>
@@ -409,38 +393,72 @@ body{display:flex;flex-direction:column;height:100dvh}
         <div class="cam-chip chip-wait" id="chip1">Focus</div>
       </div>
       <div class="nums">
-        <div class="num n0">
-          <span class="nk">Cam Height</span>
+        <div class="num n0"><span class="nk">Cam Height</span>
           <span class="nv g" id="H1">--</span><span class="nu"> m</span>
-          <div class="ns" id="H1s">–</div>
-        </div>
-        <div class="num n1">
-          <span class="nk">Distance</span>
+          <div class="ns" id="H1s">–</div></div>
+        <div class="num n1"><span class="nk">Distance</span>
           <span class="nv b" id="D1">--</span><span class="nu"> m</span>
-          <div class="ns" id="D1s">–</div>
-        </div>
-        <div class="num n2">
-          <span class="nk">Person H</span>
+          <div class="ns" id="D1s">–</div></div>
+        <div class="num n2"><span class="nk">Person H</span>
           <span class="nv p" id="P1">--</span><span class="nu"> m</span>
-          <div class="ns" id="P1s">–</div>
-        </div>
+          <div class="ns" id="P1s">–</div></div>
       </div>
       <div class="det">
+
+        <!-- ── Active distance sources ── -->
         <div class="sec">Distance Sources</div>
         <div class="kvc">
-          <div class="kv"><span class="kk">① Camera AF (track.getSettings)</span><span class="kv-v b" id="fd-track">–</span></div>
-          <div class="kv"><span class="kk">② Pose geometry (worldLandmarks)</span><span class="kv-v" id="fd-geo">–</span></div>
+          <div class="kv"><span class="kk">① Track focusDistance (camera AF)</span><span class="kv-v b" id="fd-track">–</span></div>
+          <div class="kv"><span class="kk">② Pose world self-cal (fused A+B)</span><span class="kv-v" id="fd-geo">–</span></div>
           <div class="kv"><span class="kk">▶ Best estimate</span><span class="kv-v b" id="fdbest">–</span></div>
           <div class="kv"><span class="kk">Source</span><span class="kv-v y" id="fdsrc">–</span></div>
         </div>
 
+        <!-- ── Fixed-focus height estimator ── -->
+        <div class="sec">Fixed-Focus Height (1–1.5 m)</div>
+        <div class="ff-note">Point camera at person from 1–1.5 m. Set D below,
+        optionally apply manual focus, then tap LOCK.</div>
+        <div class="kvc">
+          <div class="kv"><span class="kk">Focus dist D&#x2091; (m)</span>
+            <div style="display:flex;align-items:center;gap:6px">
+              <input type="range" id="ff-slider" min="1.0" max="1.5" step="0.05" value="1.25"
+                style="width:80px;accent-color:var(--g)" oninput="ffSlide()">
+              <span class="kv-v y" id="ff-d">1.25 m</span>
+            </div>
+          </div>
+          <div class="kv"><span class="kk">Apply manual focus to D&#x2091;</span>
+            <button id="ff-focus-btn" onclick="ffSetFocus()"
+              style="font-family:var(--FC);font-size:7.5px;font-weight:700;padding:3px 8px;
+                     border-radius:2px;border:1px solid var(--gl);background:transparent;
+                     color:var(--g);cursor:pointer;letter-spacing:.3px">APPLY</button>
+          </div>
+          <div class="kv"><span class="kk">Pixel span (nose→ankle)</span><span class="kv-v" id="ff-px">–</span></div>
+          <div class="kv"><span class="kk">focal_px used</span><span class="kv-v na" id="ff-focal">–</span></div>
+          <div class="kv"><span class="kk">Estimated height</span><span class="kv-v b" id="ff-height">–</span></div>
+          <div class="kv"><span class="kk">Focus status</span><span class="kv-v" id="ff-status">–</span></div>
+        </div>
+        <button id="ff-lock-btn" onclick="ffLock()"
+          style="width:100%;padding:10px;margin-bottom:5px;
+                 background:linear-gradient(135deg,rgba(0,232,184,.15),rgba(0,232,184,.05));
+                 border:1px solid rgba(0,232,184,.4);border-radius:4px;
+                 font-family:var(--FD);font-size:16px;letter-spacing:3px;
+                 color:var(--g);cursor:pointer">LOCK FIXED-FOCUS HEIGHT</button>
+        <div class="kvc" id="ff-locked-kvc" style="display:none">
+          <div class="kv"><span class="kk">Locked height</span><span class="kv-v b" id="ffl-h">–</span></div>
+          <div class="kv"><span class="kk">At D&#x2091;</span><span class="kv-v" id="ffl-d">–</span></div>
+          <div class="kv"><span class="kk">Locked at</span><span class="kv-v na" id="ffl-t">–</span></div>
+        </div>
+
+        <!-- ── Accuracy ── -->
         <div class="sec">Accuracy</div>
         <div class="acc-table">
           <div class="acc-row acc-hdr"><span>Method</span><span>Accuracy</span><span>Status</span></div>
           <div class="acc-row"><span>Camera AF</span><span class="acc-val">±5–15%</span><span class="acc-st" id="ast-track">–</span></div>
           <div class="acc-row"><span>Pose geometry</span><span class="acc-val">±5–15%</span><span class="acc-st" id="ast-geo">–</span></div>
+          <div class="acc-row"><span>Fixed-focus</span><span class="acc-val">±8–20%</span><span class="acc-st" id="ast-ff">–</span></div>
         </div>
 
+        <!-- ── Focal calibration ── -->
         <div class="sec">Focal Calibration</div>
         <div class="kvc">
           <div class="kv"><span class="kk">From pose self-cal</span><span class="kv-v" id="focb">–</span></div>
@@ -448,7 +466,8 @@ body{display:flex;flex-direction:column;height:100dvh}
           <div class="kv"><span class="kk">Using</span><span class="kv-v y" id="foc-use">–</span></div>
         </div>
 
-        <div class="sec">Camera API Capabilities</div>
+        <!-- ── Camera API ── -->
+        <div class="sec">Camera API</div>
         <div class="kvc">
           <div class="kv"><span class="kk">focusDistance range</span><span class="kv-v" id="cap-fdr">–</span></div>
           <div class="kv"><span class="kk">focusMode options</span><span class="kv-v" id="cap-fmo">–</span></div>
@@ -505,7 +524,12 @@ const S = {
   fdBest:null, fdSrc:'\u2013',
   focal_px_best:null,
   fl35:null,
-  locked:null,   // frozen measurement from MEASURE button
+  // Holistic — two distance methods
+  distA:null, distB:null,
+  // Fixed-focus height method
+  ffHeight:null, ffBox:null, _lastPoseLm:null,
+  // Measurement lock
+  locked:null,
   // ImageCapture
   ic:null, exifBusy:false,
   xrDepth:null,
@@ -817,31 +841,59 @@ async function initIMU() {
 }
 
 /* ════════════════════════════════════════════════
-   GEOMETRY  — self-calibrate focal + distance
-   Solves: given worldLandmarks (metres, hip origin)
-   + normalised landmarks (pixels), find D and focal_px
-   without any prior knowledge.
+   WORLD-LANDMARK DISTANCE — two methods, no references
+   Both use only poseWorldLandmarks + poseLandmarks.
+
+   A) Nose/ankle vertical solve
+      Simultaneously solves D (hip-to-camera) and focal_px
+      from vertical pixel positions vs metric world coords.
+
+   B) Hip-width projection (needs focal from A)
+      D = focal_px * hip_world_width / hip_pixel_width
+      Works when ankles leave the frame.
 ════════════════════════════════════════════════ */
-function selfCal(nlm, wlm) {
-  const wN=wlm[0], wLA=wlm[27], wRA=wlm[28];
-  const nN=nlm[0], nLA=nlm[27], nRA=nlm[28];
-  if (!wN||!wLA||!nN||!nLA) return null;
-  const ankY = wRA ? (wLA.y+wRA.y)/2 : wLA.y;
-  const ankZ = wRA ? (wLA.z+wRA.z)/2 : (wLA.z||0);
-  const nAY  = nRA ? (nLA.y+nRA.y)/2 : nLA.y;
-  const dyN  = (nN.y - 0.5) * S.vH;
-  const dyA  = (nAY  - 0.5) * S.vH;
-  if (Math.abs(dyN)<2 || Math.abs(dyA)<2) return null;
-  const R   = dyN/dyA;
-  const wNy = wN.y||0, wAy = ankY||0, wNz = wN.z||0, wAz = ankZ;
-  if (Math.abs(wNy)<.01 || Math.abs(wAy)<.01) return null;
-  const den = R*wAy - wNy;
-  if (Math.abs(den)<.001) return null;
-  const D = (wNy*wAz - R*wAy*wNz) / den;
-  if (D<0.3||D>20) return null;
-  const f = dyN*(D+wNz)/wNy;
-  if (f<80||f>6000) return null;
-  return {D, focal:f};
+function worldLandmarkDistances(nlm, wlm) {
+  let DA = null, focal = null, DB = null;
+
+  // A: vertical solve using nose and ankle
+  const wN=wlm[0],  wLA=wlm[27], wRA=wlm[28];
+  const nN=nlm[0],  nLA=nlm[27], nRA=nlm[28];
+  if (wN && wLA && nN && nLA) {
+    const ankY = wRA ? (wLA.y+wRA.y)/2 : wLA.y;
+    const ankZ = wRA ? (wLA.z+wRA.z)/2 : (wLA.z||0);
+    const nAY  = nRA ? (nLA.y+nRA.y)/2 : nLA.y;
+    const dyN  = (nN.y - 0.5) * S.vH;
+    const dyA  = (nAY  - 0.5) * S.vH;
+    if (Math.abs(dyN) >= 2 && Math.abs(dyA) >= 2) {
+      const R   = dyN / dyA;
+      const wNy = wN.y||0, wAy = ankY||0, wNz = wN.z||0, wAz = ankZ;
+      if (Math.abs(wNy) >= .01 && Math.abs(wAy) >= .01) {
+        const den = R*wAy - wNy;
+        if (Math.abs(den) >= .001) {
+          const D = (wNy*wAz - R*wAy*wNz) / den;
+          if (D >= 0.3 && D <= 20) {
+            const f = dyN*(D+wNz)/wNy;
+            if (f >= 80 && f <= 6000) { DA = D; focal = f; }
+          }
+        }
+      }
+    }
+  }
+
+  // B: hip-width projection (requires focal from A)
+  if (focal) {
+    const wLH=wlm[23], wRH=wlm[24], nLH=nlm[23], nRH=nlm[24];
+    if (wLH && wRH && nLH && nRH) {
+      const hipWw = Math.abs(wLH.x - wRH.x);
+      const hipWp = Math.abs(nLH.x - nRH.x) * S.vW;
+      if (hipWw > 0.05 && hipWp > 5) {
+        const D = (focal * hipWw) / hipWp;
+        if (D >= 0.3 && D <= 20) DB = D;
+      }
+    }
+  }
+
+  return { DA, DB, focal };
 }
 
 /* ════════════════════════════════════════════════
@@ -996,18 +1048,27 @@ function startHolistic() {
       drawOverlays(tc, res);
       ctx.drawImage(tmp, 0, 0, cv.width, cv.height);
       // Measurements from worldLandmarks
-      S.camH=null; S.dist=null; S.personH=null; S.wNose=null; S.wAnkle=null;
+      S.camH=null; S.dist=null; S.distA=null; S.distB=null;
+      S.personH=null; S.wNose=null; S.wAnkle=null;
       if (res.poseLandmarks?.[0] && res.poseWorldLandmarks?.[0]) {
         const nlm=res.poseLandmarks[0], wlm=res.poseWorldLandmarks[0];
         const wN=wlm[0], wLA=wlm[27], wRA=wlm[28];
         if (wN && wLA) {
           const aky = wRA?(wLA.y+wRA.y)/2:wLA.y;
-          S.personH = Math.abs(wN.y - aky);   // direct metres
-          S.camH    = Math.abs(aky) + 0.05;    // ankle ≈ ground
+          S.personH = Math.abs(wN.y - aky);
+          S.camH    = Math.abs(aky) + 0.05;
           S.wNose   = wN; S.wAnkle = {y:aky, z:wLA.z||0};
-          const cal = selfCal(nlm, wlm);
-          if (cal) { S.dist=cal.D; S.focalGeo=cal.focal; S.fdGeo=cal.D; S.hConf=Math.min(.88,wN.visibility??0.7); }
-          else S.hConf = 0.35;
+          const cal = worldLandmarkDistances(nlm, wlm);
+          if (cal.focal) {
+            S.focalGeo = cal.focal;
+            S.distA = cal.DA;
+            S.distB = cal.DB;
+            S.dist  = (cal.DA && cal.DB) ? cal.DA*0.6 + cal.DB*0.4
+                    : cal.DA ?? cal.DB ?? null;
+            S.fdGeo = S.dist;
+            S.hConf = Math.min(0.88, wN.visibility??0.7);
+          } else S.hConf = 0.35;
+          S._lastPoseLm = nlm;  // for fixed-focus height calc
         }
       } else S.hConf = 0;
       drawHUD(ctx, S.dist, S.camH, S.personH);
@@ -1021,66 +1082,38 @@ function startHolistic() {
 
 
 /* ════════════════════════════════════════════════
-
-/* ════════════════════════════════════════════════
-   FOCUS LOOP — live camera + distance HUD on c1
+   FOCUS LOOP — live video on c1 + distance HUD
 ════════════════════════════════════════════════ */
 /* ════════════════════════════════════════════════
    LOCK MEASURE — freeze best holistic reading on tap
-   Guidance: hold phone steady, ensure full body in
-   frame (head to ankles visible), then tap MEASURE.
-   worldLandmarks give true metric height directly —
-   no focus setting, no reference needed.
+   Guidance: full body (head to ankles) in frame.
+   worldLandmarks give true metric height directly.
 ════════════════════════════════════════════════ */
 function lockMeasure() {
   const btn = _('btn-measure'), status = _('lock-status');
-
-  // Need at least a recent good holistic result
   if (!S.personH || S.personH < 0.3 || !S.camH) {
-    status.textContent = '\u26a0 No pose detected \u2014 ensure full body is visible';
-    btn.style.borderColor = 'rgba(240,64,80,.6)';
-    setTimeout(() => { btn.style.borderColor = ''; status.textContent = ''; }, 2500);
+    if (status) status.textContent = '\u26a0 No pose \u2014 ensure full body is visible';
+    setTimeout(() => { if(status) status.textContent = ''; }, 2500);
     return;
   }
-
-  // Confidence check — require both ankle and nose visible
   if (S.hConf < 0.3) {
-    status.textContent = '\u26a0 Low confidence \u2014 check lighting and framing';
-    setTimeout(() => { status.textContent = ''; }, 2500);
+    if (status) status.textContent = '\u26a0 Low confidence \u2014 check lighting';
+    setTimeout(() => { if(status) status.textContent = ''; }, 2500);
     return;
   }
-
-  // Freeze the snapshot
-  const snap = {
-    personH: S.personH,
-    dist:    S.dist,
-    camH:    S.camH,
-    conf:    S.hConf,
-    time:    new Date().toTimeString().slice(0,8),
-  };
-  S.locked = snap;
-
-  // Update locked panel
-  tx('lk-h',    snap.personH.toFixed(3) + ' m');
-  tx('lk-d',    snap.dist   != null ? snap.dist.toFixed(2) + ' m' : '\u2013');
-  tx('lk-c',    snap.camH.toFixed(2) + ' m');
-  tx('lk-conf', Math.round(snap.conf * 100) + '%');
-  tx('lk-t',    snap.time);
-  _('sec-locked').style.display = '';
-  _('kvc-locked').style.display = '';
-
-  // Canvas chip
+  S.locked = { personH:S.personH, dist:S.dist, camH:S.camH, conf:S.hConf,
+               time:new Date().toTimeString().slice(0,8) };
+  const s = S.locked;
+  tx('lk-h',    s.personH.toFixed(3) + ' m');
+  tx('lk-d',    s.dist ? s.dist.toFixed(2) + ' m' : '\u2013');
+  tx('lk-c',    s.camH.toFixed(2) + ' m');
+  tx('lk-conf', Math.round(s.conf * 100) + '%');
+  tx('lk-t',    s.time);
+  _('sec-locked') && (_('sec-locked').style.display = '');
+  _('kvc-locked') && (_('kvc-locked').style.display = '');
   const chip = _('lock-chip');
-  if (chip) {
-    chip.style.display = 'block';
-    chip.textContent = '\ud83d\udccd ' + snap.personH.toFixed(3) + ' m locked';
-  }
-
-  // Big number locks too (visual feedback)
-  const p0el = _('P0');
-  if (p0el) { p0el.style.color = 'var(--y)'; setTimeout(() => { p0el.style.color = ''; }, 1500); }
-
-  status.textContent = '\u2713 Locked \u2014 ' + snap.personH.toFixed(3) + ' m at ' + snap.time;
+  if (chip) { chip.style.display = 'block'; chip.textContent = s.personH.toFixed(3) + ' m locked'; }
+  if (status) status.textContent = '\u2713 Locked \u2014 ' + s.personH.toFixed(3) + ' m at ' + s.time;
 }
 window.lockMeasure = lockMeasure;
 
@@ -1096,13 +1129,28 @@ function startFocusLoop() {
       ctx.strokeStyle = 'rgba(0,232,184,.5)'; ctx.lineWidth = 1;
       ctx.beginPath(); ctx.moveTo(cx-10,cy); ctx.lineTo(cx+10,cy); ctx.stroke();
       ctx.beginPath(); ctx.moveTo(cx,cy-10); ctx.lineTo(cx,cy+10); ctx.stroke();
+      // Fixed-focus person bounding box (when ff result available)
+      if (S.ffBox) {
+        const b = S.ffBox;
+        ctx.shadowColor = 'rgba(0,232,184,.6)'; ctx.shadowBlur = 10;
+        ctx.strokeStyle = 'rgba(0,232,184,.85)'; ctx.lineWidth = 1.5;
+        ctx.setLineDash([]);
+        ctx.strokeRect(b.x*W, b.y*H, b.w*W, b.h*H);
+        ctx.shadowBlur = 0;
+        if (S.ffHeight != null) {
+          ctx.font = 'bold 13px "Bebas Neue"';
+          ctx.fillStyle = 'rgba(0,232,184,.95)'; ctx.textAlign = 'center';
+          ctx.fillText('\u2195 ' + S.ffHeight.toFixed(2) + ' m',
+                       (b.x + b.w/2)*W, b.y*H - 7);
+        }
+      }
       // Distance HUD
       if (S.fdBest != null) {
         ctx.font = 'bold 14px "Bebas Neue"';
         ctx.fillStyle = 'rgba(72,130,255,.92)'; ctx.textAlign = 'center';
         ctx.fillText(S.fdBest.toFixed(2) + ' m', cx, cy - 44);
         ctx.strokeStyle = 'rgba(72,130,255,.28)'; ctx.lineWidth = 1;
-        ctx.beginPath(); ctx.arc(cx, cy, 22, 0, Math.PI*2); ctx.stroke();
+        ctx.beginPath(); ctx.arc(cx,cy,22,0,Math.PI*2); ctx.stroke();
         ctx.beginPath(); ctx.moveTo(cx-5,cy); ctx.lineTo(cx+5,cy); ctx.stroke();
         ctx.beginPath(); ctx.moveTo(cx,cy-5); ctx.lineTo(cx,cy+5); ctx.stroke();
       }
@@ -1114,25 +1162,112 @@ function startFocusLoop() {
 
 /* ════════════════════════════════════════════════
    FOCUS FUSION
-   Sources that require NO real-world reference:
-   ① Camera AF: track.getSettings().focusDistance
-      — hardware read, direct metres from lens system
-   ② Pose worldLandmarks geometry
-      — metric output from MediaPipe GHUM model,
-        no anatomical assumptions needed
+════════════════════════════════════════════════ */
+/* ════════════════════════════════════════════════
+   FOCUS FUSION — reference-free sources only
 ════════════════════════════════════════════════ */
 function fuseFocus() {
   S.focal_px_best = S.focalGeo ?? S.focalAsm;
   const srcs = [];
   if (S.fdTrack != null && S.fdTrack > 0.05)
     srcs.push({v:S.fdTrack, w:0.9,  id:'Camera AF'});
-  if (S.fdGeo   != null && S.fdGeo   > 0.1)
+  if (S.fdGeo != null && S.fdGeo > 0.1)
     srcs.push({v:S.fdGeo,   w:0.8 * Math.max(0.1, S.hConf), id:'Geometry'});
-  if (!srcs.length) { S.fdBest = null; S.fdSrc = '–'; return; }
-  const ws = srcs.reduce((a,b) => a + b.w, 0);
-  S.fdBest = srcs.reduce((a,b) => a + b.v * b.w, 0) / ws;
-  S.fdSrc  = srcs.reduce((a,b) => a.w > b.w ? a : b).id;
+  if (!srcs.length) { S.fdBest=null; S.fdSrc='\u2013'; return; }
+  const ws = srcs.reduce((a,b) => a+b.w, 0);
+  S.fdBest = srcs.reduce((a,b) => a+b.v*b.w, 0) / ws;
+  S.fdSrc  = srcs.reduce((a,b) => a.w>b.w ? a : b).id;
 }
+
+/* ════════════════════════════════════════════════
+   FIXED FOCUS METHOD (Focus tab)
+   D_fixed = 1.0\u20131.5 m set by user slider.
+   Camera manually focused at D_fixed (via applyConstraints
+   if supported, or user moves phone until sharp).
+   height_m = pixel_span_norm * D_fixed * vH / focal_px
+   No reference size needed \u2014 only pinhole geometry.
+════════════════════════════════════════════════ */
+function ffSlide() {
+  const v = parseFloat(_('ff-slider')?.value || '1.25');
+  tx('ff-d', v.toFixed(2) + ' m');
+  updateFFHeight(); // live update as slider moves
+}
+
+async function ffSetFocus() {
+  const v   = parseFloat(_('ff-slider')?.value || '1.25');
+  const btn = _('ff-focus-btn');
+  if (!S.track) { tx('ff-status', 'no camera track'); return; }
+  const caps = S.track.getCapabilities?.() ?? {};
+  if (!caps.focusDistance || !caps.focusMode) {
+    tx('ff-status', 'manual focus not supported on this device');
+    return;
+  }
+  btn.textContent = 'Applying\u2026';
+  try {
+    await S.track.applyConstraints({advanced:[{focusMode:'manual', focusDistance:v}]});
+    tx('ff-status', 'manual focus set to ' + v.toFixed(2) + ' m \u2713');
+  } catch(e) {
+    tx('ff-status', 'applyConstraints failed: ' + String(e?.message||e).slice(0,40));
+  }
+  btn.textContent = 'APPLY';
+}
+
+function updateFFHeight() {
+  const focal = S.focal_px_best;
+  const plm   = S._lastPoseLm;   // stored each holistic frame
+  if (!focal || !plm) {
+    tx('ff-px',     '\u2013');
+    tx('ff-focal',  focal ? focal.toFixed(0)+'px' : 'waiting for focal cal…');
+    tx('ff-height', '\u2013');
+    S.ffHeight = null; S.ffBox = null;
+    return;
+  }
+  // Pixel span from nose (0) to mean ankle (27,28) in normalised coords
+  const nN = plm[0], nLA = plm[27], nRA = plm[28];
+  if (!nN || !nLA) {
+    tx('ff-px', 'pose not detected'); tx('ff-height', '\u2013');
+    S.ffHeight = null; S.ffBox = null;
+    return;
+  }
+  const ankY = nRA ? (nLA.y+nRA.y)/2 : nLA.y;
+  const spanNorm = Math.abs(nN.y - ankY);          // normalised 0\u20131
+  const spanPx   = spanNorm * S.vH;                // pixels at video resolution
+  const D = parseFloat(_('ff-slider')?.value || '1.25');
+  const h = (spanPx * D) / focal;
+
+  tx('ff-px',    spanPx.toFixed(0) + ' px');
+  tx('ff-focal', focal.toFixed(0) + ' px');
+  tx('ff-height', h > 0.3 && h < 3.0 ? h.toFixed(3) + ' m' : '\u2013 (out of range)');
+  S.ffHeight = (h > 0.3 && h < 3.0) ? h : null;
+
+  // Bounding box for overlay on c1 canvas
+  const xs = [nN.x, nLA.x, ...(nRA?[nRA.x]:[])];
+  const pad = 0.04;
+  S.ffBox = {
+    x: Math.max(0, Math.min(...xs) - pad),
+    y: Math.max(0, nN.y - pad),
+    w: Math.min(1, Math.max(...xs) - Math.min(...xs) + pad*2),
+    h: Math.min(1, ankY - nN.y + pad*2),
+  };
+}
+
+function ffLock() {
+  const h = S.ffHeight;
+  const D = parseFloat(_('ff-slider')?.value || '1.25');
+  if (!h) {
+    tx('ff-status', '\u26a0 No valid height \u2014 ensure full body visible');
+    return;
+  }
+  tx('ffl-h', h.toFixed(3) + ' m');
+  tx('ffl-d', D.toFixed(2) + ' m');
+  tx('ffl-t', new Date().toTimeString().slice(0,8));
+  const kvc = _('ff-locked-kvc');
+  if (kvc) kvc.style.display = '';
+  tx('ff-status', '\u2713 Locked: ' + h.toFixed(3) + ' m at D=' + D.toFixed(2) + ' m');
+}
+window.ffSlide = ffSlide;
+window.ffSetFocus = ffSetFocus;
+window.ffLock = ffLock;
 
 /* ════════════════════════════════════════════════
    RENDER UI
@@ -1142,40 +1277,50 @@ function renderUI() {
   const focal = S.focal_px_best;
 
   // ── Tab 0 — Holistic ──
-  nm('H0', S.camH);    tx('H0s', S.camH ? 'ankle→ground' : '–');
-  nm('D0', S.dist);    tx('D0s', S.dist ? 'self-cal' : '–');
+  nm('H0', S.camH);  tx('H0s', S.camH ? 'ankle\u2192ground' : '\u2013');
+  nm('D0', S.dist);  tx('D0s', S.dist ? 'worldLm fused' : '\u2013');
   nm('P0', S.personH);
-  nm('wny', S.wNose?.y, 3); nm('way', S.wAnkle?.y, 3); nm('whd', S.dist, 2);
+  nm('wny', S.wNose?.y,   3);
+  nm('way', S.wAnkle?.y,  3);
+  nm('whd', S.wNose?.z,   3);   // nose Z in world frame
+  nm('dA',  S.distA,      2);
+  nm('dB',  S.distB,      2);
+  nm('dFused', S.dist,    2);
   nm('fp0', focal, 0);
-  tx('fv0', focal ? (2 * Math.atan(S.vW / 2 / focal) / DEG).toFixed(1) : '--');
+  tx('fv0', focal ? (2*Math.atan(S.vW/2/focal)/DEG).toFixed(1) : '--');
   tx('fps0', S.fps + ' fps');
 
   // ── Tab 1 — Focus ──
-  nm('H1', S.camH ?? 1.4); tx('H1s', S.camH ? 'world lm' : 'prior 1.4m');
-  nm('D1', S.fdBest);      tx('D1s', S.fdSrc);
-  nm('P1', S.personH);     tx('P1s', S.personH ? 'world lm' : '–');
+  nm('H1', S.camH??1.4);  tx('H1s', S.camH ? 'world lm' : 'prior 1.4m');
+  nm('D1', S.fdBest);     tx('D1s', S.fdSrc);
+  nm('P1', S.personH);    tx('P1s', S.personH ? 'world lm' : '\u2013');
 
-  tx('fd-track', S.fdTrack != null ? S.fdTrack.toFixed(2) + ' m' : 'N/A');
-  tx('fd-geo',   S.fdGeo   != null ? S.fdGeo.toFixed(2)   + ' m' : '–');
-  tx('fdbest',   S.fdBest  != null ? S.fdBest.toFixed(2)  + ' m' : '–');
+  tx('fd-track', S.fdTrack != null ? S.fdTrack.toFixed(2)+' m' : 'N/A');
+  tx('fd-geo',   S.fdGeo   != null ? S.fdGeo.toFixed(2)+' m'   : '\u2013');
+  tx('fdbest',   S.fdBest  != null ? S.fdBest.toFixed(2)+' m'  : '\u2013');
   tx('fdsrc', S.fdSrc);
 
-  tx('focb',    S.focalGeo ? S.focalGeo.toFixed(0) + 'px' : '–');
-  tx('focc',    S.focalAsm ? S.focalAsm.toFixed(0) + 'px' : '–');
+  // Focal
+  tx('focb',    S.focalGeo ? S.focalGeo.toFixed(0)+'px' : '\u2013');
+  tx('focc',    S.focalAsm ? S.focalAsm.toFixed(0)+'px' : '\u2013');
   tx('foc-use', focal
-    ? focal.toFixed(0) + 'px (' + (S.focalGeo ? 'pose geo' : 'assumed 70°') + ')'
-    : '–');
+    ? focal.toFixed(0)+'px (' + (S.focalGeo?'pose geo':'assumed 70\u00b0') + ')'
+    : '\u2013');
 
   // Accuracy badges
   const ast = (id,txt,cls) => { const e=_(id); if(!e)return; e.textContent=txt; e.className='acc-st '+cls; };
-  ast('ast-track', S.fdTrack != null ? S.fdTrack.toFixed(2)+'m' : 'not supported', S.fdTrack!=null?'ok':'na');
-  ast('ast-geo',   S.fdGeo   != null ? S.fdGeo.toFixed(2)+'m'   : 'no pose',       S.fdGeo!=null?'live':'na');
+  ast('ast-track', S.fdTrack!=null ? S.fdTrack.toFixed(2)+'m' : 'not supported', S.fdTrack!=null?'ok':'na');
+  ast('ast-geo',   S.fdGeo  !=null ? S.fdGeo.toFixed(2)+'m'   : 'no pose',       S.fdGeo!=null?'live':'na');
+  ast('ast-ff',    S.ffHeight!=null? S.ffHeight.toFixed(2)+'m' : 'adjust slider', S.ffHeight!=null?'live':'na');
+
+  // Live fixed-focus height update
+  updateFFHeight();
 
   // Focus chip
   const ch1 = _('chip1');
-  if (ch1 && S.fdBest != null) {
+  if (ch1 && S.fdBest!=null) {
     ch1.className = 'cam-chip chip-live';
-    ch1.textContent = S.fdBest.toFixed(2) + 'm · ' + S.fdSrc;
+    ch1.textContent = S.fdBest.toFixed(2)+'m \u00b7 '+S.fdSrc;
   }
 
   requestAnimationFrame(renderUI);
@@ -1231,10 +1376,10 @@ async function loadAll() {
     _('btn-skip').textContent = '⟶ Launch now';
   } catch(e) {
     const failed = STEPS.filter(s=>s.req).find(s=>St[s.id].state==='fail');
-    _('btn-load').textContent = '↻ RETRY' + (failed ? ' (' + failed.name.slice(0,18) + '…)' : '');
+    _('btn-load').textContent = '↻ RETRY'+(failed?' ('+failed.name.slice(0,18)+'…)':'');
     _('btn-load').disabled = false;
     _('btn-load').onclick = () => { _loading=false; _('btn-load').onclick=null; loadAll(); };
-    _('btn-skip').textContent = '⟶ Skip — launch with what loaded';
+    _('btn-skip').textContent = '⟶ Skip — launch with what\u2019s loaded';
     if (St.imu.state==='wait') initIMU().catch(()=>{});
   }
   _loading = false;

@@ -413,10 +413,40 @@ body{display:flex;flex-direction:column;height:100dvh}
           <div class="kv"><span class="kk">Source</span><span class="kv-v y" id="fdsrc">–</span></div>
         </div>
 
+        <!-- ── Camera-height geometry method ── -->
+        <div class="sec">Camera Height Method</div>
+        <div class="ff-note">H<sub>person</sub> = H<sub>cam</sub> &times; P<sub>p</sub> / P<sub>c</sub> &nbsp;&mdash;&nbsp;
+        P<sub>p</sub> = mask span (head&rarr;feet), P<sub>c</sub> = feet y from image centre.
+        No focal or focus distance needed.</div>
+        <div class="kvc">
+          <div class="kv">
+            <span class="kk">Camera height H<sub>cam</sub></span>
+            <div style="display:flex;align-items:center;gap:6px">
+              <input type="range" id="camh-slider" min="0.20" max="1.70" step="0.10" value="1.20"
+                style="width:80px;accent-color:var(--g)" oninput="camhSlide()">
+              <span class="kv-v y" id="camh-d">1.20 m</span>
+            </div>
+          </div>
+          <div class="kv"><span class="kk">P<sub>p</sub> &mdash; mask span (head&rarr;feet)</span><span class="kv-v" id="camh-span">&ndash;</span></div>
+          <div class="kv"><span class="kk">P<sub>c</sub> &mdash; feet y from centre</span><span class="kv-v" id="camh-feet">&ndash;</span></div>
+          <div class="kv"><span class="kk">H<sub>person</sub> estimate</span><span class="kv-v b" id="camh-height">&ndash;</span></div>
+        </div>
+        <button id="camh-lock-btn" onclick="camhLock()"
+          style="width:100%;padding:10px;margin:4px 0 5px;
+                 background:linear-gradient(135deg,rgba(0,232,184,.15),rgba(0,232,184,.05));
+                 border:1px solid rgba(0,232,184,.45);border-radius:4px;
+                 font-family:var(--FD);font-size:16px;letter-spacing:3px;
+                 color:var(--g);cursor:pointer">LOCK CAMH HEIGHT</button>
+        <div class="kvc" id="camh-locked-kvc" style="display:none">
+          <div class="kv"><span class="kk">Locked height</span><span class="kv-v b" id="camhl-h">&ndash;</span></div>
+          <div class="kv"><span class="kk">H<sub>cam</sub> used</span><span class="kv-v" id="camhl-hcam">&ndash;</span></div>
+          <div class="kv"><span class="kk">P<sub>p</sub> / P<sub>c</sub></span><span class="kv-v na" id="camhl-ppc">&ndash;</span></div>
+          <div class="kv"><span class="kk">Locked at</span><span class="kv-v na" id="camhl-t">&ndash;</span></div>
+        </div>
+
         <!-- ── Fixed-focus height estimator ── -->
-        <div class="sec">Fixed-Focus Height (1–1.5 m)</div>
-        <div class="ff-note">Point camera at person from 1–1.5 m. Set D below,
-        optionally apply manual focus, then tap LOCK.</div>
+        <div class="sec">Fixed-Focus Height (1&ndash;3 m)</div>
+        <div class="ff-note">Set focus at known distance, read height from pixel span.</div>
         <div class="kvc">
           <div class="kv"><span class="kk">Focus dist D&#x2091; (m)</span>
             <div style="display:flex;align-items:center;gap:6px">
@@ -454,6 +484,7 @@ body{display:flex;flex-direction:column;height:100dvh}
           <div class="acc-row acc-hdr"><span>Method</span><span>Accuracy</span><span>Status</span></div>
           <div class="acc-row"><span>Camera AF</span><span class="acc-val">±5–15%</span><span class="acc-st" id="ast-track">–</span></div>
           <div class="acc-row"><span>Pose geometry</span><span class="acc-val">±5–15%</span><span class="acc-st" id="ast-geo">–</span></div>
+          <div class="acc-row"><span>CamH geometry</span><span class="acc-val">&plusmn;5&ndash;12%</span><span class="acc-st" id="ast-camh">&ndash;</span></div>
           <div class="acc-row"><span>Fixed-focus</span><span class="acc-val">±8–20%</span><span class="acc-st" id="ast-ff">–</span></div>
         </div>
 
@@ -526,6 +557,8 @@ const S = {
   // Fixed-focus height method
   ffHeight:null, ffBox:null, _lastPoseLm:null,
   maskSpan:null,
+  camhHeight:null,   // camera-height geometry method result
+  camhPp:null, camhPc:null,  // Pp and Pc values for overlay
   // Video cover-crop offsets (for landmark remapping)
   cropSx:0, cropSy:0, cropSw:0, cropSh:0,
   // Measurement lock
@@ -1108,7 +1141,7 @@ function lockMeasure() {
     return;
   }
   if (S.hConf < 0.3) {
-    if (status) status.textContent = '\u26a0 Low confidence \u2014 check lighting';
+    if (status) status.textContent = '\u26a0 Low confidence \u2014 check lighting and framing';
     setTimeout(() => { if(status) status.textContent = ''; }, 2500);
     return;
   }
@@ -1116,15 +1149,17 @@ function lockMeasure() {
                time:new Date().toTimeString().slice(0,8) };
   const s = S.locked;
   tx('lk-h',    s.personH.toFixed(3) + ' m');
-  tx('lk-d',    s.dist ? s.dist.toFixed(2) + ' m' : '\u2013');
-  tx('lk-c',    s.camH.toFixed(2) + ' m');
+  tx('lk-d',    s.dist != null ? s.dist.toFixed(2) + ' m' : '\u2013');
+  tx('lk-c',    s.camH != null ? s.camH.toFixed(2) + ' m' : '\u2013');
   tx('lk-conf', Math.round(s.conf * 100) + '%');
   tx('lk-t',    s.time);
-  _('sec-locked') && (_('sec-locked').style.display = '');
-  _('kvc-locked') && (_('kvc-locked').style.display = '');
+  const sl = _('sec-locked'); if(sl) sl.style.display = '';
+  const kl = _('kvc-locked'); if(kl) kl.style.display = '';
   const chip = _('lock-chip');
-  if (chip) { chip.style.display = 'block'; chip.textContent = s.personH.toFixed(3) + ' m locked'; }
-  if (status) status.textContent = '\u2713 Locked \u2014 ' + s.personH.toFixed(3) + ' m at ' + s.time;
+  if (chip) { chip.style.display='block'; chip.textContent=s.personH.toFixed(3)+' m locked'; }
+  if (status) status.textContent = '\u2713 Locked \u2014 '+s.personH.toFixed(3)+' m at '+s.time;
+  // Flash the big number
+  const p0el = _('P0'); if(p0el){ p0el.style.color='var(--y)'; setTimeout(()=>{p0el.style.color='';},1200); }
 }
 window.lockMeasure = lockMeasure;
 
@@ -1153,6 +1188,51 @@ function startFocusLoop() {
       ctx.strokeStyle = 'rgba(0,232,184,.5)'; ctx.lineWidth = 1;
       ctx.beginPath(); ctx.moveTo(cx-10,cy); ctx.lineTo(cx+10,cy); ctx.stroke();
       ctx.beginPath(); ctx.moveTo(cx,cy-10); ctx.lineTo(cx,cy+10); ctx.stroke();
+      // Horizontal centre line (for Pc reference)
+      ctx.strokeStyle = 'rgba(0,232,184,.2)'; ctx.lineWidth = 0.5; ctx.setLineDash([4,6]);
+      ctx.beginPath(); ctx.moveTo(0,cy); ctx.lineTo(W,cy); ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Pp / Pc overlay — drawn when maskSpan is valid
+      if (S.maskSpan && S.camhPp != null && S.camhPc != null) {
+        const ms = S.maskSpan;
+        const cropT = (S.cropSy||0)/(S.vH||1);
+        const cropH = (S.cropSh||S.vH||1)/(S.vH||1);
+        // Top of person in display pixels
+        const topDisp  = (ms.topY    - cropT) / cropH;
+        const botDisp  = (ms.bottomY - cropT) / cropH;
+        const topPx  = topDisp  * H;
+        const botPx  = botDisp  * H;
+        const lx1 = cx - 28, lx2 = cx + 28;
+
+        // Pp line: head-top to feet-bottom (amber)
+        ctx.strokeStyle = 'rgba(239,159,39,.85)'; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.moveTo(lx1, topPx); ctx.lineTo(lx2, topPx); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(lx1, botPx); ctx.lineTo(lx2, botPx); ctx.stroke();
+        ctx.strokeStyle = 'rgba(239,159,39,.5)'; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(cx, topPx); ctx.lineTo(cx, botPx); ctx.stroke();
+        // Pp label
+        ctx.font = 'bold 11px "Bebas Neue"';
+        ctx.fillStyle = 'rgba(239,159,39,.95)'; ctx.textAlign = 'right';
+        ctx.fillText('Pp=' + S.camhPp.toFixed(0) + 'px', cx - 32, (topPx + botPx)/2 + 4);
+
+        // Pc line: centre → feet-bottom (blue)
+        ctx.strokeStyle = 'rgba(55,138,221,.85)'; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.moveTo(cx + 32, cy); ctx.lineTo(cx + 44, cy); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(cx + 32, botPx); ctx.lineTo(cx + 44, botPx); ctx.stroke();
+        ctx.strokeStyle = 'rgba(55,138,221,.5)'; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(cx + 38, cy); ctx.lineTo(cx + 38, botPx); ctx.stroke();
+        // Pc label
+        ctx.fillStyle = 'rgba(55,138,221,.95)'; ctx.textAlign = 'left';
+        ctx.fillText('Pc=' + S.camhPc.toFixed(0) + 'px', cx + 48, (cy + botPx)/2 + 4);
+
+        // Height result chip
+        if (S.camhHeight) {
+          ctx.font = 'bold 13px "Bebas Neue"';
+          ctx.fillStyle = 'rgba(0,232,184,.95)'; ctx.textAlign = 'center';
+          ctx.fillText('\u2195 ' + S.camhHeight.toFixed(3) + ' m', cx, topPx - 8);
+        }
+      }
       // Fixed-focus person bounding box
       if (S.ffBox) {
         const b = S.ffBox;
@@ -1211,6 +1291,81 @@ function fuseFocus() {
    height_m = pixel_span_norm * D_fixed * vH / focal_px
    No reference size needed \u2014 only pinhole geometry.
 ════════════════════════════════════════════════ */
+/* ════════════════════════════════════════════════
+   CAMERA-HEIGHT GEOMETRY METHOD
+   H_person = H_cam × mask_span_px / feet_y_from_centre_px
+   Derivation (pinhole model):
+     feet_y_px  = focal × H_cam  / D   (feet below camera → below image centre)
+     span_px    = focal × H_person / D  (total person height in pixels)
+     Dividing:  span_px / feet_y_px = H_person / H_cam
+     → H_person = H_cam × span_px / feet_y_px
+   D and focal both cancel — only H_cam, mask span, and feet position needed.
+════════════════════════════════════════════════ */
+function camhSlide() {
+  const v = parseFloat(_('camh-slider')?.value || '1.20');
+  tx('camh-d', v.toFixed(2) + ' m');
+  updateCamHHeight();
+}
+
+function updateCamHHeight() {
+  const hCam  = parseFloat(_('camh-slider')?.value || '1.20');
+  const ms    = S.maskSpan;
+  const dispH = _('cam1')?.clientHeight || 520;
+
+  if (!ms || ms.spanY < 0.05) {
+    tx('camh-span',   '\u2013'); tx('camh-feet', '\u2013');
+    tx('camh-height', 'waiting for mask\u2026');
+    S.camhHeight = null; S.camhPp = null; S.camhPc = null; return;
+  }
+
+  // Convert mask normalised [0,1] → display normalised, accounting for cover-crop
+  const cropT = (S.cropSy || 0) / (S.vH || 1);
+  const cropH = (S.cropSh || S.vH || 1) / (S.vH || 1);
+
+  // Feet bottom in display normalised space
+  const feetDisp    = (ms.bottomY - cropT) / cropH;
+  // Pc: feet y from display centre (positive = below centre), in pixels
+  const Pc = (feetDisp - 0.5) * dispH;
+
+  if (Pc <= 2) {
+    tx('camh-span',   '\u2013');
+    tx('camh-feet',   'feet not below centre \u2014 tilt camera down');
+    tx('camh-height', '\u2013');
+    S.camhHeight = null; S.camhPp = null; S.camhPc = null; return;
+  }
+
+  // Pp: mask span head→feet in display pixels
+  const spanDisp = ms.spanY / cropH;
+  const Pp = spanDisp * dispH;
+
+  // H_person = H_cam × Pp / Pc
+  const h     = hCam * Pp / Pc;
+  const valid = h > 0.5 && h < 2.8;
+
+  S.camhPp = Pp; S.camhPc = Pc;
+  S.camhHeight = valid ? h : null;
+
+  tx('camh-span',   'Pp = ' + Pp.toFixed(0) + ' px');
+  tx('camh-feet',   'Pc = ' + Pc.toFixed(0) + ' px below centre');
+  tx('camh-height', valid ? h.toFixed(3) + ' m' : '\u2013 (out of range)');
+}
+
+function camhLock() {
+  const h = S.camhHeight;
+  if (!h) {
+    tx('camh-height', '\u26a0 No valid height \u2014 ensure full body visible');
+    return;
+  }
+  const hCam = parseFloat(_('camh-slider')?.value || '1.20');
+  tx('camhl-h',    h.toFixed(3) + ' m');
+  tx('camhl-hcam', hCam.toFixed(2) + ' m');
+  tx('camhl-ppc',  'Pp=' + (S.camhPp||0).toFixed(0) + ' px  Pc=' + (S.camhPc||0).toFixed(0) + ' px');
+  tx('camhl-t',    new Date().toTimeString().slice(0,8));
+  const kvc = _('camh-locked-kvc'); if(kvc) kvc.style.display = '';
+}
+window.camhLock = camhLock;
+window.camhSlide = camhSlide;
+
 function ffSlide() {
   const v = parseFloat(_('ff-slider')?.value || '1.5');
   tx('ff-d', v.toFixed(2) + ' m');
@@ -1366,8 +1521,11 @@ function renderUI() {
   ast('ast-track', S.fdTrack!=null ? S.fdTrack.toFixed(2)+'m' : 'not supported', S.fdTrack!=null?'ok':'na');
   ast('ast-geo',   S.fdGeo  !=null ? S.fdGeo.toFixed(2)+'m'   : 'no pose',       S.fdGeo!=null?'live':'na');
   ast('ast-ff',    S.ffHeight!=null? S.ffHeight.toFixed(2)+'m' : 'adjust slider', S.ffHeight!=null?'live':'na');
+  ast('ast-camh',  S.camhHeight!=null?S.camhHeight.toFixed(2)+'m':'set H_cam slider', S.camhHeight!=null?'live':'na');
+  ast('ast-camh', S.camhHeight!=null ? S.camhHeight.toFixed(2)+'m' : 'set camera height', S.camhHeight!=null?'live':'na');
 
-  // Live fixed-focus height update
+  // Live camera-height and fixed-focus height updates
+  updateCamHHeight();
   updateFFHeight();
 
   // Focus chip

@@ -421,9 +421,9 @@ body{display:flex;flex-direction:column;height:100dvh}
         <div class="kvc">
           <div class="kv"><span class="kk">Focus dist D&#x2091; (m)</span>
             <div style="display:flex;align-items:center;gap:6px">
-              <input type="range" id="ff-slider" min="1.0" max="1.5" step="0.05" value="1.25"
+              <input type="range" id="ff-slider" min="1.0" max="3.0" step="0.1" value="1.5"
                 style="width:80px;accent-color:var(--g)" oninput="ffSlide()">
-              <span class="kv-v y" id="ff-d">1.25 m</span>
+              <span class="kv-v y" id="ff-d">1.5 m</span>
             </div>
           </div>
           <div class="kv"><span class="kk">Apply manual focus to D&#x2091;</span>
@@ -432,7 +432,7 @@ body{display:flex;flex-direction:column;height:100dvh}
                      border-radius:2px;border:1px solid var(--gl);background:transparent;
                      color:var(--g);cursor:pointer;letter-spacing:.3px">APPLY</button>
           </div>
-          <div class="kv"><span class="kk">Pixel span (nose→ankle)</span><span class="kv-v" id="ff-px">–</span></div>
+          <div class="kv"><span class="kk">Pixel span (mask or lm)</span><span class="kv-v" id="ff-px">&ndash;</span></div>
           <div class="kv"><span class="kk">focal_px used</span><span class="kv-v na" id="ff-focal">–</span></div>
           <div class="kv"><span class="kk">Estimated height</span><span class="kv-v b" id="ff-height">–</span></div>
           <div class="kv"><span class="kk">Focus status</span><span class="kv-v" id="ff-status">–</span></div>
@@ -528,6 +528,7 @@ const S = {
   distA:null, distB:null,
   // Fixed-focus height method
   ffHeight:null, ffBox:null, _lastPoseLm:null,
+  maskSpan:null,   // {topY,bottomY,leftX,rightX,spanY} from segmentation mask
   // Measurement lock
   locked:null,
   // ImageCapture
@@ -927,6 +928,36 @@ function drawOverlays(ctx, res) {
   if (res.poseSegmentationMasks?.[0]) {
     const mask = res.poseSegmentationMasks[0];
     const d = mask.getAsFloat32Array(), mW = mask.width, mH = mask.height;
+
+    // ── Extract body extent from mask (for height estimation) ──
+    // Scan rows top→bottom and bottom→top to find head top and foot bottom.
+    // Use a low threshold (0.25) to include hair and shoe tips at edges.
+    const THR = 0.25;
+    let topRow = mH, botRow = -1, leftCol = mW, rightCol = -1;
+    for (let r = 0; r < mH; r++) {
+      for (let c = 0; c < mW; c++) {
+        if (d[r*mW + c] > THR) {
+          if (r < topRow)  topRow  = r;
+          if (r > botRow)  botRow  = r;
+          if (c < leftCol) leftCol = c;
+          if (c > rightCol)rightCol= c;
+        }
+      }
+    }
+    if (botRow > topRow && botRow >= 0) {
+      S.maskSpan = {
+        topY:    topRow  / mH,   // normalised 0-1
+        bottomY: botRow  / mH,
+        leftX:   leftCol / mW,
+        rightX:  rightCol/ mW,
+        spanY:   (botRow - topRow) / mH,
+        mW, mH,
+      };
+    } else {
+      S.maskSpan = null;
+    }
+
+    // Draw tinted body mask
     const tmp = document.createElement('canvas'); tmp.width=mW; tmp.height=mH;
     const tc = tmp.getContext('2d'), id = tc.createImageData(mW, mH);
     for (let i=0; i<mW*mH; i++) {
@@ -934,6 +965,8 @@ function drawOverlays(ctx, res) {
       if (v>0.4){ id.data[r]=0; id.data[r+1]=220; id.data[r+2]=180; id.data[r+3]=Math.round(v*68); }
     }
     tc.putImageData(id,0,0); ctx.drawImage(tmp,0,0,W,H); mask.close();
+  } else {
+    S.maskSpan = null;
   }
 
   // Face mask — filled oval from faceLandmarks FACE_OVAL contour
@@ -1188,13 +1221,13 @@ function fuseFocus() {
    No reference size needed \u2014 only pinhole geometry.
 ════════════════════════════════════════════════ */
 function ffSlide() {
-  const v = parseFloat(_('ff-slider')?.value || '1.25');
+  const v = parseFloat(_('ff-slider')?.value || '1.5');
   tx('ff-d', v.toFixed(2) + ' m');
   updateFFHeight(); // live update as slider moves
 }
 
 async function ffSetFocus() {
-  const v   = parseFloat(_('ff-slider')?.value || '1.25');
+  const v   = parseFloat(_('ff-slider')?.value || '1.5');
   const btn = _('ff-focus-btn');
   if (!S.track) { tx('ff-status', 'no camera track'); return; }
   const caps = S.track.getCapabilities?.() ?? {};
@@ -1214,46 +1247,76 @@ async function ffSetFocus() {
 
 function updateFFHeight() {
   const focal = S.focal_px_best;
-  const plm   = S._lastPoseLm;   // stored each holistic frame
-  if (!focal || !plm) {
-    tx('ff-px',     '\u2013');
-    tx('ff-focal',  focal ? focal.toFixed(0)+'px' : 'waiting for focal cal…');
-    tx('ff-height', '\u2013');
+  const D     = parseFloat(_('ff-slider')?.value || '1.5');
+  if (!focal) {
+    tx('ff-px',     '–');
+    tx('ff-focal',  'waiting for focal cal…');
+    tx('ff-height', '–');
     S.ffHeight = null; S.ffBox = null;
     return;
   }
-  // Pixel span from nose (0) to mean ankle (27,28) in normalised coords
-  const nN = plm[0], nLA = plm[27], nRA = plm[28];
-  if (!nN || !nLA) {
-    tx('ff-px', 'pose not detected'); tx('ff-height', '\u2013');
-    S.ffHeight = null; S.ffBox = null;
-    return;
-  }
-  const ankY = nRA ? (nLA.y+nRA.y)/2 : nLA.y;
-  const spanNorm = Math.abs(nN.y - ankY);          // normalised 0\u20131
-  const spanPx   = spanNorm * S.vH;                // pixels at video resolution
-  const D = parseFloat(_('ff-slider')?.value || '1.25');
-  const h = (spanPx * D) / focal;
 
-  tx('ff-px',    spanPx.toFixed(0) + ' px');
+  let spanNorm = null, srcLabel = '', boxNorm = null;
+
+  // Method A: segmentation mask top-to-bottom extent
+  // Gives true head-top-to-foot-bottom span, including hair and shoes,
+  // without any assumed head/landmark correction.
+  if (S.maskSpan && S.maskSpan.spanY > 0.05) {
+    const ms = S.maskSpan;
+    spanNorm = ms.spanY;
+    srcLabel = 'mask head→feet';
+    boxNorm  = { x: ms.leftX,  y: ms.topY,
+                 w: ms.rightX - ms.leftX,
+                 h: ms.bottomY - ms.topY };
+  }
+
+  // Method B: landmarks with head-above-nose correction
+  // Nose landmark (lm[0]) is ~13% of body height below true top of head.
+  // Correcting upward gives a better estimate than raw nose-to-ankle.
+  if (!spanNorm) {
+    const plm = S._lastPoseLm;
+    if (!plm) {
+      tx('ff-px', '–'); tx('ff-height', '–');
+      S.ffHeight = null; S.ffBox = null;
+      return;
+    }
+    const nN = plm[0], nLA = plm[27], nRA = plm[28];
+    if (!nN || !nLA) {
+      tx('ff-px', 'pose not visible'); tx('ff-height', '–');
+      S.ffHeight = null; S.ffBox = null;
+      return;
+    }
+    const ankY      = nRA ? (nLA.y+nRA.y)/2 : nLA.y;
+    const nosAnk    = ankY - nN.y;
+    const headAbove = nosAnk * 0.13;   // head above nose ≈13% of nose-to-ankle
+    const topY      = nN.y - headAbove;
+    spanNorm        = nosAnk + headAbove;
+    srcLabel = 'lm + head correction';
+    const xs = [nN.x, nLA.x, ...(nRA?[nRA.x]:[])];
+    const pad = 0.04;
+    boxNorm = {
+      x: Math.max(0, Math.min(...xs) - pad),
+      y: Math.max(0, topY - pad),
+      w: Math.min(1, Math.max(...xs) - Math.min(...xs) + pad*2),
+      h: Math.min(1, ankY - topY + pad*2),
+    };
+  }
+
+  const spanPx = spanNorm * S.vH;
+  const h      = (spanPx * D) / focal;
+  const valid  = h > 0.5 && h < 2.8;
+
+  tx('ff-px',    spanPx.toFixed(0) + ' px (' + srcLabel + ')');
   tx('ff-focal', focal.toFixed(0) + ' px');
-  tx('ff-height', h > 0.3 && h < 3.0 ? h.toFixed(3) + ' m' : '\u2013 (out of range)');
-  S.ffHeight = (h > 0.3 && h < 3.0) ? h : null;
-
-  // Bounding box for overlay on c1 canvas
-  const xs = [nN.x, nLA.x, ...(nRA?[nRA.x]:[])];
-  const pad = 0.04;
-  S.ffBox = {
-    x: Math.max(0, Math.min(...xs) - pad),
-    y: Math.max(0, nN.y - pad),
-    w: Math.min(1, Math.max(...xs) - Math.min(...xs) + pad*2),
-    h: Math.min(1, ankY - nN.y + pad*2),
-  };
+  tx('ff-height', valid ? h.toFixed(3) + ' m' : '– (out of range)');
+  S.ffHeight = valid ? h : null;
+  S.ffBox    = valid ? boxNorm : null;
 }
+
 
 function ffLock() {
   const h = S.ffHeight;
-  const D = parseFloat(_('ff-slider')?.value || '1.25');
+  const D = parseFloat(_('ff-slider')?.value || '1.5');
   if (!h) {
     tx('ff-status', '\u26a0 No valid height \u2014 ensure full body visible');
     return;

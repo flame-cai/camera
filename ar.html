@@ -230,6 +230,27 @@ body{display:flex;flex-direction:column;height:100dvh}
 .kv-v.b{color:var(--b)}.kv-v.y{color:var(--y)}.kv-v.na{color:var(--tm)}
 .safe{height:var(--safe)}
 
+/* MEASURE button */
+#btn-measure{
+  width:100%;padding:13px;margin-bottom:5px;
+  background:linear-gradient(135deg,rgba(0,232,184,.2),rgba(0,232,184,.08));
+  border:1.5px solid rgba(0,232,184,.55);border-radius:4px;
+  font-family:var(--FD);font-size:20px;letter-spacing:4px;
+  color:var(--g);cursor:pointer;transition:background .15s
+}
+#btn-measure:active{background:rgba(0,232,184,.3)}
+#lock-status{font-size:7.5px;color:var(--gd);font-family:var(--FC);font-weight:600;
+  letter-spacing:.5px;text-align:center;min-height:14px;margin-bottom:4px}
+/* locked chip on canvas */
+.lock-chip{
+  position:absolute;bottom:9px;left:50%;transform:translateX(-50%);
+  z-index:5;pointer-events:none;white-space:nowrap;
+  font-family:var(--FC);font-size:9px;font-weight:800;letter-spacing:1.5px;
+  text-transform:uppercase;padding:3px 11px;border-radius:2px;
+  border:1px solid rgba(240,184,48,.5);color:var(--y);
+  background:rgba(6,9,14,.8);backdrop-filter:blur(6px)
+}
+
 /* measure / scan button */
 #btn-scan{
   width:100%;padding:13px;margin-bottom:5px;
@@ -329,17 +350,18 @@ body{display:flex;flex-direction:column;height:100dvh}
         <div class="cam-b"></div>
         <div class="scanline"></div>
         <div class="cam-chip chip-wait" id="chip0">Loading…</div>
+        <div class="lock-chip" id="lock-chip" style="display:none"></div>
       </div>
       <div class="nums">
         <div class="num n0">
           <span class="nk">Cam Height</span>
           <span class="nv g" id="H0">--</span><span class="nu"> m</span>
-          <div class="ns" id="H0s">ankle→ground</div>
+          <div class="ns" id="H0s">–</div>
         </div>
         <div class="num n1">
           <span class="nk">Distance</span>
           <span class="nv b" id="D0">--</span><span class="nu"> m</span>
-          <div class="ns" id="D0s">self-cal</div>
+          <div class="ns" id="D0s">–</div>
         </div>
         <div class="num n2">
           <span class="nk">Person H</span>
@@ -348,7 +370,21 @@ body{display:flex;flex-direction:column;height:100dvh}
         </div>
       </div>
       <div class="det">
-        <div class="sec">World Coordinates (metres · hip origin)</div>
+        <!-- MEASURE BUTTON -->
+        <button id="btn-measure" onclick="lockMeasure()">&#128248; MEASURE</button>
+        <div id="lock-status"></div>
+
+        <!-- Locked result -->
+        <div class="sec" id="sec-locked" style="display:none">Locked Measurement</div>
+        <div class="kvc" id="kvc-locked" style="display:none">
+          <div class="kv"><span class="kk">Person height</span><span class="kv-v b" id="lk-h">–</span></div>
+          <div class="kv"><span class="kk">Distance</span><span class="kv-v" id="lk-d">–</span></div>
+          <div class="kv"><span class="kk">Camera height</span><span class="kv-v" id="lk-c">–</span></div>
+          <div class="kv"><span class="kk">Confidence</span><span class="kv-v y" id="lk-conf">–</span></div>
+          <div class="kv"><span class="kk">Locked at</span><span class="kv-v na" id="lk-t">–</span></div>
+        </div>
+
+        <div class="sec">Live World Coordinates (metres)</div>
         <div class="g3">
           <div class="cell"><div class="ck">Nose Y</div><div class="cv" id="wny">--<span class="cu">m</span></div></div>
           <div class="cell"><div class="ck">Ankle Y</div><div class="cv" id="way">--<span class="cu">m</span></div></div>
@@ -466,9 +502,10 @@ const S = {
   hConf:0, fps:0, _fc:0, _lt:0,
   // Focus
   fdTrack:null, fdExif:null, fdGeo:null,
-  fdBest:null, fdSrc:'–',
+  fdBest:null, fdSrc:'\u2013',
   focal_px_best:null,
   fl35:null,
+  locked:null,   // frozen measurement from MEASURE button
   // ImageCapture
   ic:null, exifBusy:false,
   xrDepth:null,
@@ -988,6 +1025,65 @@ function startHolistic() {
 /* ════════════════════════════════════════════════
    FOCUS LOOP — live camera + distance HUD on c1
 ════════════════════════════════════════════════ */
+/* ════════════════════════════════════════════════
+   LOCK MEASURE — freeze best holistic reading on tap
+   Guidance: hold phone steady, ensure full body in
+   frame (head to ankles visible), then tap MEASURE.
+   worldLandmarks give true metric height directly —
+   no focus setting, no reference needed.
+════════════════════════════════════════════════ */
+function lockMeasure() {
+  const btn = _('btn-measure'), status = _('lock-status');
+
+  // Need at least a recent good holistic result
+  if (!S.personH || S.personH < 0.3 || !S.camH) {
+    status.textContent = '\u26a0 No pose detected \u2014 ensure full body is visible';
+    btn.style.borderColor = 'rgba(240,64,80,.6)';
+    setTimeout(() => { btn.style.borderColor = ''; status.textContent = ''; }, 2500);
+    return;
+  }
+
+  // Confidence check — require both ankle and nose visible
+  if (S.hConf < 0.3) {
+    status.textContent = '\u26a0 Low confidence \u2014 check lighting and framing';
+    setTimeout(() => { status.textContent = ''; }, 2500);
+    return;
+  }
+
+  // Freeze the snapshot
+  const snap = {
+    personH: S.personH,
+    dist:    S.dist,
+    camH:    S.camH,
+    conf:    S.hConf,
+    time:    new Date().toTimeString().slice(0,8),
+  };
+  S.locked = snap;
+
+  // Update locked panel
+  tx('lk-h',    snap.personH.toFixed(3) + ' m');
+  tx('lk-d',    snap.dist   != null ? snap.dist.toFixed(2) + ' m' : '\u2013');
+  tx('lk-c',    snap.camH.toFixed(2) + ' m');
+  tx('lk-conf', Math.round(snap.conf * 100) + '%');
+  tx('lk-t',    snap.time);
+  _('sec-locked').style.display = '';
+  _('kvc-locked').style.display = '';
+
+  // Canvas chip
+  const chip = _('lock-chip');
+  if (chip) {
+    chip.style.display = 'block';
+    chip.textContent = '\ud83d\udccd ' + snap.personH.toFixed(3) + ' m locked';
+  }
+
+  // Big number locks too (visual feedback)
+  const p0el = _('P0');
+  if (p0el) { p0el.style.color = 'var(--y)'; setTimeout(() => { p0el.style.color = ''; }, 1500); }
+
+  status.textContent = '\u2713 Locked \u2014 ' + snap.personH.toFixed(3) + ' m at ' + snap.time;
+}
+window.lockMeasure = lockMeasure;
+
 function startFocusLoop() {
   const vid = _('v1'), cv = _('c1');
   const loop = () => {

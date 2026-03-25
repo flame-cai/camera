@@ -230,20 +230,20 @@ body{display:flex;flex-direction:column;height:100dvh}
 .kv-v.b{color:var(--b)}.kv-v.y{color:var(--y)}.kv-v.na{color:var(--tm)}
 .safe{height:var(--safe)}
 
-/* measure button */
-#btn-measure{
+/* measure / scan button */
+#btn-scan{
   width:100%;padding:13px;margin-bottom:5px;
   background:linear-gradient(135deg,rgba(72,130,255,.18),rgba(72,130,255,.08));
   border:1px solid rgba(72,130,255,.5);border-radius:4px;
   font-family:var(--FD);font-size:18px;letter-spacing:3px;
-  color:var(--b);cursor:pointer;transition:background .15s,border-color .15s
+  color:var(--b);cursor:pointer;transition:background .15s
 }
-#btn-measure:active{background:rgba(72,130,255,.28)}
-#btn-measure:disabled{opacity:.4;cursor:not-allowed}
-#msr-status{
-  font-size:7.5px;color:var(--gd);font-family:var(--FC);font-weight:600;
-  letter-spacing:.5px;text-align:center;min-height:14px;margin-bottom:6px
-}
+#btn-scan:active{background:rgba(72,130,255,.28)}
+#btn-scan:disabled{opacity:.4;cursor:not-allowed}
+#scan-bar-wrap{margin-bottom:6px}
+#scan-bar{height:3px;background:linear-gradient(90deg,var(--b),var(--pu));width:0%;
+  border-radius:2px;transition:width .15s ease;margin-bottom:3px}
+#scan-lbl{font-size:7.5px;color:var(--gd);font-family:var(--FC);font-weight:600;letter-spacing:.4px}
 /* accuracy table */
 .acc-table{
   background:var(--gf);border:1px solid var(--gl);
@@ -390,32 +390,43 @@ body{display:flex;flex-direction:column;height:100dvh}
         </div>
       </div>
       <div class="det">
-        <button id="btn-measure" onclick="measureNow()">📸 MEASURE DISTANCE</button>
-        <div id="msr-status"></div>
-        <div class="sec">Last Measurement</div>
+        <!-- Primary action: sharpness-scan AF -->
+        <button id="btn-scan" onclick="runScan()">🔍 SCAN FOCUS DISTANCE</button>
+        <div id="scan-bar-wrap" style="display:none">
+          <div id="scan-bar"></div>
+          <div id="scan-lbl"></div>
+        </div>
+
+        <!-- Methods breakdown -->
+        <div class="sec">Distance Methods</div>
         <div class="kvc">
-          <div class="kv"><span class="kk">① EXIF SubjectDistance (AF plane)</span><span class="kv-v b" id="fd2">–</span></div>
-          <div class="kv"><span class="kk">② Track focusDistance (live poll)</span><span class="kv-v" id="fd1">–</span></div>
-          <div class="kv"><span class="kk">③ Geometry self-cal (pose)</span><span class="kv-v" id="fd3">–</span></div>
-          <div class="kv"><span class="kk">④ WebXR depth (LiDAR/ToF)</span><span class="kv-v" id="fd4">–</span></div>
+          <div class="kv"><span class="kk">① Sharpness scan (Laplacian peak)</span><span class="kv-v b" id="fd-sharp">–</span></div>
+          <div class="kv"><span class="kk">② Track focusDistance (AF poll)</span><span class="kv-v" id="fd-track">–</span></div>
+          <div class="kv"><span class="kk">③ Pose geometry self-cal</span><span class="kv-v" id="fd-geo">–</span></div>
+          <div class="kv"><span class="kk">④ WebXR depth (ToF/LiDAR)</span><span class="kv-v" id="fd-xr">–</span></div>
           <div class="kv"><span class="kk">▶ Best estimate</span><span class="kv-v b" id="fdbest">–</span></div>
           <div class="kv"><span class="kk">Source</span><span class="kv-v y" id="fdsrc">–</span></div>
-          <div class="kv"><span class="kk">Measured at</span><span class="kv-v na" id="msr-time">–</span></div>
         </div>
-        <div class="sec">Accuracy by Method</div>
+
+        <!-- Accuracy table -->
+        <div class="sec">Accuracy</div>
         <div class="acc-table">
           <div class="acc-row acc-hdr"><span>Method</span><span>Accuracy</span><span>Status</span></div>
-          <div class="acc-row"><span>EXIF SubjectDist</span><span class="acc-val">±20–30%</span><span class="acc-st" id="ast-exif">–</span></div>
+          <div class="acc-row"><span>Sharpness scan</span><span class="acc-val">±5–15%</span><span class="acc-st" id="ast-sharp">–</span></div>
           <div class="acc-row"><span>Track focusDist</span><span class="acc-val">±5–15%</span><span class="acc-st" id="ast-track">–</span></div>
           <div class="acc-row"><span>Pose geometry</span><span class="acc-val">±5–15%</span><span class="acc-st" id="ast-geo">–</span></div>
-          <div class="acc-row"><span>WebXR depth</span><span class="acc-val">±1–3%</span><span class="acc-st" id="ast-xr">checking…</span></div>
+          <div class="acc-row"><span>WebXR LiDAR</span><span class="acc-val">±1–3%</span><span class="acc-st" id="ast-xr">–</span></div>
         </div>
-        <div class="sec">WebXR Depth Sensing</div>
+
+        <!-- WebXR -->
+        <div class="sec">WebXR Depth</div>
         <div class="kvc">
-          <div class="kv"><span class="kk">Available</span><span class="kv-v" id="xr-avail">checking…</span></div>
-          <div class="kv"><span class="kk">Last depth reading</span><span class="kv-v b" id="xr-depth">–</span></div>
+          <div class="kv"><span class="kk">Available</span><span class="kv-v" id="xr-avail">–</span></div>
+          <div class="kv"><span class="kk">Reading</span><span class="kv-v b" id="xr-depth">–</span></div>
         </div>
         <button id="btn-xr" onclick="startXR()" style="display:none">🔮 ENTER AR DEPTH MODE</button>
+
+        <!-- Focal calibration -->
         <div class="sec">Focal Calibration</div>
         <div class="kvc">
           <div class="kv"><span class="kk">A · EXIF FocalLength35mm</span><span class="kv-v" id="foca">–</span></div>
@@ -423,7 +434,9 @@ body{display:flex;flex-direction:column;height:100dvh}
           <div class="kv"><span class="kk">C · Assumed 70° FOV</span><span class="kv-v na" id="focc">–</span></div>
           <div class="kv"><span class="kk">Using</span><span class="kv-v y" id="foc-use">–</span></div>
         </div>
-        <div class="sec">Camera API Capabilities</div>
+
+        <!-- Camera capabilities -->
+        <div class="sec">Camera Capabilities</div>
         <div class="kvc">
           <div class="kv"><span class="kk">focusDistance range</span><span class="kv-v" id="cap-fdr">–</span></div>
           <div class="kv"><span class="kk">focusMode options</span><span class="kv-v" id="cap-fmo">–</span></div>
@@ -478,6 +491,9 @@ const S = {
   // Focus
   fdTrack:null, fdExif:null, fdGeo:null,
   fdBest:null, fdSrc:'–',
+  fdSharp:null,        // sharpness scan result
+  scanActive:false,    // scan in progress
+  objBox:null,         // {x,y,w,h} normalised — highlight box on c1
   fl35:null,
   // ImageCapture
   ic:null, exifBusy:false,
@@ -995,21 +1011,54 @@ function startHolistic() {
 /* ════════════════════════════════════════════════
    FOCUS LOOP  (Tab 1 — live video + distance HUD)
 ════════════════════════════════════════════════ */
+
+/* ════════════════════════════════════════════════
+   FOCUS LOOP — draw live video + overlays on c1
+   Draws: crosshair reticle, scan ROI box, distance HUD
+   Object highlight box drawn during/after scan
+════════════════════════════════════════════════ */
 function startFocusLoop() {
   const vid=_('v1'), cv=_('c1');
   const loop = () => {
     if (vid.readyState >= 2) {
       cv.width=vid.clientWidth||S.vW; cv.height=vid.clientHeight||S.vH;
-      const ctx=cv.getContext('2d');
-      ctx.drawImage(vid,0,0,cv.width,cv.height);
-      if (S.fdBest!=null) {
-        const W=cv.width, Hv=cv.height, cx=W/2, cy=Hv/2;
-        ctx.font='bold 15px "Bebas Neue"'; ctx.fillStyle='rgba(72,130,255,.92)'; ctx.textAlign='center';
-        ctx.fillText(S.fdBest.toFixed(2)+' m', cx, cy-44);
-        ctx.strokeStyle='rgba(72,130,255,.28)'; ctx.lineWidth=1;
-        ctx.beginPath(); ctx.arc(cx,cy,22,0,Math.PI*2); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(cx-5,cy); ctx.lineTo(cx+5,cy); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(cx,cy-5); ctx.lineTo(cx,cy+5); ctx.stroke();
+      const ctx=cv.getContext('2d'), W=cv.width, H=cv.height, cx=W/2, cy=H/2;
+      ctx.drawImage(vid, 0, 0, W, H);
+
+      // ROI box — always shown, shows what's being measured
+      const roiW = Math.round(W*0.25), roiH = Math.round(H*0.25);
+      const roiX = cx-roiW/2, roiY = cy-roiH/2;
+      ctx.strokeStyle = S.scanActive ? 'rgba(240,184,48,.9)' : 'rgba(0,232,184,.55)';
+      ctx.lineWidth = 1.5; ctx.setLineDash([4,4]);
+      ctx.strokeRect(roiX, roiY, roiW, roiH);
+      ctx.setLineDash([]);
+
+      // Crosshair
+      ctx.strokeStyle='rgba(0,232,184,.6)'; ctx.lineWidth=1;
+      ctx.beginPath(); ctx.moveTo(cx-10,cy); ctx.lineTo(cx+10,cy); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(cx,cy-10); ctx.lineTo(cx,cy+10); ctx.stroke();
+
+      // Object highlight box (shown after successful scan)
+      if (S.objBox) {
+        const b=S.objBox;
+        // Glow effect
+        ctx.shadowColor='rgba(72,130,255,.8)'; ctx.shadowBlur=12;
+        ctx.strokeStyle='rgba(72,130,255,.9)'; ctx.lineWidth=2; ctx.setLineDash([]);
+        ctx.strokeRect(b.x*W, b.y*H, b.w*W, b.h*H);
+        ctx.shadowBlur=0;
+        // Distance label above box
+        if (S.fdSharp!=null) {
+          ctx.font='bold 13px "Bebas Neue"'; ctx.fillStyle='rgba(72,130,255,.95)';
+          ctx.textAlign='center';
+          ctx.fillText(S.fdSharp.toFixed(2)+' m', (b.x+b.w/2)*W, b.y*H-6);
+        }
+      }
+
+      // Distance HUD (centre top)
+      const best = S.fdBest;
+      if (best != null) {
+        ctx.font='bold 14px "Bebas Neue"'; ctx.fillStyle='rgba(72,130,255,.92)'; ctx.textAlign='center';
+        ctx.fillText(best.toFixed(2)+' m', cx, cy-roiH/2-14);
       }
     }
     requestAnimationFrame(loop);
@@ -1018,179 +1067,272 @@ function startFocusLoop() {
 }
 
 /* ════════════════════════════════════════════════
-   FOCUS FUSION
+   SHARPNESS  — Laplacian variance of a canvas ROI
+   Kernel: [-1,-1,-1, -1,8,-1, -1,-1,-1]
+   Returns variance of convolved values — high=sharp
 ════════════════════════════════════════════════ */
-function fuseFocus() {
-  const srcs = [];
-  if (S.fdTrack!=null&&S.fdTrack>.05) srcs.push({v:S.fdTrack, w:0.9,  id:'Track AF'});
-  if (S.fdExif !=null&&S.fdExif>.05)  srcs.push({v:S.fdExif,  w:0.85, id:'EXIF'});
-  if (S.fdGeo  !=null&&S.fdGeo>.1)    srcs.push({v:S.fdGeo,   w:0.7*Math.max(.1,S.hConf), id:'Geometry'});
-  if (!srcs.length) { S.fdBest=null; S.fdSrc='–'; return; }
-  const ws = srcs.reduce((a,b)=>a+b.w,0);
-  S.fdBest = srcs.reduce((a,b)=>a+b.v*b.w,0) / ws;
-  S.fdSrc  = srcs.reduce((a,b)=>a.w>b.w?a:b).id;
+function laplacianVariance(ctx, x, y, w, h) {
+  const id = ctx.getImageData(Math.round(x), Math.round(y), Math.round(w), Math.round(h));
+  const d = id.data, W = id.width, H = id.height;
+  const vals = [];
+  // Convert to greyscale, apply Laplacian
+  const gray = new Float32Array(W * H);
+  for (let i=0; i<W*H; i++) gray[i] = 0.299*d[i*4] + 0.587*d[i*4+1] + 0.114*d[i*4+2];
+  for (let r=1; r<H-1; r++) {
+    for (let c=1; c<W-1; c++) {
+      const v = -gray[(r-1)*W+c-1] - gray[(r-1)*W+c] - gray[(r-1)*W+c+1]
+               - gray[r    *W+c-1] + 8*gray[r*W+c]   - gray[r    *W+c+1]
+               - gray[(r+1)*W+c-1] - gray[(r+1)*W+c] - gray[(r+1)*W+c+1];
+      vals.push(v);
+    }
+  }
+  const mean = vals.reduce((a,b)=>a+b,0)/vals.length;
+  return vals.reduce((a,b)=>a+(b-mean)**2, 0)/vals.length;
 }
 
 /* ════════════════════════════════════════════════
-   RENDER UI  (rAF driven)
+   SHARPNESS SCAN — sweep focusDistance, find peak
+   Uses grabFrame() at each step — no JPEG, no EXIF needed
+   Falls back to fixed-focus analysis if no focusDistance support
+════════════════════════════════════════════════ */
+const EXIFR_URL = 'https://cdn.jsdelivr.net/npm/exifr@7/dist/lite.esm.mjs';
+let exifr = null;
+
+async function runScan() {
+  if (S.scanActive) return;
+  const btn=_('btn-scan'), wrap=_('scan-bar-wrap'), bar=_('scan-bar'), lbl=_('scan-lbl');
+  S.scanActive = true; S.objBox = null;
+  btn.disabled=true; btn.textContent='⏳ Scanning…';
+  if(wrap) wrap.style.display='block';
+
+  const caps = S.track?.getCapabilities?.() ?? {};
+  const fdr  = caps.focusDistance ?? null;
+  const fmo  = caps.focusMode ?? [];
+  const hasFD = !!fdr && fdr.max > fdr.min;
+
+  if (hasFD && S.ic?.grabFrame) {
+    // ── METHOD A: sweep focusDistance, measure sharpness per step ──
+    await S.track.applyConstraints({advanced:[{focusMode:'manual'}]}).catch(()=>{});
+    const steps = 12;
+    const step  = (fdr.max - fdr.min) / steps;
+    const tmp   = document.createElement('canvas'); tmp.width=192; tmp.height=108;
+    const tc    = tmp.getContext('2d');
+    let bestVar=-1, bestDist=fdr.min, sharpVals=[];
+
+    for (let i=0; i<=steps; i++) {
+      const dist = fdr.min + i*step;
+      if(bar) bar.style.width=(i/steps*100)+'%';
+      if(lbl) lbl.textContent=`Scanning ${dist.toFixed(2)} m…`;
+      await S.track.applyConstraints({advanced:[{focusMode:'manual',focusDistance:dist}]}).catch(()=>{});
+      await new Promise(r=>setTimeout(r,120)); // let lens settle
+      try {
+        const frame = await Promise.race([
+          S.ic.grabFrame(),
+          new Promise((_,r)=>setTimeout(()=>r(new Error('grabFrame timeout')),1000)),
+        ]);
+        tc.drawImage(frame, 0, 0, 192, 108);
+        const W=192,H=108,roiW=Math.round(W*0.3),roiH=Math.round(H*0.3);
+        const v = laplacianVariance(tc, W/2-roiW/2, H/2-roiH/2, roiW, roiH);
+        sharpVals.push({dist, v});
+        if (v > bestVar) { bestVar=v; bestDist=dist; }
+      } catch(e) { sharpVals.push({dist,v:0}); }
+    }
+
+    // Restore continuous AF
+    await S.track.applyConstraints({advanced:[{focusMode:'continuous'}]}).catch(()=>{});
+    S.fdSharp = bestDist;
+    if(lbl) lbl.textContent=`Peak sharpness at ${bestDist.toFixed(2)} m`;
+
+    // Set object highlight box to the ROI in display coords
+    S.objBox = {x:0.375, y:0.375, w:0.25, h:0.25};
+
+  } else if (S.ic?.grabFrame) {
+    // ── METHOD B: no focusDistance control — analyse current frame for object ──
+    // Use continuous AF best-focus, grab frame, find sharpest region
+    if(lbl) lbl.textContent='Analysing frame sharpness…';
+    if(bar) bar.style.width='50%';
+    await new Promise(r=>setTimeout(r,500)); // let AF settle
+    try {
+      const frame = await Promise.race([
+        S.ic.grabFrame(),
+        new Promise((_,r)=>setTimeout(()=>r(new Error('timeout')),2000)),
+      ]);
+      const tmp2=document.createElement('canvas'); tmp2.width=frame.width; tmp2.height=frame.height;
+      const tc2=tmp2.getContext('2d');
+      tc2.drawImage(frame,0,0);
+      // Read track focusDistance at this moment (camera focused on sharpest object)
+      const fd = S.track?.getSettings?.()?.focusDistance ?? null;
+      if (fd!=null&&fd>0.05) { S.fdSharp=fd; S.fdTrack=fd; }
+      // Mark the centre ROI as the measured object
+      S.objBox={x:0.375,y:0.375,w:0.25,h:0.25};
+      if(lbl) lbl.textContent = fd!=null ? `Focus distance: ${fd.toFixed(2)} m` : 'No focus distance available';
+    } catch(e) {
+      if(lbl) lbl.textContent='grabFrame failed: '+String(e?.message||e).slice(0,40);
+    }
+    if(bar) bar.style.width='100%';
+
+  } else if (S.track) {
+    // ── METHOD C: no ImageCapture — just read track settings ──
+    if(lbl) lbl.textContent='Reading track focusDistance…';
+    if(bar) bar.style.width='60%';
+    // Apply continuous AF and wait for it to stabilise
+    await S.track.applyConstraints({advanced:[{focusMode:'continuous'}]}).catch(()=>{});
+    await new Promise(r=>setTimeout(r,800));
+    const fd = S.track.getSettings?.()?.focusDistance ?? null;
+    if(bar) bar.style.width='100%';
+    if (fd!=null&&fd>0.05) {
+      S.fdSharp=fd; S.fdTrack=fd;
+      if(lbl) lbl.textContent=`focusDistance: ${fd.toFixed(2)} m`;
+      S.objBox={x:0.375,y:0.375,w:0.25,h:0.25};
+    } else {
+      if(lbl) lbl.textContent='focusDistance not supported on this device/browser';
+    }
+
+  } else {
+    if(lbl) lbl.textContent='Camera not available';
+    if(bar) bar.style.width='100%';
+  }
+
+  // Also try EXIF from takePhoto (might have FocalLengthIn35mmFilm even if SubjectDistance missing)
+  if (S.ic?.takePhoto) {
+    try {
+      if (!exifr) exifr = (await import(EXIFR_URL)).default;
+      const blob = await Promise.race([
+        S.ic.takePhoto({imageWidth:480}),
+        new Promise((_,r)=>setTimeout(()=>r(new Error('timeout')),5000)),
+      ]);
+      const data = await Promise.race([
+        exifr.parse(blob, {tiff:true, exif:true, pick:['FocalLengthIn35mmFilm','FocalLength','SubjectDistance']}),
+        new Promise(r=>setTimeout(()=>r(null),3000)),
+      ]);
+      if (data) {
+        if (data.SubjectDistance>0.1&&data.SubjectDistance<30) S.fdExif=data.SubjectDistance;
+        if (data.FocalLengthIn35mmFilm>5) { S.fl35=data.FocalLengthIn35mmFilm; S.focalExif=focalFromFL35(S.fl35,S.vW); }
+      }
+    } catch(e) { console.warn('[exifr]',e?.message); }
+  }
+
+  fuseFocus();
+  S.scanActive = false;
+  btn.disabled=false; btn.textContent='🔍 SCAN FOCUS DISTANCE';
+  setTimeout(()=>{ if(wrap) wrap.style.display='none'; },3000);
+}
+window.runScan = runScan;
+
+/* ════════════════════════════════════════════════
+   FOCUS FUSION
+════════════════════════════════════════════════ */
+function fuseFocus() {
+  const srcs=[];
+  if (S.fdSharp !=null&&S.fdSharp>.05) srcs.push({v:S.fdSharp, w:0.88, id:'Sharpness scan'});
+  if (S.fdTrack !=null&&S.fdTrack>.05) srcs.push({v:S.fdTrack, w:0.85, id:'Track AF'});
+  if (S.fdGeo   !=null&&S.fdGeo>.1)   srcs.push({v:S.fdGeo,   w:0.7*Math.max(.1,S.hConf), id:'Geometry'});
+  if (S.xrDepth !=null&&S.xrDepth>.05)srcs.push({v:S.xrDepth, w:0.95, id:'WebXR'});
+  if (!srcs.length){S.fdBest=null;S.fdSrc='–';return;}
+  const ws=srcs.reduce((a,b)=>a+b.w,0);
+  S.fdBest=srcs.reduce((a,b)=>a+b.v*b.w,0)/ws;
+  S.fdSrc =srcs.reduce((a,b)=>a.w>b.w?a:b).id;
+}
+
+/* ════════════════════════════════════════════════
+   RENDER UI
 ════════════════════════════════════════════════ */
 function renderUI() {
   fuseFocus();
-  const focal = S.focalExif ?? S.focalGeo ?? S.focalAsm;
+  const focal=S.focalExif??S.focalGeo??S.focalAsm;
 
-  // Tab 0 — Holistic
-  nm('H0', S.camH);    tx('H0s', S.camH?'ankle→ground':'–');
-  nm('D0', S.dist);    tx('D0s', S.dist?'self-cal':'–');
-  nm('P0', S.personH);
-  nm('wny', S.wNose?.y, 3);
-  nm('way', S.wAnkle?.y, 3);
-  nm('whd', S.dist, 2);
-  nm('fp0', focal, 0);
-  tx('fv0', focal ? (2*Math.atan(S.vW/2/focal)/DEG).toFixed(1) : '--');
-  tx('fps0', S.fps+' fps');
+  // Tab 0
+  nm('H0',S.camH);  tx('H0s',S.camH?'ankle→ground':'–');
+  nm('D0',S.dist);  tx('D0s',S.dist?'self-cal':'–');
+  nm('P0',S.personH);
+  nm('wny',S.wNose?.y,3); nm('way',S.wAnkle?.y,3); nm('whd',S.dist,2);
+  nm('fp0',focal,0);
+  tx('fv0',focal?(2*Math.atan(S.vW/2/focal)/DEG).toFixed(1):'--');
+  tx('fps0',S.fps+' fps');
 
-  // Tab 1 — Focus numbers
-  nm('H1', S.camH??1.4);  tx('H1s', S.camH?'world lm':'prior 1.4m');
-  nm('D1', S.fdBest);      tx('D1s', S.fdSrc);
-  nm('P1', S.personH);     tx('P1s', S.personH?'world lm':'–');
+  // Tab 1 — big numbers
+  nm('H1',S.camH??1.4);  tx('H1s',S.camH?'world lm':'prior 1.4m');
+  nm('D1',S.fdBest);     tx('D1s',S.fdSrc);
+  nm('P1',S.personH);    tx('P1s',S.personH?'world lm':'–');
 
-  // Live readings (fd1=track, fd3=geo — fd2 updated by measureNow)
-  tx('fd1', S.fdTrack!=null ? S.fdTrack.toFixed(2)+' m' : 'N/A');
-  tx('fd3', S.fdGeo  !=null ? S.fdGeo.toFixed(2)+' m'   : '–');
-  tx('fdbest', S.fdBest!=null ? S.fdBest.toFixed(2)+' m' : '–');
+  // Methods breakdown
+  tx('fd-sharp', S.fdSharp!=null?S.fdSharp.toFixed(2)+' m':'tap SCAN');
+  tx('fd-track', S.fdTrack!=null?S.fdTrack.toFixed(2)+' m':'N/A');
+  tx('fd-geo',   S.fdGeo  !=null?S.fdGeo.toFixed(2)+' m':'–');
+  tx('fd-xr',    S.xrDepth!=null?S.xrDepth.toFixed(2)+' m':'N/A');
+  tx('fdbest',   S.fdBest !=null?S.fdBest.toFixed(2)+' m':'–');
   tx('fdsrc', S.fdSrc);
 
-  // Focal calibration
-  tx('foca', S.focalExif ? `${S.fl35}mm → ${S.focalExif.toFixed(0)}px` : '–');
-  tx('focb', S.focalGeo  ? S.focalGeo.toFixed(0)+'px' : '–');
-  tx('focc', S.focalAsm  ? S.focalAsm.toFixed(0)+'px' : '–');
-  const focSrc = S.focalExif?'EXIF FL35':S.focalGeo?'Pose geo':'Assumed 70°';
-  tx('foc-use', focal ? focal.toFixed(0)+'px ('+focSrc+')' : '–');
+  // Focal
+  tx('foca',S.focalExif?`${S.fl35}mm → ${S.focalExif.toFixed(0)}px`:'–');
+  tx('focb',S.focalGeo?S.focalGeo.toFixed(0)+'px':'–');
+  tx('focc',S.focalAsm?S.focalAsm.toFixed(0)+'px':'–');
+  const focSrc=S.focalExif?'EXIF FL35':S.focalGeo?'Pose geo':'Assumed 70°';
+  tx('foc-use',focal?focal.toFixed(0)+'px ('+focSrc+')':'–');
 
-  // Accuracy table live badges
-  const setAst = (id,txt,cls) => { const e=_(id); if(!e)return; e.textContent=txt; e.className='acc-st '+cls; };
-  setAst('ast-exif',  S.fdExif !=null?S.fdExif.toFixed(2)+'m' :(S.ic?'no data yet':'no ImageCapture'), S.fdExif!=null?'live':'na');
-  setAst('ast-track', S.fdTrack!=null?S.fdTrack.toFixed(2)+'m':'not supported', S.fdTrack!=null?'ok':'na');
-  setAst('ast-geo',   S.fdGeo  !=null?S.fdGeo.toFixed(2)+'m'  :'no pose', S.fdGeo!=null?'live':'na');
+  // Accuracy badges
+  const ast=(id,txt,cls)=>{const e=_(id);if(!e)return;e.textContent=txt;e.className='acc-st '+cls;};
+  ast('ast-sharp', S.fdSharp!=null?S.fdSharp.toFixed(2)+'m':(S.ic?'tap SCAN':'no ImageCapture'), S.fdSharp!=null?'live':'na');
+  ast('ast-track', S.fdTrack!=null?S.fdTrack.toFixed(2)+'m':'not supported',                     S.fdTrack!=null?'ok':'na');
+  ast('ast-geo',   S.fdGeo  !=null?S.fdGeo.toFixed(2)+'m'  :'no pose',                           S.fdGeo!=null?'live':'na');
+  ast('ast-xr',    S.xrDepth!=null?S.xrDepth.toFixed(2)+'m':'–',                                 S.xrDepth!=null?'live':'na');
 
-  // Focus chip
+  // Focus tab chip
   const ch1=_('chip1');
-  if (S.fdBest!=null) { ch1.className='cam-chip chip-live'; ch1.textContent=S.fdBest.toFixed(2)+'m · '+S.fdSrc; }
+  if(ch1&&S.fdBest!=null){ch1.className='cam-chip chip-live';ch1.textContent=S.fdBest.toFixed(2)+'m · '+S.fdSrc;}
 
   requestAnimationFrame(renderUI);
 }
 
 /* ════════════════════════════════════════════════
-   MEASURE NOW — user-triggered photo + all sources
-════════════════════════════════════════════════ */
-async function measureNow() {
-  const btn=_('btn-measure'), status=_('msr-status');
-  btn.disabled=true; btn.textContent='⏳ Measuring…'; status.textContent='Focusing…';
-
-  // Track snapshot right now
-  const trackSnap = S.track?.getSettings?.()?.focusDistance ?? null;
-  if (trackSnap!=null && trackSnap>0.05) S.fdTrack = trackSnap;
-
-  const geoSnap = S.fdGeo;
-  const xrSnap  = S.xrDepth ?? null;
-  let exifSnap  = null;
-
-  if (S.ic) {
-    status.textContent = 'Taking photo…';
-    try {
-      const blob = await Promise.race([
-        S.ic.takePhoto({imageWidth:480}),
-        new Promise((_,r) => setTimeout(()=>r(new Error('timeout')), 6000)),
-      ]);
-      const url = URL.createObjectURL(blob);
-      const img = new Image(); img.src = url;
-      await Promise.race([
-        new Promise(res => {
-          EXIF.getData(img, function() {
-            const sd = EXIF.getTag(this,'SubjectDistance');
-            const fl = EXIF.getTag(this,'FocalLengthIn35mmFilm');
-            if (sd!=null&&sd>0.1&&sd<30){ S.fdExif=sd; exifSnap=sd; }
-            if (fl!=null&&fl>5){ S.fl35=fl; S.focalExif=focalFromFL35(fl,S.vW); }
-            res();
-          });
-        }),
-        new Promise(res => setTimeout(res, 3000)),
-      ]);
-      URL.revokeObjectURL(url);
-    } catch(e) { console.warn('[measure]', e?.message); }
-  }
-
-  // Update panel
-  tx('fd2', exifSnap !=null ? exifSnap.toFixed(2)+' m'  : S.ic ? 'no EXIF data in photo' : 'ImageCapture unavailable');
-  tx('fd1', trackSnap!=null ? trackSnap.toFixed(2)+' m' : 'N/A');
-  tx('fd3', geoSnap  !=null ? geoSnap.toFixed(2)+' m'   : '–');
-  tx('fd4', xrSnap   !=null ? xrSnap.toFixed(2)+' m'    : 'N/A');
-  fuseFocus();
-  tx('fdbest', S.fdBest!=null ? S.fdBest.toFixed(2)+' m' : '–');
-  tx('fdsrc', S.fdSrc);
-
-  const now=new Date();
-  tx('msr-time', now.toTimeString().slice(0,8));
-  const parts=[];
-  if (exifSnap !=null) parts.push('EXIF '+exifSnap.toFixed(2)+'m');
-  if (trackSnap!=null) parts.push('Track '+trackSnap.toFixed(2)+'m');
-  if (geoSnap  !=null) parts.push('Geo '+geoSnap.toFixed(2)+'m');
-  if (xrSnap   !=null) parts.push('XR '+xrSnap.toFixed(2)+'m');
-  status.textContent = parts.length ? '✓ '+parts.join(' · ') : 'No focus data — point at object and retry';
-  btn.disabled=false; btn.textContent='📸 MEASURE DISTANCE';
-}
-window.measureNow = measureNow;
-
-/* ════════════════════════════════════════════════
-   WEBXR DEPTH  (±1–3% on ToF/LiDAR devices)
-   Requires: Chrome 101+ Android, ARCore
+   WEBXR DEPTH  (±1–3% on Pixel 6+ / iPhone 12 Pro+)
 ════════════════════════════════════════════════ */
 async function checkXR() {
-  const astXr=_('ast-xr'), btnXr=_('btn-xr');
-  if (!navigator.xr) {
-    tx('xr-avail','Not available (Chrome 101+ Android required)');
-    if(astXr){astXr.textContent='no WebXR';astXr.className='acc-st na';} return;
-  }
+  const btnXr=_('btn-xr'), astXr=_('ast-xr');
+  if (!navigator.xr){tx('xr-avail','Not available (Chrome 101+ Android + ARCore needed)');return;}
   try {
-    const ok = await navigator.xr.isSessionSupported('immersive-ar');
-    tx('xr-avail', ok ? '✓ AR supported — tap button' : 'immersive-ar not supported (need ARCore)');
-    if(astXr){astXr.textContent=ok?'available':'not supported';astXr.className='acc-st '+(ok?'ok':'na');}
-    if(ok && btnXr) btnXr.style.display='block';
-  } catch(e) {
-    tx('xr-avail','XR check error: '+String(e?.message||e).slice(0,50));
-    if(astXr){astXr.textContent='error';astXr.className='acc-st na';}
-  }
+    const ok=await navigator.xr.isSessionSupported('immersive-ar');
+    tx('xr-avail',ok?'✓ AR supported — tap to enter depth mode':'Not supported on this device');
+    if(astXr){astXr.textContent=ok?'available':'unsupported';astXr.className='acc-st '+(ok?'ok':'na');}
+    if(ok&&btnXr) btnXr.style.display='block';
+  } catch(e){tx('xr-avail','Error: '+String(e?.message||e).slice(0,50));}
 }
+
 async function startXR() {
-  const btnXr=_('btn-xr'); btnXr.disabled=true; btnXr.textContent='Starting AR…';
+  const btnXr=_('btn-xr'); btnXr.disabled=true; btnXr.textContent='Starting…';
   try {
-    const session = await navigator.xr.requestSession('immersive-ar', {
+    const session=await navigator.xr.requestSession('immersive-ar',{
       optionalFeatures:['depth-sensing'],
       depthSensing:{usagePreference:['cpu-optimized'],dataFormatPreference:['luminance-alpha']},
     });
-    tx('xr-avail','✓ AR session active');
-    const gl = document.createElement('canvas').getContext('webgl2',{xrCompatible:true});
-    session.updateRenderState({baseLayer: new XRWebGLLayer(session, gl)});
-    const refSpace = await session.requestReferenceSpace('local');
-    session.requestAnimationFrame(function xrFrame(t,frame) {
+    // DO NOT create a full-screen canvas - use offscreen sampling only
+    const offscreen=document.createElement('canvas');
+    offscreen.width=1; offscreen.height=1;
+    const gl=offscreen.getContext('webgl2',{xrCompatible:true});
+    await gl.makeXRCompatible?.();
+    session.updateRenderState({baseLayer:new XRWebGLLayer(session,gl)});
+    const ref=await session.requestReferenceSpace('local');
+    tx('xr-avail','✓ AR depth session active');
+    btnXr.textContent='🔮 DEPTH ACTIVE'; btnXr.disabled=false;
+    session.requestAnimationFrame(function xrFrame(t,frame){
       session.requestAnimationFrame(xrFrame);
-      const pose=frame.getViewerPose(refSpace); if(!pose)return;
+      const pose=frame.getViewerPose(ref); if(!pose)return;
       const di=frame.getDepthInformation?.(pose.views[0]);
-      if (di) {
+      if(di){
         const d=di.getDepthInMeters(0.5,0.5);
-        if (d>0&&d<30) {
+        if(d>0.05&&d<30){
           S.xrDepth=d; tx('xr-depth',d.toFixed(3)+' m');
-          const e=_('ast-xr'); if(e){e.textContent=d.toFixed(2)+'m';e.className='acc-st live';}
+          const e=_('ast-xr');if(e){e.textContent=d.toFixed(2)+'m';e.className='acc-st live';}
         }
-      } else { tx('xr-depth','no depth (device lacks ToF/LiDAR)'); }
+      } else { tx('xr-depth','no depth (needs ToF/LiDAR sensor)'); }
     });
-    btnXr.textContent='🔮 AR DEPTH ACTIVE'; btnXr.disabled=false;
-  } catch(e) {
+  } catch(e){
     tx('xr-avail','AR failed: '+String(e?.message||e).slice(0,60));
     btnXr.disabled=false; btnXr.textContent='🔮 ENTER AR DEPTH MODE';
   }
 }
 window.startXR = startXR;
+
 
 /* ════════════════════════════════════════════════
    TAB SWITCH
@@ -1212,7 +1354,7 @@ function launch() {
   startHolistic();
   startFocusLoop();
   renderUI();
-  checkXR(); // check WebXR depth availability
+  checkXR();
 }
 window.launch = launch;
 

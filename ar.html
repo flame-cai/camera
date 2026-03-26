@@ -543,8 +543,9 @@ body{display:flex;flex-direction:column;height:100dvh}
         <div class="sec">Camera API</div>
         <div class="kvc">
           <div class="kv"><span class="kk">focusDistance range</span><span class="kv-v" id="cap-fdr">&ndash;</span></div>
-          <div class="kv"><span class="kk">focusMode</span><span class="kv-v" id="cap-fmo">&ndash;</span></div>
-          <div class="kv"><span class="kk">applyConstraints</span><span class="kv-v" id="cap-ac">&ndash;</span></div>
+          <div class="kv"><span class="kk">focusMode options</span><span class="kv-v" id="cap-fmo">&ndash;</span></div>
+          <div class="kv"><span class="kk">Active focusMode</span><span class="kv-v" id="cap-ac">&ndash;</span></div>
+          <div class="kv"><span class="kk">Raw focusDistance now</span><span class="kv-v y" id="cap-raw">&ndash;</span></div>
           <div class="kv"><span class="kk">Focal from pose</span><span class="kv-v" id="focb">&ndash;</span></div>
           <div class="kv"><span class="kk">Focal assumed FOV</span><span class="kv-v na" id="focc">&ndash;</span></div>
           <div class="kv"><span class="kk">focal_px using</span><span class="kv-v y" id="foc-use">&ndash;</span></div>
@@ -778,56 +779,43 @@ async function initHolistic() {
 
 /* ════════════════════════════════════════════════
    INIT — CAMERA AF focusDistance
-   Must: check capabilities, applyConstraints → poll
+   Probes capabilities and starts a raw live poll.
+   The CAPTURE button does the real single-shot AF
+   trigger needed to get a meaningful distance.
 ════════════════════════════════════════════════ */
 async function initFocusDist() {
-  setStep('afd','loading','Setting continuous AF + reading focusDistance…');
+  setStep('afd','loading','Probing focusDistance capability…');
   if (!S.track) { setStep('afd','skip','No camera track'); return; }
   try {
     const caps = S.track.getCapabilities?.() ?? {};
     const fdr  = caps.focusDistance ?? null;
     const fmo  = caps.focusMode ?? [];
     tx('cap-fmo', fmo.join(', ') || 'none');
-    tx('cap-fdr', fdr ? `${fdr.min?.toFixed(1)}\u2013${fdr.max?.toFixed(1)} m` : 'not supported');
+    tx('cap-fdr', fdr
+      ? fdr.min?.toFixed(2) + '\u2013' + fdr.max?.toFixed(2) + ' m (step ' + (fdr.step?.toFixed(2)||'?') + ')'
+      : 'not supported on this device');
 
     if (!fdr) {
       setStep('afd','skip','focusDistance not in capabilities');
       return;
     }
 
-    // Set continuous AF FIRST — focusDistance only updates after mode is set
-    const mode = fmo.includes('continuous') ? 'continuous'
-               : fmo.includes('auto')       ? 'auto'
-               : fmo[0] ?? null;
-    if (mode) {
-      try {
-        await S.track.applyConstraints({advanced:[{focusMode: mode}]});
-        tx('cap-ac', '\u2713 ' + mode);
-      } catch(_) { tx('cap-ac', 'applyConstraints failed'); }
-    }
-
-    // Wait for lens to settle after mode change
-    await new Promise(r => setTimeout(r, 600));
-
-    // Poll: re-apply constraint each tick to nudge driver into reporting fresh value.
-    // Many Android devices only update getSettings().focusDistance after an
-    // applyConstraints() call — without the nudge the value stays stale.
-    const poll = async () => {
-      try {
-        if (mode) await S.track.applyConstraints({advanced:[{focusMode: mode}]});
-      } catch(_) {}
-      const fd = S.track.getSettings?.()?.focusDistance ?? null;
-      S.fdTrack = (fd != null && fd > 0.05 && fd < 30) ? fd : null;
+    // Raw poll — just read getSettings() and show the raw value so user
+    // can see what the device is actually reporting (often stuck at min).
+    // doCapture() does the real single-shot AF trigger.
+    const rawPoll = () => {
+      const s = S.track.getSettings?.() ?? {};
+      const fd = s.focusDistance ?? null;
+      tx('cap-ac',  s.focusMode  ?? '\u2013');
+      tx('cap-raw', fd != null ? fd.toFixed(3) + ' m (raw)' : '\u2013');
+      // Only update fdTrack if it looks like a real measurement (> min + small delta)
+      const realMin = (fdr.min ?? 0) + (fdr.step ?? 0.01);
+      S.fdTrack = (fd != null && fd > realMin && fd < 30) ? fd : null;
     };
+    rawPoll();
+    S._focusPollId = setInterval(rawPoll, 800);
 
-    await poll();
-    S._focusPollId = setInterval(poll, 1500);
-
-    const first = S.fdTrack;
-    setStep('afd','ok',
-      fdr.min?.toFixed(1) + '\u2013' + fdr.max?.toFixed(1) + ' m'
-      + (first ? ' \u2022 now: ' + first.toFixed(2) + ' m' : ' \u2022 live polling')
-    );
+    setStep('afd','ok', 'Range: ' + fdr.min?.toFixed(2) + '\u2013' + fdr.max?.toFixed(2) + ' m \u2014 tap CAPTURE to measure');
   } catch(e) {
     setStep('afd','fail', String(e?.message||e).slice(0,55));
   }
@@ -1394,35 +1382,85 @@ window.camhLock  = camhLock;
 async function doCapture() {
   const btn = _('btn-capture'), status = _('cap-status');
   if (btn) btn.disabled = true;
-  if (status) status.textContent = 'Focusing…';
 
-  // Nudge AF constraint before reading — forces driver to report fresh focusDistance.
-  // On many Android devices getSettings().focusDistance is stale without this poke.
-  if (S.track) {
-    const caps = S.track.getCapabilities?.() ?? {};
-    const fmo  = caps.focusMode ?? [];
-    const mode = fmo.includes('continuous') ? 'continuous'
-               : fmo.includes('auto')       ? 'auto' : null;
-    if (mode) {
-      try { await S.track.applyConstraints({advanced:[{focusMode: mode}]}); } catch(_) {}
-      await new Promise(r => setTimeout(r, 350));
+  const caps = S.track?.getCapabilities?.() ?? {};
+  const fdr  = caps.focusDistance ?? null;
+  const fmo  = caps.focusMode ?? [];
+  const timeStr = new Date().toTimeString().slice(0,8);
+
+  // ── STRATEGY ─────────────────────────────────────────────────────────
+  // With continuous AF, getSettings().focusDistance is unreliable — most
+  // Android drivers report the capability minimum (e.g. 0.1 m) as a
+  // placeholder, not the actual lens position.
+  //
+  // The ONLY reliable method is single-shot / manual focus:
+  //   1. Switch to single-shot AF (or 'auto') → driver moves lens to focus
+  //   2. Wait for convergence (~1.2s typical AF time)
+  //   3. Read focusDistance — now it reflects the actual settled position
+  //   4. Restore continuous AF for live preview
+  // ─────────────────────────────────────────────────────────────────────
+
+  let fd = null;
+  let method = 'none';
+
+  if (S.track && fdr) {
+    // Try single-shot / auto AF for a real measurement
+    const shotMode = fmo.includes('single-shot') ? 'single-shot'
+                   : fmo.includes('auto')         ? 'auto'
+                   : null;
+    const contMode = fmo.includes('continuous')   ? 'continuous'
+                   : fmo.includes('auto')         ? 'auto'
+                   : null;
+
+    if (shotMode) {
+      if (status) status.textContent = 'Triggering single-shot AF …';
+      try {
+        // 1. Trigger single-shot focus
+        await S.track.applyConstraints({advanced:[{focusMode: shotMode}]});
+        // 2. Wait for AF to converge — typical Android AF takes 0.8-1.5s
+        if (status) status.textContent = 'AF converging …';
+        await new Promise(r => setTimeout(r, 1200));
+        // 3. Read settled focusDistance
+        fd = S.track.getSettings?.()?.focusDistance ?? null;
+        method = shotMode;
+      } catch(_) {}
+      // 4. Restore continuous AF for live preview
+      if (contMode) {
+        try { await S.track.applyConstraints({advanced:[{focusMode: contMode}]}); } catch(_) {}
+      }
+    } else {
+      // No single-shot available — just read what we have and flag it
+      fd = S.track.getSettings?.()?.focusDistance ?? null;
+      method = 'raw (continuous)';
     }
   }
 
-  const fd = S.track?.getSettings?.()?.focusDistance ?? null;
-  const timeStr = new Date().toTimeString().slice(0,8);
-  if (fd != null && fd > 0.05 && fd < 30) S.fdTrack = fd;
+  // Validate: discard if stuck at capability minimum (driver placeholder)
+  const rawMin = caps.focusDistance?.min ?? 0;
+  const step   = caps.focusDistance?.step ?? 0.01;
+  const isStuck = fd != null && Math.abs(fd - rawMin) < step * 1.5;
+
+  const valid = fd != null && fd > (rawMin + step) && fd < 30 && !isStuck;
+  if (valid) S.fdTrack = fd;
 
   const card = _('cap-result-card'); if (card) card.style.display = '';
-  tx('cap-focusd', fd != null ? fd.toFixed(3) + ' m' : 'not available on this device');
-  tx('cap-objd',   fd != null ? fd.toFixed(2) + ' m — object in focus' : '–');
-  tx('cap-time',   timeStr);
+  tx('cap-focusd', fd != null ? fd.toFixed(3) + ' m (via ' + method + ')' : 'not available');
+  tx('cap-objd',
+     valid ? fd.toFixed(2) + ' m — object in focus'
+           : isStuck ? 'stuck at min (' + fd?.toFixed(2) + ' m) — device limitation'
+           : '–'
+  );
+  tx('cap-time', timeStr);
+  tx('cap-raw',  fd != null ? fd.toFixed(3) + ' m (raw)' : '–');
 
   if (status) {
-    status.textContent = fd != null
+    status.textContent = valid
       ? '✓ Object in focus: ' + fd.toFixed(2) + ' m away'
-      : '⚠ focusDistance not available — enable AF step on home screen';
+      : isStuck
+        ? '⚠ focusDistance stuck at min — this device may not support distance readback'
+        : '⚠ focusDistance not available — enable AF step on home screen';
   }
+
   S._captureFlash = 10;
   if (btn) btn.disabled = false;
 }

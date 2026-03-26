@@ -372,11 +372,7 @@ body{display:flex;flex-direction:column;height:100dvh}
 <!-- ════════════════ APP ════════════════ -->
 <div id="app">
   <div id="tabs">
-    <button class="tab on" id="tab0" onclick="GT(0)">
-      <span class="ti">🤸</span>HOLISTIC
     </button>
-    <button class="tab" id="tab1" onclick="GT(1)">
-      <span class="ti">📷</span>FOCUS
     </button>
   </div>
 
@@ -394,24 +390,24 @@ body{display:flex;flex-direction:column;height:100dvh}
       </div>
       <div class="nums">
         <div class="num n0">
-          <span class="nk">Cam Height</span>
-          <span class="nv g" id="H0">--</span><span class="nu"> m</span>
-          <div class="ns" id="H0s">ankle→ground</div>
-        </div>
-        <div class="num n1">
           <span class="nk">Distance</span>
           <span class="nv b" id="D0">--</span><span class="nu"> m</span>
           <div class="ns" id="D0s">self-cal</div>
         </div>
-        <div class="num n2">
+        <div class="num n1">
           <span class="nk">Person H</span>
           <span class="nv p" id="P0">--</span><span class="nu"> m</span>
           <div class="ns">world lm</div>
         </div>
+        <div class="num n2">
+          <span class="nk">CamH height</span>
+          <span class="nv g" id="CH0">--</span><span class="nu"> m</span>
+          <div class="ns" id="CH0s">–</div>
+        </div>
       </div>
       <div class="det">
         <!-- MEASURE BUTTON -->
-        <button id="btn-measure" onclick="lockMeasure()" style="width:100%;padding:13px;margin-bottom:5px;background:linear-gradient(135deg,rgba(0,232,184,.2),rgba(0,232,184,.08));border:1.5px solid rgba(0,232,184,.55);border-radius:4px;font-family:var(--FD);font-size:20px;letter-spacing:4px;color:var(--g);cursor:pointer">&#128248; MEASURE</button>
+        <button id="btn-measure" onclick="lockMeasure()" class="btn-main">&#128248; MEASURE</button>
         <div id="lock-status" style="font-size:7.5px;color:var(--gd);font-family:var(--FC);font-weight:600;letter-spacing:.5px;text-align:center;min-height:14px;margin-bottom:4px"></div>
         <div class="sec" id="sec-locked" style="display:none">Locked Measurement</div>
         <div class="kvc" id="kvc-locked" style="display:none">
@@ -421,19 +417,38 @@ body{display:flex;flex-direction:column;height:100dvh}
           <div class="kv"><span class="kk">Confidence</span><span class="kv-v y" id="lk-conf">&ndash;</span></div>
           <div class="kv"><span class="kk">Locked at</span><span class="kv-v na" id="lk-t">&ndash;</span></div>
         </div>
-        <div class="sec">Distance &mdash; worldLandmarks only</div>
+        <!-- CAMERA HEIGHT METHOD -->
+        <div class="sec">Camera-height geometry</div>
+        <div class="ff-note">H<sub>person</sub> = H<sub>cam</sub> &times; P<sub>p</sub> / P<sub>c</sub> &ensp;&mdash;&ensp;no focal length needed.</div>
+        <div class="kvc">
+          <div class="kv">
+            <span class="kk">Camera height H<sub>cam</sub></span>
+            <div style="display:flex;align-items:center;gap:8px">
+              <input type="range" id="camh-slider" min="0.20" max="1.70" step="0.10" value="1.20"
+                aria-label="Camera height from floor in metres"
+                style="width:90px;accent-color:var(--g)" oninput="camhSlide()">
+              <span class="kv-v y" id="camh-d" style="font-size:15px">1.20 m</span>
+            </div>
+          </div>
+          <div class="kv"><span class="kk">P<sub>p</sub> mask span</span><span class="kv-v" id="camh-span">&ndash;</span></div>
+          <div class="kv"><span class="kk">P<sub>c</sub> feet below centre</span><span class="kv-v" id="camh-feet">&ndash;</span></div>
+          <div class="kv"><span class="kk">H<sub>person</sub></span><span class="kv-v b" id="camh-height" style="font-size:15px">&ndash;</span></div>
+        </div>
+        <button id="camh-lock-btn" onclick="camhLock()" class="btn-secondary">&#128204; LOCK HEIGHT</button>
+        <div class="result-card" id="camh-locked-card" style="display:none">
+          <div class="result-row"><span class="result-label">Locked height</span><span class="result-val accent-g" id="camhl-h">&ndash;</span></div>
+          <div class="result-row"><span class="result-label">H<sub>cam</sub></span><span class="result-val" id="camhl-hcam">&ndash;</span></div>
+          <div class="result-row"><span class="result-label">P<sub>p</sub> / P<sub>c</sub></span><span class="result-val dim" id="camhl-ppc">&ndash;</span></div>
+          <div class="result-row"><span class="result-label">Locked at</span><span class="result-val dim" id="camhl-t">&ndash;</span></div>
+        </div>
+
+        <div class="sec">Distance breakdown</div>
         <div class="kvc">
           <div class="kv"><span class="kk">A &middot; Nose/ankle vertical solve</span><span class="kv-v b" id="dA">&ndash;</span></div>
           <div class="kv"><span class="kk">B &middot; Hip-width projection</span><span class="kv-v" id="dB">&ndash;</span></div>
           <div class="kv"><span class="kk">&#9654; Fused (A&times;60% + B&times;40%)</span><span class="kv-v b" id="dFused">&ndash;</span></div>
         </div>
-        <div class="sec">World Coordinates (hip origin)</div>
-        <div class="g3">
-          <div class="cell"><div class="ck">Nose Y</div><div class="cv" id="wny">--<span class="cu">m</span></div></div>
-          <div class="cell"><div class="ck">Ankle Y</div><div class="cv" id="way">--<span class="cu">m</span></div></div>
-          <div class="cell"><div class="ck">Nose Z</div><div class="cv b" id="whd">--<span class="cu">m</span></div></div>
-        </div>
-        <div class="sec">Self-Calibration</div>
+        <div class="sec">Calibration</div>
         <div class="g3">
           <div class="cell"><div class="ck">focal px</div><div class="cv" id="fp0">--</div></div>
           <div class="cell"><div class="ck">FOV est</div><div class="cv b" id="fv0">--<span class="cu">&deg;</span></div></div>
@@ -443,124 +458,6 @@ body{display:flex;flex-direction:column;height:100dvh}
       </div>
     </div>
 
-    <!-- ══ TAB 1 FOCUS ══ -->
-    <div class="pane" id="p1">
-      <div class="cam" id="cam1">
-        <video id="v1" autoplay playsinline muted></video>
-        <canvas id="c1"></canvas>
-        <div class="cam-b"></div>
-        <div class="cam-chip chip-wait" id="chip1">Focus</div>
-      </div>
-      <div class="nums">
-        <div class="num n0"><span class="nk">Cam Height</span>
-          <span class="nv g" id="H1">--</span><span class="nu"> m</span>
-          <div class="ns" id="H1s">–</div></div>
-        <div class="num n1"><span class="nk">Distance</span>
-          <span class="nv b" id="D1">--</span><span class="nu"> m</span>
-          <div class="ns" id="D1s">–</div></div>
-        <div class="num n2"><span class="nk">Person H</span>
-          <span class="nv p" id="P1">--</span><span class="nu"> m</span>
-          <div class="ns" id="P1s">–</div></div>
-      </div>
-      <div class="det">
-
-        <!-- ── CAPTURE ── -->
-        <div class="ff-note">
-          Point at subject, tap Capture. The camera autofocuses, then the
-          settled focus distance is read as object distance.
-        </div>
-        <button id="btn-capture" onclick="doCapture()" class="btn-main" aria-label="Autofocus and read distance">
-          &#128247; CAPTURE &amp; MEASURE
-        </button>
-        <div id="cap-status" role="status" aria-live="polite" class="cap-status-msg"></div>
-        <div class="result-card" id="cap-result-card" style="display:none">
-          <div class="result-row">
-            <span class="result-label">Object distance</span>
-            <span class="result-val accent-b" id="cap-objd">&ndash;</span>
-          </div>
-          <div class="result-row">
-            <span class="result-label">Method</span>
-            <span class="result-val dim" id="cap-focusd">&ndash;</span>
-          </div>
-          <div class="result-row">
-            <span class="result-label">Raw readback</span>
-            <span class="result-val dim" id="cap-raw">&ndash;</span>
-          </div>
-          <div class="result-row">
-            <span class="result-label">Captured at</span>
-            <span class="result-val dim" id="cap-time">&ndash;</span>
-          </div>
-        </div>
-
-        <!-- ── CAMERA HEIGHT METHOD ── -->
-        <div class="sec">Person height from camera geometry</div>
-        <div class="ff-note">H<sub>person</sub> = H<sub>cam</sub> &times; P<sub>p</sub> / P<sub>c</sub>
-        &ensp;&mdash;&ensp;no focal length or focus distance needed.</div>
-        <div class="kvc">
-          <div class="kv">
-            <span class="kk">Your camera height H<sub>cam</sub></span>
-            <div style="display:flex;align-items:center;gap:8px">
-              <input type="range" id="camh-slider" min="0.20" max="1.70" step="0.10" value="1.20"
-                aria-label="Camera height from floor in metres"
-                style="width:90px;accent-color:var(--g)" oninput="camhSlide()">
-              <span class="kv-v y" id="camh-d" style="font-size:15px">1.20 m</span>
-            </div>
-          </div>
-          <div class="kv"><span class="kk">P<sub>p</sub> &mdash; mask span head→feet</span><span class="kv-v" id="camh-span">&ndash;</span></div>
-          <div class="kv"><span class="kk">P<sub>c</sub> &mdash; feet below image centre</span><span class="kv-v" id="camh-feet">&ndash;</span></div>
-          <div class="kv"><span class="kk">H<sub>person</sub> live estimate</span><span class="kv-v b" id="camh-height" style="font-size:15px">&ndash;</span></div>
-        </div>
-        <button id="camh-lock-btn" onclick="camhLock()" class="btn-secondary" aria-label="Lock current height estimate">
-          📌 LOCK HEIGHT
-        </button>
-        <div class="result-card" id="camh-locked-card" style="display:none">
-          <div class="result-row">
-            <span class="result-label">Locked height</span>
-            <span class="result-val accent-g" id="camhl-h">&ndash;</span>
-          </div>
-          <div class="result-row">
-            <span class="result-label">H<sub>cam</sub> used</span>
-            <span class="result-val" id="camhl-hcam">&ndash;</span>
-          </div>
-          <div class="result-row">
-            <span class="result-label">P<sub>p</sub> / P<sub>c</sub></span>
-            <span class="result-val dim" id="camhl-ppc">&ndash;</span>
-          </div>
-          <div class="result-row">
-            <span class="result-label">Locked at</span>
-            <span class="result-val dim" id="camhl-t">&ndash;</span>
-          </div>
-        </div>
-
-        <!-- ── DISTANCE SOURCES ── -->
-        <div class="sec">Distance sources</div>
-        <div class="kvc">
-          <div class="kv"><span class="kk">① Camera AF focusDistance</span><span class="kv-v b" id="fd-track">&ndash;</span></div>
-          <div class="kv"><span class="kk">② Pose world self-cal</span><span class="kv-v" id="fd-geo">&ndash;</span></div>
-          <div class="kv"><span class="kk">▶ Best estimate</span><span class="kv-v b" id="fdbest">&ndash;</span></div>
-          <div class="kv"><span class="kk">Source</span><span class="kv-v y" id="fdsrc">&ndash;</span></div>
-        </div>
-        <div class="acc-table">
-          <div class="acc-row acc-hdr"><span>Method</span><span>Accuracy</span><span>Status</span></div>
-          <div class="acc-row"><span>Camera AF</span><span class="acc-val">&plusmn;5&ndash;15%</span><span class="acc-st" id="ast-track">&ndash;</span></div>
-          <div class="acc-row"><span>Pose geometry</span><span class="acc-val">&plusmn;5&ndash;15%</span><span class="acc-st" id="ast-geo">&ndash;</span></div>
-          <div class="acc-row"><span>CamH method</span><span class="acc-val">&plusmn;5&ndash;12%</span><span class="acc-st" id="ast-camh">&ndash;</span></div>
-        </div>
-
-        <!-- ── CAMERA API ── -->
-        <div class="sec">Camera API</div>
-        <div class="kvc">
-          <div class="kv"><span class="kk">focusDistance range</span><span class="kv-v" id="cap-fdr">&ndash;</span></div>
-          <div class="kv"><span class="kk">focusMode options</span><span class="kv-v" id="cap-fmo">&ndash;</span></div>
-          <div class="kv"><span class="kk">Active focusMode</span><span class="kv-v" id="cap-ac">&ndash;</span></div>
-          <div class="kv"><span class="kk">Raw focusDistance now</span><span class="kv-v y" id="cap-raw-live">&ndash;</span></div>
-          <div class="kv"><span class="kk">Focal from pose</span><span class="kv-v" id="focb">&ndash;</span></div>
-          <div class="kv"><span class="kk">Focal assumed FOV</span><span class="kv-v na" id="focc">&ndash;</span></div>
-          <div class="kv"><span class="kk">focal_px using</span><span class="kv-v y" id="foc-use">&ndash;</span></div>
-        </div>
-        <div class="safe"></div>
-      </div>
-    </div>
 
   </div>
 </div>
@@ -583,9 +480,6 @@ const STEPS = [
   {id:'cam', ico:'📷', name:'Camera (rear)',               req:true},
   {id:'esm', ico:'⚙️', name:'MediaPipe Tasks @latest',      req:true},
   {id:'hol', ico:'🤸', name:'HolisticLandmarker (13 MB)',   req:true},
-  {id:'afd', ico:'🔭', name:'Camera AF focusDistance',      req:false},
-  {id:'imu', ico:'📡', name:'DeviceMotion IMU',             req:false},
-  {id:'sk',  ico:'🔬', name:'Continuous autofocus (AF)',        req:false},
 ];
 const St = {};
 STEPS.forEach(s => { St[s.id] = {state:'wait', msg:'Waiting…'}; });
@@ -604,8 +498,6 @@ const S = {
   focalGeo:null, focalAsm:null,
   hConf:0, fps:0, _fc:0, _lt:0,
   // Focus
-  fdTrack:null, fdGeo:null,
-  fdBest:null, fdSrc:'\u2013',
   focal_px_best:null,
   // worldLandmarks distances
   distA:null, distB:null,
@@ -619,7 +511,6 @@ const S = {
   // Measurement lock
   locked:null,
   // IMU
-  imu:{active:false, pitch:0, tilt:90, conf:0, samples:0, buf:[]},
 };
 let _loading = false;
 
@@ -686,9 +577,6 @@ const RETRY = {
   cam: () => initCamera().catch(()=>{}),
   esm: () => initMP().catch(()=>{}),
   hol: () => initHolistic().catch(()=>{}),
-  afd: () => initFocusDist().catch(()=>{}),
-  imu: () => initIMU().catch(()=>{}),
-  sk:  () => initApplyConstr().catch(()=>{}),
 };
 function retryStep(id) { RETRY[id]?.(); }
 window.retryStep = retryStep;
@@ -709,7 +597,7 @@ async function initCamera() {
       }),
       timeout,
     ]);
-    for (const id of ['v0','v1']) {
+    for (const id of ['v0']) {
       const v = _(id); v.srcObject = S.stream; v.play().catch(()=>{});
     }
     const v0 = _('v0');
@@ -786,96 +674,14 @@ async function initHolistic() {
 }
 
 /* ════════════════════════════════════════════════
-   INIT — CAMERA AF focusDistance
-   Probes capabilities and starts a raw live poll.
-   The CAPTURE button does the real single-shot AF
-   trigger needed to get a meaningful distance.
+   INIT — CAMERA AF focusDistance (diagnostic only)
+   Android Chrome reports only capability boundary during AF.
+   Not reliable for distance measurement.
 ════════════════════════════════════════════════ */
-async function initFocusDist() {
-  setStep('afd','loading','Probing focusDistance capability…');
-  if (!S.track) { setStep('afd','skip','No camera track'); return; }
-  try {
-    const caps = S.track.getCapabilities?.() ?? {};
-    const fdr  = caps.focusDistance ?? null;
-    const fmo  = caps.focusMode ?? [];
-    tx('cap-fmo', fmo.join(', ') || 'none');
-    tx('cap-fdr', fdr
-      ? fdr.min?.toFixed(2) + '\u2013' + fdr.max?.toFixed(2) + ' m (step ' + (fdr.step?.toFixed(2)||'?') + ')'
-      : 'not supported on this device');
-
-    if (!fdr) {
-      setStep('afd','skip','focusDistance not in capabilities');
-      return;
-    }
-
-    // Raw poll — just read getSettings() and show the raw value so user
-    // can see what the device is actually reporting (often stuck at min).
-    // doCapture() does the real single-shot AF trigger.
-    const rawPoll = () => {
-      const s = S.track.getSettings?.() ?? {};
-      const fd = s.focusDistance ?? null;
-      tx('cap-ac',  s.focusMode  ?? '\u2013');
-      tx('cap-raw', fd != null ? fd.toFixed(3) + ' m (raw)' : '\u2013');
-      // Only update fdTrack if it looks like a real measurement (> min + small delta)
-      const realMin = (fdr.min ?? 0) + (fdr.step ?? 0.01);
-      S.fdTrack = (fd != null && fd > realMin && fd < 30) ? fd : null;
-    };
-    rawPoll();
-    S._focusPollId = setInterval(rawPoll, 800);
-
-    setStep('afd','ok', 'Range: ' + fdr.min?.toFixed(2) + '\u2013' + fdr.max?.toFixed(2) + ' m \u2014 tap CAPTURE to measure');
-  } catch(e) {
-    setStep('afd','fail', String(e?.message||e).slice(0,55));
-  }
-}
-
-/* ════════════════════════════════════════════════
-   INIT — confirm autofocus mode (sk step)
-   initFocusDist already sets AF + starts poll.
-   This step just reads back what mode is active.
-════════════════════════════════════════════════ */
-async function initApplyConstr() {
-  setStep('sk','loading','Confirming autofocus mode…');
-  if (!S.track) { setStep('sk','skip','No camera track'); return; }
-  try {
-    const mode = S.track.getSettings?.()?.focusMode ?? 'unknown';
-    tx('cap-ac', '✓ ' + mode);
-    setStep('sk','ok','AF mode: ' + mode);
-  } catch(e) {
-    setStep('sk','fail', String(e?.message||e).slice(0,60));
-  }
-}
 
 /* ════════════════════════════════════════════════
    INIT — IMU DeviceMotion
 ════════════════════════════════════════════════ */
-async function initIMU() {
-  setStep('imu','loading','Requesting DeviceMotion…');
-  if (!window.DeviceMotionEvent) { setStep('imu','skip','DeviceMotion not supported'); return; }
-  const setup = () => {
-    window.addEventListener('devicemotion', e => {
-      const g = e.accelerationIncludingGravity; if (!g) return;
-      S.imu.buf.push({x:g.x||0, y:g.y||0, z:g.z||0});
-      if (S.imu.buf.length > 80) S.imu.buf.shift();
-      S.imu.samples++;
-      const n  = S.imu.buf.length;
-      const ay = S.imu.buf.reduce((a,b)=>a+b.y,0)/n;
-      const ax = S.imu.buf.reduce((a,b)=>a+b.x,0)/n;
-      const az = S.imu.buf.reduce((a,b)=>a+b.z,0)/n;
-      S.imu.pitch = Math.atan2(ay, Math.sqrt(ax*ax+az*az)) / DEG;
-      S.imu.tilt  = Math.abs(90 - Math.abs(S.imu.pitch));
-      S.imu.conf  = Math.min(1, n/80) * Math.max(0, 1 - S.imu.tilt/40) * 0.7;
-      S.imu.active = true;
-    }, {passive:true});
-    setStep('imu','ok','DeviceMotion active');
-  };
-  try {
-    if (typeof DeviceMotionEvent.requestPermission === 'function') {
-      const r = await DeviceMotionEvent.requestPermission();
-      r === 'granted' ? setup() : setStep('imu','skip','Permission denied');
-    } else { setup(); }
-  } catch(e) { setStep('imu','skip', String(e?.message||e).slice(0,50)); }
-}
 
 /* ════════════════════════════════════════════════
    WORLD-LANDMARK DISTANCE — two methods, no references
@@ -1209,7 +1015,6 @@ function lockMeasure() {
   tx('lk-h',    s.personH.toFixed(3) + ' m');
   tx('lk-d',    s.dist != null ? s.dist.toFixed(2) + ' m' : '\u2013');
   tx('lk-c',    s.camH != null ? s.camH.toFixed(2) + ' m' : '\u2013');
-  tx('lk-conf', Math.round(s.conf * 100) + '%');
   tx('lk-t',    s.time);
   const sl = _('sec-locked'); if(sl) sl.style.display = '';
   const kl = _('kvc-locked'); if(kl) kl.style.display = '';
@@ -1221,101 +1026,6 @@ function lockMeasure() {
 }
 window.lockMeasure = lockMeasure;
 
-function startFocusLoop() {
-  const vid = _('v1'), cv = _('c1');
-  const loop = () => {
-    if (vid.readyState >= 2) {
-      const camDiv = _('cam1');
-      const W = camDiv.clientWidth  || 390;
-      const H = camDiv.clientHeight || 520;
-      if (cv.width !== W || cv.height !== H) { cv.width = W; cv.height = H; }
-      const ctx = cv.getContext('2d'), cx = W/2, cy = H/2;
-      ctx.clearRect(0, 0, W, H);
-      // Overlay only — video element handles display via object-fit:cover
-      // Compute cover crop for overlay coordinate mapping
-      const dispAR = W / H, vidAR = S.vW / S.vH;
-      let cropL=0, cropT=0, cropW=1, cropH=1;
-      if (vidAR > dispAR + 0.01) {
-        cropW = (S.vH * dispAR) / S.vW; cropL = (1-cropW)/2;
-      } else if (vidAR < dispAR - 0.01) {
-        cropH = (S.vW/dispAR) / S.vH;   cropT = (1-cropH)/2;
-      }
-      const lx = lm => ((lm.x - cropL) / cropW) * W;
-      const ly = lm => ((lm.y - cropT) / cropH) * H;
-      // Capture flash
-      if (S._captureFlash > 0) {
-        const a = S._captureFlash / 10;
-        ctx.fillStyle = 'rgba(240,184,48,' + (a * 0.15) + ')';
-        ctx.fillRect(0, 0, W, H);
-        ctx.strokeStyle = 'rgba(240,184,48,' + (a * 0.9) + ')';
-        ctx.lineWidth = 3; ctx.setLineDash([]);
-        ctx.strokeRect(4, 4, W-8, H-8);
-        S._captureFlash--;
-      }
-      // Crosshair
-      ctx.strokeStyle = 'rgba(0,232,184,.5)'; ctx.lineWidth = 1;
-      ctx.beginPath(); ctx.moveTo(cx-10,cy); ctx.lineTo(cx+10,cy); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(cx,cy-10); ctx.lineTo(cx,cy+10); ctx.stroke();
-      // Horizontal centre line (for Pc reference)
-      ctx.strokeStyle = 'rgba(0,232,184,.2)'; ctx.lineWidth = 0.5; ctx.setLineDash([4,6]);
-      ctx.beginPath(); ctx.moveTo(0,cy); ctx.lineTo(W,cy); ctx.stroke();
-      ctx.setLineDash([]);
-
-      // Pp / Pc overlay — drawn when maskSpan is valid
-      if (S.maskSpan && S.camhPp != null && S.camhPc != null) {
-        const ms = S.maskSpan;
-        const cropT = (S.cropSy||0)/(S.vH||1);
-        const cropH = (S.cropSh||S.vH||1)/(S.vH||1);
-        // Top of person in display pixels
-        const topDisp  = (ms.topY    - cropT) / cropH;
-        const botDisp  = (ms.bottomY - cropT) / cropH;
-        const topPx  = topDisp  * H;
-        const botPx  = botDisp  * H;
-        const lx1 = cx - 28, lx2 = cx + 28;
-
-        // Pp line: head-top to feet-bottom (amber)
-        ctx.strokeStyle = 'rgba(239,159,39,.85)'; ctx.lineWidth = 1.5;
-        ctx.beginPath(); ctx.moveTo(lx1, topPx); ctx.lineTo(lx2, topPx); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(lx1, botPx); ctx.lineTo(lx2, botPx); ctx.stroke();
-        ctx.strokeStyle = 'rgba(239,159,39,.5)'; ctx.lineWidth = 1;
-        ctx.beginPath(); ctx.moveTo(cx, topPx); ctx.lineTo(cx, botPx); ctx.stroke();
-        // Pp label
-        ctx.font = 'bold 11px "Bebas Neue"';
-        ctx.fillStyle = 'rgba(239,159,39,.95)'; ctx.textAlign = 'right';
-        ctx.fillText('Pp=' + S.camhPp.toFixed(0) + 'px', cx - 32, (topPx + botPx)/2 + 4);
-
-        // Pc line: centre → feet-bottom (blue)
-        ctx.strokeStyle = 'rgba(55,138,221,.85)'; ctx.lineWidth = 1.5;
-        ctx.beginPath(); ctx.moveTo(cx + 32, cy); ctx.lineTo(cx + 44, cy); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(cx + 32, botPx); ctx.lineTo(cx + 44, botPx); ctx.stroke();
-        ctx.strokeStyle = 'rgba(55,138,221,.5)'; ctx.lineWidth = 1;
-        ctx.beginPath(); ctx.moveTo(cx + 38, cy); ctx.lineTo(cx + 38, botPx); ctx.stroke();
-        // Pc label
-        ctx.fillStyle = 'rgba(55,138,221,.95)'; ctx.textAlign = 'left';
-        ctx.fillText('Pc=' + S.camhPc.toFixed(0) + 'px', cx + 48, (cy + botPx)/2 + 4);
-
-        // Height result chip
-        if (S.camhHeight) {
-          ctx.font = 'bold 13px "Bebas Neue"';
-          ctx.fillStyle = 'rgba(0,232,184,.95)'; ctx.textAlign = 'center';
-          ctx.fillText('\u2195 ' + S.camhHeight.toFixed(3) + ' m', cx, topPx - 8);
-        }
-      }
-      // Distance HUD
-      if (S.fdBest != null) {
-        ctx.font='bold 14px "Bebas Neue"';
-        ctx.fillStyle='rgba(72,130,255,.92)'; ctx.textAlign='center';
-        ctx.fillText(S.fdBest.toFixed(2)+' m', cx, cy-44);
-        ctx.strokeStyle='rgba(72,130,255,.28)'; ctx.lineWidth=1;
-        ctx.beginPath(); ctx.arc(cx,cy,22,0,Math.PI*2); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(cx-5,cy); ctx.lineTo(cx+5,cy); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(cx,cy-5); ctx.lineTo(cx,cy+5); ctx.stroke();
-      }
-    }
-    requestAnimationFrame(loop);
-  };
-  loop();
-}
 
 /* ════════════════════════════════════════════════
    FOCUS FUSION — reference-free sources only
@@ -1336,7 +1046,7 @@ function camhSlide() {
 function updateCamHHeight() {
   const hCam  = parseFloat(_('camh-slider')?.value || '1.20');
   const ms    = S.maskSpan;
-  const dispH = _('cam1')?.clientHeight || 520;
+  const dispH = _('cam0')?.clientHeight || 520;
 
   if (!ms || ms.spanY < 0.05) {
     tx('camh-span', '–'); tx('camh-feet', '–');
@@ -1383,139 +1093,6 @@ window.camhSlide = camhSlide;
 window.camhLock  = camhLock;
 
 
-
-
-/* ================================================================
-   CAPTURE & MEASURE
-   
-   Uses the confirmed-working pattern for this device:
-   1. Switch to continuous AF (camera hunts to subject)
-   2. Wait 2000ms for full convergence
-   3. Freeze: switch to manual WITHOUT focusDistance
-      (locks lens at wherever AF settled)
-   4. Poll getSettings().focusDistance 3 times over 300ms
-      and take the median - avoids single-sample noise
-   5. Restore continuous AF for live preview
-   
-   This is the only reliable method confirmed by W3C spec and
-   Dynamsoft research for Chrome Android focusDistance readback.
-================================================================ */
-async function doCapture() {
-  const btn = _('btn-capture'), status = _('cap-status');
-  if (btn) btn.disabled = true;
-
-  const caps = S.track?.getCapabilities?.() ?? {};
-  const fdr  = caps.focusDistance ?? null;
-  const fmo  = caps.focusMode ?? [];
-  const timeStr = new Date().toTimeString().slice(0,8);
-
-  if (!S.track || !fdr) {
-    const card = _('cap-result-card'); if (card) card.style.display = '';
-    tx('cap-objd',   'focusDistance API not available on this device');
-    tx('cap-focusd', 'enable AF step on home screen');
-    tx('cap-raw',    '\u2013'); tx('cap-time', timeStr);
-    if (status) status.textContent = '\u26a0 focusDistance not supported';
-    if (btn) btn.disabled = false;
-    return;
-  }
-
-  // ── Root cause of 0.1 / 10 problem ────────────────────────────────────────
-  // Android camera2 LENS_FOCUS_DISTANCE is in DIOPTERS (= 1/meters).
-  // Chrome converts: reported_meters = 1 / diopters.
-  // When lens is at infinity: diopters=0 → 1/0=NaN → Chrome clamps to cap.max (10m).
-  // When lens is at nearest:  diopters=max → Chrome clamps to cap.min (0.1m).
-  // During AF HUNTING the driver oscillates between these extremes.
-  // Reading at any single point catches it at min or max = driver artifact.
-  //
-  // FIX: Poll continuously during AF. Discard readings at exact min/max.
-  // A reading strictly between min and max IS the real converged distance.
-  // Poll up to 4 seconds; accept first stable non-extreme reading.
-  // ──────────────────────────────────────────────────────────────────────────
-
-  const fdMin  = fdr.min ?? 0;
-  const fdMax  = fdr.max ?? 10;
-  const fdStep = fdr.step ?? 0.01;
-  // Tolerance: a reading is "at extreme" if within 1 step of min or max
-  const isExtreme = (v) => v == null
-    || Math.abs(v - fdMin) < fdStep * 0.5
-    || Math.abs(v - fdMax) < fdStep * 0.5;
-
-  // Set continuous AF
-  const contMode = fmo.includes('continuous') ? 'continuous'
-                 : fmo.includes('auto')       ? 'auto' : null;
-  if (contMode) {
-    try { await S.track.applyConstraints({advanced:[{focusMode: contMode}]}); } catch(_) {}
-  }
-
-  if (status) status.textContent = 'Autofocusing \u2014 hold steady\u2026';
-
-  // Poll every 120ms for up to 4000ms, collecting non-extreme readings
-  const validReadings = [];
-  const pollStart = Date.now();
-  while (Date.now() - pollStart < 4000) {
-    await new Promise(r => setTimeout(r, 120));
-    const fd = S.track.getSettings?.()?.focusDistance ?? null;
-    tx('cap-raw-live', fd != null ? fd.toFixed(3) + ' m' : '\u2013');
-    if (!isExtreme(fd)) {
-      validReadings.push(fd);
-      // Once we have 3 consistent non-extreme readings, AF has converged
-      if (validReadings.length >= 3) {
-        const last3 = validReadings.slice(-3);
-        const spread = Math.max(...last3) - Math.min(...last3);
-        if (spread < fdStep * 3) break;  // stable enough
-      }
-    }
-    if (status) {
-      const elapsed = Math.round((Date.now() - pollStart) / 1000);
-      const dots = '.'.repeat((elapsed % 3) + 1);
-      status.textContent = 'Autofocusing' + dots + ' (' + elapsed + 's)';
-    }
-  }
-
-  const card = _('cap-result-card'); if (card) card.style.display = '';
-
-  if (validReadings.length === 0) {
-    // Never got a non-extreme reading — device does not expose real AF distance
-    tx('cap-objd',   'device limitation: AF distance not readable');
-    tx('cap-focusd', 'driver only reports min (' + fdMin.toFixed(2) +
-                     'm) or max (' + fdMax.toFixed(2) + 'm) \u2014 never a real distance');
-    tx('cap-raw',    'all readings were at capability boundary');
-    tx('cap-time',   timeStr);
-    if (status) status.textContent = '\u26a0 This device does not expose live AF distance via WebRTC';
-    if (btn) btn.disabled = false;
-    S._captureFlash = 6;
-    return;
-  }
-
-  // Take median of valid readings
-  validReadings.sort((a, b) => a - b);
-  const fd = validReadings[Math.floor(validReadings.length / 2)];
-  S.fdTrack = fd;
-
-  tx('cap-objd',   fd.toFixed(2) + ' m from camera');
-  tx('cap-focusd', 'continuous AF \u2192 ' + validReadings.length + ' valid readings, median taken');
-  tx('cap-raw',    validReadings.map(v => v.toFixed(2)).join(', ') + ' m');
-  tx('cap-time',   timeStr);
-  if (status) status.textContent = '\u2713 Object distance: ' + fd.toFixed(2) + ' m';
-  S._captureFlash = 10;
-  if (btn) btn.disabled = false;
-}
-window.doCapture = doCapture;
-
-function fuseFocus() {
-  S.focal_px_best = S.focalGeo ?? S.focalAsm;
-  const srcs = [];
-  if (S.fdTrack != null && S.fdTrack > 0.05)
-    srcs.push({v:S.fdTrack, w:0.9,  id:'Camera AF'});
-  if (S.fdGeo != null && S.fdGeo > 0.1)
-    srcs.push({v:S.fdGeo,   w:0.8 * Math.max(0.1, S.hConf), id:'Geometry'});
-  if (!srcs.length) { S.fdBest=null; S.fdSrc='\u2013'; return; }
-  const ws = srcs.reduce((a,b) => a+b.w, 0);
-  S.fdBest = srcs.reduce((a,b) => a+b.v*b.w, 0) / ws;
-  S.fdSrc  = srcs.reduce((a,b) => a.w>b.w ? a : b).id;
-}
-
-
 /* ════════════════════════════════════════════════
    RENDER UI
 ════════════════════════════════════════════════ */
@@ -1523,13 +1100,9 @@ function renderUI() {
   fuseFocus();
   const focal = S.focal_px_best;
 
-  // ── Tab 0 — Holistic ──
-  nm('H0', S.camH);  tx('H0s', S.camH ? 'ankle\u2192ground' : '\u2013');
   nm('D0', S.dist);  tx('D0s', S.dist ? 'worldLm fused' : '\u2013');
+  nm('CH0', S.camhHeight); tx('CH0s', S.camhHeight ? 'cam-H geo' : '–');
   nm('P0', S.personH);
-  nm('wny', S.wNose?.y,   3);
-  nm('way', S.wAnkle?.y,  3);
-  nm('whd', S.wNose?.z,   3);   // nose Z in world frame
   nm('dA',  S.distA,      2);
   nm('dB',  S.distB,      2);
   nm('dFused', S.dist,    2);
@@ -1537,54 +1110,18 @@ function renderUI() {
   tx('fv0', focal ? (2*Math.atan(S.vW/2/focal)/DEG).toFixed(1) : '--');
   tx('fps0', S.fps + ' fps');
 
-  // ── Tab 1 — Focus ──
-  nm('H1', S.camH??1.4);  tx('H1s', S.camH ? 'world lm' : 'prior 1.4m');
-  nm('D1', S.fdBest);     tx('D1s', S.fdSrc);
-  nm('P1', S.personH);    tx('P1s', S.personH ? 'world lm' : '\u2013');
 
-  tx('fd-track', S.fdTrack != null ? S.fdTrack.toFixed(2)+' m' : 'N/A');
-  tx('fd-geo',   S.fdGeo   != null ? S.fdGeo.toFixed(2)+' m'   : '\u2013');
-  tx('fdbest',   S.fdBest  != null ? S.fdBest.toFixed(2)+' m'  : '\u2013');
-  tx('fdsrc', S.fdSrc);
 
-  // Focal
-  tx('focb',    S.focalGeo ? S.focalGeo.toFixed(0)+'px' : '\u2013');
-  tx('focc',    S.focalAsm ? S.focalAsm.toFixed(0)+'px' : '\u2013');
-  tx('foc-use', focal
-    ? focal.toFixed(0)+'px (' + (S.focalGeo?'pose geo':'assumed 70\u00b0') + ')'
-    : '\u2013');
 
-  // Accuracy badges
-  const ast = (id,txt,cls) => { const e=_(id); if(!e)return; e.textContent=txt; e.className='acc-st '+cls; };
-  ast('ast-track', S.fdTrack!=null ? S.fdTrack.toFixed(2)+'m' : 'not supported', S.fdTrack!=null?'ok':'na');
-  ast('ast-geo',   S.fdGeo  !=null ? S.fdGeo.toFixed(2)+'m'   : 'no pose',       S.fdGeo!=null?'live':'na');
-  ast('ast-camh',  S.camhHeight!=null?S.camhHeight.toFixed(2)+'m':'set H_cam slider', S.camhHeight!=null?'live':'na');
-  ast('ast-camh', S.camhHeight!=null ? S.camhHeight.toFixed(2)+'m' : 'set camera height', S.camhHeight!=null?'live':'na');
 
   // Live camera-height and fixed-focus height updates
   updateCamHHeight();
-  updateFFHeight();
 
-  // Focus chip
-  const ch1 = _('chip1');
-  if (ch1 && S.fdBest!=null) {
-    ch1.className = 'cam-chip chip-live';
-    ch1.textContent = S.fdBest.toFixed(2)+'m \u00b7 '+S.fdSrc;
-  }
 
   requestAnimationFrame(renderUI);
 }
 
 /* ════════════════════════════════════════════════
-   TAB SWITCH
-════════════════════════════════════════════════ */
-function GT(n) {
-  [0,1].forEach(i => {
-    _('tab'+i).classList.toggle('on', i===n);
-    _('p'+i).classList.toggle('on', i===n);
-  });
-}
-window.GT = GT;
 
 /* ════════════════════════════════════════════════
    LAUNCH
@@ -1613,10 +1150,7 @@ async function loadAll() {
     if (St.hol.state !== 'ok') await initHolistic();
     await Promise.allSettled([
       (async () => {
-        if (St.afd.state !== 'ok') await initFocusDist().catch(()=>{});
-        if (St.sk.state  !== 'ok') await initApplyConstr().catch(()=>{});
       })(),
-      St.imu.state !== 'ok' ? initIMU().catch(()=>{}) : Promise.resolve(),
     ]);
     _('btn-load').textContent = '▸ LAUNCH';
     _('btn-load').disabled = false;
@@ -1628,7 +1162,6 @@ async function loadAll() {
     _('btn-load').disabled = false;
     _('btn-load').onclick = () => { _loading=false; _('btn-load').onclick=null; loadAll(); };
     _('btn-skip').textContent = '⟶ Skip — launch with what\u2019s loaded';
-    if (St.imu.state==='wait') initIMU().catch(()=>{});
   }
   _loading = false;
 }

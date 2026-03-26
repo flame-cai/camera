@@ -781,49 +781,71 @@ async function initHolistic() {
    Must: check capabilities, applyConstraints → poll
 ════════════════════════════════════════════════ */
 async function initFocusDist() {
-  setStep('afd','loading','Reading focusDistance capabilities…');
+  setStep('afd','loading','Setting continuous AF + reading focusDistance…');
   if (!S.track) { setStep('afd','skip','No camera track'); return; }
   try {
     const caps = S.track.getCapabilities?.() ?? {};
     const fdr  = caps.focusDistance ?? null;
     const fmo  = caps.focusMode ?? [];
-    tx('cap-fdr', fdr ? `${fdr.min?.toFixed(1)}–${fdr.max?.toFixed(1)} m` : 'not supported');
     tx('cap-fmo', fmo.join(', ') || 'none');
-    if (!fdr) { setStep('afd','skip','focusDistance not in capabilities'); tx('fd1','not supported'); return; }
-    // Poll
-    const poll = () => {
+    tx('cap-fdr', fdr ? `${fdr.min?.toFixed(1)}\u2013${fdr.max?.toFixed(1)} m` : 'not supported');
+
+    if (!fdr) {
+      setStep('afd','skip','focusDistance not in capabilities');
+      return;
+    }
+
+    // Set continuous AF FIRST — focusDistance only updates after mode is set
+    const mode = fmo.includes('continuous') ? 'continuous'
+               : fmo.includes('auto')       ? 'auto'
+               : fmo[0] ?? null;
+    if (mode) {
+      try {
+        await S.track.applyConstraints({advanced:[{focusMode: mode}]});
+        tx('cap-ac', '\u2713 ' + mode);
+      } catch(_) { tx('cap-ac', 'applyConstraints failed'); }
+    }
+
+    // Wait for lens to settle after mode change
+    await new Promise(r => setTimeout(r, 600));
+
+    // Poll: re-apply constraint each tick to nudge driver into reporting fresh value.
+    // Many Android devices only update getSettings().focusDistance after an
+    // applyConstraints() call — without the nudge the value stays stale.
+    const poll = async () => {
+      try {
+        if (mode) await S.track.applyConstraints({advanced:[{focusMode: mode}]});
+      } catch(_) {}
       const fd = S.track.getSettings?.()?.focusDistance ?? null;
       S.fdTrack = (fd != null && fd > 0.05 && fd < 30) ? fd : null;
     };
-    poll(); setInterval(poll, 500);
-    setStep('afd','ok',`Range: ${fdr.min?.toFixed(1)}–${fdr.max?.toFixed(1)} m`);
+
+    await poll();
+    S._focusPollId = setInterval(poll, 1500);
+
+    const first = S.fdTrack;
+    setStep('afd','ok',
+      fdr.min?.toFixed(1) + '\u2013' + fdr.max?.toFixed(1) + ' m'
+      + (first ? ' \u2022 now: ' + first.toFixed(2) + ' m' : ' \u2022 live polling')
+    );
   } catch(e) {
     setStep('afd','fail', String(e?.message||e).slice(0,55));
   }
 }
 
 /* ════════════════════════════════════════════════
-   INIT — applyConstraints focusMode
-   Force MANUAL focus so focusDistance stays fixed
-   at whatever the user/slider sets.
+   INIT — confirm autofocus mode (sk step)
+   initFocusDist already sets AF + starts poll.
+   This step just reads back what mode is active.
 ════════════════════════════════════════════════ */
 async function initApplyConstr() {
-  setStep('sk','loading','Enabling continuous autofocus…');
+  setStep('sk','loading','Confirming autofocus mode…');
   if (!S.track) { setStep('sk','skip','No camera track'); return; }
   try {
-    const caps = S.track.getCapabilities?.() ?? {};
-    const fmo  = caps.focusMode ?? [];
-    tx('cap-fmo', fmo.join(', ') || 'none');
-    if (!fmo.length) { setStep('sk','skip','No focusMode capability'); tx('cap-ac','not supported'); return; }
-    const mode = fmo.includes('continuous') ? 'continuous' : fmo[0];
-    await S.track.applyConstraints({advanced:[{focusMode: mode}]});
+    const mode = S.track.getSettings?.()?.focusMode ?? 'unknown';
     tx('cap-ac', '✓ ' + mode);
-    if (caps.focusDistance) {
-      tx('cap-fdr', caps.focusDistance.min?.toFixed(1) + '–' + caps.focusDistance.max?.toFixed(1) + ' m');
-    }
     setStep('sk','ok','AF mode: ' + mode);
   } catch(e) {
-    tx('cap-ac', 'error: '+String(e?.message||e).slice(0,35));
     setStep('sk','fail', String(e?.message||e).slice(0,60));
   }
 }
@@ -1372,7 +1394,20 @@ window.camhLock  = camhLock;
 async function doCapture() {
   const btn = _('btn-capture'), status = _('cap-status');
   if (btn) btn.disabled = true;
-  if (status) status.textContent = 'Reading focus distance…';
+  if (status) status.textContent = 'Focusing…';
+
+  // Nudge AF constraint before reading — forces driver to report fresh focusDistance.
+  // On many Android devices getSettings().focusDistance is stale without this poke.
+  if (S.track) {
+    const caps = S.track.getCapabilities?.() ?? {};
+    const fmo  = caps.focusMode ?? [];
+    const mode = fmo.includes('continuous') ? 'continuous'
+               : fmo.includes('auto')       ? 'auto' : null;
+    if (mode) {
+      try { await S.track.applyConstraints({advanced:[{focusMode: mode}]}); } catch(_) {}
+      await new Promise(r => setTimeout(r, 350));
+    }
+  }
 
   const fd = S.track?.getSettings?.()?.focusDistance ?? null;
   const timeStr = new Date().toTimeString().slice(0,8);

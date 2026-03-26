@@ -1409,81 +1409,94 @@ async function doCapture() {
   const fmo  = caps.focusMode ?? [];
   const timeStr = new Date().toTimeString().slice(0,8);
 
-  if (!S.track || !fdr || !fmo.includes('manual')) {
+  if (!S.track || !fdr) {
     const card = _('cap-result-card'); if (card) card.style.display = '';
-    tx('cap-objd', '–');
-    tx('cap-focusd', 'manual focus not supported on this device');
-    tx('cap-raw',   '–');
-    tx('cap-time',  timeStr);
-    if (status) status.textContent = '⚠ focusDistance API not available';
+    tx('cap-objd',   'focusDistance API not available on this device');
+    tx('cap-focusd', 'enable AF step on home screen');
+    tx('cap-raw',    '\u2013'); tx('cap-time', timeStr);
+    if (status) status.textContent = '\u26a0 focusDistance not supported';
     if (btn) btn.disabled = false;
     return;
   }
 
-  const rawMin = fdr.min ?? 0;
-  const step   = fdr.step ?? 0.01;
+  // ── Root cause of 0.1 / 10 problem ────────────────────────────────────────
+  // Android camera2 LENS_FOCUS_DISTANCE is in DIOPTERS (= 1/meters).
+  // Chrome converts: reported_meters = 1 / diopters.
+  // When lens is at infinity: diopters=0 → 1/0=NaN → Chrome clamps to cap.max (10m).
+  // When lens is at nearest:  diopters=max → Chrome clamps to cap.min (0.1m).
+  // During AF HUNTING the driver oscillates between these extremes.
+  // Reading at any single point catches it at min or max = driver artifact.
+  //
+  // FIX: Poll continuously during AF. Discard readings at exact min/max.
+  // A reading strictly between min and max IS the real converged distance.
+  // Poll up to 4 seconds; accept first stable non-extreme reading.
+  // ──────────────────────────────────────────────────────────────────────────
 
-  // 1. Continuous AF — let camera hunt and settle on subject
-  if (status) status.textContent = 'Autofocusing…';
+  const fdMin  = fdr.min ?? 0;
+  const fdMax  = fdr.max ?? 10;
+  const fdStep = fdr.step ?? 0.01;
+  // Tolerance: a reading is "at extreme" if within 1 step of min or max
+  const isExtreme = (v) => v == null
+    || Math.abs(v - fdMin) < fdStep * 0.5
+    || Math.abs(v - fdMax) < fdStep * 0.5;
+
+  // Set continuous AF
   const contMode = fmo.includes('continuous') ? 'continuous'
                  : fmo.includes('auto')       ? 'auto' : null;
   if (contMode) {
     try { await S.track.applyConstraints({advanced:[{focusMode: contMode}]}); } catch(_) {}
   }
-  // 2. Wait for convergence — 2000ms covers slow-hunting lenses
-  await new Promise(r => setTimeout(r, 2000));
 
-  // 3. Freeze: switch to manual WITHOUT specifying focusDistance
-  //    This locks the lens in place at its current AF-settled position.
-  //    Per W3C spec, omitting focusDistance in manual mode preserves current position.
-  if (status) status.textContent = 'Reading distance…';
-  try { await S.track.applyConstraints({advanced:[{focusMode:'manual'}]}); } catch(_) {}
-  await new Promise(r => setTimeout(r, 100));
+  if (status) status.textContent = 'Autofocusing \u2014 hold steady\u2026';
 
-  // 4. Read 3 samples over 300ms and take the median (avoids transient noise)
-  const samples = [];
-  for (let i = 0; i < 3; i++) {
-    await new Promise(r => setTimeout(r, 100));
+  // Poll every 120ms for up to 4000ms, collecting non-extreme readings
+  const validReadings = [];
+  const pollStart = Date.now();
+  while (Date.now() - pollStart < 4000) {
+    await new Promise(r => setTimeout(r, 120));
     const fd = S.track.getSettings?.()?.focusDistance ?? null;
-    if (fd != null) samples.push(fd);
+    tx('cap-raw-live', fd != null ? fd.toFixed(3) + ' m' : '\u2013');
+    if (!isExtreme(fd)) {
+      validReadings.push(fd);
+      // Once we have 3 consistent non-extreme readings, AF has converged
+      if (validReadings.length >= 3) {
+        const last3 = validReadings.slice(-3);
+        const spread = Math.max(...last3) - Math.min(...last3);
+        if (spread < fdStep * 3) break;  // stable enough
+      }
+    }
+    if (status) {
+      const elapsed = Math.round((Date.now() - pollStart) / 1000);
+      const dots = '.'.repeat((elapsed % 3) + 1);
+      status.textContent = 'Autofocusing' + dots + ' (' + elapsed + 's)';
+    }
   }
-  samples.sort((a,b) => a - b);
-  const fd = samples.length ? samples[Math.floor(samples.length/2)] : null;
-
-  // 5. Restore continuous AF
-  if (contMode) {
-    try { await S.track.applyConstraints({advanced:[{focusMode: contMode}]}); } catch(_) {}
-  }
-
-  // Validate — is it a real measurement or stuck at capability min?
-  const isStuck = fd != null && Math.abs(fd - rawMin) < step * 1.5;
-  const valid   = fd != null && !isStuck && fd < 30;
-
-  if (valid) S.fdTrack = fd;
 
   const card = _('cap-result-card'); if (card) card.style.display = '';
-  tx('cap-objd',
-    valid   ? fd.toFixed(2) + ' m from camera'
-            : isStuck ? 'stuck at min (' + fd?.toFixed(3) + ' m) — device limitation'
-            : '–'
-  );
-  tx('cap-focusd',
-    valid ? 'continuous AF → freeze → readback'
-          : isStuck ? 'AF readback returns capability minimum — device does not expose live position'
-          : 'no reading'
-  );
-  tx('cap-raw',  samples.length ? 'samples: ' + samples.map(v=>v.toFixed(3)).join(', ') + ' m' : '–');
-  tx('cap-time', timeStr);
-  tx('cap-raw-live', fd != null ? fd.toFixed(3) + ' m' : '–');
 
-  if (status) {
-    status.textContent = valid
-      ? '✓ Object distance: ' + fd.toFixed(2) + ' m'
-      : isStuck
-        ? '⚠ Device does not expose AF distance — try manual focus slider approach'
-        : '⚠ No reading obtained';
+  if (validReadings.length === 0) {
+    // Never got a non-extreme reading — device does not expose real AF distance
+    tx('cap-objd',   'device limitation: AF distance not readable');
+    tx('cap-focusd', 'driver only reports min (' + fdMin.toFixed(2) +
+                     'm) or max (' + fdMax.toFixed(2) + 'm) \u2014 never a real distance');
+    tx('cap-raw',    'all readings were at capability boundary');
+    tx('cap-time',   timeStr);
+    if (status) status.textContent = '\u26a0 This device does not expose live AF distance via WebRTC';
+    if (btn) btn.disabled = false;
+    S._captureFlash = 6;
+    return;
   }
 
+  // Take median of valid readings
+  validReadings.sort((a, b) => a - b);
+  const fd = validReadings[Math.floor(validReadings.length / 2)];
+  S.fdTrack = fd;
+
+  tx('cap-objd',   fd.toFixed(2) + ' m from camera');
+  tx('cap-focusd', 'continuous AF \u2192 ' + validReadings.length + ' valid readings, median taken');
+  tx('cap-raw',    validReadings.map(v => v.toFixed(2)).join(', ') + ' m');
+  tx('cap-time',   timeStr);
+  if (status) status.textContent = '\u2713 Object distance: ' + fd.toFixed(2) + ' m';
   S._captureFlash = 10;
   if (btn) btn.disabled = false;
 }

@@ -464,22 +464,40 @@ body{display:flex;flex-direction:column;height:100dvh}
       </div>
       <div class="det">
 
-        <!-- ── CAPTURE BUTTON ── -->
-        <button id="btn-capture" onclick="doCapture()" class="btn-main" aria-label="Capture focus distance and measure">
-          📷 CAPTURE &amp; MEASURE
+        <!-- ── MANUAL FOCUS DISTANCE ── -->
+        <div class="sec">Manual focus distance</div>
+        <div class="ff-note">
+          Slide until the subject looks sharp. That distance = object distance.
+          This works even when AF readback is unavailable (as on most Android devices).
+        </div>
+        <div class="kvc">
+          <div class="kv">
+            <span class="kk">Focus distance</span>
+            <div style="display:flex;align-items:center;gap:8px;flex:1">
+              <input type="range" id="mf-slider" min="0.10" max="10.0" step="0.05" value="1.0"
+                aria-label="Manual focus distance in metres"
+                style="flex:1;max-width:120px;accent-color:var(--y)" oninput="mfSlide()">
+              <span class="kv-v y" id="mf-d" style="font-size:15px">1.00 m</span>
+            </div>
+          </div>
+          <div class="kv"><span class="kk">Lens response</span><span class="kv-v" id="mf-status">&ndash;</span></div>
+          <div class="kv"><span class="kk">Readback</span><span class="kv-v" id="mf-readback">&ndash;</span></div>
+        </div>
+        <button id="btn-capture" onclick="doCapture()" class="btn-main" aria-label="Lock this focus distance as object distance">
+          &#128247; LOCK DISTANCE
         </button>
         <div id="cap-status" role="status" aria-live="polite" class="cap-status-msg"></div>
         <div class="result-card" id="cap-result-card" style="display:none">
-          <div class="result-row">
-            <span class="result-label">Focus distance</span>
-            <span class="result-val" id="cap-focusd">&ndash;</span>
-          </div>
           <div class="result-row">
             <span class="result-label">Object distance</span>
             <span class="result-val accent-b" id="cap-objd">&ndash;</span>
           </div>
           <div class="result-row">
-            <span class="result-label">Captured at</span>
+            <span class="result-label">Method</span>
+            <span class="result-val dim" id="cap-focusd">&ndash;</span>
+          </div>
+          <div class="result-row">
+            <span class="result-label">Locked at</span>
             <span class="result-val dim" id="cap-time">&ndash;</span>
           </div>
         </div>
@@ -606,6 +624,7 @@ const S = {
   maskSpan:null,
   camhHeight:null,   // camera-height geometry method result
   camhPp:null, camhPc:null,  // Pp and Pc values for overlay
+  mfDist:null,   // manual focus distance set by slider
   // Video cover-crop offsets (for landmark remapping)
   cropSx:0, cropSy:0, cropSw:0, cropSh:0,
   // Measurement lock
@@ -1375,96 +1394,101 @@ window.camhSlide = camhSlide;
 window.camhLock  = camhLock;
 
 /* ================================================================
-   CAPTURE & MEASURE
-   Reads track.getSettings().focusDistance at capture moment.
-   With continuous AF this IS the distance to the focused object.
+   MANUAL FOCUS SLIDER
+   User slides until subject is sharp.
+   We SET the focusDistance via applyConstraints — this is reliable
+   because we control the value (not trying to READ an AF position).
+   Distance where image is sharpest = object distance.
+================================================================ */
+async function mfSlide() {
+  const v = parseFloat(_('mf-slider')?.value || '1.0');
+  tx('mf-d', v.toFixed(2) + ' m');
+  S.mfDist = v;
+
+  if (!S.track) { tx('mf-status', 'no camera'); return; }
+  const caps = S.track.getCapabilities?.() ?? {};
+  const fdr  = caps.focusDistance ?? null;
+  const fmo  = caps.focusMode ?? [];
+
+  if (!fdr || !fmo.includes('manual')) {
+    tx('mf-status', 'manual focus not supported — use sharpness visually');
+    tx('mf-readback', '–');
+    return;
+  }
+
+  // Clamp to capability range
+  const clamped = Math.max(fdr.min ?? 0.1, Math.min(fdr.max ?? 10, v));
+  try {
+    await S.track.applyConstraints({advanced:[{focusMode:'manual', focusDistance: clamped}]});
+    await new Promise(r => setTimeout(r, 100));
+    const rb = S.track.getSettings?.()?.focusDistance ?? null;
+    tx('mf-status', '✓ lens moved');
+    tx('mf-readback', rb != null ? rb.toFixed(3) + ' m (readback)' : 'no readback');
+    // If readback changed to what we set, focusDistance IS working
+    if (rb != null && Math.abs(rb - clamped) < (fdr.step ?? 0.05) * 2) {
+      S.fdTrack = rb;   // trust this — we set it, driver confirmed it
+    } else {
+      S.fdTrack = v;    // trust the user-set value even if readback fails
+    }
+  } catch(e) {
+    tx('mf-status', 'applyConstraints failed: ' + String(e?.message||e).slice(0,30));
+  }
+}
+window.mfSlide = mfSlide;
+
+/* ================================================================
+   LOCK DISTANCE
+   Locks the current manual focus distance as the object distance.
+   If AF readback is available it uses that; otherwise uses slider value.
 ================================================================ */
 async function doCapture() {
   const btn = _('btn-capture'), status = _('cap-status');
   if (btn) btn.disabled = true;
 
+  const timeStr = new Date().toTimeString().slice(0,8);
+  const sliderVal = parseFloat(_('mf-slider')?.value || '1.0');
+  const rb = S.track?.getSettings?.()?.focusDistance ?? null;
   const caps = S.track?.getCapabilities?.() ?? {};
   const fdr  = caps.focusDistance ?? null;
-  const fmo  = caps.focusMode ?? [];
-  const timeStr = new Date().toTimeString().slice(0,8);
 
-  // ── STRATEGY ─────────────────────────────────────────────────────────
-  // With continuous AF, getSettings().focusDistance is unreliable — most
-  // Android drivers report the capability minimum (e.g. 0.1 m) as a
-  // placeholder, not the actual lens position.
-  //
-  // The ONLY reliable method is single-shot / manual focus:
-  //   1. Switch to single-shot AF (or 'auto') → driver moves lens to focus
-  //   2. Wait for convergence (~1.2s typical AF time)
-  //   3. Read focusDistance — now it reflects the actual settled position
-  //   4. Restore continuous AF for live preview
-  // ─────────────────────────────────────────────────────────────────────
+  // Determine which distance value to report:
+  // 1. If readback is available and differs from cap.min → trust it
+  // 2. Otherwise trust the slider value the user set (reliable — they moved it)
+  const rawMin = fdr?.min ?? 0;
+  const step   = fdr?.step ?? 0.01;
+  const rbValid = rb != null && Math.abs(rb - rawMin) > step * 1.5 && rb < 30;
 
-  let fd = null;
-  let method = 'none';
-
-  if (S.track && fdr) {
-    // Try single-shot / auto AF for a real measurement
-    const shotMode = fmo.includes('single-shot') ? 'single-shot'
-                   : fmo.includes('auto')         ? 'auto'
-                   : null;
-    const contMode = fmo.includes('continuous')   ? 'continuous'
-                   : fmo.includes('auto')         ? 'auto'
-                   : null;
-
-    if (shotMode) {
-      if (status) status.textContent = 'Triggering single-shot AF …';
-      try {
-        // 1. Trigger single-shot focus
-        await S.track.applyConstraints({advanced:[{focusMode: shotMode}]});
-        // 2. Wait for AF to converge — typical Android AF takes 0.8-1.5s
-        if (status) status.textContent = 'AF converging …';
-        await new Promise(r => setTimeout(r, 1200));
-        // 3. Read settled focusDistance
-        fd = S.track.getSettings?.()?.focusDistance ?? null;
-        method = shotMode;
-      } catch(_) {}
-      // 4. Restore continuous AF for live preview
-      if (contMode) {
-        try { await S.track.applyConstraints({advanced:[{focusMode: contMode}]}); } catch(_) {}
-      }
-    } else {
-      // No single-shot available — just read what we have and flag it
-      fd = S.track.getSettings?.()?.focusDistance ?? null;
-      method = 'raw (continuous)';
-    }
+  let dist, method;
+  if (rbValid) {
+    dist   = rb;
+    method = 'AF readback';
+  } else if (fdr && S.mfDist != null) {
+    dist   = S.mfDist;
+    method = 'manual slider (AF readback unavailable)';
+  } else {
+    dist   = null;
+    method = 'not available';
   }
 
-  // Validate: discard if stuck at capability minimum (driver placeholder)
-  const rawMin = caps.focusDistance?.min ?? 0;
-  const step   = caps.focusDistance?.step ?? 0.01;
-  const isStuck = fd != null && Math.abs(fd - rawMin) < step * 1.5;
-
-  const valid = fd != null && fd > (rawMin + step) && fd < 30 && !isStuck;
-  if (valid) S.fdTrack = fd;
+  if (dist != null) S.fdTrack = dist;
 
   const card = _('cap-result-card'); if (card) card.style.display = '';
-  tx('cap-focusd', fd != null ? fd.toFixed(3) + ' m (via ' + method + ')' : 'not available');
-  tx('cap-objd',
-     valid ? fd.toFixed(2) + ' m — object in focus'
-           : isStuck ? 'stuck at min (' + fd?.toFixed(2) + ' m) — device limitation'
-           : '–'
-  );
-  tx('cap-time', timeStr);
-  tx('cap-raw',  fd != null ? fd.toFixed(3) + ' m (raw)' : '–');
+  tx('cap-objd',   dist != null ? dist.toFixed(2) + ' m from camera' : '–');
+  tx('cap-focusd', method);
+  tx('cap-time',   timeStr);
+  tx('cap-raw',    rb != null ? rb.toFixed(3) + ' m (raw)' : '–');
 
   if (status) {
-    status.textContent = valid
-      ? '✓ Object in focus: ' + fd.toFixed(2) + ' m away'
-      : isStuck
-        ? '⚠ focusDistance stuck at min — this device may not support distance readback'
-        : '⚠ focusDistance not available — enable AF step on home screen';
+    status.textContent = dist != null
+      ? '✓ Distance locked: ' + dist.toFixed(2) + ' m' + (rbValid ? ' (AF)' : ' (slider)')
+      : '⚠ Slide the focus slider and check sharpness';
   }
 
   S._captureFlash = 10;
   if (btn) btn.disabled = false;
 }
 window.doCapture = doCapture;
+
 
 function fuseFocus() {
   S.focal_px_best = S.focalGeo ?? S.focalAsm;

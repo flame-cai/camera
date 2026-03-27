@@ -1,81 +1,42 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>IAP Frontend Demo</title>
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
-  <style>
-    body { font-family: Arial, sans-serif; padding: 20px; }
-    pre { background: #f0f0f0; padding: 10px; border-radius: 5px; }
-  </style>
+  <title>IAP Redirect Login Demo</title>
 </head>
 <body>
-  <h1>IAP Frontend Demo</h1>
-  <button id="loginBtn">Login with Google</button>
-  <button id="callApiBtn" disabled>Call IAP API</button>
+<h1>IAP Redirect Login Demo</h1>
+<div id="status">Checking login...</div>
 
-  <h2>Logs:</h2>
-  <pre id="log"></pre>
+<script>
+const CLOUD_RUN_URL = "https://temp-450300910281.asia-south1.run.app/";
 
-  <script>
-    const IAP_CLIENT_ID = "450300910281-c42g9vc3q8f27la48e2j5vc6428nk7sj.apps.googleusercontent.com";
-    const IAP_URL = "https://temp-450300910281.asia-south1.run.app/";
+const params = new URLSearchParams(window.location.search);
+const iapToken = params.get("iap_token");
 
-    let token = null;
+if (!iapToken) {
+  // Not logged in → redirect to Cloud Run
+  document.getElementById("status").innerText = "Redirecting to login...";
+  window.location.href = CLOUD_RUN_URL;
+} else {
+  // Logged in → show token and decode payload
+  document.getElementById("status").innerHTML = `
+    <h2>✅ Logged in!</h2>
+    <p><b>ID Token:</b></p>
+    <textarea style="width:100%;height:150px;">${iapToken}</textarea>
+  `;
 
-    function log(msg, obj=null) {
-      const logEl = document.getElementById('log');
-      if (obj) {
-        logEl.textContent += msg + '\n' + JSON.stringify(obj, null, 2) + '\n\n';
-      } else {
-        logEl.textContent += msg + '\n\n';
-      }
-    }
-
-    // Initialize Google Identity Services
-    window.onload = () => {
-      google.accounts.id.initialize({
-        client_id: IAP_CLIENT_ID,
-        callback: handleCredentialResponse
-      });
-
-      document.getElementById('loginBtn').onclick = () => {
-        google.accounts.id.prompt(); // show login prompt
-      };
-
-      document.getElementById('callApiBtn').onclick = callIapApi;
-    };
-
-    function handleCredentialResponse(response) {
-      token = response.credential; // This is the ID token
-      log("✅ Logged in, ID Token received:", response);
-      document.getElementById('callApiBtn').disabled = false;
-    }
-
-    async function callIapApi() {
-      if (!token) {
-        log("❌ No ID token, please login first.");
-        return;
-      }
-
-      try {
-        log(`➡️ Calling IAP API at ${IAP_URL} with token...`);
-        const res = await fetch(IAP_URL, {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
-
-        const text = await res.text();
-        let body;
-        try { body = JSON.parse(text); } catch { body = text; }
-        log(`✅ Response (${res.status}):`, body);
-      } catch (err) {
-        log("❌ Fetch error:", err);
-      }
-    }
-  </script>
+  try {
+    const payload = JSON.parse(atob(iapToken.split('.')[1]));
+    const userInfoDiv = document.createElement("div");
+    userInfoDiv.innerHTML = `
+      <h3>User Info from ID Token:</h3>
+      <pre>${JSON.stringify(payload, null, 2)}</pre>
+    `;
+    document.body.appendChild(userInfoDiv);
+  } catch(e) {
+    console.error("Failed to decode token:", e);
+  }
+}
+</script>
 </body>
 </html>

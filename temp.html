@@ -2,51 +2,105 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>IAP Auth Example</title>
+  <title>IAP Debug API - Verbose Logs</title>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <style>
+    pre { 
+      white-space: pre-wrap; 
+      word-wrap: break-word; 
+      background: #f0f0f0; 
+      padding: 10px; 
+      max-height: 80vh; 
+      overflow-y: scroll;
+    }
+  </style>
 </head>
 <body>
-  <h1 id="welcome">Loading...</h1>
-  <div id="login"></div>
+  <h2>IAP Debug API - Excessive Logging</h2>
+  <div id="user"></div>
+  <pre id="logs"></pre>
 
   <script>
     const IAP_CLIENT_ID = "450300910281-c42g9vc3q8f27la48e2j5vc6428nk7sj.apps.googleusercontent.com";
     const API_URL = "https://temp-450300910281.asia-south1.run.app/";
 
-    // Render the Google sign-in button
+    function log(title, data) {
+      const pre = document.getElementById('logs');
+      pre.textContent += `=== ${title} ===\n` + (typeof data === 'string' ? data : JSON.stringify(data, null, 2)) + '\n\n';
+      pre.scrollTop = pre.scrollHeight; // auto-scroll to bottom
+      console.log(title, data);
+    }
+
+    async function fetchWithLogging(url, options = {}) {
+      log('Request', {
+        url,
+        method: options.method || 'GET',
+        headers: options.headers || {},
+        body: options.body || null
+      });
+
+      try {
+        const response = await fetch(url, options);
+
+        let contentType = response.headers.get('content-type') || '';
+        let responseBody;
+        if (contentType.includes('application/json')) {
+          responseBody = await response.json();
+        } else {
+          responseBody = await response.text();
+        }
+
+        log('Response', {
+          status: response.status,
+          statusText: response.statusText,
+          headers: Array.from(response.headers.entries()),
+          body: responseBody
+        });
+
+        return responseBody;
+      } catch (err) {
+        log('Fetch Error', err);
+        throw err;
+      }
+    }
+
+    function handleCredentialResponse(response) {
+      const idToken = response.credential;
+      const payload = JSON.parse(atob(idToken.split('.')[1]));
+      document.getElementById('user').innerText = `Hello, ${payload.email}`;
+
+      log('ID Token Payload', payload);
+
+      // GET request
+      fetchWithLogging(API_URL, {
+        method: 'GET',
+        headers: {
+          'Authorization': 'Bearer ' + idToken,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      // POST request
+      fetchWithLogging(API_URL, {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer ' + idToken,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ test: 'hello world' })
+      });
+    }
+
     window.onload = function() {
       google.accounts.id.initialize({
         client_id: IAP_CLIENT_ID,
         callback: handleCredentialResponse
       });
       google.accounts.id.renderButton(
-        document.getElementById("login"),
+        document.getElementById("user"),
         { theme: "outline", size: "large" }
       );
-      google.accounts.id.prompt();
-    };
-
-    async function handleCredentialResponse(response) {
-      const token = response.credential; // ID token
-      console.log("ID token:", token);
-
-      // Call Cloud Function with token
-      try {
-        const res = await fetch(API_URL, {
-          method: "GET",
-          headers: {
-            "Authorization": "Bearer " + token
-          }
-        });
-
-        if (!res.ok) throw new Error(res.statusText);
-
-        const data = await res.json();
-        document.getElementById("welcome").textContent = 
-          `Hello, ${data.email || "user"}!`;
-      } catch (err) {
-        document.getElementById("welcome").textContent = "Error: " + err.message;
-      }
+      google.accounts.id.prompt(); // show the One Tap prompt
     }
   </script>
 </body>

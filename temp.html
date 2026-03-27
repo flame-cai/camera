@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Google Auth Cloud Function Demo</title>
+  <title>IAP Cloud Run Demo</title>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
@@ -9,7 +9,7 @@
   <div id="g_id_signin"></div>
 
   <script>
-    const apiUrl = "https://YOUR_CLOUD_FUNCTION_URL"; // Replace with your deployed Cloud Function URL
+    const apiUrl = "https://temp-450300910281.asia-south1.run.app/";
 
     window.onload = () => {
       google.accounts.id.initialize({

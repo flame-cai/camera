@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>IAP Cloud Run Demo</title>
+  <title>Google Auth Cloud Function Demo</title>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
@@ -9,7 +9,7 @@
   <div id="g_id_signin"></div>
 
   <script>
-    const apiUrl = "https://temp-450300910281.asia-south1.run.app/";
+    const apiUrl = "https://YOUR_CLOUD_FUNCTION_URL"; // Replace with your deployed Cloud Function URL
 
     window.onload = () => {
       google.accounts.id.initialize({
@@ -31,11 +31,12 @@
           method: 'GET',
           headers: {
             'Authorization': 'Bearer ' + idToken
-          }
+          },
+          mode: 'cors',
+          credentials: 'omit'
         });
 
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-
         const data = await res.json();
         document.getElementById("welcome").innerText = `Hello, ${data.email}`;
       } catch (err) {

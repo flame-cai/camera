@@ -1,22 +1,16 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Authenticated Cloud Run Example</title>
+  <title>IAP Cloud Run Demo</title>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
-  <h1 id="welcome">Loading...</h1>
-  <button id="loginBtn">Sign in with Google</button>
+  <h1 id="welcome">Please sign in</h1>
+  <div id="g_id_signin"></div>
 
   <script>
     const apiUrl = "https://temp-450300910281.asia-south1.run.app/";
 
-    // Render welcome after authentication
-    function showWelcome(user) {
-      document.getElementById("welcome").innerText = `Hello, ${user}`;
-    }
-
-    // Handle login
     window.onload = () => {
       google.accounts.id.initialize({
         client_id: "450300910281-c42g9vc3q8f27la48e2j5vc6428nk7sj.apps.googleusercontent.com",
@@ -24,28 +18,29 @@
       });
 
       google.accounts.id.renderButton(
-        document.getElementById("loginBtn"),
+        document.getElementById("g_id_signin"),
         { theme: "outline", size: "large" }
       );
     };
 
     async function handleCredentialResponse(response) {
-      const idToken = response.credential;  // JWT
+      const idToken = response.credential;
 
       try {
         const res = await fetch(apiUrl, {
-          method: "GET",
+          method: 'GET',
           headers: {
-            "Authorization": "Bearer " + idToken
+            'Authorization': 'Bearer ' + idToken
           }
         });
 
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+
         const data = await res.json();
-        // Here you could decode JWT to get email/name
-        showWelcome("Authenticated User");
+        document.getElementById("welcome").innerText = `Hello, ${data.email}`;
       } catch (err) {
-        console.error(err);
-        alert("Failed to call API");
+        console.error("Failed to fetch API:", err);
+        document.getElementById("welcome").innerText = "Error fetching user info";
       }
     }
   </script>

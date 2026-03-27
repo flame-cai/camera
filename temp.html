@@ -1,42 +1,263 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>IAP Redirect Login Demo</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Flame CAI · Cloud Run Console</title>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0b0f14; --surface: #131920; --border: #1e2a35;
+      --accent: #00e5ff; --accent2: #ff4f7b; --text: #d6e4ef;
+      --muted: #4a6070; --success: #00e5a0; --error: #ff4f7b;
+      --mono: 'IBM Plex Mono', monospace; --sans: 'Space Grotesk', sans-serif;
+    }
+    body {
+      background: var(--bg); color: var(--text); font-family: var(--sans);
+      min-height: 100vh; display: flex; flex-direction: column;
+      align-items: center; padding: 40px 16px 80px;
+    }
+    body::before {
+      content: ''; position: fixed; inset: 0;
+      background-image: linear-gradient(rgba(0,229,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,229,255,0.03) 1px, transparent 1px);
+      background-size: 40px 40px; pointer-events: none; z-index: 0;
+    }
+    .wrapper { position: relative; z-index: 1; width: 100%; max-width: 760px; display: flex; flex-direction: column; gap: 24px; }
+    header { display: flex; align-items: center; gap: 14px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+    .logo { width: 36px; height: 36px; background: linear-gradient(135deg, var(--accent), var(--accent2)); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-size: 14px; font-weight: 600; color: #000; }
+    header h1 { font-size: 18px; font-weight: 700; letter-spacing: -0.3px; }
+    header span { font-size: 12px; color: var(--muted); font-family: var(--mono); margin-left: auto; }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; }
+    .card-title { font-size: 11px; font-family: var(--mono); color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 16px; }
+    .auth-row { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+    .status-pill { display: flex; align-items: center; gap: 8px; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-family: var(--mono); border: 1px solid var(--border); background: var(--bg); transition: all 0.3s; }
+    .status-pill.signed-in { border-color: var(--success); color: var(--success); }
+    .status-pill .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); transition: background 0.3s; }
+    .status-pill.signed-in .dot { background: var(--success); box-shadow: 0 0 6px var(--success); }
+    .user-info { font-size: 13px; color: var(--muted); font-family: var(--mono); }
+    .user-info span { color: var(--text); }
+    #signOutBtn { margin-left: auto; background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 12px; font-family: var(--mono); transition: all 0.2s; display: none; }
+    #signOutBtn:hover { border-color: var(--accent2); color: var(--accent2); }
+    .method-url-row { display: flex; gap: 10px; align-items: stretch; }
+    select, input, textarea { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: var(--mono); font-size: 13px; padding: 10px 14px; outline: none; transition: border-color 0.2s; }
+    select:focus, input:focus, textarea:focus { border-color: var(--accent); }
+    #methodSelect { width: 100px; flex-shrink: 0; cursor: pointer; color: var(--accent); font-weight: 600; }
+    #urlInput { flex: 1; }
+    .field-label { font-size: 11px; font-family: var(--mono); color: var(--muted); margin-bottom: 6px; letter-spacing: 0.05em; }
+    #bodyField { display: none; }
+    #bodyInput { width: 100%; resize: vertical; min-height: 100px; }
+    #sendBtn { width: 100%; padding: 13px; border-radius: 8px; border: none; background: linear-gradient(135deg, var(--accent) 0%, #0095b3 100%); color: #000; font-family: var(--sans); font-weight: 700; font-size: 14px; cursor: pointer; letter-spacing: 0.05em; transition: opacity 0.2s, transform 0.1s; }
+    #sendBtn:disabled { opacity: 0.35; cursor: not-allowed; }
+    #sendBtn:not(:disabled):hover { opacity: 0.9; }
+    #sendBtn:not(:disabled):active { transform: scale(0.99); }
+    #sendBtn .btn-inner { display: flex; align-items: center; justify-content: center; gap: 8px; }
+    #responseCard { display: none; }
+    .response-meta { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
+    .status-badge { font-family: var(--mono); font-size: 12px; padding: 3px 10px; border-radius: 4px; font-weight: 600; }
+    .status-badge.ok { background: rgba(0,229,160,0.15); color: var(--success); }
+    .status-badge.err { background: rgba(255,79,123,0.15); color: var(--error); }
+    .response-time { font-size: 12px; color: var(--muted); font-family: var(--mono); margin-left: auto; }
+    #responseOutput { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 16px; font-family: var(--mono); font-size: 12px; line-height: 1.7; white-space: pre-wrap; word-break: break-all; max-height: 360px; overflow-y: auto; color: var(--text); }
+    #responseOutput::-webkit-scrollbar { width: 4px; }
+    #responseOutput::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+    .token-toggle { display: flex; align-items: center; gap: 8px; font-size: 12px; font-family: var(--mono); color: var(--muted); cursor: pointer; user-select: none; margin-top: 12px; }
+    .token-toggle:hover { color: var(--accent); }
+    .chevron { transition: transform 0.2s; display: inline-block; }
+    .chevron.open { transform: rotate(90deg); }
+    #tokenBox { display: none; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px; font-family: var(--mono); font-size: 11px; color: var(--muted); word-break: break-all; line-height: 1.6; margin-top: 10px; max-height: 80px; overflow-y: auto; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner { width: 14px; height: 14px; border: 2px solid rgba(0,0,0,0.3); border-top-color: #000; border-radius: 50%; animation: spin 0.7s linear infinite; display: none; }
+    #gsiWrapper { display: flex; margin-top: 16px; }
+    @media (max-width: 500px) { .method-url-row { flex-direction: column; } #methodSelect { width: 100%; } }
+  </style>
 </head>
 <body>
-<h1>IAP Redirect Login Demo</h1>
-<div id="status">Checking login...</div>
+<div class="wrapper">
 
+  <header>
+    <div class="logo">FC</div>
+    <h1>Cloud Run Console</h1>
+    <span>asia-south1</span>
+  </header>
+
+  <!-- Auth -->
+  <div class="card">
+    <div class="card-title">// authentication</div>
+    <div class="auth-row">
+      <div class="status-pill" id="statusPill">
+        <div class="dot"></div>
+        <span id="statusText">not signed in</span>
+      </div>
+      <div class="user-info" id="userInfo" style="display:none">
+        signed in as <span id="userEmail"></span>
+      </div>
+      <button id="signOutBtn" onclick="signOut()">sign out</button>
+    </div>
+
+    <div id="gsiWrapper">
+      <div id="g_id_onload"
+           data-client_id="450300910281-c42g9vc3q8f27la48e2j5vc6428nk7sj.apps.googleusercontent.com"
+           data-callback="handleCredentialResponse"
+           data-auto_prompt="false">
+      </div>
+      <div class="g_id_signin"
+           data-type="standard"
+           data-theme="filled_black"
+           data-text="sign_in_with"
+           data-shape="rectangular"
+           data-logo_alignment="left">
+      </div>
+    </div>
+
+    <div class="token-toggle" id="tokenToggle" style="display:none" onclick="toggleToken()">
+      <span class="chevron" id="chevron">›</span> view id token
+    </div>
+    <div id="tokenBox"></div>
+  </div>
+
+  <!-- Request Builder -->
+  <div class="card">
+    <div class="card-title">// request</div>
+    <div style="margin-bottom:14px;">
+      <div class="field-label">endpoint</div>
+      <div class="method-url-row">
+        <select id="methodSelect" onchange="onMethodChange()">
+          <option value="GET">GET</option>
+          <option value="POST">POST</option>
+          <option value="PUT">PUT</option>
+          <option value="DELETE">DELETE</option>
+          <option value="PATCH">PATCH</option>
+        </select>
+        <input type="text" id="urlInput"
+               value="https://temp-450300910281.asia-south1.run.app/"
+               placeholder="https://..." />
+      </div>
+    </div>
+    <div id="bodyField" style="margin-bottom:14px;">
+      <div class="field-label">body (json)</div>
+      <textarea id="bodyInput" placeholder='{ "key": "value" }'></textarea>
+    </div>
+    <button id="sendBtn" onclick="sendRequest()" disabled>
+      <div class="btn-inner">
+        <div class="spinner" id="spinner"></div>
+        <span id="btnLabel">SEND REQUEST</span>
+      </div>
+    </button>
+  </div>
+
+  <!-- Response -->
+  <div class="card" id="responseCard">
+    <div class="card-title">// response</div>
+    <div class="response-meta">
+      <div class="status-badge" id="statusBadge"></div>
+      <div class="response-time" id="responseTime"></div>
+    </div>
+    <pre id="responseOutput"></pre>
+  </div>
+
+</div>
 <script>
-const CLOUD_RUN_URL = "https://temp-450300910281.asia-south1.run.app/";
+  let idToken = null;
+  let tokenExpiry = null;
 
-const params = new URLSearchParams(window.location.search);
-const iapToken = params.get("iap_token");
+  function handleCredentialResponse(response) {
+    idToken = response.credential;
+    const payload = JSON.parse(atob(idToken.split('.')[1]));
+    tokenExpiry = payload.exp * 1000;
 
-if (!iapToken) {
-  // Not logged in → redirect to Cloud Run
-  document.getElementById("status").innerText = "Redirecting to login...";
-  window.location.href = CLOUD_RUN_URL;
-} else {
-  // Logged in → show token and decode payload
-  document.getElementById("status").innerHTML = `
-    <h2>✅ Logged in!</h2>
-    <p><b>ID Token:</b></p>
-    <textarea style="width:100%;height:150px;">${iapToken}</textarea>
-  `;
+    document.getElementById('userEmail').textContent = payload.email;
+    document.getElementById('userInfo').style.display = 'block';
+    document.getElementById('signOutBtn').style.display = 'block';
+    document.getElementById('gsiWrapper').style.display = 'none';
+    document.getElementById('tokenToggle').style.display = 'flex';
+    document.getElementById('tokenBox').textContent = idToken;
 
-  try {
-    const payload = JSON.parse(atob(iapToken.split('.')[1]));
-    const userInfoDiv = document.createElement("div");
-    userInfoDiv.innerHTML = `
-      <h3>User Info from ID Token:</h3>
-      <pre>${JSON.stringify(payload, null, 2)}</pre>
-    `;
-    document.body.appendChild(userInfoDiv);
-  } catch(e) {
-    console.error("Failed to decode token:", e);
+    document.getElementById('statusPill').classList.add('signed-in');
+    document.getElementById('statusText').textContent = 'authenticated';
+    document.getElementById('sendBtn').disabled = false;
+
+    const msUntilRefresh = (tokenExpiry - Date.now()) - 5 * 60 * 1000;
+    if (msUntilRefresh > 0) setTimeout(() => google.accounts.id.prompt(), msUntilRefresh);
   }
-}
+
+  function signOut() {
+    idToken = null;
+    document.getElementById('userInfo').style.display = 'none';
+    document.getElementById('signOutBtn').style.display = 'none';
+    document.getElementById('gsiWrapper').style.display = 'flex';
+    document.getElementById('tokenToggle').style.display = 'none';
+    document.getElementById('tokenBox').style.display = 'none';
+    document.getElementById('statusPill').classList.remove('signed-in');
+    document.getElementById('statusText').textContent = 'not signed in';
+    document.getElementById('sendBtn').disabled = true;
+    google.accounts.id.disableAutoSelect();
+  }
+
+  function toggleToken() {
+    const box = document.getElementById('tokenBox');
+    const chevron = document.getElementById('chevron');
+    const isOpen = box.style.display === 'block';
+    box.style.display = isOpen ? 'none' : 'block';
+    chevron.classList.toggle('open', !isOpen);
+  }
+
+  function onMethodChange() {
+    const method = document.getElementById('methodSelect').value;
+    document.getElementById('bodyField').style.display =
+      ['POST', 'PUT', 'PATCH'].includes(method) ? 'block' : 'none';
+  }
+
+  async function sendRequest() {
+    if (!idToken) return;
+    if (Date.now() >= tokenExpiry) { alert('Session expired. Please sign in again.'); signOut(); return; }
+
+    const method = document.getElementById('methodSelect').value;
+    const url = document.getElementById('urlInput').value.trim();
+    const bodyRaw = document.getElementById('bodyInput').value.trim();
+    if (!url) { alert('Please enter a URL.'); return; }
+
+    const btn = document.getElementById('sendBtn');
+    const spinner = document.getElementById('spinner');
+    const label = document.getElementById('btnLabel');
+    btn.disabled = true; spinner.style.display = 'block'; label.textContent = 'SENDING…';
+
+    const t0 = Date.now();
+    try {
+      const options = { method, headers: { 'Authorization': `Bearer ${idToken}`, 'Content-Type': 'application/json' } };
+      if (['POST','PUT','PATCH'].includes(method) && bodyRaw) options.body = bodyRaw;
+
+      const res = await fetch(url, options);
+      const elapsed = Date.now() - t0;
+      const ct = res.headers.get('content-type') || '';
+      let text;
+      if (ct.includes('application/json')) {
+        text = JSON.stringify(await res.json(), null, 2);
+      } else {
+        text = await res.text();
+      }
+      showResponse(res.status, text, elapsed);
+    } catch (err) {
+      showResponse(0, `Network / CORS error:\n${err.message}\n\nMake sure your Cloud Run function returns:\n  Access-Control-Allow-Origin: https://flame-cai.github.io\n  Access-Control-Allow-Headers: Authorization,Content-Type`, Date.now() - t0);
+    } finally {
+      btn.disabled = false; spinner.style.display = 'none'; label.textContent = 'SEND REQUEST';
+    }
+  }
+
+  function showResponse(status, body, elapsed) {
+    const card = document.getElementById('responseCard');
+    card.style.display = 'block';
+    card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    const badge = document.getElementById('statusBadge');
+    const labels = {200:'OK',201:'Created',204:'No Content',400:'Bad Request',401:'Unauthorized',403:'Forbidden',404:'Not Found',500:'Internal Server Error',503:'Service Unavailable'};
+    badge.textContent = status === 0 ? 'NETWORK ERROR' : `${status} ${labels[status]||''}`;
+    badge.className = `status-badge ${status >= 200 && status < 300 ? 'ok' : 'err'}`;
+    document.getElementById('responseTime').textContent = `${elapsed}ms`;
+    document.getElementById('responseOutput').textContent = body || '(empty response)';
+  }
 </script>
 </body>
 </html>

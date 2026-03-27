@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Authenticated Cloud Run Example</title>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+  <h1 id="welcome">Loading...</h1>
+  <button id="loginBtn">Sign in with Google</button>
+
+  <script>
+    const apiUrl = "https://temp-450300910281.asia-south1.run.app/";
+
+    // Render welcome after authentication
+    function showWelcome(user) {
+      document.getElementById("welcome").innerText = `Hello, ${user}`;
+    }
+
+    // Handle login
+    window.onload = () => {
+      google.accounts.id.initialize({
+        client_id: "450300910281-c42g9vc3q8f27la48e2j5vc6428nk7sj.apps.googleusercontent.com",
+        callback: handleCredentialResponse
+      });
+
+      google.accounts.id.renderButton(
+        document.getElementById("loginBtn"),
+        { theme: "outline", size: "large" }
+      );
+    };
+
+    async function handleCredentialResponse(response) {
+      const idToken = response.credential;  // JWT
+
+      try {
+        const res = await fetch(apiUrl, {
+          method: "GET",
+          headers: {
+            "Authorization": "Bearer " + idToken
+          }
+        });
+
+        const data = await res.json();
+        // Here you could decode JWT to get email/name
+        showWelcome("Authenticated User");
+      } catch (err) {
+        console.error(err);
+        alert("Failed to call API");
+      }
+    }
+  </script>
+</body>
+</html>

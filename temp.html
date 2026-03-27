@@ -1,44 +1,51 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
   <meta charset="UTF-8">
   <title>IAP Auth Example</title>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
-  <h1>IAP + Cloud Run Example</h1>
-  <div id="g_id_onload"
-       data-client_id="450300910281-c42g9vc3q8f27la48e2j5vc6428nk7sj.apps.googleusercontent.com"
-       data-callback="handleCredentialResponse">
-  </div>
-  <div class="g_id_signin" data-type="standard"></div>
-
-  <pre id="output"></pre>
+  <h1 id="welcome">Loading...</h1>
+  <div id="login"></div>
 
   <script>
+    const IAP_CLIENT_ID = "450300910281-c42g9vc3q8f27la48e2j5vc6428nk7sj.apps.googleusercontent.com";
     const API_URL = "https://temp-450300910281.asia-south1.run.app/";
 
+    // Render the Google sign-in button
+    window.onload = function() {
+      google.accounts.id.initialize({
+        client_id: IAP_CLIENT_ID,
+        callback: handleCredentialResponse
+      });
+      google.accounts.id.renderButton(
+        document.getElementById("login"),
+        { theme: "outline", size: "large" }
+      );
+      google.accounts.id.prompt();
+    };
+
     async function handleCredentialResponse(response) {
-      const id_token = response.credential; // This is the ID token
+      const token = response.credential; // ID token
+      console.log("ID token:", token);
 
-      document.getElementById('output').textContent = "Calling API...";
-
+      // Call Cloud Function with token
       try {
         const res = await fetch(API_URL, {
           method: "GET",
           headers: {
-            "Authorization": `Bearer ${id_token}`
+            "Authorization": "Bearer " + token
           }
         });
 
-        if (!res.ok) {
-          throw new Error(`HTTP error ${res.status}`);
-        }
+        if (!res.ok) throw new Error(res.statusText);
 
         const data = await res.json();
-        document.getElementById('output').textContent = JSON.stringify(data, null, 2);
+        document.getElementById("welcome").textContent = 
+          `Hello, ${data.email || "user"}!`;
       } catch (err) {
-        document.getElementById('output').textContent = "Error: " + err.message;
+        document.getElementById("welcome").textContent = "Error: " + err.message;
       }
     }
   </script>

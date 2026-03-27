@@ -36,12 +36,16 @@
     .auth-row { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
     .status-pill { display: flex; align-items: center; gap: 8px; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-family: var(--mono); border: 1px solid var(--border); background: var(--bg); transition: all 0.3s; }
     .status-pill.signed-in { border-color: var(--success); color: var(--success); }
+    .status-pill.refreshing { border-color: var(--accent); color: var(--accent); }
     .status-pill .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); transition: background 0.3s; }
     .status-pill.signed-in .dot { background: var(--success); box-shadow: 0 0 6px var(--success); }
+    .status-pill.refreshing .dot { background: var(--accent); box-shadow: 0 0 6px var(--accent); animation: pulse 1s infinite; }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
     .user-info { font-size: 13px; color: var(--muted); font-family: var(--mono); }
     .user-info span { color: var(--text); }
-    #signOutBtn { margin-left: auto; background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 12px; font-family: var(--mono); transition: all 0.2s; display: none; }
-    #signOutBtn:hover { border-color: var(--accent2); color: var(--accent2); }
+    .auth-actions { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+    .btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 12px; font-family: var(--mono); transition: all 0.2s; display: none; }
+    .btn-ghost:hover { border-color: var(--accent2); color: var(--accent2); }
     .method-url-row { display: flex; gap: 10px; align-items: stretch; }
     select, input, textarea { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: var(--mono); font-size: 13px; padding: 10px 14px; outline: none; transition: border-color 0.2s; }
     select:focus, input:focus, textarea:focus { border-color: var(--accent); }
@@ -72,6 +76,8 @@
     @keyframes spin { to { transform: rotate(360deg); } }
     .spinner { width: 14px; height: 14px; border: 2px solid rgba(0,0,0,0.3); border-top-color: #000; border-radius: 50%; animation: spin 0.7s linear infinite; display: none; }
     #gsiWrapper { display: flex; margin-top: 16px; }
+    .session-badge { font-size: 11px; font-family: var(--mono); color: var(--muted); padding: 3px 8px; border: 1px solid var(--border); border-radius: 4px; display: none; }
+    .session-badge.persistent { color: var(--accent); border-color: var(--accent); display: inline-block; }
     @media (max-width: 500px) { .method-url-row { flex-direction: column; } #methodSelect { width: 100%; } }
   </style>
 </head>
@@ -93,16 +99,20 @@
         <span id="statusText">not signed in</span>
       </div>
       <div class="user-info" id="userInfo" style="display:none">
-        signed in as <span id="userEmail"></span>
+        <span id="userEmail"></span>
       </div>
-      <button id="signOutBtn" onclick="signOut()">sign out</button>
+      <span class="session-badge" id="sessionBadge">persistent</span>
+      <div class="auth-actions">
+        <button class="btn-ghost" id="signOutBtn" onclick="signOut()">sign out</button>
+      </div>
     </div>
 
+    <!-- Google Sign-In button -->
     <div id="gsiWrapper">
       <div id="g_id_onload"
            data-client_id="450300910281-c42g9vc3q8f27la48e2j5vc6428nk7sj.apps.googleusercontent.com"
            data-callback="handleCredentialResponse"
-           data-auto_prompt="false">
+           data-auto_prompt="true">
       </div>
       <div class="g_id_signin"
            data-type="standard"
@@ -161,42 +171,133 @@
 
 </div>
 <script>
+  const CLIENT_ID = "450300910281-c42g9vc3q8f27la48e2j5vc6428nk7sj.apps.googleusercontent.com";
+  const STORAGE_KEY = "fc_session";
+
   let idToken = null;
   let tokenExpiry = null;
+  let refreshTimer = null;
 
+  // ── Persistent session ─────────────────────────────────
+  // We store email only (not the token — tokens are short-lived JWTs, no point storing)
+  // On load, if we have a stored email, we attempt silent refresh immediately via auto_prompt
+
+  function saveSession(email) {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ email, ts: Date.now() })); } catch(e) {}
+  }
+
+  function loadSession() {
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY)); } catch(e) { return null; }
+  }
+
+  function clearSession() {
+    try { localStorage.removeItem(STORAGE_KEY); } catch(e) {}
+  }
+
+  // ── On page load: attempt silent re-auth if session exists ──
+  window.addEventListener('load', () => {
+    const session = loadSession();
+    if (session && session.email) {
+      // Show "restoring session..." state
+      document.getElementById('statusText').textContent = 'restoring…';
+      document.getElementById('statusPill').classList.add('refreshing');
+      // GIS auto_prompt will fire handleCredentialResponse silently
+      // if Google session is alive — no user action needed
+    }
+  });
+
+  // ── Google Sign-In callback ────────────────────────────
   function handleCredentialResponse(response) {
     idToken = response.credential;
     const payload = JSON.parse(atob(idToken.split('.')[1]));
     tokenExpiry = payload.exp * 1000;
 
+    // Persist session
+    saveSession(payload.email);
+
+    // Update UI
     document.getElementById('userEmail').textContent = payload.email;
     document.getElementById('userInfo').style.display = 'block';
     document.getElementById('signOutBtn').style.display = 'block';
     document.getElementById('gsiWrapper').style.display = 'none';
     document.getElementById('tokenToggle').style.display = 'flex';
     document.getElementById('tokenBox').textContent = idToken;
+    document.getElementById('sessionBadge').classList.add('persistent');
 
-    document.getElementById('statusPill').classList.add('signed-in');
+    const pill = document.getElementById('statusPill');
+    pill.classList.remove('refreshing');
+    pill.classList.add('signed-in');
     document.getElementById('statusText').textContent = 'authenticated';
     document.getElementById('sendBtn').disabled = false;
 
-    const msUntilRefresh = (tokenExpiry - Date.now()) - 5 * 60 * 1000;
-    if (msUntilRefresh > 0) setTimeout(() => google.accounts.id.prompt(), msUntilRefresh);
+    // Schedule silent refresh 5 min before expiry
+    scheduleRefresh(tokenExpiry);
   }
 
+  // ── Silent refresh ─────────────────────────────────────
+  function scheduleRefresh(expiry) {
+    if (refreshTimer) clearTimeout(refreshTimer);
+    const msUntilRefresh = (expiry - Date.now()) - 5 * 60 * 1000;
+    if (msUntilRefresh > 0) {
+      refreshTimer = setTimeout(silentRefresh, msUntilRefresh);
+    } else {
+      // Token already close to expiry, refresh now
+      silentRefresh();
+    }
+  }
+
+  function silentRefresh() {
+    // Show subtle refreshing indicator
+    const pill = document.getElementById('statusPill');
+    pill.classList.remove('signed-in');
+    pill.classList.add('refreshing');
+    document.getElementById('statusText').textContent = 'refreshing…';
+
+    // Re-initialize GIS and attempt silent prompt
+    google.accounts.id.initialize({
+      client_id: CLIENT_ID,
+      callback: handleCredentialResponse,
+    });
+
+    google.accounts.id.prompt((notification) => {
+      if (notification.isSkippedMoment() || notification.isDismissedMoment()) {
+        // Silent refresh failed — Google session expired or user revoked
+        // Fall back: show sign-in button
+        pill.classList.remove('refreshing');
+        document.getElementById('statusText').textContent = 'session expired';
+        document.getElementById('sendBtn').disabled = true;
+        document.getElementById('gsiWrapper').style.display = 'flex';
+        clearSession();
+      }
+      // If successful, handleCredentialResponse fires automatically
+    });
+  }
+
+  // ── Sign out ───────────────────────────────────────────
   function signOut() {
+    if (refreshTimer) clearTimeout(refreshTimer);
     idToken = null;
+    tokenExpiry = null;
+    clearSession();
+
+    google.accounts.id.disableAutoSelect();
+    google.accounts.id.revoke(document.getElementById('userEmail').textContent, () => {});
+
+    // Reset UI
     document.getElementById('userInfo').style.display = 'none';
     document.getElementById('signOutBtn').style.display = 'none';
     document.getElementById('gsiWrapper').style.display = 'flex';
     document.getElementById('tokenToggle').style.display = 'none';
     document.getElementById('tokenBox').style.display = 'none';
-    document.getElementById('statusPill').classList.remove('signed-in');
+    document.getElementById('sessionBadge').classList.remove('persistent');
+
+    const pill = document.getElementById('statusPill');
+    pill.classList.remove('signed-in', 'refreshing');
     document.getElementById('statusText').textContent = 'not signed in';
     document.getElementById('sendBtn').disabled = true;
-    google.accounts.id.disableAutoSelect();
   }
 
+  // ── Token viewer ───────────────────────────────────────
   function toggleToken() {
     const box = document.getElementById('tokenBox');
     const chevron = document.getElementById('chevron');
@@ -205,15 +306,21 @@
     chevron.classList.toggle('open', !isOpen);
   }
 
+  // ── Method change ──────────────────────────────────────
   function onMethodChange() {
     const method = document.getElementById('methodSelect').value;
     document.getElementById('bodyField').style.display =
       ['POST', 'PUT', 'PATCH'].includes(method) ? 'block' : 'none';
   }
 
+  // ── Send request ───────────────────────────────────────
   async function sendRequest() {
     if (!idToken) return;
-    if (Date.now() >= tokenExpiry) { alert('Session expired. Please sign in again.'); signOut(); return; }
+    if (Date.now() >= tokenExpiry) {
+      silentRefresh();
+      showResponse(0, 'Token expired — refreshing session, please try again in a moment.', 0);
+      return;
+    }
 
     const method = document.getElementById('methodSelect').value;
     const url = document.getElementById('urlInput').value.trim();
@@ -227,21 +334,21 @@
 
     const t0 = Date.now();
     try {
-      const options = { method, headers: { 'Authorization': `Bearer ${idToken}`, 'Content-Type': 'application/json' } };
+      const options = {
+        method,
+        headers: { 'Authorization': `Bearer ${idToken}`, 'Content-Type': 'application/json' }
+      };
       if (['POST','PUT','PATCH'].includes(method) && bodyRaw) options.body = bodyRaw;
 
       const res = await fetch(url, options);
       const elapsed = Date.now() - t0;
       const ct = res.headers.get('content-type') || '';
-      let text;
-      if (ct.includes('application/json')) {
-        text = JSON.stringify(await res.json(), null, 2);
-      } else {
-        text = await res.text();
-      }
+      const text = ct.includes('application/json')
+        ? JSON.stringify(await res.json(), null, 2)
+        : await res.text();
       showResponse(res.status, text, elapsed);
     } catch (err) {
-      showResponse(0, `Network / CORS error:\n${err.message}\n\nMake sure your Cloud Run function returns:\n  Access-Control-Allow-Origin: https://flame-cai.github.io\n  Access-Control-Allow-Headers: Authorization,Content-Type`, Date.now() - t0);
+      showResponse(0, `Network / CORS error:\n${err.message}`, Date.now() - t0);
     } finally {
       btn.disabled = false; spinner.style.display = 'none'; label.textContent = 'SEND REQUEST';
     }
@@ -251,11 +358,11 @@
     const card = document.getElementById('responseCard');
     card.style.display = 'block';
     card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    const badge = document.getElementById('statusBadge');
     const labels = {200:'OK',201:'Created',204:'No Content',400:'Bad Request',401:'Unauthorized',403:'Forbidden',404:'Not Found',500:'Internal Server Error',503:'Service Unavailable'};
-    badge.textContent = status === 0 ? 'NETWORK ERROR' : `${status} ${labels[status]||''}`;
+    const badge = document.getElementById('statusBadge');
+    badge.textContent = status === 0 ? 'ERROR' : `${status} ${labels[status]||''}`;
     badge.className = `status-badge ${status >= 200 && status < 300 ? 'ok' : 'err'}`;
-    document.getElementById('responseTime').textContent = `${elapsed}ms`;
+    document.getElementById('responseTime').textContent = elapsed ? `${elapsed}ms` : '';
     document.getElementById('responseOutput').textContent = body || '(empty response)';
   }
 </script>

@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Flame CAI · Cloud Run Console</title>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
   <style>
@@ -65,11 +66,11 @@
     #tokenBox { display: none; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px; font-family: var(--mono); font-size: 11px; color: var(--muted); word-break: break-all; line-height: 1.6; margin-top: 10px; max-height: 80px; overflow-y: auto; }
     @keyframes spin { to { transform: rotate(360deg); } }
     .spinner { width: 14px; height: 14px; border: 2px solid rgba(0,0,0,0.3); border-top-color: #000; border-radius: 50%; animation: spin 0.7s linear infinite; display: none; }
-    /* Sign-in button */
-    #signInBtn { display: flex; align-items: center; gap: 10px; margin-top: 16px; padding: 10px 20px; background: #fff; border: none; border-radius: 8px; cursor: pointer; font-family: var(--sans); font-size: 14px; font-weight: 500; color: #3c4043; transition: box-shadow 0.2s; }
-    #signInBtn:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+    /* Custom Google sign-in button */
+    #signInBtn { display: flex; align-items: center; gap: 10px; margin-top: 16px; padding: 10px 20px; background: #fff; border: none; border-radius: 8px; cursor: pointer; font-family: var(--sans); font-size: 14px; font-weight: 500; color: #3c4043; transition: box-shadow 0.2s, opacity 0.2s; }
+    #signInBtn:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.35); }
+    #signInBtn:disabled { opacity: 0.5; cursor: not-allowed; }
     #signInBtn svg { flex-shrink: 0; }
-    #signInBtn.hidden { display: none; }
     .session-badge { font-size: 11px; font-family: var(--mono); color: var(--accent); border: 1px solid var(--accent); padding: 3px 8px; border-radius: 4px; display: none; }
     .session-badge.show { display: inline-block; }
     @media (max-width: 500px) { .method-url-row { flex-direction: column; } #methodSelect { width: 100%; } }
@@ -101,9 +102,14 @@
       </div>
     </div>
 
-    <!-- Custom sign-in button (no FedCM, no popup) -->
-    <button id="signInBtn" onclick="startOAuth()">
-      <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.964 10.707A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.707V4.961H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.039l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.961L3.964 6.293C4.672 4.166 6.656 3.58 9 3.58z"/></svg>
+    <!-- Custom sign-in button — triggers GIS popup with FedCM disabled -->
+    <button id="signInBtn" onclick="startSignIn()">
+      <svg width="18" height="18" viewBox="0 0 18 18">
+        <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/>
+        <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/>
+        <path fill="#FBBC05" d="M3.964 10.707A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.707V4.961H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.039l3.007-2.332z"/>
+        <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.961L3.964 6.293C4.672 4.166 6.656 3.58 9 3.58z"/>
+      </svg>
       Sign in with Google
     </button>
 
@@ -157,15 +163,15 @@
 <script>
   const CLIENT_ID = "450300910281-c42g9vc3q8f27la48e2j5vc6428nk7sj.apps.googleusercontent.com";
   const STORAGE_KEY = "fc_session";
-  const REDIRECT_URI = location.origin + location.pathname;
 
   let idToken = null;
   let tokenExpiry = null;
   let refreshTimer = null;
+  let gisReady = false;
 
-  // ── Storage helpers ────────────────────────────────────
-  function saveSession(data) {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e) {}
+  // ── Storage ────────────────────────────────────────────
+  function saveSession(token, expiry, email) {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ token, expiry, email })); } catch(e) {}
   }
   function loadSession() {
     try { return JSON.parse(localStorage.getItem(STORAGE_KEY)); } catch(e) { return null; }
@@ -174,72 +180,99 @@
     try { localStorage.removeItem(STORAGE_KEY); } catch(e) {}
   }
 
-  // ── OAuth redirect flow (no FedCM, no popup) ──────────
-  function startOAuth() {
-    // Generate and store PKCE + state
-    const state = crypto.randomUUID();
-    const nonce = crypto.randomUUID();
-    sessionStorage.setItem('oauth_state', state);
-    sessionStorage.setItem('oauth_nonce', nonce);
-
-    const params = new URLSearchParams({
+  // ── GIS init — FedCM explicitly disabled ───────────────
+  function initGIS() {
+    google.accounts.id.initialize({
       client_id: CLIENT_ID,
-      redirect_uri: REDIRECT_URI,
-      response_type: 'id_token',
-      scope: 'openid email profile',
-      state,
-      nonce,
-      // Disable FedCM — use classic OAuth redirect
-      fedcm_requested: 'false',
+      callback: handleCredentialResponse,
+      use_fedcm_for_prompt: false,   // ← disables FedCM entirely
+      auto_select: true,             // silent re-auth if Google session alive
     });
+    gisReady = true;
 
-    window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?${params}`;
-  }
-
-  // ── Handle redirect back from Google ──────────────────
-  function handleRedirectCallback() {
-    // Google returns token in the URL hash: #id_token=...&state=...
-    const hash = new URLSearchParams(window.location.hash.slice(1));
-    const token = hash.get('id_token');
-    const state = hash.get('state');
-
-    if (!token) return false;
-
-    // Validate state to prevent CSRF
-    const savedState = sessionStorage.getItem('oauth_state');
-    if (state !== savedState) {
-      console.error('OAuth state mismatch');
-      return false;
+    // Try silent restore first
+    const session = loadSession();
+    if (session && session.token && session.expiry - Date.now() > 2 * 60 * 1000) {
+      // Token still valid — restore immediately, no network call
+      idToken = session.token;
+      tokenExpiry = session.expiry;
+      updateSignedInUI(session.email);
+      scheduleRefresh(tokenExpiry);
+    } else if (session) {
+      // Had a session but token expired — try silent GIS re-auth
+      clearSession();
+      showRestoring();
+      attemptSilentAuth();
     }
-
-    sessionStorage.removeItem('oauth_state');
-    sessionStorage.removeItem('oauth_nonce');
-
-    // Clean the hash from URL without reload
-    history.replaceState(null, '', location.pathname);
-
-    setSignedIn(token);
-    return true;
+    // else: no session, just show sign-in button (already default state)
   }
 
-  // ── Set signed-in state ────────────────────────────────
-  function setSignedIn(token) {
-    idToken = token;
+  // Called once GIS script loads
+  window.onGoogleLibraryLoad = initGIS;
+  // Fallback if callback doesn't fire (some browsers)
+  setTimeout(() => { if (!gisReady && window.google) initGIS(); }, 2000);
+
+  // ── Silent auth attempt on load ────────────────────────
+  let restoreTimer = null;
+
+  function showRestoring() {
+    document.getElementById('statusText').textContent = 'restoring…';
+    document.getElementById('statusPill').classList.add('refreshing');
+    // Timeout: if GIS doesn't respond in 4s, give up
+    restoreTimer = setTimeout(() => {
+      document.getElementById('statusPill').classList.remove('refreshing');
+      document.getElementById('statusText').textContent = 'not signed in';
+    }, 4000);
+  }
+
+  function attemptSilentAuth() {
+    google.accounts.id.prompt((notification) => {
+      clearTimeout(restoreTimer);
+      if (notification.isSkippedMoment() || notification.isDismissedMoment()) {
+        document.getElementById('statusPill').classList.remove('refreshing');
+        document.getElementById('statusText').textContent = 'not signed in';
+      }
+      // success → handleCredentialResponse fires automatically
+    });
+  }
+
+  // ── User clicks sign-in button ─────────────────────────
+  function startSignIn() {
+    if (!gisReady) return;
+    const btn = document.getElementById('signInBtn');
+    btn.disabled = true;
+    btn.lastChild.textContent = ' Signing in…';
+
+    // prompt() shows the Google account chooser (one-tap or popup)
+    // with FedCM disabled this is a standard popup, not FedCM overlay
+    google.accounts.id.prompt((notification) => {
+      if (notification.isSkippedMoment() || notification.isDismissedMoment()) {
+        btn.disabled = false;
+        btn.lastChild.textContent = ' Sign in with Google';
+      }
+    });
+  }
+
+  // ── Token received ─────────────────────────────────────
+  function handleCredentialResponse(response) {
+    if (restoreTimer) { clearTimeout(restoreTimer); restoreTimer = null; }
+
+    const token = response.credential;
     const payload = JSON.parse(atob(token.split('.')[1]));
+
+    idToken = token;
     tokenExpiry = payload.exp * 1000;
-
-    // Persist token + expiry so we can restore on next load
-    saveSession({ token, expiry: tokenExpiry, email: payload.email });
-
-    updateUI(payload.email);
+    saveSession(token, tokenExpiry, payload.email);
+    updateSignedInUI(payload.email);
     scheduleRefresh(tokenExpiry);
   }
 
-  function updateUI(email) {
+  // ── UI helpers ─────────────────────────────────────────
+  function updateSignedInUI(email) {
     document.getElementById('userEmail').textContent = email;
     document.getElementById('userInfo').style.display = 'block';
     document.getElementById('authActions').style.display = 'flex';
-    document.getElementById('signInBtn').classList.add('hidden');
+    document.getElementById('signInBtn').style.display = 'none';
     document.getElementById('tokenToggle').style.display = 'flex';
     document.getElementById('tokenBox').textContent = idToken;
     document.getElementById('sessionBadge').classList.add('show');
@@ -251,32 +284,11 @@
     document.getElementById('sendBtn').disabled = false;
   }
 
-  // ── Restore session from localStorage ─────────────────
-  function tryRestoreSession() {
-    const session = loadSession();
-    if (!session || !session.token || !session.expiry) return false;
-
-    // If token still valid (with 2 min buffer), restore it
-    if (session.expiry - Date.now() > 2 * 60 * 1000) {
-      idToken = session.token;
-      tokenExpiry = session.expiry;
-      updateUI(session.email);
-      scheduleRefresh(tokenExpiry);
-      return true;
-    }
-
-    // Token expired — clear session, user must sign in again
-    // (redirect flow will get a fresh token)
-    clearSession();
-    return false;
-  }
-
-  // ── Token refresh: redirect silently via iframe ────────
-  // Uses prompt=none so Google returns a token with no UI if session is alive
+  // ── Token refresh ──────────────────────────────────────
   function scheduleRefresh(expiry) {
     if (refreshTimer) clearTimeout(refreshTimer);
-    const msUntilRefresh = (expiry - Date.now()) - 5 * 60 * 1000;
-    refreshTimer = setTimeout(silentRefresh, Math.max(0, msUntilRefresh));
+    const ms = (expiry - Date.now()) - 5 * 60 * 1000;
+    refreshTimer = setTimeout(silentRefresh, Math.max(0, ms));
   }
 
   function silentRefresh() {
@@ -285,69 +297,35 @@
     pill.classList.add('refreshing');
     document.getElementById('statusText').textContent = 'refreshing…';
 
-    const nonce = crypto.randomUUID();
-    const params = new URLSearchParams({
-      client_id: CLIENT_ID,
-      redirect_uri: REDIRECT_URI,
-      response_type: 'id_token',
-      scope: 'openid email profile',
-      nonce,
-      prompt: 'none',   // no UI — fails silently if Google session expired
-    });
-
-    // Use a hidden iframe for silent refresh — no page navigation
-    const iframe = document.createElement('iframe');
-    iframe.style.display = 'none';
-    iframe.src = `https://accounts.google.com/o/oauth2/v2/auth?${params}`;
-    document.body.appendChild(iframe);
-
-    // Listen for the iframe to redirect back to our page
-    const timer = setTimeout(() => {
-      // Timed out — Google session likely expired
-      document.body.removeChild(iframe);
-      onRefreshFailed();
-    }, 10000);
-
-    iframe.onload = () => {
-      try {
-        // Read hash from iframe's redirected URL
-        const hash = new URLSearchParams(iframe.contentWindow.location.hash.slice(1));
-        const token = hash.get('id_token');
-        clearTimeout(timer);
-        document.body.removeChild(iframe);
-        if (token) {
-          setSignedIn(token);
-        } else {
-          onRefreshFailed();
-        }
-      } catch(e) {
-        // Cross-origin error means redirect hasn't come back yet — wait for timer
+    google.accounts.id.prompt((notification) => {
+      if (notification.isSkippedMoment() || notification.isDismissedMoment()) {
+        // Silent refresh failed — show sign-in button
+        pill.classList.remove('refreshing');
+        document.getElementById('statusText').textContent = 'session expired';
+        document.getElementById('sendBtn').disabled = true;
+        document.getElementById('signInBtn').style.display = 'flex';
+        document.getElementById('authActions').style.display = 'none';
+        document.getElementById('sessionBadge').classList.remove('show');
+        clearSession();
       }
-    };
-  }
-
-  function onRefreshFailed() {
-    clearSession();
-    idToken = null;
-    const pill = document.getElementById('statusPill');
-    pill.classList.remove('refreshing', 'signed-in');
-    document.getElementById('statusText').textContent = 'session expired — sign in again';
-    document.getElementById('sendBtn').disabled = true;
-    document.getElementById('signInBtn').classList.remove('hidden');
-    document.getElementById('authActions').style.display = 'none';
-    document.getElementById('sessionBadge').classList.remove('show');
+    });
   }
 
   // ── Sign out ───────────────────────────────────────────
   function signOut() {
     if (refreshTimer) clearTimeout(refreshTimer);
-    idToken = null;
-    tokenExpiry = null;
+    const email = document.getElementById('userEmail').textContent;
+    idToken = null; tokenExpiry = null;
     clearSession();
+
+    google.accounts.id.disableAutoSelect();
+    try { google.accounts.id.revoke(email, () => {}); } catch(e) {}
 
     document.getElementById('userInfo').style.display = 'none';
     document.getElementById('authActions').style.display = 'none';
-    document.getElementById('signInBtn').classList.remove('hidden');
+    document.getElementById('signInBtn').style.display = 'flex';
+    document.getElementById('signInBtn').disabled = false;
+    document.getElementById('signInBtn').lastChild.textContent = ' Sign in with Google';
     document.getElementById('tokenToggle').style.display = 'none';
     document.getElementById('tokenBox').style.display = 'none';
     document.getElementById('sessionBadge').classList.remove('show');
@@ -356,11 +334,6 @@
     pill.classList.remove('signed-in', 'refreshing');
     document.getElementById('statusText').textContent = 'not signed in';
     document.getElementById('sendBtn').disabled = true;
-
-    // Redirect to Google logout to fully clear Google session
-    // so next sign-in shows account picker
-    const logoutUrl = `https://accounts.google.com/o/oauth2/revoke?token=${encodeURIComponent(idToken || '')}`;
-    fetch(logoutUrl, { mode: 'no-cors' }); // best-effort revoke
   }
 
   // ── Token viewer ───────────────────────────────────────
@@ -430,15 +403,6 @@
     badge.className = `status-badge ${status >= 200 && status < 300 ? 'ok' : 'err'}`;
     document.getElementById('responseTime').textContent = elapsed ? `${elapsed}ms` : '';
     document.getElementById('responseOutput').textContent = body || '(empty response)';
-  }
-
-  // ── Boot ───────────────────────────────────────────────
-  // 1. Check if we're returning from OAuth redirect
-  if (window.location.hash.includes('id_token')) {
-    handleRedirectCallback();
-  } else {
-    // 2. Try to restore from localStorage
-    tryRestoreSession();
   }
 </script>
 </body>

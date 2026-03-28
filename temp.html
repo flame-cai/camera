@@ -112,7 +112,7 @@
       <div id="g_id_onload"
            data-client_id="450300910281-c42g9vc3q8f27la48e2j5vc6428nk7sj.apps.googleusercontent.com"
            data-callback="handleCredentialResponse"
-           data-auto_prompt="true">
+           data-auto_prompt="false">
       </div>
       <div class="g_id_signin"
            data-type="standard"
@@ -195,19 +195,48 @@
   }
 
   // ── On page load: attempt silent re-auth if session exists ──
+  let restoreTimer = null;
+
+  function resetToSignIn() {
+    // Called when silent restore fails or times out
+    clearSession();
+    const pill = document.getElementById('statusPill');
+    pill.classList.remove('refreshing');
+    document.getElementById('statusText').textContent = 'not signed in';
+    document.getElementById('gsiWrapper').style.display = 'flex';
+  }
+
   window.addEventListener('load', () => {
     const session = loadSession();
     if (session && session.email) {
-      // Show "restoring session..." state
+      // Show restoring state
       document.getElementById('statusText').textContent = 'restoring…';
       document.getElementById('statusPill').classList.add('refreshing');
-      // GIS auto_prompt will fire handleCredentialResponse silently
-      // if Google session is alive — no user action needed
+
+      // Fallback: if GIS doesn't respond in 3s, give up and show sign-in
+      restoreTimer = setTimeout(resetToSignIn, 3000);
+
+      // Explicitly trigger silent refresh instead of relying on auto_prompt
+      // auto_prompt is often suppressed by browsers (3rd party cookie restrictions)
+      google.accounts.id.initialize({
+        client_id: CLIENT_ID,
+        callback: handleCredentialResponse,
+      });
+      google.accounts.id.prompt((notification) => {
+        if (notification.isSkippedMoment() || notification.isDismissedMoment()) {
+          clearTimeout(restoreTimer);
+          resetToSignIn();
+        }
+        // If successful, handleCredentialResponse fires and clears restoreTimer
+      });
     }
   });
 
   // ── Google Sign-In callback ────────────────────────────
   function handleCredentialResponse(response) {
+    // Clear restore timeout — sign-in succeeded
+    if (restoreTimer) { clearTimeout(restoreTimer); restoreTimer = null; }
+
     idToken = response.credential;
     const payload = JSON.parse(atob(idToken.split('.')[1]));
     tokenExpiry = payload.exp * 1000;

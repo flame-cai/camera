@@ -504,7 +504,10 @@ const S = {
   // Fixed-focus height method
   _captureFlash:0,
   maskSpan:null,
-  _lastNlm:null,  // latest poseLandmarks for height fusion
+  _lastNlm:null,     // latest poseLandmarks for height fusion
+  _lastFaceLm:null,  // latest 468-pt face mesh
+  _topNorm:null,     // pure landmark head-top normalised y
+  _bottomNorm:null,  // pure landmark foot-bottom normalised y
   camhHeight:null,   // camera-height geometry method result
   camhPp:null, camhPc:null,  // Pp and Pc values for overlay
   // Video cover-crop offsets (for landmark remapping)
@@ -783,33 +786,8 @@ function drawOverlays(ctx, res, cropL, cropT, cropW, cropH, W, H) {
     const mask = res.poseSegmentationMasks[0];
     const d = mask.getAsFloat32Array(), mW = mask.width, mH = mask.height;
 
-    // ── Extract body extent from mask (for height estimation) ──
-    // Use low threshold 0.10 to catch hair at top and shoe tips at bottom.
-    // These low-confidence edges are exactly what we need for accurate height.
-    const THR = 0.10;
-    let topRow = mH, botRow = -1, leftCol = mW, rightCol = -1;
-    for (let r = 0; r < mH; r++) {
-      for (let c = 0; c < mW; c++) {
-        if (d[r*mW + c] > THR) {
-          if (r < topRow)  topRow  = r;
-          if (r > botRow)  botRow  = r;
-          if (c < leftCol) leftCol = c;
-          if (c > rightCol)rightCol= c;
-        }
-      }
-    }
-    if (botRow > topRow && botRow >= 0) {
-      S.maskSpan = {
-        topY:    topRow  / mH,   // normalised 0-1 in video frame
-        bottomY: botRow  / mH,
-        leftX:   leftCol / mW,
-        rightX:  rightCol/ mW,
-        spanY:   (botRow - topRow) / mH,
-        mW, mH,
-      };
-    } else {
-      S.maskSpan = null;
-    }
+    // Store raw mask for reference (drawing only, not used for measurement)
+    S.maskSpan = { mW, mH, raw: d };
 
     // Draw tinted body mask
     const tmp = document.createElement('canvas'); tmp.width=mW; tmp.height=mH;
@@ -919,26 +897,12 @@ function drawHUD(ctx, D, camH, pH) {
 
   // ── CamH estimate (Pp/Pc geometry) — with measurement lines ─────────────
   if (S.camhHeight != null && S.camhPp != null && S.camhPc != null &&
-      S.maskSpan) {
-    const ms = S.maskSpan;
+      S._topNorm != null && S._bottomNorm != null) {
     const cropT  = (S.cropSy||0)/(S.vH||1);
     const cropH2 = (S.cropSh||S.vH||1)/(S.vH||1);
 
-    // Extend top with landmark correction if available
-    let topNorm    = ms.topY;
-    let bottomNorm = ms.bottomY;
-    if (S._lastNlm) {
-      const nN = S._lastNlm[0], nLA = S._lastNlm[27], nRA = S._lastNlm[28];
-      if (nN && nLA) {
-        const ankY = nRA ? (nLA.y+nRA.y)/2 : nLA.y;
-        const na   = ankY - nN.y;
-        topNorm    = Math.min(topNorm,    Math.max(0,    nN.y - na*0.13));
-        bottomNorm = Math.max(bottomNorm, Math.min(0.99, ankY + na*0.04));
-      }
-    }
-
-    const topDisp    = (topNorm    - cropT) / cropH2;
-    const bottomDisp = (bottomNorm - cropT) / cropH2;
+    const topDisp    = (S._topNorm    - cropT) / cropH2;
+    const bottomDisp = (S._bottomNorm - cropT) / cropH2;
     const topPx    = topDisp    * Hv;
     const bottomPx = bottomDisp * Hv;
     const lx1 = cx - 36, lx2 = cx + 36;
@@ -1033,7 +997,8 @@ function startHolistic() {
       S.personH=null; S.wNose=null; S.wAnkle=null;
       if (res.poseLandmarks?.[0] && res.poseWorldLandmarks?.[0]) {
         const nlm=res.poseLandmarks[0], wlm=res.poseWorldLandmarks[0];
-        S._lastNlm = nlm;   // for camH height estimation (landmark fusion)
+        S._lastNlm    = nlm;   // pose landmarks (normalised)
+        S._lastFaceLm = res.faceLandmarks?.[0] ?? null;  // 468-pt face mesh
         const wN=wlm[0], wLA=wlm[27], wRA=wlm[28];
         if (wN && wLA) {
           const aky = wRA?(wLA.y+wRA.y)/2:wLA.y;
@@ -1123,66 +1088,78 @@ function camhSlide() {
 
 function updateCamHHeight() {
   const hCam  = parseFloat(_('camh-slider')?.value || '1.20');
-  const ms    = S.maskSpan;
   const dispH = _('cam0')?.clientHeight || 520;
 
-  if (!ms || ms.spanY < 0.05) {
+  // ── Pure geometry — no thresholds, no assumed ratios ─────────────────────
+  //
+  // TOP of person = topmost point of the 468-pt face mesh (res.faceLandmarks)
+  //   This is the actual detected hairline/forehead. No ratio applied.
+  //
+  // BOTTOM of person = lowest of: left heel (29), right heel (30),
+  //   left foot index (31), right foot index (32) in pose landmarks.
+  //   These ARE the foot contact points. No extension applied.
+  //
+  // Pp = (bottomNorm - topNorm) mapped to display pixels
+  // Pc = bottomNorm mapped to pixels below image centre
+  // H_person = H_cam × Pp / Pc
+  // ─────────────────────────────────────────────────────────────────────────
+
+  const nlm   = S._lastNlm;
+  const faceLm = S._lastFaceLm;
+
+  if (!nlm || !faceLm || faceLm.length === 0) {
     tx('camh-span', '\u2013'); tx('camh-feet', '\u2013');
-    tx('camh-height', 'waiting for mask\u2026');
+    tx('camh-height', 'need face + pose landmarks');
     S.camhHeight = null; S.camhPp = null; S.camhPc = null; return;
   }
 
-  // Convert mask normalised coords to display space (account for cover-crop)
+  // Top: minimum y across all 468 face mesh landmarks = topmost detected head point
+  let topNorm = Infinity;
+  for (let i = 0; i < faceLm.length; i++) {
+    if (faceLm[i].y < topNorm) topNorm = faceLm[i].y;
+  }
+
+  // Bottom: maximum y across heel and foot-index landmarks (indices 29–32)
+  const footIdx = [29, 30, 31, 32];
+  let bottomNorm = -Infinity;
+  for (const i of footIdx) {
+    const lm = nlm[i];
+    if (lm && lm.y > bottomNorm) bottomNorm = lm.y;
+  }
+
+  if (!isFinite(topNorm) || !isFinite(bottomNorm) || bottomNorm <= topNorm) {
+    tx('camh-span', '\u2013'); tx('camh-feet', '\u2013');
+    tx('camh-height', 'incomplete landmarks');
+    S.camhHeight = null; S.camhPp = null; S.camhPc = null; return;
+  }
+
+  // Map video-normalised coords to display pixels (account for cover-crop)
   const cropT  = (S.cropSy || 0) / (S.vH || 1);
   const cropH2 = (S.cropSh || S.vH || 1) / (S.vH || 1);
 
-  // ── Fuse mask bounds with landmark-based corrections ──────────────────────
-  // Mask misses hair (low confidence) and shoe tips (on floor).
-  // Pose landmarks let us extend beyond what the mask captures.
-  let topNorm    = ms.topY;      // mask top in video normalised coords
-  let bottomNorm = ms.bottomY;   // mask bottom in video normalised coords
-
-  // If pose landmarks are available, use them to extend bounds:
-  // nose (lm[0]) is ~12-14% below true head top; ankle (lm[27/28]) is ~3-5% above feet
-  if (S._lastNlm) {
-    const nN  = S._lastNlm[0];   // nose
-    const nLA = S._lastNlm[27];  // left ankle
-    const nRA = S._lastNlm[28];  // right ankle
-    if (nN && nLA) {
-      const ankleY    = nRA ? (nLA.y + nRA.y) / 2 : nLA.y;
-      const noseAnkle = ankleY - nN.y;   // span in normalised coords
-      // Head top: ~13% of nose-to-ankle above nose
-      const headTopY  = nN.y - noseAnkle * 0.13;
-      // Foot bottom: ~4% of nose-to-ankle below ankle (shoe sole below ankle bone)
-      const footBotY  = ankleY + noseAnkle * 0.04;
-      // Take the most extreme (smaller top, larger bottom)
-      topNorm    = Math.min(topNorm,    Math.max(0,    headTopY));
-      bottomNorm = Math.max(bottomNorm, Math.min(0.99, footBotY));
-    }
-  }
-
-  // Map to display normalised [0,1]
   const topDisp    = (topNorm    - cropT) / cropH2;
   const bottomDisp = (bottomNorm - cropT) / cropH2;
-  const Pc = (bottomDisp - 0.5) * dispH;   // feet below image centre
 
-  if (Pc <= 2) {
+  const Pc = (bottomDisp - 0.5) * dispH;   // feet below image centre
+  const Pp = (bottomDisp - topDisp) * dispH; // full head-top to foot-sole span
+
+  if (Pc <= 0 || Pp <= 0) {
     tx('camh-span', '\u2013');
-    tx('camh-feet', 'feet not below centre \u2014 tilt camera down');
+    tx('camh-feet', 'feet not below image centre \u2014 tilt camera down');
     tx('camh-height', '\u2013');
     S.camhHeight = null; S.camhPp = null; S.camhPc = null; return;
   }
 
-  const Pp = (bottomDisp - topDisp) * dispH;   // full head-to-feet span
-  const h  = hCam * Pp / Pc;
-  const valid = h > 0.5 && h < 2.8;
+  const h = hCam * Pp / Pc;
 
   S.camhPp = Pp; S.camhPc = Pc;
-  S.camhHeight = valid ? h : null;
+  S.camhHeight = h;
+  S._topNorm    = topNorm;     // store for drawHUD lines
+  S._bottomNorm = bottomNorm;
 
-  tx('camh-span',   'Pp = ' + Pp.toFixed(0) + ' px');
+  tx('camh-span',   'Pp = ' + Pp.toFixed(0) + ' px (face top \u2192 foot sole)');
   tx('camh-feet',   'Pc = ' + Pc.toFixed(0) + ' px below centre');
-  tx('camh-height', valid ? h.toFixed(3) + ' m' : '\u2013 (out of range)');
+  tx('camh-height', h.toFixed(3) + ' m');
 }
 
 function camhLock() {

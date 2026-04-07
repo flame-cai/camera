@@ -8,2292 +8,1491 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>AIMM</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://accounts.google.com/gsi/client" async defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/holistic/holistic.js" crossorigin="anonymous"></script>
-
+</head>
+<body>
 <style>
-/* ═══════════════════════════════════════════════════════
-   TOKENS
-═══════════════════════════════════════════════════════ */
 :root {
-  --bg:#09090b; --s1:#111114; --s2:#1a1a1e; --s3:#222228;
-  --border:rgba(255,255,255,.07); --border2:rgba(255,255,255,.13);
-  --text:#ededf0; --text2:#88888e; --text3:#44444c;
-  --accent:#4f8fff; --accent-dim:rgba(79,143,255,.13);
-  --green:#34d399; --green-dim:rgba(52,211,153,.11);
-  --red:#f87171; --red-dim:rgba(248,113,113,.11);
-  --amber:#fbbf24; --amber-dim:rgba(251,191,36,.11);
-  --font:'Syne',sans-serif; --mono:'JetBrains Mono',monospace;
-  --ease:cubic-bezier(.4,0,.2,1); --spring:cubic-bezier(.34,1.56,.64,1);
-  --r:12px; --r2:8px;
-  --safe-top:max(env(safe-area-inset-top,0px),16px);
-  --safe-bot:max(env(safe-area-inset-bottom,0px),16px);
+  --bg:#ffffff; --bg2:#f5f5f5; --bg3:#ebebeb;
+  --line:#e0e0e0; --line2:#cccccc;
+  --text:#111111; --text2:#555555; --text3:#999999;
+  --accent:#1a73e8; --accent-bg:#e8f0fe;
+  --green:#1e8e3e; --green-bg:#e6f4ea;
+  --red:#d93025; --red-bg:#fce8e6;
+  --amber:#f29900; --amber-bg:#fef7e0;
+  --font:'Inter',sans-serif; --mono:'JetBrains Mono',monospace;
+  --radius:8px;
+  --safe-t:max(env(safe-area-inset-top,0px),12px);
+  --safe-b:max(env(safe-area-inset-bottom,0px),16px);
 }
-[data-theme="light"] {
-  --bg:#f0f0ed; --s1:#fff; --s2:#e8e8e4; --s3:#deded9;
-  --border:rgba(0,0,0,.07); --border2:rgba(0,0,0,.12);
-  --text:#111116; --text2:#66666e; --text3:#99999e;
-  --accent:#1a6af0; --accent-dim:rgba(26,106,240,.10);
-  --green:#059669; --green-dim:rgba(5,150,105,.10);
-  --red:#dc2626; --red-dim:rgba(220,38,38,.08);
-  --amber:#b45309; --amber-dim:rgba(180,83,9,.08);
+[data-dark] {
+  --bg:#111111; --bg2:#1a1a1a; --bg3:#242424;
+  --line:#2a2a2a; --line2:#383838;
+  --text:#f0f0f0; --text2:#aaaaaa; --text3:#555555;
+  --accent:#4da3ff; --accent-bg:#1a2a3a;
+  --green:#34a853; --green-bg:#0d2a18;
+  --red:#f28b82; --red-bg:#2a1515;
+  --amber:#fdd663; --amber-bg:#2a2100;
 }
-
-/* ═══════════════════════════════════════════════════════
-   RESET
-═══════════════════════════════════════════════════════ */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html,body{
   width:100%;height:100%;overflow:hidden;
   background:var(--bg);color:var(--text);
-  font-family:var(--font);
+  font-family:var(--font);font-size:14px;
   -webkit-tap-highlight-color:transparent;
   touch-action:manipulation;
-  overscroll-behavior:none;
   -webkit-user-select:none;user-select:none;
+  overscroll-behavior:none;
 }
-
-/* ═══════════════════════════════════════════════════════
-   DESKTOP WALL
-═══════════════════════════════════════════════════════ */
 #dwall{
   display:none;position:fixed;inset:0;z-index:9999;
   background:var(--bg);flex-direction:column;
-  align-items:center;justify-content:center;gap:16px;
-  text-align:center;padding:40px;
+  align-items:center;justify-content:center;
+  gap:12px;text-align:center;padding:40px;
 }
-#dwall .dw-title{
-  font-family:var(--mono);font-size:2rem;letter-spacing:.3em;
-  color:var(--accent);font-weight:600;
-}
-#dwall p{color:var(--text2);font-size:.88rem;max-width:280px;line-height:1.7}
+#dwall .dw-logo{font-family:var(--mono);font-size:28px;letter-spacing:6px;color:var(--accent);}
+#dwall p{color:var(--text2);line-height:1.6;max-width:260px;}
 @media(min-width:1024px){#dwall{display:flex}#app{display:none!important}}
-
-/* ═══════════════════════════════════════════════════════
-   APP SHELL
-═══════════════════════════════════════════════════════ */
-#app{position:fixed;inset:0;background:var(--bg);overflow:hidden}
-
-/* ═══════════════════════════════════════════════════════
-   PERSISTENT TOPBAR (all screens)
-═══════════════════════════════════════════════════════ */
-#topbar{
-  position:fixed;top:0;left:0;right:0;z-index:200;
+#app{position:fixed;inset:0;background:var(--bg);}
+#header{
+  position:fixed;top:0;left:0;right:0;z-index:300;
+  height:calc(var(--safe-t) + 44px);
+  padding-top:var(--safe-t);
   display:flex;align-items:center;justify-content:space-between;
-  padding:var(--safe-top) 16px 10px;
-  background:linear-gradient(to bottom,var(--bg) 60%,transparent);
-  pointer-events:none;
+  padding-left:16px;padding-right:12px;
+  background:var(--bg);border-bottom:1px solid var(--line);
 }
-#topbar > *{pointer-events:all}
-.tb-logo{
-  font-family:var(--mono);font-size:.82rem;font-weight:600;
-  letter-spacing:.28em;color:var(--text3);
-}
-.tb-right{display:flex;gap:6px;align-items:center}
-.icon-btn{
-  width:34px;height:34px;border-radius:50%;
-  border:1px solid var(--border2);
-  background:rgba(9,9,11,.72);
-  backdrop-filter:blur(12px);
-  color:var(--text2);font-size:.9rem;
+.h-logo{font-family:var(--mono);font-size:15px;letter-spacing:4px;color:var(--text);font-weight:500;}
+.h-right{display:flex;gap:4px;align-items:center;}
+.h-btn{
+  width:36px;height:36px;border-radius:50%;
+  border:1px solid var(--line);background:transparent;
+  color:var(--text2);font-size:16px;cursor:pointer;
   display:flex;align-items:center;justify-content:center;
-  cursor:pointer;transition:all .15s var(--ease);
-  font-family:var(--mono);
+  transition:background 0.15s;
 }
-[data-theme="light"] .icon-btn{background:rgba(255,255,255,.82)}
-.icon-btn:active{transform:scale(.88);background:var(--accent-dim)}
-
+.h-btn:active{background:var(--bg3);}
+.h-btn.hidden{display:none;}
 .mode-pill{
   display:flex;align-items:center;
-  background:rgba(9,9,11,.75);border:1px solid var(--border2);
-  border-radius:100px;padding:3px;backdrop-filter:blur(12px);gap:2px;
+  background:var(--bg2);border:1px solid var(--line);
+  border-radius:20px;padding:2px;gap:2px;
 }
-[data-theme="light"] .mode-pill{background:rgba(255,255,255,.85)}
+.mode-pill.hidden{display:none;}
 .mpb{
-  padding:3px 10px;border-radius:100px;
-  font-family:var(--mono);font-size:.58rem;font-weight:600;
-  letter-spacing:.06em;cursor:pointer;border:none;
-  background:transparent;color:var(--text3);
-  transition:all .15s var(--ease);
+  padding:3px 10px;border-radius:16px;border:none;
+  font-family:var(--mono);font-size:10px;font-weight:500;
+  letter-spacing:0.5px;cursor:pointer;
+  background:transparent;color:var(--text3);transition:all 0.15s;
 }
-.mpb.on{background:var(--accent);color:#fff}
-#topbar-mode{display:none}
-#topbar-signout,#topbar-reset{display:none}
-
-/* ═══════════════════════════════════════════════════════
-   SCREENS
-═══════════════════════════════════════════════════════ */
+.mpb.on{background:var(--accent);color:#fff;}
 .screen{
-  position:absolute;inset:0;
+  position:fixed;inset:0;
+  padding-top:calc(var(--safe-t) + 44px);
+  padding-bottom:var(--safe-b);
   display:none;flex-direction:column;
-  overflow-y:auto;overflow-x:hidden;
-  -webkit-overflow-scrolling:touch;
+  overflow-y:auto;-webkit-overflow-scrolling:touch;
 }
-.screen.active{display:flex}
-
-/* ═══════════════════════════════════════════════════════
-   HOME SCREEN
-═══════════════════════════════════════════════════════ */
-#screen-home{
-  align-items:center;justify-content:center;
-  padding:calc(var(--safe-top) + 60px) 28px calc(var(--safe-bot) + 20px);
-  gap:0;
+.screen.on{display:flex;}
+.sp{padding:20px 16px;flex:1;display:flex;flex-direction:column;}
+#s-setup{background:var(--bg);}
+.setup-title{font-size:22px;font-weight:600;color:var(--text);margin-bottom:4px;}
+.setup-sub{font-size:13px;color:var(--text2);margin-bottom:28px;line-height:1.5;}
+.step-list{display:flex;flex-direction:column;gap:1px;margin-bottom:24px;}
+.step-row{
+  display:flex;align-items:center;gap:12px;
+  padding:14px 0;border-bottom:1px solid var(--line);
 }
-.home-title{
-  font-family:var(--mono);font-size:3.2rem;font-weight:700;
-  letter-spacing:.35em;color:var(--accent);
-  text-align:center;margin-bottom:8px;
-  animation:fadeUp .6s var(--ease) both;
-}
-.home-sub{
-  font-family:var(--mono);font-size:.65rem;letter-spacing:.18em;
-  color:var(--text3);text-align:center;margin-bottom:48px;
-  animation:fadeUp .6s .1s var(--ease) both;
-}
-@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
-
-/* Auth status */
-#auth-status{
-  width:100%;max-width:320px;margin-bottom:24px;
-  display:flex;flex-direction:column;gap:12px;
-  animation:fadeUp .6s .2s var(--ease) both;
-}
-.status-row{
-  display:flex;align-items:center;gap:10px;
-  padding:12px 16px;
-  background:var(--s1);border:1px solid var(--border);
-  border-radius:var(--r);
-}
-.status-dot{
-  width:8px;height:8px;border-radius:50%;
-  background:var(--text3);flex-shrink:0;
-  transition:background .3s,box-shadow .3s;
-}
-.status-dot.ok{background:var(--green);box-shadow:0 0 8px var(--green)}
-.status-dot.loading{background:var(--accent);box-shadow:0 0 8px var(--accent);animation:pulse 1s infinite}
-.status-dot.err{background:var(--red);box-shadow:0 0 8px var(--red)}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
-.status-text{font-family:var(--mono);font-size:.7rem;color:var(--text2);flex:1}
-.status-user{font-family:var(--mono);font-size:.65rem;color:var(--text3);margin-top:2px}
-
-/* Loading steps */
-#load-steps{
-  width:100%;max-width:320px;margin-bottom:20px;
-  display:none;flex-direction:column;gap:0;
-  animation:fadeUp .4s var(--ease) both;
-}
-.ls-item{
-  display:flex;align-items:flex-start;gap:12px;
-  padding:11px 0;border-bottom:1px solid var(--border);
-}
-.ls-item:last-child{border-bottom:none}
-.ls-ico{
-  width:26px;height:26px;border-radius:50%;flex-shrink:0;
+.step-row:last-child{border-bottom:none;}
+.step-icon{
+  width:32px;height:32px;border-radius:50%;flex-shrink:0;
+  border:1.5px solid var(--line2);background:var(--bg2);
   display:flex;align-items:center;justify-content:center;
-  font-size:.7rem;font-family:var(--mono);font-weight:600;
-  border:1.5px solid var(--border2);color:var(--text3);
-  background:var(--s2);transition:all .2s var(--ease);margin-top:1px;
+  font-family:var(--mono);font-size:12px;color:var(--text3);
+  font-weight:500;transition:all 0.2s;
 }
-.ls-item.active .ls-ico{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
-.ls-item.done .ls-ico{border-color:var(--green);color:var(--green);background:var(--green-dim)}
-.ls-item.err .ls-ico{border-color:var(--red);color:var(--red);background:var(--red-dim)}
-.ls-body{flex:1;min-width:0}
-.ls-title{font-size:.8rem;font-weight:600;color:var(--text2);margin-bottom:3px;transition:color .2s}
-.ls-item.active .ls-title,.ls-item.done .ls-title{color:var(--text)}
-.ls-item.err .ls-title{color:var(--red)}
-.ls-sub{font-family:var(--mono);font-size:.6rem;color:var(--text3);line-height:1.5;word-break:break-word}
-.ls-item.active .ls-sub{color:var(--text2)}
-.ls-item.err .ls-sub{color:var(--red)}
-.ls-bar{margin-top:6px;height:2px;background:var(--border2);border-radius:1px;overflow:hidden;display:none}
-.ls-fill{height:100%;background:var(--accent);border-radius:1px;width:0%;transition:width .25s linear}
-.ld-spinner{
-  width:12px;height:12px;border-radius:50%;
-  border:2px solid rgba(79,143,255,.25);
-  border-top-color:var(--accent);
-  animation:spin .7s linear infinite;
+.step-row.active .step-icon{border-color:var(--accent);color:var(--accent);background:var(--accent-bg);}
+.step-row.done .step-icon{border-color:var(--green);color:var(--green);background:var(--green-bg);}
+.step-row.err .step-icon{border-color:var(--red);color:var(--red);background:var(--red-bg);}
+.step-row.skip .step-icon{border-color:var(--amber);color:var(--amber);background:var(--amber-bg);}
+.step-body{flex:1;min-width:0;}
+.step-name{font-size:13px;font-weight:500;color:var(--text2);margin-bottom:2px;transition:color 0.2s;}
+.step-row.active .step-name,.step-row.done .step-name{color:var(--text);}
+.step-row.err .step-name{color:var(--red);}
+.step-row.skip .step-name{color:var(--amber);}
+.step-msg{font-family:var(--mono);font-size:10px;color:var(--text3);line-height:1.4;word-break:break-word;}
+.step-row.active .step-msg{color:var(--text2);}
+.step-row.err .step-msg{color:var(--red);}
+.step-bar{margin-top:6px;height:2px;background:var(--line);border-radius:1px;overflow:hidden;display:none;}
+.step-bar-fill{height:100%;background:var(--accent);border-radius:1px;width:0%;transition:width 0.25s linear;}
+.spin{
+  width:14px;height:14px;border-radius:50%;
+  border:2px solid var(--accent-bg);border-top-color:var(--accent);
+  animation:spin 0.7s linear infinite;flex-shrink:0;
 }
-@keyframes spin{to{transform:rotate(360deg)}}
-#load-progress{
-  width:100%;max-width:320px;margin-bottom:16px;display:none;
+@keyframes spin{to{transform:rotate(360deg);}}
+.prog-wrap{margin-bottom:20px;}
+.prog-track{height:3px;background:var(--line);border-radius:2px;overflow:hidden;}
+.prog-fill{height:100%;background:var(--accent);border-radius:2px;width:0%;transition:width 0.4s ease;}
+.prog-lbl{font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:6px;}
+.err-banner{
+  display:none;background:var(--red-bg);border:1px solid var(--red);
+  border-radius:var(--radius);padding:12px 14px;margin-bottom:16px;
 }
-#load-prog-bar{height:2px;background:var(--s2);border-radius:1px;overflow:hidden}
-#load-prog-fill{height:100%;background:var(--accent);border-radius:1px;width:0%;transition:width .35s var(--ease)}
-#load-prog-lbl{font-family:var(--mono);font-size:.6rem;color:var(--text3);letter-spacing:.08em;margin-top:8px;text-align:center}
-
-/* Buttons */
-.btn-primary{
-  width:100%;max-width:320px;padding:15px;
-  background:var(--accent);color:#fff;
-  border:none;border-radius:var(--r);
-  font-family:var(--font);font-size:.95rem;font-weight:700;
-  cursor:pointer;transition:opacity .15s,transform .1s;
-  letter-spacing:.02em;
+.err-banner.on{display:block;}
+.err-banner-title{font-size:12px;font-weight:600;color:var(--red);margin-bottom:4px;}
+.err-banner-msg{font-family:var(--mono);font-size:10px;color:var(--red);line-height:1.5;word-break:break-all;white-space:pre-wrap;max-height:80px;overflow-y:auto;}
+.btn{
+  width:100%;padding:14px;border-radius:var(--radius);border:none;
+  font-family:var(--font);font-size:14px;font-weight:500;
+  cursor:pointer;transition:opacity 0.15s,background 0.15s;text-align:center;
 }
-.btn-primary:disabled{opacity:.35;cursor:not-allowed}
-.btn-primary:not(:disabled):active{opacity:.85;transform:scale(.99)}
-.btn-secondary{
-  width:100%;max-width:320px;padding:13px;
-  background:transparent;color:var(--text2);
-  border:1px solid var(--border2);border-radius:var(--r);
-  font-family:var(--font);font-size:.88rem;font-weight:600;
-  cursor:pointer;transition:all .15s;margin-top:8px;
+.btn-primary{background:var(--accent);color:#fff;}
+.btn-primary:active{opacity:0.85;}
+.btn-primary:disabled{opacity:0.35;cursor:not-allowed;}
+.btn-secondary{background:transparent;color:var(--text2);border:1px solid var(--line2);}
+.btn-secondary:active{background:var(--bg2);}
+.mt8{margin-top:8px;}
+.mt16{margin-top:16px;}
+.g-btn{
+  width:100%;display:flex;align-items:center;justify-content:center;
+  gap:10px;padding:13px 16px;
+  background:#fff;border:1px solid #dadce0;border-radius:var(--radius);
+  font-family:var(--font);font-size:14px;font-weight:500;color:#3c4043;
+  cursor:pointer;transition:box-shadow 0.2s,opacity 0.15s;
 }
-.btn-secondary:active{background:var(--s2)}
-
-#signin-btn{
-  width:100%;max-width:320px;
-  display:flex;align-items:center;justify-content:center;gap:10px;
-  padding:14px 20px;
-  background:#fff;border:none;border-radius:var(--r);
-  cursor:pointer;
-  font-family:var(--font);font-size:.92rem;font-weight:600;
-  color:#3c4043;
-  transition:box-shadow .2s,opacity .2s;
-  margin-bottom:8px;
-  animation:fadeUp .6s .3s var(--ease) both;
+.g-btn:active{opacity:0.85;}
+.g-btn:disabled{opacity:0.4;cursor:not-allowed;}
+.g-btn svg{flex-shrink:0;}
+#s-session{background:var(--bg);}
+.section{margin-bottom:16px;}
+.section-label{
+  font-family:var(--mono);font-size:10px;font-weight:500;
+  letter-spacing:1px;color:var(--text3);text-transform:uppercase;margin-bottom:8px;
 }
-#signin-btn:hover{box-shadow:0 2px 12px rgba(0,0,0,.3)}
-#signin-btn:disabled{opacity:.4;cursor:not-allowed}
-#signin-btn svg{flex-shrink:0}
-
-#err-box{
-  display:none;width:100%;max-width:320px;
-  background:var(--red-dim);border:1px solid rgba(248,113,113,.25);
-  border-radius:var(--r);padding:14px 16px;margin-top:8px;
+.data-card{background:var(--bg2);border:1px solid var(--line);border-radius:var(--radius);padding:14px;}
+.data-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.data-row:last-child{margin-bottom:0;}
+.data-dot{width:7px;height:7px;border-radius:50%;background:var(--text3);flex-shrink:0;}
+.data-dot.ok{background:var(--green);}
+.data-dot.err{background:var(--red);}
+.data-dot.ld{background:var(--accent);animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.3;}}
+.data-val{font-family:var(--mono);font-size:11px;color:var(--text2);line-height:1.4;flex:1;}
+.data-val.accent{color:var(--accent);letter-spacing:1px;}
+.field-row{display:flex;align-items:center;gap:8px;}
+.field-label-inline{font-size:12px;color:var(--text2);flex-shrink:0;}
+.field-input{
+  flex:1;background:var(--bg);border:1px solid var(--line2);
+  border-radius:6px;color:var(--text);
+  font-family:var(--mono);font-size:13px;font-weight:500;
+  padding:9px 12px;outline:none;transition:border-color 0.2s;
+  -webkit-user-select:text;user-select:text;-webkit-appearance:none;
 }
-#err-title{font-size:.8rem;font-weight:700;color:var(--red);margin-bottom:5px}
-#err-detail{font-family:var(--mono);font-size:.6rem;color:var(--red);line-height:1.6;word-break:break-all;white-space:pre-wrap;max-height:100px;overflow-y:auto}
-
-/* ═══════════════════════════════════════════════════════
-   SESSION SCREEN
-═══════════════════════════════════════════════════════ */
-#screen-session{
-  padding:calc(var(--safe-top) + 60px) 24px calc(var(--safe-bot) + 24px);
-  gap:0;
-}
-.sess-title{
-  font-family:var(--mono);font-size:.65rem;font-weight:600;
-  letter-spacing:.2em;color:var(--text3);margin-bottom:28px;
-  text-transform:uppercase;
-}
-.sess-card{
-  background:var(--s1);border:1px solid var(--border);
-  border-radius:var(--r);padding:18px;margin-bottom:12px;
-}
-.sess-card-label{
-  font-family:var(--mono);font-size:.58rem;font-weight:600;
-  letter-spacing:.15em;color:var(--text3);
-  text-transform:uppercase;margin-bottom:10px;
-}
-.uuid-display{
-  font-family:var(--mono);font-size:.72rem;font-weight:500;
-  color:var(--accent);letter-spacing:.12em;
-  word-break:break-all;line-height:1.8;
-}
-.loc-row{
-  display:flex;align-items:center;gap:8px;
-  font-family:var(--mono);font-size:.68rem;color:var(--text2);
-}
-.loc-dot{
-  width:7px;height:7px;border-radius:50%;
-  background:var(--text3);flex-shrink:0;
-}
-.loc-dot.ok{background:var(--green)}
-.loc-dot.loading{background:var(--accent);animation:pulse 1s infinite}
-.loc-dot.err{background:var(--red)}
-.camh-row{
-  display:flex;align-items:center;gap:10px;margin-top:10px;
-}
-.camh-label{
-  font-family:var(--mono);font-size:.65rem;color:var(--text2);
-  flex-shrink:0;
-}
-.camh-input{
-  flex:1;background:var(--s2);border:1px solid var(--border2);
-  border-radius:var(--r2);color:var(--text);
-  font-family:var(--mono);font-size:.8rem;font-weight:500;
-  padding:8px 12px;outline:none;
-  transition:border-color .2s;
-  -webkit-user-select:text;user-select:text;
-}
-.camh-input:focus{border-color:var(--accent)}
-.camh-unit{
-  font-family:var(--mono);font-size:.65rem;color:var(--text3);
-  flex-shrink:0;
-}
-.sess-proceed{
-  margin-top:8px;width:100%;padding:16px;
-  background:var(--accent);color:#fff;
-  border:none;border-radius:var(--r);
-  font-family:var(--font);font-size:.95rem;font-weight:700;
-  cursor:pointer;transition:opacity .15s;
-}
-.sess-proceed:active{opacity:.85}
-
-/* ═══════════════════════════════════════════════════════
-   CAMERA SCREENS (shared)
-═══════════════════════════════════════════════════════ */
-#screen-front,#screen-side{
-  background:#000;
-}
-#cam-wrap{
-  position:absolute;inset:0;
-  display:flex;align-items:center;justify-content:center;
-  background:#000;
-}
+.field-input:focus{border-color:var(--accent);}
+.field-unit{font-family:var(--mono);font-size:11px;color:var(--text3);flex-shrink:0;}
+.spacer{flex:1;}
+#s-camera{background:#000;padding:0;overflow:hidden;}
+#cam-frame{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#000;}
 #cam-inner{
   position:relative;
   width:min(100vw,calc(100vh * 3/4));
   height:min(100vh,calc(100vw * 4/3));
-  overflow:hidden;background:#000;
-  flex-shrink:0;
+  overflow:hidden;background:#000;flex-shrink:0;
 }
-#video{
-  position:absolute;top:50%;left:50%;
-  transform:translate(-50%,-50%);
-  width:100%;height:100%;object-fit:cover;
+#vid{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:100%;height:100%;object-fit:cover;}
+#c-mask,#c-pose{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;}
+#c-mask{z-index:1;}#c-pose{z-index:2;}
+#c-ring{position:absolute;inset:0;pointer-events:none;z-index:5;}
+#c-ring::after{
+  content:'';position:absolute;inset:0;border:2px solid transparent;
+  transition:border-color 0.25s,box-shadow 0.25s;
 }
-#mask-canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1}
-#pose-canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2}
-
-#cam-ring{position:absolute;inset:0;pointer-events:none;z-index:6;transition:all .25s var(--ease)}
-#cam-ring::after{
-  content:'';position:absolute;inset:0;
-  border:3px solid transparent;
-  transition:border-color .25s var(--ease),box-shadow .25s var(--ease);
+#c-ring.ok::after{border-color:rgba(52,168,83,0.8);box-shadow:inset 0 0 24px rgba(52,168,83,0.06);}
+#c-ring.bad::after{border-color:rgba(217,48,37,0.7);box-shadow:inset 0 0 24px rgba(217,48,37,0.05);}
+#c-ring.warn::after{border-color:rgba(242,153,0,0.7);box-shadow:inset 0 0 24px rgba(242,153,0,0.05);}
+#c-sil{position:absolute;inset:0;z-index:3;display:flex;align-items:center;justify-content:center;pointer-events:none;}
+#c-sil svg{height:86%;width:auto;}
+#c-npose{
+  position:absolute;top:0;left:0;right:0;z-index:30;
+  background:rgba(242,153,0,0.15);border-bottom:1px solid rgba(242,153,0,0.4);
+  height:0;overflow:hidden;transition:height 0.3s ease;
+  display:flex;align-items:center;justify-content:center;gap:6px;pointer-events:none;
 }
-#cam-ring.ready::after{border-color:var(--green);box-shadow:inset 0 0 30px rgba(52,211,153,.08)}
-#cam-ring.blocked::after{border-color:var(--red);box-shadow:inset 0 0 30px rgba(248,113,113,.07)}
-#cam-ring.warn::after{border-color:var(--amber);box-shadow:inset 0 0 30px rgba(251,191,36,.06)}
-
-/* Silhouette guide */
-#sil-wrap{
-  position:absolute;inset:0;z-index:3;
-  display:flex;align-items:center;justify-content:center;
-  pointer-events:none;
-}
-#sil-wrap svg{height:86%;width:auto;opacity:.55}
-
-/* Pose banner */
-#npose-banner{
-  position:absolute;top:0;left:0;right:0;z-index:35;
-  background:rgba(251,191,36,.12);
-  border-bottom:1px solid rgba(251,191,36,.28);
-  backdrop-filter:blur(8px);
-  display:flex;align-items:center;justify-content:center;gap:7px;
-  padding:0 16px;height:0;overflow:hidden;
-  transition:height .3s var(--ease);pointer-events:none;
-}
-#npose-banner.show{height:36px}
-.nb-dot{width:6px;height:6px;border-radius:50%;background:var(--amber);flex-shrink:0}
-.nb-txt{font-family:var(--mono);font-size:.6rem;letter-spacing:.06em;color:var(--amber)}
-
-/* Camera topbar (on camera screens) */
-#cam-topbar{
-  position:absolute;left:0;right:0;z-index:30;
+#c-npose.on{height:34px;}
+#c-npose span{font-family:var(--mono);font-size:9px;letter-spacing:0.5px;color:#f29900;}
+#c-top{
+  position:absolute;top:0;left:0;right:0;z-index:20;
   display:flex;align-items:center;justify-content:space-between;
-  padding-left:14px;padding-right:14px;padding-bottom:8px;
-  background:linear-gradient(to bottom,rgba(0,0,0,.78) 0%,transparent 100%);
-  transition:top .3s var(--ease);
-  top:max(env(safe-area-inset-top,0px),10px);
+  padding:max(env(safe-area-inset-top,0px),10px) 12px 8px;
+  background:linear-gradient(to bottom,rgba(0,0,0,0.7) 0%,transparent 100%);
+  transition:padding-top 0.3s;
 }
-#cam-topbar.banner-offset{top:calc(max(env(safe-area-inset-top,0px),10px) + 36px)}
-.ctb-logo{font-family:var(--mono);font-size:.82rem;font-weight:500;letter-spacing:.24em;color:rgba(255,255,255,.5)}
-.ctb-right{display:flex;gap:6px;align-items:center}
-.cam-icon-btn{
-  width:33px;height:33px;border-radius:50%;
-  border:1px solid rgba(255,255,255,.2);
-  background:rgba(0,0,0,.55);
-  backdrop-filter:blur(10px);
-  color:rgba(255,255,255,.7);font-size:.85rem;
-  display:flex;align-items:center;justify-content:center;
-  cursor:pointer;transition:all .15s var(--ease);
-  font-family:var(--mono);
+#c-top.pushed{padding-top:calc(max(env(safe-area-inset-top,0px),10px) + 34px);}
+.c-phase{font-family:var(--mono);font-size:11px;letter-spacing:2px;color:rgba(255,255,255,0.6);}
+.c-top-right{display:flex;gap:6px;align-items:center;}
+.c-btn{
+  width:32px;height:32px;border-radius:50%;
+  border:1px solid rgba(255,255,255,0.2);background:rgba(0,0,0,0.5);
+  color:rgba(255,255,255,0.75);font-size:15px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:background 0.15s;
 }
-.cam-icon-btn:active{transform:scale(.88);background:rgba(255,255,255,.15)}
-.cam-mode-pill{
+.c-btn:active{background:rgba(255,255,255,0.15);}
+.c-mode-pill{
   display:flex;align-items:center;
-  background:rgba(0,0,0,.58);border:1px solid rgba(255,255,255,.2);
-  border-radius:100px;padding:3px;backdrop-filter:blur(10px);gap:2px;
+  background:rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.2);
+  border-radius:20px;padding:2px;gap:2px;
 }
-.cam-mode-pill.hidden-pill{opacity:0;pointer-events:none}
-
-/* Height badge */
-#height-badge{
-  position:absolute;
-  top:calc(max(env(safe-area-inset-top,0px),10px) + 48px);
-  right:12px;z-index:31;
-  display:none;align-items:center;gap:5px;
-  background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.18);
-  border-radius:100px;padding:4px 10px;backdrop-filter:blur(8px);
-  pointer-events:none;
+.c-mode-pill.hidden{opacity:0;pointer-events:none;}
+#c-hbadge{
+  position:absolute;z-index:20;right:10px;
+  top:calc(max(env(safe-area-inset-top,0px),10px) + 46px);
+  background:rgba(0,0,0,0.55);border:1px solid rgba(255,255,255,0.2);
+  border-radius:20px;padding:3px 10px;
+  display:none;align-items:center;gap:5px;pointer-events:none;
 }
-#height-badge.show{display:flex}
-.hb-dot{width:5px;height:5px;border-radius:50%;background:var(--green);flex-shrink:0}
-.hb-txt{font-family:var(--mono);font-size:.54rem;letter-spacing:.05em;color:rgba(255,255,255,.7)}
-
-/* Chips row */
-#chips-row{
+#c-hbadge.on{display:flex;}
+#c-hbadge span{font-family:var(--mono);font-size:10px;color:rgba(255,255,255,0.75);}
+#c-chips{
   position:absolute;left:0;right:0;z-index:20;
   display:flex;gap:4px;align-items:center;justify-content:center;
   flex-wrap:nowrap;overflow:hidden;pointer-events:none;
-  bottom:calc(var(--safe-bot) + 108px);padding:0 6px;
+  bottom:calc(var(--safe-b) + 100px);padding:0 8px;
 }
 .chip{
-  display:flex;align-items:center;gap:4px;
-  background:rgba(0,0,0,.72);border:1px solid rgba(255,255,255,.2);
-  border-radius:100px;padding:5px 7px;
-  backdrop-filter:blur(8px);transition:all .18s var(--ease);flex-shrink:0;
+  display:flex;align-items:center;gap:3px;
+  background:rgba(0,0,0,0.65);border:1px solid rgba(255,255,255,0.2);
+  border-radius:20px;padding:4px 7px;flex-shrink:0;
 }
-.chip-dot{width:5px;height:5px;border-radius:50%;background:var(--text3);transition:background .18s;flex-shrink:0}
-.chip-lbl{font-family:var(--mono);font-size:.5rem;font-weight:600;letter-spacing:.05em;color:rgba(255,255,255,.4);transition:color .18s}
-.chip.ok{border-color:rgba(52,211,153,.35);background:rgba(52,211,153,.09)}
-.chip.ok .chip-dot{background:var(--green)}.chip.ok .chip-lbl{color:var(--green)}
-.chip.bad{border-color:rgba(248,113,113,.35);background:rgba(248,113,113,.09)}
-.chip.bad .chip-dot{background:var(--red)}.chip.bad .chip-lbl{color:var(--red)}
-.chip.wrn{border-color:rgba(251,191,36,.35);background:rgba(251,191,36,.09)}
-.chip.wrn .chip-dot{background:var(--amber)}.chip.wrn .chip-lbl{color:var(--amber)}
-.chip.dis{border-color:rgba(255,255,255,.1);background:transparent;opacity:.4}
-.chip.dis .chip-dot{background:rgba(255,255,255,.3)}.chip.dis .chip-lbl{color:rgba(255,255,255,.3)}
-
-/* Guidance text */
-#guidance{
+.chip-d{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,0.3);}
+.chip-l{font-family:var(--mono);font-size:9px;color:rgba(255,255,255,0.4);letter-spacing:0.3px;}
+.chip.ok{border-color:rgba(52,168,83,0.5);background:rgba(52,168,83,0.12);}
+.chip.ok .chip-d{background:#34a853;}.chip.ok .chip-l{color:#34a853;}
+.chip.bad{border-color:rgba(217,48,37,0.5);background:rgba(217,48,37,0.1);}
+.chip.bad .chip-d{background:#ea4335;}.chip.bad .chip-l{color:#ea4335;}
+.chip.warn{border-color:rgba(242,153,0,0.5);background:rgba(242,153,0,0.1);}
+.chip.warn .chip-d{background:#f29900;}.chip.warn .chip-l{color:#f29900;}
+.chip.dis{opacity:0.35;}
+#c-guide{
   position:absolute;left:0;right:0;z-index:20;
-  bottom:calc(var(--safe-bot) + 90px);
-  font-family:var(--mono);font-size:.68rem;letter-spacing:.04em;
-  color:rgba(255,255,255,.45);text-align:center;
-  pointer-events:none;transition:color .2s;padding:0 16px;
+  bottom:calc(var(--safe-b) + 82px);
+  font-family:var(--mono);font-size:10px;letter-spacing:0.3px;
+  color:rgba(255,255,255,0.5);text-align:center;
+  pointer-events:none;padding:0 20px;transition:color 0.2s;
 }
-
-/* Shutter */
-#shutter-zone{
-  position:absolute;bottom:0;left:0;right:0;z-index:22;
+#c-shutter-zone{
+  position:absolute;bottom:0;left:0;right:0;z-index:20;
   display:flex;align-items:center;justify-content:center;
-  padding-top:10px;
-  padding-bottom:calc(var(--safe-bot) + 10px);
-  background:linear-gradient(to top,rgba(0,0,0,.85) 0%,transparent 100%);
+  padding-bottom:calc(var(--safe-b) + 8px);padding-top:8px;
+  background:linear-gradient(to top,rgba(0,0,0,0.7) 0%,transparent 100%);
   pointer-events:none;
 }
-#shutter{
-  width:76px;height:76px;border-radius:50%;
-  background:transparent;border:3px solid rgba(255,255,255,.2);
+#c-shutter{
+  width:72px;height:72px;border-radius:50%;
+  border:2.5px solid rgba(255,255,255,0.3);background:transparent;
   display:flex;align-items:center;justify-content:center;
-  cursor:pointer;pointer-events:all;position:relative;
-  transition:border-color .22s var(--ease),opacity .22s;
+  cursor:pointer;pointer-events:all;transition:border-color 0.2s,opacity 0.2s;
 }
-#shutter::after{
-  content:'';width:58px;height:58px;border-radius:50%;
-  background:rgba(255,255,255,.16);
-  transition:background .22s var(--ease),transform .1s;
+#c-shutter::after{
+  content:'';width:56px;height:56px;border-radius:50%;
+  background:rgba(255,255,255,0.18);transition:background 0.2s,transform 0.1s;
 }
-#shutter:active::after{transform:scale(.88)}
-#shutter.ready{border-color:var(--green)}
-#shutter.ready::after{background:var(--green)}
-#shutter.warn-ready{border-color:var(--amber)}
-#shutter.warn-ready::after{background:rgba(251,191,36,.55)}
-#shutter.off{opacity:.3;pointer-events:none}
-
-#flash{
-  position:absolute;inset:0;z-index:60;
-  background:#fff;opacity:0;pointer-events:none;
-  transition:opacity .06s;
+#c-shutter:active::after{transform:scale(0.88);}
+#c-shutter.ok{border-color:#34a853;}
+#c-shutter.ok::after{background:#34a853;}
+#c-shutter.warn{border-color:#f29900;}
+#c-shutter.warn::after{background:rgba(242,153,0,0.6);}
+#c-shutter.off{opacity:0.25;pointer-events:none;}
+#c-flash{position:absolute;inset:0;z-index:60;background:#fff;opacity:0;pointer-events:none;transition:opacity 0.06s;}
+#c-flash.on{opacity:0.85;}
+#c-preview{
+  position:absolute;inset:0;z-index:70;background:rgba(0,0,0,0.96);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:14px;padding:20px;opacity:0;pointer-events:none;transition:opacity 0.2s;
 }
-#flash.on{opacity:.85}
-
-/* Capture popup */
-#capture-popup{
-  position:absolute;inset:0;z-index:70;
-  background:rgba(0,0,0,.95);
-  display:flex;flex-direction:column;
-  align-items:center;justify-content:center;
-  gap:14px;padding:20px;
-  opacity:0;pointer-events:none;
-  transition:opacity .22s var(--ease);
+#c-preview.on{opacity:1;pointer-events:all;}
+.prev-label{font-family:var(--mono);font-size:10px;letter-spacing:1px;color:rgba(255,255,255,0.4);}
+.prev-img-wrap{
+  width:min(76vw,calc(70vh * 0.75));height:min(70vh,calc(76vw * 4/3));
+  border-radius:10px;overflow:hidden;border:1px solid rgba(255,255,255,0.12);
+  background:#000;position:relative;flex-shrink:0;
 }
-#capture-popup.show{opacity:1;pointer-events:all}
-.cp-label{
-  font-family:var(--mono);font-size:.62rem;
-  letter-spacing:.14em;color:rgba(255,255,255,.4);
-  flex-shrink:0;
+.prev-img-wrap img{width:100%;height:100%;object-fit:cover;display:block;}
+.prev-status{
+  position:absolute;bottom:0;left:0;right:0;padding:7px 10px;
+  font-family:var(--mono);font-size:9px;text-align:center;
+  background:rgba(0,0,0,0.75);display:none;
 }
-.cp-img-wrap{
-  width:min(78vw,calc(72vh * .75));
-  height:min(72vh,calc(78vw * 4/3));
-  border-radius:14px;overflow:hidden;
-  border:1px solid rgba(255,255,255,.15);
-  background:#000;
-  box-shadow:0 24px 80px rgba(0,0,0,.8);
-  flex-shrink:0;position:relative;
+.prev-status.on{display:block;}
+.prev-status.uploading{color:#fdd663;}
+.prev-status.err{color:#f28b82;}
+.prev-btns{display:flex;gap:8px;width:min(76vw,calc(70vh * 0.75));flex-shrink:0;}
+.prev-btn{
+  flex:1;padding:12px 0;border-radius:var(--radius);
+  font-family:var(--font);font-size:13px;font-weight:500;
+  border:1px solid rgba(255,255,255,0.15);cursor:pointer;transition:opacity 0.15s;
 }
-.cp-img-wrap img{width:100%;height:100%;object-fit:cover;display:block}
-.cp-upload-status{
-  position:absolute;bottom:0;left:0;right:0;
-  background:rgba(0,0,0,.7);backdrop-filter:blur(8px);
-  padding:8px 12px;
-  font-family:var(--mono);font-size:.58rem;
-  color:var(--amber);text-align:center;
-  display:none;
+.prev-btn:active{opacity:0.75;}
+.prev-btn.retake{background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.7);}
+.prev-btn.proceed{background:var(--accent);color:#fff;border-color:var(--accent);}
+.prev-btn.proceed:disabled{opacity:0.35;pointer-events:none;}
+#s-form{background:var(--bg);}
+.form-block{background:var(--bg2);border:1px solid var(--line);border-radius:var(--radius);padding:0;margin-bottom:12px;overflow:hidden;}
+.form-block-title{
+  font-family:var(--mono);font-size:10px;font-weight:500;
+  letter-spacing:1px;color:var(--text3);text-transform:uppercase;
+  padding:10px 14px;border-bottom:1px solid var(--line);background:var(--bg3);
 }
-.cp-upload-status.show{display:block}
-.cp-upload-status.ok{color:var(--green)}
-.cp-upload-status.err{color:var(--red)}
-.cp-btns{
-  display:flex;gap:10px;
-  width:min(78vw,calc(72vh * .75));
-  flex-shrink:0;
+.form-field{padding:12px 14px;border-bottom:1px solid var(--line);}
+.form-field:last-child{border-bottom:none;}
+.f-label{font-size:11px;color:var(--text2);display:block;margin-bottom:6px;font-weight:500;}
+.f-input{
+  width:100%;background:var(--bg);border:1px solid var(--line2);
+  border-radius:6px;color:var(--text);font-family:var(--mono);font-size:13px;
+  padding:9px 12px;outline:none;transition:border-color 0.2s;
+  -webkit-user-select:text;user-select:text;-webkit-appearance:none;
 }
-.cp-btn{
-  flex:1;padding:13px 0;border-radius:10px;
-  border:1px solid rgba(255,255,255,.15);
-  font-family:var(--font);font-size:.88rem;font-weight:600;
-  cursor:pointer;display:flex;align-items:center;
-  justify-content:center;gap:7px;
-  transition:all .15s var(--ease);
-}
-.cp-btn:active{transform:scale(.97)}
-.cp-retake{background:rgba(255,255,255,.08);color:rgba(255,255,255,.6)}
-.cp-next{background:var(--accent);color:#fff;border-color:var(--accent)}
-.cp-next:disabled{opacity:.4;pointer-events:none;cursor:not-allowed}
-
-/* ═══════════════════════════════════════════════════════
-   FORM SCREEN
-═══════════════════════════════════════════════════════ */
-#screen-form{
-  padding:calc(var(--safe-top) + 60px) 20px calc(var(--safe-bot) + 24px);
-  gap:0;
-}
-.form-section{
-  background:var(--s1);border:1px solid var(--border);
-  border-radius:var(--r);padding:18px;margin-bottom:12px;
-}
-.form-section-title{
-  font-family:var(--mono);font-size:.58rem;font-weight:600;
-  letter-spacing:.16em;color:var(--text3);
-  text-transform:uppercase;margin-bottom:16px;
-}
-.form-field{margin-bottom:16px}
-.form-field:last-child{margin-bottom:0}
-.field-label{
-  font-family:var(--mono);font-size:.65rem;
-  color:var(--text2);margin-bottom:6px;display:block;
-}
-.field-required{color:var(--red);margin-left:2px}
-.field-input{
-  width:100%;background:var(--s2);
-  border:1px solid var(--border2);
-  border-radius:var(--r2);color:var(--text);
-  font-family:var(--mono);font-size:.82rem;font-weight:500;
-  padding:10px 14px;outline:none;
-  transition:border-color .2s;
-  -webkit-user-select:text;user-select:text;
-  -webkit-appearance:none;appearance:none;
-}
-.field-input:focus{border-color:var(--accent)}
-.field-input::placeholder{color:var(--text3)}
-/* Date input */
-input[type="date"].field-input{
-  color-scheme:dark;
-}
-[data-theme="light"] input[type="date"].field-input{
-  color-scheme:light;
-}
-/* Select */
-select.field-input{
+.f-input:focus{border-color:var(--accent);}
+.f-input::placeholder{color:var(--text3);}
+input[type="date"].f-input{color-scheme:light dark;}
+select.f-input{
   cursor:pointer;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2388888e' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-  background-repeat:no-repeat;
-  background-position:right 14px center;
-  padding-right:36px;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23999'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 12px center;padding-right:32px;
 }
-/* Toggle buttons */
-.toggle-group{display:flex;gap:6px}
-.toggle-btn{
-  flex:1;padding:10px 0;
-  background:var(--s2);border:1px solid var(--border2);
-  border-radius:var(--r2);
-  font-family:var(--mono);font-size:.72rem;font-weight:600;
-  color:var(--text2);cursor:pointer;
-  transition:all .15s var(--ease);text-align:center;
+.seg{display:flex;gap:6px;}
+.seg-btn{
+  flex:1;padding:9px 0;border-radius:6px;border:1px solid var(--line2);background:var(--bg);
+  font-size:12px;font-weight:500;color:var(--text2);cursor:pointer;text-align:center;transition:all 0.15s;
 }
-.toggle-btn.on{
-  background:var(--accent-dim);border-color:var(--accent);
-  color:var(--accent);
-}
-.toggle-btn:active{transform:scale(.97)}
-/* Gender radio */
-.gender-group{display:flex;gap:6px}
-.gender-btn{
-  flex:1;padding:10px 0;
-  background:var(--s2);border:1px solid var(--border2);
-  border-radius:var(--r2);
-  font-family:var(--mono);font-size:.72rem;font-weight:600;
-  color:var(--text2);cursor:pointer;
-  transition:all .15s var(--ease);text-align:center;
-}
-.gender-btn.on{
-  background:var(--accent-dim);border-color:var(--accent);
-  color:var(--accent);
-}
-.gender-btn:active{transform:scale(.97)}
-
-/* Consent */
+.seg-btn.on{background:var(--accent-bg);border-color:var(--accent);color:var(--accent);}
+.seg-btn:active{opacity:0.75;}
+.consent-wrap{background:var(--amber-bg);border:1px solid rgba(242,153,0,0.3);border-radius:var(--radius);padding:14px;margin-bottom:12px;}
+.consent-row{display:flex;align-items:flex-start;gap:12px;cursor:pointer;}
 .consent-box{
-  background:var(--amber-dim);border:1px solid rgba(251,191,36,.25);
-  border-radius:var(--r);padding:16px;margin-bottom:12px;
+  width:20px;height:20px;min-width:20px;border-radius:4px;
+  border:1.5px solid var(--line2);background:var(--bg);
+  margin-top:1px;display:flex;align-items:center;justify-content:center;transition:all 0.15s;
 }
-.consent-label{
-  display:flex;align-items:flex-start;gap:12px;cursor:pointer;
-  -webkit-user-select:none;user-select:none;
-}
-.consent-check{
-  width:20px;height:20px;flex-shrink:0;
-  border:2px solid var(--border2);border-radius:5px;
-  background:var(--s2);margin-top:1px;
-  display:flex;align-items:center;justify-content:center;
-  transition:all .15s var(--ease);
-}
-.consent-check.checked{
-  background:var(--accent);border-color:var(--accent);
-}
-.consent-check-mark{
-  color:#fff;font-size:.75rem;font-weight:700;
-  opacity:0;transition:opacity .15s;
-}
-.consent-check.checked .consent-check-mark{opacity:1}
-.consent-text{
-  font-family:var(--mono);font-size:.62rem;
-  color:var(--text2);line-height:1.75;
-  -webkit-user-select:text;user-select:text;
-}
-
-.form-submit{
-  width:100%;padding:16px;
-  background:var(--accent);color:#fff;
-  border:none;border-radius:var(--r);
-  font-family:var(--font);font-size:.95rem;font-weight:700;
-  cursor:pointer;transition:opacity .15s,transform .1s;
-  margin-bottom:8px;letter-spacing:.02em;
-}
-.form-submit:disabled{opacity:.35;cursor:not-allowed}
-.form-submit:not(:disabled):active{opacity:.85;transform:scale(.99)}
-.form-msg{
-  font-family:var(--mono);font-size:.65rem;
-  text-align:center;color:var(--text3);min-height:20px;
-  padding:4px 0;
-}
-.form-msg.err{color:var(--red)}
-.form-msg.ok{color:var(--green)}
-
-/* ═══════════════════════════════════════════════════════
-   UTILS
-═══════════════════════════════════════════════════════ */
-.hidden{display:none!important}
+.consent-box.on{background:var(--accent);border-color:var(--accent);}
+.consent-tick{color:#fff;font-size:12px;font-weight:700;opacity:0;transition:opacity 0.15s;}
+.consent-box.on .consent-tick{opacity:1;}
+.consent-txt{font-size:11px;color:var(--text2);line-height:1.65;-webkit-user-select:text;user-select:text;}
+.form-msg{font-family:var(--mono);font-size:10px;text-align:center;min-height:18px;padding:4px 0;}
+.form-msg.ok{color:var(--green);}
+.form-msg.err{color:var(--red);}
 </style>
-</head>
-<body>
 
-<!-- ═══ DESKTOP WALL ═══ -->
+<!-- DESKTOP WALL -->
 <div id="dwall">
-  <div class="dw-title">AIMM</div>
-  <p>This application is designed exclusively for smartphones and tablets.<br><br>Please open it on your mobile device.</p>
+  <div class="dw-logo">AIMM</div>
+  <p>This app is designed for smartphones and tablets only.<br><br>Please open it on your mobile device.</p>
 </div>
 
-<!-- ═══ APP ═══ -->
 <div id="app">
-
-  <!-- Persistent topbar (forms + session screens) -->
-  <div id="topbar">
-    <span class="tb-logo">AIMM</span>
-    <div class="tb-right">
-      <div class="mode-pill hidden" id="topbar-mode">
-        <button class="mpb on" id="tb-block">BLOCK</button>
-        <button class="mpb" id="tb-warn">WARN</button>
+  <div id="header">
+    <span class="h-logo">AIMM</span>
+    <div class="h-right">
+      <div class="mode-pill hidden" id="h-mode">
+        <button class="mpb on" id="h-block">BLOCK</button>
+        <button class="mpb" id="h-warn">WARN</button>
       </div>
-      <button class="icon-btn hidden" id="topbar-reset" title="New Session">↺</button>
-      <button class="icon-btn hidden" id="topbar-signout" title="Sign out">⏏</button>
-      <button class="icon-btn" id="topbar-theme">◑</button>
+      <button class="h-btn hidden" id="h-reset">&#8634;</button>
+      <button class="h-btn hidden" id="h-signout">&#9167;</button>
+      <button class="h-btn" id="h-theme">&#9680;</button>
     </div>
   </div>
 
-  <!-- ═══ HOME SCREEN ═══ -->
-  <div class="screen active" id="screen-home">
-    <div class="home-title">AIMM</div>
-    <div class="home-sub">ANTHROPOMETRIC IMAGING &amp; MEASUREMENT MODULE</div>
-
-    <div id="auth-status">
-      <div class="status-row">
-        <div class="status-dot" id="auth-dot"></div>
-        <div>
-          <div class="status-text" id="auth-text">Not signed in</div>
-          <div class="status-user hidden" id="auth-user"></div>
+  <!-- SETUP -->
+  <div class="screen on" id="s-setup">
+    <div class="sp">
+      <div class="setup-title">AIMM</div>
+      <div class="setup-sub">Anthropometric Imaging &amp; Measurement Module</div>
+      <div class="step-list">
+        <div class="step-row" id="st-cam">
+          <div class="step-icon" id="st-cam-ico">1</div>
+          <div class="step-body"><div class="step-name">Camera</div><div class="step-msg" id="st-cam-msg">Waiting&hellip;</div></div>
+        </div>
+        <div class="step-row" id="st-loc">
+          <div class="step-icon" id="st-loc-ico">2</div>
+          <div class="step-body"><div class="step-name">Location</div><div class="step-msg" id="st-loc-msg">Waiting&hellip;</div></div>
+        </div>
+        <div class="step-row" id="st-auth">
+          <div class="step-icon" id="st-auth-ico">3</div>
+          <div class="step-body"><div class="step-name">Sign in</div><div class="step-msg" id="st-auth-msg">Waiting&hellip;</div></div>
+        </div>
+        <div class="step-row" id="st-model">
+          <div class="step-icon" id="st-model-ico">4</div>
+          <div class="step-body">
+            <div class="step-name">Holistic Model</div>
+            <div class="step-msg" id="st-model-msg">Waiting&hellip;</div>
+            <div class="step-bar" id="st-model-bar"><div class="step-bar-fill" id="st-model-fill"></div></div>
+          </div>
         </div>
       </div>
-    </div>
-
-    <!-- Loading steps (shown after sign-in) -->
-    <div id="load-steps">
-      <div class="ls-item" id="ls-cam">
-        <div class="ls-ico" id="ls-cam-ico">1</div>
-        <div class="ls-body">
-          <div class="ls-title">Camera &amp; Permissions</div>
-          <div class="ls-sub" id="ls-cam-sub">Waiting…</div>
-        </div>
+      <div class="prog-wrap">
+        <div class="prog-track"><div class="prog-fill" id="prog-fill"></div></div>
+        <div class="prog-lbl" id="prog-lbl">Starting&hellip;</div>
       </div>
-      <div class="ls-item" id="ls-loc">
-        <div class="ls-ico" id="ls-loc-ico">2</div>
-        <div class="ls-body">
-          <div class="ls-title">Location</div>
-          <div class="ls-sub" id="ls-loc-sub">Waiting…</div>
-        </div>
+      <div class="err-banner" id="err-banner">
+        <div class="err-banner-title" id="err-title">Error</div>
+        <div class="err-banner-msg" id="err-msg"></div>
       </div>
-      <div class="ls-item" id="ls-mp">
-        <div class="ls-ico" id="ls-mp-ico">3</div>
-        <div class="ls-body">
-          <div class="ls-title">MediaPipe Holistic</div>
-          <div class="ls-sub" id="ls-mp-sub">Waiting…</div>
-          <div class="ls-bar" id="ls-mp-bar"><div class="ls-fill" id="ls-mp-fill"></div></div>
-        </div>
-      </div>
-    </div>
-
-    <div id="load-progress">
-      <div id="load-prog-bar"><div id="load-prog-fill"></div></div>
-      <div id="load-prog-lbl">Preparing…</div>
-    </div>
-
-    <button id="signin-btn" onclick="startSignIn()">
-      <svg width="18" height="18" viewBox="0 0 18 18">
-        <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/>
-        <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/>
-        <path fill="#FBBC05" d="M3.964 10.707A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.707V4.961H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.039l3.007-2.332z"/>
-        <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.961L3.964 6.293C4.672 4.166 6.656 3.58 9 3.58z"/>
-      </svg>
-      Sign in with Google
-    </button>
-
-    <div id="err-box">
-      <div id="err-title">Error</div>
-      <div id="err-detail"></div>
+      <button class="g-btn" id="g-signin" style="display:none" onclick="triggerSignIn()">
+        <svg width="18" height="18" viewBox="0 0 18 18">
+          <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/>
+          <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/>
+          <path fill="#FBBC05" d="M3.964 10.707A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.707V4.961H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.039l3.007-2.332z"/>
+          <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.961L3.964 6.293C4.672 4.166 6.656 3.58 9 3.58z"/>
+        </svg>
+        Sign in with Google
+      </button>
+      <button class="btn btn-secondary mt8" id="btn-retry" style="display:none" onclick="retrySetup()">Retry</button>
+      <button class="btn btn-secondary mt8" id="btn-skip-model" style="display:none" onclick="skipModel()">Continue without pose detection</button>
     </div>
   </div>
 
-  <!-- ═══ SESSION SCREEN ═══ -->
-  <div class="screen" id="screen-session">
-    <div class="sess-title">New Session</div>
-
-    <div class="sess-card">
-      <div class="sess-card-label">Session ID</div>
-      <div class="uuid-display" id="sess-uuid">—</div>
-    </div>
-
-    <div class="sess-card">
-      <div class="sess-card-label">Location</div>
-      <div class="loc-row">
-        <div class="loc-dot loading" id="loc-dot"></div>
-        <span id="loc-text" style="font-family:var(--mono);font-size:.68rem;color:var(--text2)">Acquiring location…</span>
+  <!-- SESSION -->
+  <div class="screen" id="s-session">
+    <div class="sp">
+      <div class="section">
+        <div class="section-label">Session ID</div>
+        <div class="data-card"><div class="data-val accent" id="sess-uuid" style="word-break:break-all;line-height:2;letter-spacing:2px">&mdash;</div></div>
       </div>
-    </div>
-
-    <div class="sess-card">
-      <div class="sess-card-label">Camera Height</div>
-      <div class="camh-row">
-        <span class="camh-label">Height:</span>
-        <input class="camh-input" type="number" id="camh-input" min="10" max="300" placeholder="70">
-        <span class="camh-unit">cm</span>
+      <div class="section">
+        <div class="section-label">Location</div>
+        <div class="data-card">
+          <div class="data-row">
+            <div class="data-dot ld" id="loc-dot"></div>
+            <div class="data-val" id="loc-val">Acquiring&hellip;</div>
+          </div>
+        </div>
       </div>
+      <div class="section">
+        <div class="section-label">Camera Height</div>
+        <div class="data-card">
+          <div class="field-row">
+            <span class="field-label-inline">Height from ground</span>
+            <input class="field-input" type="number" id="camh-input" min="10" max="300" placeholder="70">
+            <span class="field-unit">cm</span>
+          </div>
+        </div>
+      </div>
+      <div class="spacer"></div>
+      <button class="btn btn-primary" id="sess-go">Begin Capture &#8594;</button>
     </div>
-
-    <button class="sess-proceed" id="sess-proceed">Begin Capture →</button>
   </div>
 
-  <!-- ═══ CAMERA SCREEN (shared for front & side) ═══ -->
-  <div class="screen" id="screen-camera">
-    <div id="cam-wrap">
+  <!-- CAMERA -->
+  <div class="screen" id="s-camera">
+    <div id="cam-frame">
       <div id="cam-inner">
-        <video id="video" autoplay playsinline muted></video>
-        <canvas id="mask-canvas"></canvas>
-        <canvas id="pose-canvas"></canvas>
-
-        <div id="cam-ring" class="blocked"></div>
-        <div id="sil-wrap"></div>
-
-        <div id="npose-banner">
-          <div class="nb-dot"></div>
-          <span class="nb-txt">POSE DETECTION UNAVAILABLE — WARN MODE ONLY</span>
-        </div>
-
-        <!-- Camera topbar -->
-        <div id="cam-topbar">
-          <span class="ctb-logo" id="cam-phase-label">FRONT VIEW</span>
-          <div class="ctb-right">
-            <div class="cam-mode-pill" id="cam-mode-pill">
-              <button class="mpb on" id="cam-block">BLOCK</button>
-              <button class="mpb" id="cam-warn">WARN</button>
+        <video id="vid" autoplay playsinline muted></video>
+        <canvas id="c-mask"></canvas>
+        <canvas id="c-pose"></canvas>
+        <div id="c-ring" class="bad"></div>
+        <div id="c-sil"></div>
+        <div id="c-npose"><span>POSE DETECTION UNAVAILABLE &mdash; WARN MODE</span></div>
+        <div id="c-top">
+          <span class="c-phase" id="c-phase-lbl">FRONT VIEW</span>
+          <div class="c-top-right">
+            <div class="c-mode-pill" id="c-mpill">
+              <button class="mpb on" id="c-block">BLOCK</button>
+              <button class="mpb" id="c-warn">WARN</button>
             </div>
-            <button class="cam-icon-btn" id="cam-reset-btn" title="New Session">↺</button>
-            <button class="cam-icon-btn" id="cam-signout-btn" title="Sign out">⏏</button>
-            <button class="cam-icon-btn" id="cam-theme-btn">◑</button>
+            <button class="c-btn" id="c-reset-btn">&#8634;</button>
+            <button class="c-btn" id="c-signout-btn">&#9167;</button>
+            <button class="c-btn" id="c-theme-btn">&#9680;</button>
           </div>
         </div>
-
-        <!-- Height badge (front view only) -->
-        <div id="height-badge">
-          <div class="hb-dot"></div>
-          <span class="hb-txt" id="hb-txt">— cm</span>
+        <div id="c-hbadge"><span id="c-hval">&mdash; cm</span></div>
+        <div id="c-chips">
+          <div class="chip" id="ch-light"><div class="chip-d"></div><span class="chip-l">LIGHT</span></div>
+          <div class="chip" id="ch-steady"><div class="chip-d"></div><span class="chip-l">STEADY</span></div>
+          <div class="chip" id="ch-level"><div class="chip-d"></div><span class="chip-l">LEVEL</span></div>
+          <div class="chip" id="ch-body"><div class="chip-d"></div><span class="chip-l">BODY</span></div>
+          <div class="chip" id="ch-dist"><div class="chip-d"></div><span class="chip-l">DIST</span></div>
+          <div class="chip" id="ch-pose"><div class="chip-d"></div><span class="chip-l">POSE</span></div>
         </div>
-
-        <!-- Status chips -->
-        <div id="chips-row">
-          <div class="chip" id="c-light"><div class="chip-dot"></div><span class="chip-lbl">LIGHT</span></div>
-          <div class="chip" id="c-steady"><div class="chip-dot"></div><span class="chip-lbl">STEADY</span></div>
-          <div class="chip" id="c-level"><div class="chip-dot"></div><span class="chip-lbl">LEVEL</span></div>
-          <div class="chip" id="c-body"><div class="chip-dot"></div><span class="chip-lbl">BODY</span></div>
-          <div class="chip" id="c-dist"><div class="chip-dot"></div><span class="chip-lbl">DIST</span></div>
-          <div class="chip" id="c-pose"><div class="chip-dot"></div><span class="chip-lbl">POSE</span></div>
-        </div>
-
-        <div id="guidance">Initialising…</div>
-
-        <div id="shutter-zone">
-          <button id="shutter" class="off" aria-label="Capture"></button>
-        </div>
-
-        <div id="flash"></div>
-
-        <!-- Capture preview popup -->
-        <div id="capture-popup">
-          <div class="cp-label" id="cp-label">FRONT VIEW</div>
-          <div class="cp-img-wrap">
-            <img id="cp-img" src="" alt="Preview">
-            <div class="cp-upload-status" id="cp-upload-status"></div>
+        <div id="c-guide">Initialising&hellip;</div>
+        <div id="c-shutter-zone"><button id="c-shutter" class="off"></button></div>
+        <div id="c-flash"></div>
+        <div id="c-preview">
+          <div class="prev-label" id="prev-label">FRONT VIEW</div>
+          <div class="prev-img-wrap">
+            <img id="prev-img" src="" alt="">
+            <div class="prev-status" id="prev-status"></div>
           </div>
-          <div class="cp-btns">
-            <button class="cp-btn cp-retake" id="cp-retake">↩ Retake</button>
-            <button class="cp-btn cp-next" id="cp-next">Next →</button>
+          <div class="prev-btns">
+            <button class="prev-btn retake" id="prev-retake">&#8617; Retake</button>
+            <button class="prev-btn proceed" id="prev-next">Next &#8594;</button>
           </div>
         </div>
-
-      </div><!-- #cam-inner -->
-    </div><!-- #cam-wrap -->
+      </div>
+    </div>
   </div>
 
-  <!-- ═══ FORM SCREEN ═══ -->
-  <div class="screen" id="screen-form">
-    <div class="form-section">
-      <div class="form-section-title">Biometric</div>
-
-      <div class="form-field">
-        <label class="field-label" for="f-dob">Date of Birth (DD/MM/YYYY)</label>
-        <input class="field-input" type="date" id="f-dob">
+  <!-- FORM -->
+  <div class="screen" id="s-form">
+    <div class="sp">
+      <div class="form-block">
+        <div class="form-block-title">Biometric</div>
+        <div class="form-field"><label class="f-label" for="f-dob">Date of Birth</label><input class="f-input" type="date" id="f-dob"></div>
+        <div class="form-field">
+          <label class="f-label">Gender</label>
+          <div class="seg"><button class="seg-btn" id="g-male" data-v="Male">Male</button><button class="seg-btn" id="g-female" data-v="Female">Female</button></div>
+        </div>
+        <div class="form-field"><label class="f-label" for="f-weight">Weight (g)</label><input class="f-input" type="number" id="f-weight" placeholder="e.g. 65000" min="0"></div>
+        <div class="form-field"><label class="f-label" for="f-height">Height (cm)</label><input class="f-input" type="number" id="f-height" placeholder="e.g. 165" min="0"></div>
+        <div class="form-field"><label class="f-label" for="f-muac">MUAC (mm)</label><input class="f-input" type="number" id="f-muac" placeholder="e.g. 240" min="0"></div>
       </div>
-
-      <div class="form-field">
-        <label class="field-label">Gender</label>
-        <div class="gender-group">
-          <button class="gender-btn" id="g-male" data-val="Male">Male</button>
-          <button class="gender-btn" id="g-female" data-val="Female">Female</button>
+      <div class="form-block">
+        <div class="form-block-title">Household</div>
+        <div class="form-field">
+          <label class="f-label">Female Literacy</label>
+          <div class="seg"><button class="seg-btn" id="lit-yes" data-v="yes">Yes</button><button class="seg-btn" id="lit-no" data-v="no">No</button></div>
+        </div>
+        <div class="form-field">
+          <label class="f-label" for="f-caste">Caste Category</label>
+          <select class="f-input" id="f-caste">
+            <option value="">&mdash; Select &mdash;</option>
+            <option value="Scheduled Caste">Scheduled Caste</option>
+            <option value="Scheduled Tribe">Scheduled Tribe</option>
+            <option value="Other Backward Class">Other Backward Class</option>
+            <option value="General">General</option>
+            <option value="Prefer not to answer">Prefer not to answer</option>
+          </select>
         </div>
       </div>
-
-      <div class="form-field">
-        <label class="field-label" for="f-weight">Weight (g)</label>
-        <input class="field-input" type="number" id="f-weight" placeholder="e.g. 65000" min="0">
-      </div>
-
-      <div class="form-field">
-        <label class="field-label" for="f-height">Height (cm)</label>
-        <input class="field-input" type="number" id="f-height" placeholder="e.g. 165" min="0">
-      </div>
-
-      <div class="form-field">
-        <label class="field-label" for="f-muac">MUAC (mm)</label>
-        <input class="field-input" type="number" id="f-muac" placeholder="e.g. 240" min="0">
-      </div>
-    </div>
-
-    <div class="form-section">
-      <div class="form-section-title">Household</div>
-
-      <div class="form-field">
-        <label class="field-label">Female Literacy</label>
-        <div class="toggle-group">
-          <button class="toggle-btn" id="lit-yes" data-val="yes">Yes</button>
-          <button class="toggle-btn" id="lit-no" data-val="no">No</button>
+      <div class="consent-wrap">
+        <div class="consent-row" id="consent-row">
+          <div class="consent-box" id="consent-box"><span class="consent-tick">&#10003;</span></div>
+          <span class="consent-txt">By checking this box, I confirm that I have read or been read the information about this study, that I understand the purpose of the research and what participation involves, and that we voluntarily agree to participate. I understand that our participation is voluntary and that we may withdraw at any time without any negative consequences. We consent to the collection and use of my responses and images for research purposes.</span>
         </div>
       </div>
-
-      <div class="form-field">
-        <label class="field-label" for="f-caste">Caste Category</label>
-        <select class="field-input" id="f-caste">
-          <option value="">— Select —</option>
-          <option value="Scheduled Caste">Scheduled Caste</option>
-          <option value="Scheduled Tribe">Scheduled Tribe</option>
-          <option value="Other Backward Class">Other Backward Class</option>
-          <option value="General">General</option>
-          <option value="Prefer not to answer">Prefer not to answer</option>
-        </select>
-      </div>
+      <button class="btn btn-primary" id="form-submit" disabled>Submit</button>
+      <div class="form-msg" id="form-msg"></div>
     </div>
-
-    <div class="consent-box">
-      <label class="consent-label" id="consent-label">
-        <div class="consent-check" id="consent-check">
-          <span class="consent-check-mark">✓</span>
-        </div>
-        <span class="consent-text">By checking this box, I confirm that I have read or been read the information about this study, that I understand the purpose of the research and what participation involves, and that we voluntarily agree to participate. I understand that our participation is voluntary and that we may withdraw at any time without any negative consequences. We consent to the collection and use of my responses and images for research purposes.</span>
-      </label>
-    </div>
-
-    <button class="form-submit" id="form-submit" disabled>Submit</button>
-    <div class="form-msg" id="form-msg"></div>
   </div>
-
-</div><!-- #app -->
-
+</div>
 <script>
 (function(){
 'use strict';
 
-/* ═══════════════════════════════════════════════════════
-   CONFIGURABLE VARIABLES
-═══════════════════════════════════════════════════════ */
-const CFG = {
-  API:              'https://aimm-450300910281.asia-south1.run.app',
-  GOOGLE_CLIENT_ID: '450300910281-c42g9vc3q8f27la48e2j5vc6428nk7sj.apps.googleusercontent.com', // replace with real client ID
-  CAM_HEIGHT_DEFAULT_CM: 70,
-  CAM_HEIGHT_STORAGE_KEY: 'aimm-cam-height-cm',
-  TOKEN_STORAGE_KEY: 'aimm-id-token',
-  TOKEN_EXPIRY_KEY:  'aimm-token-expiry',
-  USER_EMAIL_KEY:    'aimm-user-email',
-  THEME_KEY:         'aimm-theme',
-  // Pose: minimum angle (degrees) between upper-arm and torso axis for front view
-  ARM_RAISE_MIN_DEG: 45,
-  // Body span: person must fill this fraction of frame height (min/max)
-  BODY_SPAN_MIN: 0.55,
-  BODY_SPAN_MAX: 0.93,
-  // Brightness threshold (0-255 luminance)
-  BRIGHTNESS_MIN: 52,
-  // Stability: accelerometer delta RMS threshold
-  SHAKE_THRESHOLD: 2.8,
-  SHAKE_RECOVER_MS: 550,
-  // Tilt: max beta deviation from 90°, max gamma
-  TILT_BETA_DEG: 15,
-  TILT_GAMMA_DEG: 13,
-  // Geolocation accuracy target
-  GEO_ACCURACY_M: 10,
-  GEO_TIMEOUT_MS: 30000,
-  // Token refresh buffer (ms before expiry)
-  TOKEN_REFRESH_BUFFER_MS: 5 * 60 * 1000,
+const C={
+  API:'https://aimm-450300910281.asia-south1.run.app',
+  GID:'450300910281-c42g9vc3q8f27la48e2j5vc6428nk7sj.apps.googleusercontent.com',
+  CAM_H_DEFAULT:70,
+  CAM_H_KEY:'aimm.camh',
+  TOKEN_KEY:'aimm.token',
+  EXPIRY_KEY:'aimm.expiry',
+  EMAIL_KEY:'aimm.email',
+  THEME_KEY:'aimm.theme',
+  MODEL_CACHE:'aimm-holistic-v2',
+  REFRESH_AHEAD:5*60*1000,
+  ARM_RAISE_DEG:45,
+  BODY_MIN:0.55,
+  BODY_MAX:0.93,
+  BRIGHT_MIN:52,
+  SHAKE_RMS:2.8,
+  SHAKE_SETTLE:550,
+  TILT_BETA:15,
+  TILT_GAMMA:13,
+  GEO_TIMEOUT:30000,
 };
 
-/* ═══════════════════════════════════════════════════════
-   STATE
-═══════════════════════════════════════════════════════ */
-let S = {
-  idToken: null,
-  tokenExpiry: null,
-  userEmail: null,
-  refreshTimer: null,
-  // Session
-  uuid: null,
-  location: null,
-  camHeightCm: CFG.CAM_HEIGHT_DEFAULT_CM,
-  // Camera phase: 'front' | 'side'
-  phase: 'front',
-  frontBlob: null,
-  sideBlob: null,
-  frontUploadDone: false,
-  sideUploadDone: false,
-  frontUploadError: null,
-  sideUploadError: null,
-  // MediaPipe
-  holistic: null,
-  holisticReady: false,
-  cameraUtil: null,
-  stream: null,
-  webcamRunning: false,
-  // Pose checks
-  checks: { light:false, steady:false, level:false, body:false, dist:false, pose:false },
-  blockMode: true,
-  mpAvailable: false,
-  noPoseMode: false,
-  // Sensor
-  lastAcc: {x:0,y:0,z:0},
-  shakeOk: true,
-  shakeTmr: null,
-  // Holistic results cache (for height estimation)
-  lastPoseLm: null,
-  lastFaceLm: null,
-  // Consent
-  consentChecked: false,
-  // Form field selections
-  genderVal: null,
-  literacyVal: null,
+const S={
+  token:null,expiry:null,email:null,refreshTimer:null,
+  uuid:null,location:null,camH:C.CAM_H_DEFAULT,
+  phase:'front',
+  frontBlob:null,sideBlob:null,
+  frontDone:false,sideDone:false,
+  frontErr:null,sideErr:null,
+  holistic:null,mpReady:false,noPose:false,
+  camStream:null,camRunning:false,lastVideoTime:-1,
+  checks:{light:false,steady:false,level:false,body:false,dist:false,pose:false},
+  blockMode:true,
+  lastPose:null,lastFace:null,
+  shakeOk:true,shakeTmr:null,lastAcc:{x:0,y:0,z:0},
+  popupMode:'front-normal',
+  consentOn:false,genderVal:null,litVal:null,
+  setupPhase:'idle',
+  authResolve:null,
 };
 
-/* ═══════════════════════════════════════════════════════
-   THEME
-═══════════════════════════════════════════════════════ */
-let dark = (localStorage.getItem(CFG.THEME_KEY) || 'dark') === 'dark';
+/* THEME */
+let dark=localStorage.getItem(C.THEME_KEY)==='dark'||
+  (!localStorage.getItem(C.THEME_KEY)&&window.matchMedia('(prefers-color-scheme:dark)').matches);
 function applyTheme(){
-  document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
-  localStorage.setItem(CFG.THEME_KEY, dark ? 'dark' : 'light');
+  if(dark)document.documentElement.setAttribute('data-dark','');
+  else document.documentElement.removeAttribute('data-dark');
+  localStorage.setItem(C.THEME_KEY,dark?'dark':'light');
 }
 applyTheme();
-function toggleTheme(){ dark = !dark; applyTheme(); }
-document.getElementById('topbar-theme').addEventListener('click', toggleTheme);
-document.getElementById('cam-theme-btn').addEventListener('click', toggleTheme);
+function toggleTheme(){dark=!dark;applyTheme();}
+g('h-theme').addEventListener('click',toggleTheme);
+g('c-theme-btn').addEventListener('click',toggleTheme);
 
-/* ═══════════════════════════════════════════════════════
-   DEVICE CHECK
-═══════════════════════════════════════════════════════ */
-function checkDevice(){
-  const mob = /Android|iPhone|iPad|iPod|Mobile|Tablet/i.test(navigator.userAgent);
-  if (!mob && window.innerWidth >= 1024){
-    document.getElementById('dwall').style.display = 'flex';
-    document.getElementById('app').style.display = 'none';
-  }
+/* DEVICE CHECK */
+function chkDev(){
+  const mob=/Android|iPhone|iPad|iPod|Mobile|Tablet/i.test(navigator.userAgent);
+  if(!mob&&window.innerWidth>=1024){g('dwall').style.display='flex';g('app').style.display='none';}
 }
-checkDevice();
-window.addEventListener('resize', checkDevice);
+chkDev();window.addEventListener('resize',chkDev);
 
-/* ═══════════════════════════════════════════════════════
-   SCREEN NAVIGATION
-═══════════════════════════════════════════════════════ */
+/* HELPERS */
+function g(id){return document.getElementById(id);}
 function showScreen(id){
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-
-  // Topbar visibility
-  const isCamera = (id === 'screen-camera');
-  document.getElementById('topbar').style.display = isCamera ? 'none' : 'flex';
-  document.getElementById('topbar-signout').style.display =
-    (id === 'screen-session' || id === 'screen-form') ? 'flex' : 'none';
-  document.getElementById('topbar-reset').style.display =
-    (id === 'screen-form') ? 'flex' : 'none';
-  document.getElementById('topbar-mode').classList.toggle('hidden',
-    id !== 'screen-form');
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
+  g(id).classList.add('on');
+  const isCam=id==='s-camera',isSess=id==='s-session',isForm=id==='s-form';
+  g('header').style.display=isCam?'none':'flex';
+  g('h-signout').classList.toggle('hidden',!(isSess||isForm));
+  g('h-reset').classList.toggle('hidden',!isForm);
+  g('h-mode').classList.toggle('hidden',!isForm);
 }
+function setStep(id,state,msg){
+  const row=g(id),ico=g(id+'-ico'),msgEl=g(id+'-msg');
+  row.className='step-row '+(state||'');
+  if(msg!==undefined&&msgEl)msgEl.textContent=msg;
+  if(!ico)return;
+  const nums={'st-cam':'1','st-loc':'2','st-auth':'3','st-model':'4'};
+  if(state==='active')ico.innerHTML='<div class="spin"></div>';
+  else if(state==='done')ico.textContent='\u2713';
+  else if(state==='err')ico.textContent='\u2717';
+  else if(state==='skip')ico.textContent='\u2013';
+  else ico.textContent=nums[id]||'?';
+}
+function setProg(pct,lbl){
+  if(pct!==null)g('prog-fill').style.width=pct+'%';
+  if(lbl)g('prog-lbl').textContent=lbl;
+}
+function showErr(title,msg){
+  g('err-banner').classList.add('on');
+  g('err-title').textContent=title;
+  g('err-msg').textContent=msg;
+}
+function clearErr(){g('err-banner').classList.remove('on');}
 
-/* ═══════════════════════════════════════════════════════
-   GOOGLE SIGN-IN
-═══════════════════════════════════════════════════════ */
-function waitForGIS(cb){
-  if (window.google && window.google.accounts && window.google.accounts.id){
-    cb(); return;
-  }
-  const t = setInterval(() => {
-    if (window.google && window.google.accounts && window.google.accounts.id){
-      clearInterval(t); cb();
+/* SETUP FLOW */
+async function runSetup(){
+  clearErr();
+  g('btn-retry').style.display='none';
+  g('btn-skip-model').style.display='none';
+  g('g-signin').style.display='none';
+
+  /* Step 1: Camera */
+  S.setupPhase='cam';
+  setStep('st-cam','active','Requesting camera access\u2026');
+  setProg(5,'Requesting camera\u2026');
+  try{
+    let stream=null;
+    const constraints=[
+      {video:{facingMode:{exact:'environment'},width:{ideal:1440},height:{ideal:1920}},audio:false},
+      {video:{facingMode:'environment',width:{ideal:1440},height:{ideal:1920}},audio:false},
+      {video:{facingMode:'environment'},audio:false},
+    ];
+    for(const c of constraints){
+      try{stream=await navigator.mediaDevices.getUserMedia(c);break;}catch(e){}
     }
-  }, 100);
-}
-
-function initGIS(){
-  waitForGIS(() => {
-    google.accounts.id.initialize({
-      client_id: CFG.GOOGLE_CLIENT_ID,
-      callback: onGoogleCredential,
-      auto_select: true,
-    });
-    // Try auto sign-in from persisted token
-    const savedToken  = localStorage.getItem(CFG.TOKEN_STORAGE_KEY);
-    const savedExpiry = parseInt(localStorage.getItem(CFG.TOKEN_EXPIRY_KEY) || '0', 10);
-    const savedEmail  = localStorage.getItem(CFG.USER_EMAIL_KEY);
-    if (savedToken && savedExpiry > Date.now() + 60000 && savedEmail){
-      onAuthenticated(savedToken, savedExpiry, savedEmail);
-    } else {
-      // Try silent prompt
-      google.accounts.id.prompt((n) => {
-        if (n.isSkippedMoment() || n.isDismissedMoment()){
-          // Show sign-in button
-        }
-      });
-    }
-  });
-}
-
-window.startSignIn = function(){
-  const btn = document.getElementById('signin-btn');
-  btn.disabled = true;
-  waitForGIS(() => {
-    google.accounts.id.prompt((n) => {
-      if (n.isSkippedMoment() || n.isDismissedMoment()){
-        btn.disabled = false;
-        showHomeError('Sign-in was skipped or dismissed. Please try again.');
-      }
-    });
-  });
-};
-
-function onGoogleCredential(response){
-  const token = response.credential;
-  if (!token){ showHomeError('No credential returned.'); return; }
-  // Decode JWT payload (no verification needed — server handles it)
-  try {
-    const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
-    const expiry = payload.exp * 1000;
-    const email  = payload.email || '';
-    localStorage.setItem(CFG.TOKEN_STORAGE_KEY, token);
-    localStorage.setItem(CFG.TOKEN_EXPIRY_KEY, String(expiry));
-    localStorage.setItem(CFG.USER_EMAIL_KEY, email);
-    onAuthenticated(token, expiry, email);
-  } catch(e){
-    showHomeError('Failed to parse token: ' + e.message);
-  }
-}
-
-function onAuthenticated(token, expiry, email){
-  S.idToken = token;
-  S.tokenExpiry = expiry;
-  S.userEmail = email;
-  document.getElementById('signin-btn').style.display = 'none';
-  setAuthDot('loading', 'Verifying with server…');
-  scheduleTokenRefresh(expiry);
-  verifyWithServer();
-}
-
-function scheduleTokenRefresh(expiry){
-  if (S.refreshTimer) clearTimeout(S.refreshTimer);
-  const ms = expiry - Date.now() - CFG.TOKEN_REFRESH_BUFFER_MS;
-  S.refreshTimer = setTimeout(silentRefresh, Math.max(0, ms));
-}
-
-function silentRefresh(){
-  waitForGIS(() => {
-    google.accounts.id.prompt((n) => {
-      if (n.isSkippedMoment() || n.isDismissedMoment()){
-        // Force re-login
-        signOut();
-        showHomeError('Session expired. Please sign in again.');
-      }
-    });
-  });
-}
-
-function verifyWithServer(){
-  authFetch(CFG.API + '/', 'GET')
-    .then(r => {
-      if (r.ok){
-        setAuthDot('ok', 'Authenticated');
-        document.getElementById('auth-user').textContent = S.userEmail;
-        document.getElementById('auth-user').classList.remove('hidden');
-        document.getElementById('topbar-signout').style.display = 'none';
-        startLoading();
-      } else {
-        throw new Error('Server returned ' + r.status);
-      }
-    })
-    .catch(e => {
-      setAuthDot('err', 'Verification failed');
-      showHomeError('Authentication failed: ' + e.message);
-      document.getElementById('signin-btn').style.display = 'flex';
-      document.getElementById('signin-btn').disabled = false;
-    });
-}
-
-function setAuthDot(state, text){
-  const dot = document.getElementById('auth-dot');
-  const txt = document.getElementById('auth-text');
-  dot.className = 'status-dot ' + state;
-  txt.textContent = text;
-}
-
-function showHomeError(msg){
-  document.getElementById('err-box').style.display = 'block';
-  document.getElementById('err-title').textContent = 'Error';
-  document.getElementById('err-detail').textContent = msg;
-}
-
-function signOut(){
-  if (S.refreshTimer) clearTimeout(S.refreshTimer);
-  const email = S.userEmail;
-  S.idToken = null; S.tokenExpiry = null; S.userEmail = null;
-  localStorage.removeItem(CFG.TOKEN_STORAGE_KEY);
-  localStorage.removeItem(CFG.TOKEN_EXPIRY_KEY);
-  localStorage.removeItem(CFG.USER_EMAIL_KEY);
-  waitForGIS(() => {
-    google.accounts.id.disableAutoSelect();
-    if (email) try { google.accounts.id.revoke(email, () => {}); } catch(e){}
-  });
-  stopCamera();
-  showScreen('screen-home');
-  setAuthDot('', 'Not signed in');
-  document.getElementById('auth-user').classList.add('hidden');
-  document.getElementById('signin-btn').style.display = 'flex';
-  document.getElementById('signin-btn').disabled = false;
-  document.getElementById('err-box').style.display = 'none';
-  document.getElementById('load-steps').style.display = 'none';
-  document.getElementById('load-progress').style.display = 'none';
-  document.getElementById('topbar-signout').style.display = 'none';
-  document.getElementById('topbar-reset').style.display = 'none';
-}
-
-document.getElementById('topbar-signout').addEventListener('click', signOut);
-document.getElementById('cam-signout-btn').addEventListener('click', signOut);
-
-/* ═══════════════════════════════════════════════════════
-   AUTHENTICATED FETCH (auto-adds Bearer token)
-═══════════════════════════════════════════════════════ */
-async function authFetch(url, method, body, isFormData){
-  if (!S.idToken) throw new Error('Not authenticated');
-  const headers = { 'Authorization': 'Bearer ' + S.idToken };
-  if (!isFormData) headers['Content-Type'] = 'application/json';
-  const opts = { method, headers };
-  if (body) opts.body = isFormData ? body : JSON.stringify(body);
-  return fetch(url, opts);
-}
-
-/* ═══════════════════════════════════════════════════════
-   LOADING SEQUENCE
-═══════════════════════════════════════════════════════ */
-function startLoading(){
-  document.getElementById('load-steps').style.display = 'flex';
-  document.getElementById('load-progress').style.display = 'block';
-  setLoadProg(5, 'Requesting permissions…');
-  loadStep('cam', 'active', 'Requesting camera access…');
-  loadStep('loc', 'idle', 'Waiting…');
-  loadStep('mp',  'idle', 'Waiting…');
-
-  requestPermissions()
-    .then(() => {
-      setLoadProg(40, 'Requesting location…');
-      return requestLocation();
-    })
-    .then(() => {
-      setLoadProg(55, 'Loading MediaPipe Holistic…');
-      return loadHolistic();
-    })
-    .then(() => {
-      setLoadProg(100, 'Ready');
-      setTimeout(() => goToSession(), 400);
-    })
-    .catch(e => {
-      setLoadProg(null, 'Failed');
-      showHomeError(e.message || 'Initialisation failed');
-    });
-}
-
-function loadStep(key, state, sub){
-  const el  = document.getElementById('ls-' + key);
-  const ico = document.getElementById('ls-' + key + '-ico');
-  const subEl = document.getElementById('ls-' + key + '-sub');
-  el.className = 'ls-item ' + state;
-  if (sub !== undefined && subEl) subEl.textContent = sub;
-  if (state === 'active') ico.innerHTML = '<div class="ld-spinner"></div>';
-  else if (state === 'done') ico.textContent = '✓';
-  else if (state === 'err')  ico.textContent = '✕';
-  else ico.textContent = ({ cam:'1', loc:'2', mp:'3' })[key] || '?';
-}
-function setLoadProg(pct, lbl){
-  if (pct !== null) document.getElementById('load-prog-fill').style.width = pct + '%';
-  if (lbl) document.getElementById('load-prog-lbl').textContent = lbl;
-}
-
-async function requestPermissions(){
-  // Camera
-  try {
-    loadStep('cam', 'active', 'Requesting camera…');
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: 'environment', width: { ideal: 1440 }, height: { ideal: 1920 } },
-      audio: false
-    });
-    stream.getTracks().forEach(t => t.stop()); // just for permission
-    loadStep('cam', 'done', 'Camera access granted');
-  } catch(e){
-    loadStep('cam', 'err', e.message);
-    throw new Error('Camera permission denied: ' + e.message);
+    if(!stream)throw new Error('No camera found');
+    stream.getTracks().forEach(t=>t.stop());
+    setStep('st-cam','done','Camera access granted');
+  }catch(e){
+    setStep('st-cam','err',e.message);
+    showErr('Camera permission denied',e.message);
+    g('btn-retry').style.display='block';
+    return;
   }
 
-  // Motion sensors (iOS needs gesture trigger — do best-effort here)
-  if (typeof DeviceOrientationEvent !== 'undefined'){
-    if (typeof DeviceOrientationEvent.requestPermission === 'function'){
-      try { await DeviceOrientationEvent.requestPermission(); } catch(e){}
+  /* Sensors */
+  if(typeof DeviceOrientationEvent!=='undefined'){
+    if(typeof DeviceOrientationEvent.requestPermission==='function'){
+      try{await DeviceOrientationEvent.requestPermission();}catch(e){}
     }
-    window.addEventListener('deviceorientation', handleOrientation);
-  } else { S.checks.level = true; }
-
-  if (typeof DeviceMotionEvent !== 'undefined'){
-    if (typeof DeviceMotionEvent.requestPermission === 'function'){
-      try { await DeviceMotionEvent.requestPermission(); } catch(e){}
+    window.addEventListener('deviceorientation',onOrientation);
+  }else{S.checks.level=true;}
+  if(typeof DeviceMotionEvent!=='undefined'){
+    if(typeof DeviceMotionEvent.requestPermission==='function'){
+      try{await DeviceMotionEvent.requestPermission();}catch(e){}
     }
-    window.addEventListener('devicemotion', handleMotion);
-  } else { S.checks.steady = true; }
+    window.addEventListener('devicemotion',onMotion);
+  }else{S.checks.steady=true;}
 
-  setLoadProg(30, 'Permissions granted');
-}
-
-async function requestLocation(){
-  loadStep('loc', 'active', 'Acquiring location…');
-  return new Promise((resolve) => {
-    if (!navigator.geolocation){
-      loadStep('loc', 'err', 'Geolocation not available');
-      S.location = null;
-      resolve(); return;
+  /* Step 2: Location */
+  S.setupPhase='loc';
+  setStep('st-loc','active','Acquiring GPS location\u2026');
+  setProg(25,'Acquiring location\u2026');
+  await new Promise(resolve=>{
+    if(!navigator.geolocation){
+      setStep('st-loc','skip','Not available');S.location=null;resolve();return;
     }
     navigator.geolocation.getCurrentPosition(
-      pos => {
-        S.location = {
-          lat: pos.coords.latitude,
-          lon: pos.coords.longitude,
-          accuracy: pos.coords.accuracy
-        };
-        loadStep('loc', 'done',
-          `${S.location.lat.toFixed(5)}, ${S.location.lon.toFixed(5)} ±${S.location.accuracy.toFixed(0)}m`);
+      pos=>{
+        S.location={lat:pos.coords.latitude,lon:pos.coords.longitude,acc:pos.coords.accuracy};
+        setStep('st-loc','done',`${S.location.lat.toFixed(5)}, ${S.location.lon.toFixed(5)} \u00b1${S.location.acc.toFixed(0)}m`);
         resolve();
       },
-      err => {
-        loadStep('loc', 'err', err.message);
-        S.location = null;
-        resolve(); // non-fatal
-      },
-      { enableHighAccuracy: true, timeout: CFG.GEO_TIMEOUT_MS, maximumAge: 0 }
+      err=>{setStep('st-loc','skip',err.message);S.location=null;resolve();},
+      {enableHighAccuracy:true,timeout:C.GEO_TIMEOUT,maximumAge:0}
     );
   });
+
+  /* Step 3: Auth */
+  S.setupPhase='auth';
+  setProg(45,'Waiting for sign-in\u2026');
+  await doAuth();
+
+  /* Step 4: Model */
+  S.setupPhase='model';
+  setProg(60,'Loading holistic model\u2026');
+  await loadModel();
+
+  S.setupPhase='done';
+  setProg(100,'Ready');
+  setTimeout(()=>goSession(),350);
 }
 
-/* ═══════════════════════════════════════════════════════
-   MEDIAPIPE HOLISTIC
-═══════════════════════════════════════════════════════ */
-async function loadHolistic(){
-  loadStep('mp', 'active', 'Loading Holistic model…');
-  document.getElementById('ls-mp-bar').style.display = 'block';
-  const fill = document.getElementById('ls-mp-fill');
-
-  return new Promise((resolve, reject) => {
-    // Indeterminate spinner animation on fill bar
-    let pct = 0;
-    const anim = setInterval(() => {
-      pct = Math.min(pct + 2, 90);
-      fill.style.width = pct + '%';
-    }, 200);
-
-    const h = new Holistic({ locateFile: file =>
-      `https://cdn.jsdelivr.net/npm/@mediapipe/holistic/${file}`
-    });
-
-    h.setOptions({
-      modelComplexity: 1,
-      smoothLandmarks: true,
-      enableSegmentation: true,
-      smoothSegmentation: true,
-      refineFaceLandmarks: false,
-      minDetectionConfidence: 0.5,
-      minTrackingConfidence: 0.5,
-    });
-
-    h.onResults(onHolisticResults);
-
-    // Send a blank frame to trigger model download
-    const dummy = document.createElement('canvas');
-    dummy.width = 4; dummy.height = 4;
-    h.send({ image: dummy }).then(() => {
-      clearInterval(anim);
-      fill.style.width = '100%';
-      S.holistic = h;
-      S.holisticReady = true;
-      S.mpAvailable = true;
-      loadStep('mp', 'done', 'Holistic model ready');
-      setLoadProg(90, 'Model loaded');
-      resolve();
-    }).catch(e => {
-      clearInterval(anim);
-      loadStep('mp', 'err', e.message);
-      // Non-fatal — enter no-pose mode
-      S.mpAvailable = false;
-      S.noPoseMode = true;
-      resolve();
-    });
+/* AUTH */
+function doAuth(){
+  return new Promise(resolve=>{
+    setStep('st-auth','active','Checking saved session\u2026');
+    const tk=localStorage.getItem(C.TOKEN_KEY);
+    const ex=parseInt(localStorage.getItem(C.EXPIRY_KEY)||'0',10);
+    const em=localStorage.getItem(C.EMAIL_KEY)||'';
+    if(tk&&ex>Date.now()+60000&&em){
+      S.token=tk;S.expiry=ex;S.email=em;
+      scheduleRefresh(ex);
+      verifyServer().then(ok=>{
+        if(ok){setStep('st-auth','done',em);resolve();}
+        else{clearStoredAuth();promptSignIn(resolve);}
+      });
+      return;
+    }
+    clearStoredAuth();
+    promptSignIn(resolve);
   });
 }
 
-/* ═══════════════════════════════════════════════════════
-   SESSION SCREEN
-═══════════════════════════════════════════════════════ */
-function goToSession(){
-  // Generate new UUID
-  S.uuid = generateUUID();
-  S.frontBlob = null; S.sideBlob = null;
-  S.frontUploadDone = false; S.sideUploadDone = false;
-  S.frontUploadError = null; S.sideUploadError = null;
-  S.phase = 'front';
-
-  document.getElementById('sess-uuid').textContent = S.uuid;
-
-  // Location display
-  if (S.location){
-    document.getElementById('loc-dot').className = 'loc-dot ok';
-    document.getElementById('loc-text').textContent =
-      `${S.location.lat.toFixed(5)}, ${S.location.lon.toFixed(5)} ±${S.location.accuracy.toFixed(0)}m`;
-  } else {
-    document.getElementById('loc-dot').className = 'loc-dot err';
-    document.getElementById('loc-text').textContent = 'Location unavailable';
-  }
-
-  // Camera height
-  const saved = localStorage.getItem(CFG.CAM_HEIGHT_STORAGE_KEY);
-  S.camHeightCm = saved ? parseFloat(saved) : CFG.CAM_HEIGHT_DEFAULT_CM;
-  document.getElementById('camh-input').value = S.camHeightCm;
-
-  showScreen('screen-session');
-}
-
-function generateUUID(){
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-  let id = '';
-  const arr = new Uint8Array(32);
-  crypto.getRandomValues(arr);
-  for (let i = 0; i < 32; i++) id += chars[arr[i] % chars.length];
-  return id;
-}
-
-// Camera height input
-document.getElementById('camh-input').addEventListener('input', function(){
-  const v = parseFloat(this.value);
-  if (!isNaN(v) && v > 0){
-    S.camHeightCm = v;
-    localStorage.setItem(CFG.CAM_HEIGHT_STORAGE_KEY, String(v));
-  }
-});
-
-document.getElementById('sess-proceed').addEventListener('click', () => {
-  const v = parseFloat(document.getElementById('camh-input').value);
-  if (!isNaN(v) && v > 0) S.camHeightCm = v;
-  startCameraPhase('front');
-});
-
-// Reset / new session
-function newSession(){
-  stopCamera();
-  hidePopup();
-  goToSession();
-}
-document.getElementById('topbar-reset').addEventListener('click', newSession);
-document.getElementById('cam-reset-btn').addEventListener('click', newSession);
-
-/* ═══════════════════════════════════════════════════════
-   CAMERA PHASE START
-═══════════════════════════════════════════════════════ */
-function startCameraPhase(phase){
-  S.phase = phase;
-  setSilhouette();
-  document.getElementById('cam-phase-label').textContent =
-    phase === 'front' ? 'FRONT VIEW' : 'SIDE VIEW';
-  document.getElementById('height-badge').classList.toggle('show', phase === 'front');
-  document.getElementById('cam-mode-pill').classList.remove('hidden-pill');
-  document.getElementById('npose-banner').classList.remove('show');
-  document.getElementById('cam-topbar').classList.remove('banner-offset');
-  if (S.noPoseMode) enterNoPoseMode();
-  showScreen('screen-camera');
-  startCamera();
-}
-
-/* ═══════════════════════════════════════════════════════
-   CAMERA
-═══════════════════════════════════════════════════════ */
-const video    = document.getElementById('video');
-const mCvs     = document.getElementById('mask-canvas');
-const pCvs     = document.getElementById('pose-canvas');
-const mCtx     = mCvs.getContext('2d');
-const pCtx     = pCvs.getContext('2d');
-
-// Brightness sampling canvas
-const bCvs = document.createElement('canvas'); bCvs.width=32; bCvs.height=32;
-const bCtx = bCvs.getContext('2d', { willReadFrequently: true });
-
-function startCamera(){
-  if (S.stream) S.stream.getTracks().forEach(t => t.stop());
-  S.webcamRunning = false;
-
-  navigator.mediaDevices.getUserMedia({
-    video: { facingMode: 'environment', width: { ideal: 1440 }, height: { ideal: 1920 } },
-    audio: false
-  }).then(stream => {
-    S.stream = stream;
-    video.srcObject = stream;
-    video.onloadeddata = () => {
-      S.webcamRunning = true;
-      if (S.mpAvailable && S.holistic){
-        S.cameraUtil = new Camera(video, {
-          onFrame: async () => {
-            sampleBrightness();
-            resizeCanvases();
-            if (S.webcamRunning) await S.holistic.send({ image: video });
-          },
-          width: 1280, height: 960
-        });
-        S.cameraUtil.start();
-      } else {
-        // No-pose loop
-        function noposeTick(){
-          if (!S.webcamRunning) return;
-          sampleBrightness();
-          resizeCanvases();
-          updateUI();
-          requestAnimationFrame(noposeTick);
-        }
-        noposeTick();
+function promptSignIn(resolve){
+  setStep('st-auth','active','Sign in to continue');
+  waitForGIS(()=>{
+    google.accounts.id.initialize({
+      client_id:C.GID,
+      callback:cred=>handleCredential(cred,resolve),
+      auto_select:true,
+    });
+    google.accounts.id.prompt(n=>{
+      if(n.isSkippedMoment()||n.isDismissedMoment()){
+        g('g-signin').style.display='flex';
+        g('g-signin').disabled=false;
+        S.authResolve=resolve;
       }
-    };
-  }).catch(e => {
-    document.getElementById('guidance').textContent = 'Camera error: ' + e.message;
+    });
   });
 }
 
-function stopCamera(){
-  S.webcamRunning = false;
-  if (S.cameraUtil){ try { S.cameraUtil.stop(); } catch(e){} S.cameraUtil = null; }
-  if (S.stream){ S.stream.getTracks().forEach(t => t.stop()); S.stream = null; }
-}
-
-function resizeCanvases(){
-  const rw = mCvs.parentElement.clientWidth  || video.videoWidth  || 1;
-  const rh = mCvs.parentElement.clientHeight || video.videoHeight || 1;
-  if (mCvs.width !== rw || mCvs.height !== rh){ mCvs.width=rw; mCvs.height=rh; }
-  if (pCvs.width !== rw || pCvs.height !== rh){ pCvs.width=rw; pCvs.height=rh; }
-}
-
-/* ═══════════════════════════════════════════════════════
-   HOLISTIC RESULTS
-═══════════════════════════════════════════════════════ */
-function onHolisticResults(results){
-  if (!S.webcamRunning) return;
-  resizeCanvases();
-  const rw = mCvs.width, rh = mCvs.height;
-
-  mCtx.clearRect(0, 0, rw, rh);
-  pCtx.save();
-  pCtx.clearRect(0, 0, rw, rh);
-
-  const hasLm = !!(results.poseLandmarks && results.poseLandmarks.length > 0);
-
-  // ── Segmentation mask ───────────────────────────────
-  if (results.segmentationMask){
-    const allOk = Object.values(S.checks).every(v => v);
-    mCtx.save();
-    mCtx.drawImage(results.segmentationMask, 0, 0, rw, rh);
-    mCtx.globalCompositeOperation = 'source-in';
-    mCtx.fillStyle = allOk
-      ? 'rgba(52,211,153,0.45)'
-      : (S.blockMode ? 'rgba(248,113,113,0.38)' : 'rgba(251,191,36,0.38)');
-    mCtx.fillRect(0, 0, rw, rh);
-    mCtx.restore();
-  }
-
-  if (hasLm){
-    const poseLm = results.poseLandmarks;
-    S.lastPoseLm = poseLm;
-    S.lastFaceLm = results.faceLandmarks || null;
-
-    // ── Draw skeleton ───────────────────────────────────
-    const allOk = Object.values(S.checks).every(v => v);
-    const skelColor = allOk ? 'rgba(52,211,153,0.75)' : 'rgba(79,143,255,0.65)';
-    const lw = Math.max(2, rw * 0.004);
-    if (window.drawConnectors && window.POSE_CONNECTIONS){
-      drawConnectors(pCtx, poseLm, POSE_CONNECTIONS, { color: skelColor, lineWidth: lw });
-      drawLandmarks(pCtx, poseLm, { color:'rgba(255,255,255,0.9)', fillColor: skelColor, lineWidth:1, radius:3 });
-    }
-    // Face mesh contours
-    if (results.faceLandmarks && window.FACEMESH_CONTOURS){
-      drawConnectors(pCtx, results.faceLandmarks, FACEMESH_CONTOURS,
-        { color: 'rgba(255,255,255,0.18)', lineWidth: 1 });
-    }
-    // Hand landmarks
-    if (results.leftHandLandmarks && window.HAND_CONNECTIONS){
-      drawConnectors(pCtx, results.leftHandLandmarks, HAND_CONNECTIONS,
-        { color: 'rgba(255,100,100,0.7)', lineWidth: 2 });
-      drawLandmarks(pCtx, results.leftHandLandmarks,
-        { color:'rgba(255,255,255,0.8)', fillColor:'rgba(255,100,100,0.6)', lineWidth:1, radius:2 });
-    }
-    if (results.rightHandLandmarks && window.HAND_CONNECTIONS){
-      drawConnectors(pCtx, results.rightHandLandmarks, HAND_CONNECTIONS,
-        { color: 'rgba(100,255,100,0.7)', lineWidth: 2 });
-      drawLandmarks(pCtx, results.rightHandLandmarks,
-        { color:'rgba(255,255,255,0.8)', fillColor:'rgba(100,255,100,0.6)', lineWidth:1, radius:2 });
-    }
-
-    runChecks(poseLm);
-    computeHeight();
-  } else {
-    S.lastPoseLm = null;
-    S.checks.body = false;
-    S.checks.dist = false;
-    S.checks.pose = false;
-  }
-
-  pCtx.restore();
-  updateUI();
-}
-
-/* ═══════════════════════════════════════════════════════
-   BRIGHTNESS
-═══════════════════════════════════════════════════════ */
-function sampleBrightness(){
-  if (!video.videoWidth) return;
-  try {
-    bCtx.drawImage(video, 0, 0, 32, 32);
-    const d = bCtx.getImageData(0, 0, 32, 32).data;
-    let s = 0;
-    for (let i = 0; i < d.length; i += 4)
-      s += d[i]*.299 + d[i+1]*.587 + d[i+2]*.114;
-    S.checks.light = (s / (32*32)) > CFG.BRIGHTNESS_MIN;
-  } catch(e){ S.checks.light = true; }
-}
-
-/* ═══════════════════════════════════════════════════════
-   SENSORS
-═══════════════════════════════════════════════════════ */
-function handleOrientation(e){
-  const beta  = e.beta  || 0;
-  const gamma = e.gamma || 0;
-  S.checks.level = Math.abs(beta - 90) < CFG.TILT_BETA_DEG && Math.abs(gamma) < CFG.TILT_GAMMA_DEG;
-}
-function handleMotion(e){
-  const a = e.accelerationIncludingGravity;
-  if (!a){ S.checks.steady = true; return; }
-  const dx = Math.abs((a.x||0) - S.lastAcc.x);
-  const dy = Math.abs((a.y||0) - S.lastAcc.y);
-  const dz = Math.abs((a.z||0) - S.lastAcc.z);
-  S.lastAcc = { x: a.x||0, y: a.y||0, z: a.z||0 };
-  const rms = Math.sqrt(dx*dx + dy*dy + dz*dz);
-  if (rms > CFG.SHAKE_THRESHOLD){
-    S.shakeOk = false;
-    clearTimeout(S.shakeTmr);
-    S.shakeTmr = setTimeout(() => { S.shakeOk = true; }, CFG.SHAKE_RECOVER_MS);
-  }
-  S.checks.steady = S.shakeOk;
-}
-
-/* ═══════════════════════════════════════════════════════
-   POSE CHECKS
-   Landmark indices:
-   0=nose  11=Lshoulder 12=Rshoulder
-   13=Lelbow 14=Relbow  15=Lwrist  16=Rwrist
-   23=Lhip  24=Rhip
-   25=Lknee 26=Rknee   27=Lankle  28=Rankle
-   29=Lheel 30=Rheel   31=Lfoot   32=Rfoot
-═══════════════════════════════════════════════════════ */
-function vis(lm, i, vt=0.30, pt=0.20){
-  const p = lm[i]; if (!p) return false;
-  const v  = p.visibility !== undefined ? p.visibility : 1;
-  const pr = p.presence   !== undefined ? p.presence   : 1;
-  return v >= vt && pr >= pt;
-}
-
-function runChecks(lm){
-  // Body span nose → lowest ankle
-  const nose = vis(lm,0,0.3,0.2) ? lm[0] : null;
-  let bestAnkleY = 0;
-  [[27,.3,.2],[28,.3,.2],[29,.25,.15],[30,.25,.15]].forEach(([idx,vt,pt]) => {
-    if (vis(lm,idx,vt,pt)) bestAnkleY = Math.max(bestAnkleY, lm[idx].y);
+window.triggerSignIn=function(){
+  g('g-signin').disabled=true;
+  waitForGIS(()=>{
+    google.accounts.id.prompt(n=>{
+      if(n.isSkippedMoment()||n.isDismissedMoment()){
+        g('g-signin').disabled=false;
+        showErr('Sign-in dismissed','Please try again or check pop-up blockers.');
+      }
+    });
   });
-  const bodySpan = (nose && bestAnkleY > 0) ? bestAnkleY - nose.y : 0;
-
-  // DIST
-  if (bodySpan > 0){
-    if (bodySpan < CFG.BODY_SPAN_MIN){ S.checks.dist = false; }
-    else if (bodySpan > CFG.BODY_SPAN_MAX){ S.checks.dist = false; }
-    else { S.checks.dist = true; }
-  } else { S.checks.dist = false; }
-
-  // BODY — all extremity landmarks visible + mask coverage
-  S.checks.body = checkBody(lm, bodySpan);
-
-  // POSE
-  S.checks.pose = S.phase === 'front' ? checkFrontPose(lm) : checkSidePose(lm);
-}
-
-function checkBody(lm, bodySpan){
-  if (bodySpan < 0.40) return false;
-  if (S.phase === 'front'){
-    if (![0,11,12,23,24].every(i => vis(lm,i,0.35,0.25))) return false;
-    return [13,14,25,26,27,28].filter(i => vis(lm,i,0.25,0.15)).length >= 3;
-  } else {
-    const lsV = (lm[11] ? lm[11].visibility : 0) || 0;
-    const rsV = (lm[12] ? lm[12].visibility : 0) || 0;
-    const [sh,el,hi,kn,an] = lsV >= rsV ? [11,13,23,25,27] : [12,14,24,26,28];
-    if (!vis(lm,0,0.3,0.2) || !vis(lm,sh,0.35,0.25) || !vis(lm,hi,0.35,0.25)) return false;
-    return [el,kn,an].filter(i => vis(lm,i,0.25,0.15)).length >= 2;
-  }
-}
-
-function checkFrontPose(lm){
-  // Need both shoulders + both elbows
-  if (![11,12,13,14].every(i => vis(lm,i,0.25,0.15))) return false;
-  const ls=lm[11], rs=lm[12], le=lm[13], re=lm[14];
-  const lh=lm[23], rh=lm[24];
-
-  // Shoulders must be somewhat spread (not side-on)
-  const sSpan = Math.abs(rs.x - ls.x);
-  if (sSpan < 0.08) return false;
-
-  // Hips needed for torso axis
-  if (!vis(lm,23,0.25,0.15) || !vis(lm,24,0.25,0.15)) return false;
-
-  // Torso axis: midpoint shoulder → midpoint hip
-  const torsoVec = {
-    x: ((ls.x+rs.x)/2) - ((lh.x+rh.x)/2),
-    y: ((ls.y+rs.y)/2) - ((lh.y+rh.y)/2)
-  };
-  const torsoLen = Math.sqrt(torsoVec.x*torsoVec.x + torsoVec.y*torsoVec.y);
-  if (torsoLen < 0.05) return false;
-
-  // For each arm: angle between upper-arm vector and torso vector
-  // Upper arm vector: shoulder → elbow
-  function armTorsoAngle(shoulder, elbow){
-    const armVec = { x: elbow.x - shoulder.x, y: elbow.y - shoulder.y };
-    const armLen = Math.sqrt(armVec.x*armVec.x + armVec.y*armVec.y);
-    if (armLen < 0.02) return 0;
-    const dot  = armVec.x*torsoVec.x + armVec.y*torsoVec.y;
-    const cosA = dot / (armLen * torsoLen);
-    const angle = Math.acos(Math.max(-1, Math.min(1, cosA))) * 180 / Math.PI;
-    // angle between arm and torso; 180 = arm fully along torso down, 90 = perpendicular
-    // We want arm raised away from torso: angle should be >= CFG.ARM_RAISE_MIN_DEG
-    // Actually the angle from torso is 180-angle when arm points outward from shoulder
-    return angle > 90 ? 180 - angle : angle;
-  }
-
-  const lAngle = armTorsoAngle(ls, le);
-  const rAngle = armTorsoAngle(rs, re);
-
-  if (lAngle < CFG.ARM_RAISE_MIN_DEG) return false;
-  if (rAngle < CFG.ARM_RAISE_MIN_DEG) return false;
-
-  return true;
-}
-
-function checkSidePose(lm){
-  if (![11,12,23,24].every(i => vis(lm,i,0.30,0.20))) return false;
-  const ls=lm[11], rs=lm[12], lh=lm[23], rh=lm[24];
-  const sMidY = (ls.y+rs.y)/2, hMidY = (lh.y+rh.y)/2;
-  const torsoH = Math.max(hMidY - sMidY, 0.05);
-  // Shoulders stacked vertically (side view)
-  if (Math.abs(rs.x - ls.x) / torsoH > 0.35) return false;
-  // Hips stacked
-  if (Math.abs(rh.x - lh.x) / torsoH > 0.32) return false;
-  // Visible elbow at or below shoulder level (arms at rest)
-  const lsV = (lm[11] ? lm[11].visibility : 0) || 0;
-  const rsV = (lm[12] ? lm[12].visibility : 0) || 0;
-  const elIdx = lsV >= rsV ? 13 : 14;
-  if (vis(lm, elIdx, 0.25, 0.15) && lm[elIdx].y < sMidY - torsoH * 0.2) return false;
-  return true;
-}
-
-/* ═══════════════════════════════════════════════════════
-   HEIGHT ESTIMATION (Camera-Height Geometry, front view only)
-   H_person = H_cam × Pp / Pc
-   Pp = head-top to foot-sole pixel span
-   Pc = foot pixel distance below image centre
-═══════════════════════════════════════════════════════ */
-function computeHeight(){
-  if (S.phase !== 'front') return;
-  const faceLm  = S.lastFaceLm;
-  const poseLm  = S.lastPoseLm;
-  const dispH   = mCvs.height;
-
-  if (!poseLm || !faceLm || faceLm.length === 0 || dispH === 0){
-    updateHeightBadge(null); return;
-  }
-
-  // Top: minimum y across all face mesh landmarks
-  let topNorm = Infinity;
-  for (let i = 0; i < faceLm.length; i++){
-    if (faceLm[i].y < topNorm) topNorm = faceLm[i].y;
-  }
-
-  // Bottom: maximum y across heel/foot landmarks
-  const footIdx = [29, 30, 31, 32];
-  let bottomNorm = -Infinity;
-  for (const i of footIdx){
-    const lm = poseLm[i];
-    if (lm && lm.y > bottomNorm) bottomNorm = lm.y;
-  }
-
-  if (!isFinite(topNorm) || !isFinite(bottomNorm) || bottomNorm <= topNorm){
-    updateHeightBadge(null); return;
-  }
-
-  // Map normalised to display pixels (landmarks are already in display space for holistic)
-  const Pp = (bottomNorm - topNorm) * dispH;
-  const Pc = (bottomNorm - 0.5) * dispH; // feet below image centre
-
-  if (Pc <= 0 || Pp <= 0){
-    updateHeightBadge(null); return;
-  }
-
-  const hCamM  = S.camHeightCm / 100;
-  const hPerson = hCamM * Pp / Pc;
-
-  updateHeightBadge(hPerson);
-}
-
-function updateHeightBadge(hM){
-  const badge = document.getElementById('height-badge');
-  const txt   = document.getElementById('hb-txt');
-  if (hM === null || hM <= 0 || hM > 3){
-    badge.classList.remove('show'); return;
-  }
-  badge.classList.add('show');
-  txt.textContent = (hM * 100).toFixed(1) + ' cm';
-}
-
-/* ═══════════════════════════════════════════════════════
-   UI UPDATE
-═══════════════════════════════════════════════════════ */
-function enterNoPoseMode(){
-  S.noPoseMode = true;
-  S.checks.body = true; S.checks.dist = true; S.checks.pose = true;
-  S.blockMode = false;
-  document.getElementById('cam-warn').classList.add('on');
-  document.getElementById('cam-block').classList.remove('on');
-  document.getElementById('cam-mode-pill').classList.add('hidden-pill');
-  document.getElementById('npose-banner').classList.add('show');
-  document.getElementById('cam-topbar').classList.add('banner-offset');
-  ['c-body','c-dist','c-pose'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.className = 'chip dis';
-  });
-}
-
-const CHIP_MAP = {
-  light:'c-light', steady:'c-steady', level:'c-level',
-  body:'c-body', dist:'c-dist', pose:'c-pose'
 };
-const POSE_CHIPS = ['body','dist','pose'];
 
-function updateUI(){
-  const keys = S.mpAvailable
-    ? ['light','steady','level','body','dist','pose']
-    : ['light','steady','level'];
-  const allOk = keys.every(k => S.checks[k]);
-  const canShoot = S.blockMode ? allOk : true;
-
-  // Ring
-  document.getElementById('cam-ring').className =
-    allOk ? 'ready' : (S.blockMode ? 'blocked' : 'warn');
-
-  // Shutter
-  const shutterEl = document.getElementById('shutter');
-  if (!S.webcamRunning) shutterEl.className = 'off';
-  else if (canShoot) shutterEl.className = allOk ? 'ready' : 'warn-ready';
-  else shutterEl.className = 'off';
-
-  // Chips
-  Object.entries(CHIP_MAP).forEach(([k, id]) => {
-    const c = document.getElementById(id); if (!c) return;
-    if (!S.mpAvailable && POSE_CHIPS.includes(k)){ c.className = 'chip dis'; return; }
-    c.className = 'chip ' + (S.checks[k] ? 'ok' : (S.blockMode ? 'bad' : 'wrn'));
-  });
-
-  // Guidance
-  const guidanceEl = document.getElementById('guidance');
-  const fails = keys.filter(k => !S.checks[k]);
-  const msgs = {
-    light:  S.blockMode ? 'Too dark — improve lighting'       : 'Low light',
-    steady: S.blockMode ? 'Hold phone steady'                 : 'Too much movement',
-    level:  S.blockMode ? 'Hold phone upright vertically'     : 'Phone slightly tilted',
-    body:   S.blockMode ? 'Full body must be visible in frame': 'Body not fully in frame',
-    dist:   S.checks.dist === false && S.lastPoseLm ?
-            (S.lastPoseLm[0] && S.lastPoseLm[0].y > 0.5 ? 'Step back' : 'Move closer') :
-            'Adjust distance',
-    pose: S.phase === 'front'
-      ? (S.blockMode ? `Raise arms away from body (≥${CFG.ARM_RAISE_MIN_DEG}°)` : 'Arms not raised enough')
-      : (S.blockMode ? 'Turn sideways — shoulder towards camera'                  : 'Not quite side-on'),
-  };
-
-  if (!fails.length){
-    const ready = S.phase === 'front' ? 'Arms raised — tap to capture' : 'Side view ready — tap to capture';
-    guidanceEl.textContent = ready;
-    guidanceEl.style.color = 'rgba(52,211,153,.9)';
-  } else {
-    guidanceEl.textContent = msgs[fails[0]] || fails[0];
-    guidanceEl.style.color = S.blockMode ? 'rgba(248,113,113,.85)' : 'rgba(251,191,36,.85)';
+function handleCredential(cred,resolve){
+  g('g-signin').style.display='none';clearErr();
+  try{
+    const p=JSON.parse(atob(cred.credential.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
+    S.token=cred.credential;S.expiry=p.exp*1000;S.email=p.email||'';
+    localStorage.setItem(C.TOKEN_KEY,S.token);
+    localStorage.setItem(C.EXPIRY_KEY,String(S.expiry));
+    localStorage.setItem(C.EMAIL_KEY,S.email);
+    scheduleRefresh(S.expiry);
+    setStep('st-auth','active','Verifying\u2026');
+    verifyServer().then(ok=>{
+      if(ok){
+        setStep('st-auth','done',S.email);
+        const res=resolve||S.authResolve;S.authResolve=null;
+        if(res)res();
+      }else{
+        setStep('st-auth','err','Server verification failed');
+        showErr('Verification failed','Could not verify. Check network and try again.');
+        g('btn-retry').style.display='block';
+      }
+    });
+  }catch(e){
+    setStep('st-auth','err',e.message);
+    showErr('Auth error',e.message);
+    g('btn-retry').style.display='block';
   }
 }
 
-/* ═══════════════════════════════════════════════════════
-   BLOCK / WARN MODE
-═══════════════════════════════════════════════════════ */
+async function verifyServer(){
+  try{const r=await apiFetch('/','GET');return r.ok;}catch(e){return false;}
+}
+function clearStoredAuth(){
+  localStorage.removeItem(C.TOKEN_KEY);
+  localStorage.removeItem(C.EXPIRY_KEY);
+  localStorage.removeItem(C.EMAIL_KEY);
+}
+function scheduleRefresh(exp){
+  if(S.refreshTimer)clearTimeout(S.refreshTimer);
+  S.refreshTimer=setTimeout(silentRefresh,Math.max(0,exp-Date.now()-C.REFRESH_AHEAD));
+}
+function silentRefresh(){
+  waitForGIS(()=>{
+    google.accounts.id.prompt(n=>{
+      if(n.isSkippedMoment()||n.isDismissedMoment())doSignOut();
+    });
+  });
+}
+function waitForGIS(cb){
+  if(window.google&&window.google.accounts&&window.google.accounts.id){cb();return;}
+  const t=setInterval(()=>{if(window.google&&window.google.accounts&&window.google.accounts.id){clearInterval(t);cb();}},100);
+}
+function doSignOut(){
+  if(S.refreshTimer)clearTimeout(S.refreshTimer);
+  const em=S.email;
+  S.token=null;S.expiry=null;S.email=null;
+  clearStoredAuth();
+  waitForGIS(()=>{
+    google.accounts.id.disableAutoSelect();
+    if(em)try{google.accounts.id.revoke(em,()=>{});}catch(e){}
+  });
+  stopCam();
+  S.setupPhase='idle';
+  ['st-cam','st-loc','st-auth','st-model'].forEach(id=>setStep(id,'','Waiting\u2026'));
+  setProg(0,'Starting\u2026');clearErr();
+  g('g-signin').style.display='none';
+  g('btn-retry').style.display='none';
+  g('btn-skip-model').style.display='none';
+  showScreen('s-setup');runSetup();
+}
+g('h-signout').addEventListener('click',doSignOut);
+g('c-signout-btn').addEventListener('click',doSignOut);
+
+/* API FETCH */
+async function apiFetch(path,method,body,isForm){
+  if(!S.token)throw new Error('Not authenticated');
+  const hdrs={'Authorization':'Bearer '+S.token};
+  if(!isForm)hdrs['Content-Type']='application/json';
+  const opts={method,headers:hdrs};
+  if(body)opts.body=isForm?body:JSON.stringify(body);
+  return fetch(C.API+path,opts);
+}
+
+/* MODEL with Cache Storage caching */
+async function loadModel(){
+  setStep('st-model','active','Preparing\u2026');
+  g('st-model-bar').style.display='block';
+  await installSW();
+  return new Promise(resolve=>{
+    let pct=0;
+    const anim=setInterval(()=>{
+      pct=Math.min(pct+1.5,88);
+      g('st-model-fill').style.width=pct+'%';
+    },180);
+    setStep('st-model','active','Loading model files\u2026');
+    try{
+      const h=new Holistic({
+        locateFile:file=>`https://cdn.jsdelivr.net/npm/@mediapipe/holistic/${file}`
+      });
+      h.setOptions({
+        modelComplexity:1,smoothLandmarks:true,
+        enableSegmentation:true,smoothSegmentation:true,
+        refineFaceLandmarks:false,
+        minDetectionConfidence:0.5,minTrackingConfidence:0.5,
+      });
+      h.onResults(onHolisticResults);
+      const dummy=document.createElement('canvas');
+      dummy.width=4;dummy.height=4;
+      const dc=dummy.getContext('2d');
+      dc.fillStyle='#000';dc.fillRect(0,0,4,4);
+      h.send({image:dummy}).then(()=>{
+        clearInterval(anim);
+        g('st-model-fill').style.width='100%';
+        S.holistic=h;S.mpReady=true;
+        setStep('st-model','done','Holistic model ready');
+        setProg(95,'Model loaded');
+        resolve();
+      }).catch(e=>{
+        clearInterval(anim);
+        setStep('st-model','skip',e.message.slice(0,60));
+        S.noPose=true;
+        g('btn-skip-model').style.display='block';
+        setProg(95,'Model failed \u2014 continue without?');
+      });
+    }catch(e){
+      clearInterval(anim);
+      setStep('st-model','skip',e.message.slice(0,60));
+      S.noPose=true;
+      g('btn-skip-model').style.display='block';
+      setProg(95,'Model failed \u2014 continue without?');
+    }
+  });
+}
+
+window.skipModel=function(){
+  S.noPose=true;S.mpReady=false;
+  g('btn-skip-model').style.display='none';
+  setProg(100,'Ready (no pose detection)');
+  setTimeout(()=>goSession(),300);
+};
+
+async function installSW(){
+  if(!('serviceWorker' in navigator)||!('caches' in window))return;
+  try{
+    const regs=await navigator.serviceWorker.getRegistrations();
+    if(regs.length>0)return;
+    const swCode=`
+const CACHE='${C.MODEL_CACHE}';
+const MP='https://cdn.jsdelivr.net/npm/@mediapipe/';
+self.addEventListener('fetch',e=>{
+  if(!e.request.url.startsWith(MP))return;
+  e.respondWith(
+    caches.open(CACHE).then(cache=>
+      cache.match(e.request).then(hit=>{
+        if(hit)return hit;
+        return fetch(e.request).then(r=>{
+          if(r&&r.ok)cache.put(e.request,r.clone());
+          return r;
+        });
+      })
+    )
+  );
+});`;
+    const blob=new Blob([swCode],{type:'application/javascript'});
+    const url=URL.createObjectURL(blob);
+    await navigator.serviceWorker.register(url,{scope:'/'});
+  }catch(e){console.warn('SW:',e.message);}
+}
+
+window.retrySetup=function(){
+  clearErr();
+  g('btn-retry').style.display='none';
+  g('g-signin').style.display='none';
+  const ph=S.setupPhase;
+  if(ph==='cam'||ph==='idle'){
+    ['st-cam','st-loc','st-auth','st-model'].forEach(id=>setStep(id,'','Waiting\u2026'));
+    setProg(0,'Starting\u2026');runSetup();
+  }else if(ph==='auth'){
+    setStep('st-auth','','Waiting\u2026');
+    setProg(45,'Waiting for sign-in\u2026');
+    doAuth().then(()=>{
+      S.setupPhase='model';setProg(60,'Loading holistic model\u2026');
+      loadModel().then(()=>{setProg(100,'Ready');setTimeout(()=>goSession(),350);});
+    });
+  }else if(ph==='model'){
+    loadModel().then(()=>{setProg(100,'Ready');setTimeout(()=>goSession(),350);});
+  }
+};
+
+/* SESSION */
+function goSession(){
+  S.uuid=genUUID();
+  S.frontBlob=null;S.sideBlob=null;
+  S.frontDone=false;S.sideDone=false;
+  S.frontErr=null;S.sideErr=null;
+  S.phase='front';
+  g('sess-uuid').textContent=S.uuid;
+  const dot=g('loc-dot'),val=g('loc-val');
+  if(S.location){
+    dot.className='data-dot ok';
+    val.textContent=`${S.location.lat.toFixed(5)}, ${S.location.lon.toFixed(5)} \u00b1${S.location.acc.toFixed(0)}m`;
+  }else{
+    dot.className='data-dot err';
+    val.textContent='Location unavailable';
+  }
+  const saved=parseFloat(localStorage.getItem(C.CAM_H_KEY));
+  S.camH=isNaN(saved)?C.CAM_H_DEFAULT:saved;
+  g('camh-input').value=S.camH;
+  showScreen('s-session');
+}
+
+function genUUID(){
+  const ch='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  const arr=new Uint8Array(32);
+  crypto.getRandomValues(arr);
+  return Array.from(arr,b=>ch[b%ch.length]).join('');
+}
+
+g('camh-input').addEventListener('input',function(){
+  const v=parseFloat(this.value);
+  if(!isNaN(v)&&v>0){S.camH=v;localStorage.setItem(C.CAM_H_KEY,v);}
+});
+g('sess-go').addEventListener('click',()=>{
+  const v=parseFloat(g('camh-input').value);
+  if(!isNaN(v)&&v>0)S.camH=v;
+  beginCapture('front');
+});
+function newSession(){stopCam();goSession();}
+g('h-reset').addEventListener('click',newSession);
+g('c-reset-btn').addEventListener('click',newSession);
+
+/* CAMERA */
+const vid=g('vid'),mCvs=g('c-mask'),pCvs=g('c-pose');
+const mCtx=mCvs.getContext('2d'),pCtx=pCvs.getContext('2d');
+const bCvs=document.createElement('canvas');bCvs.width=32;bCvs.height=32;
+const bCtx=bCvs.getContext('2d',{willReadFrequently:true});
+
+function beginCapture(phase){
+  S.phase=phase;setSil();
+  g('c-phase-lbl').textContent=phase==='front'?'FRONT VIEW':'SIDE VIEW';
+  g('c-hbadge').classList.toggle('on',phase==='front');
+  g('c-mpill').classList.remove('hidden');
+  g('c-npose').classList.remove('on');
+  g('c-top').classList.remove('pushed');
+  if(S.noPose)activateNoPose();
+  showScreen('s-camera');
+  startCam();
+}
+
+function startCam(){
+  stopCam();S.camRunning=false;
+  const tryList=[
+    {video:{facingMode:{exact:'environment'},width:{ideal:1440},height:{ideal:1920}},audio:false},
+    {video:{facingMode:'environment',width:{ideal:1440},height:{ideal:1920}},audio:false},
+    {video:{facingMode:'environment'},audio:false},
+    {video:true,audio:false},
+  ];
+  async function tryNext(i){
+    if(i>=tryList.length){g('c-guide').textContent='Camera unavailable';return;}
+    try{
+      const stream=await navigator.mediaDevices.getUserMedia(tryList[i]);
+      S.camStream=stream;
+      vid.srcObject=stream;
+      vid.onloadeddata=()=>{S.camRunning=true;S.lastVideoTime=-1;requestAnimationFrame(camTick);};
+      vid.onerror=()=>tryNext(i+1);
+    }catch(e){tryNext(i+1);}
+  }
+  tryNext(0);
+}
+
+function stopCam(){
+  S.camRunning=false;
+  if(S.camStream){S.camStream.getTracks().forEach(t=>t.stop());S.camStream=null;}
+}
+
+function sizeCvs(){
+  const w=mCvs.parentElement.clientWidth||vid.videoWidth||1;
+  const h=mCvs.parentElement.clientHeight||vid.videoHeight||1;
+  if(mCvs.width!==w||mCvs.height!==h){mCvs.width=w;mCvs.height=h;}
+  if(pCvs.width!==w||pCvs.height!==h){pCvs.width=w;pCvs.height=h;}
+}
+
+function camTick(){
+  if(!S.camRunning)return;
+  sizeCvs();sampleBright();
+  if(S.mpReady&&S.holistic&&vid.readyState>=2&&vid.currentTime!==S.lastVideoTime){
+    S.lastVideoTime=vid.currentTime;
+    S.holistic.send({image:vid}).catch(()=>{});
+  }else if(!S.mpReady){updateUI();}
+  requestAnimationFrame(camTick);
+}
+
+/* HOLISTIC RESULTS */
+function onHolisticResults(res){
+  if(!S.camRunning)return;
+  sizeCvs();
+  const w=mCvs.width,h=mCvs.height;
+  mCtx.clearRect(0,0,w,h);
+  pCtx.save();pCtx.clearRect(0,0,w,h);
+  const hasP=!!(res.poseLandmarks&&res.poseLandmarks.length);
+  if(res.segmentationMask){
+    const ok=allOk();
+    mCtx.save();
+    mCtx.drawImage(res.segmentationMask,0,0,w,h);
+    mCtx.globalCompositeOperation='source-in';
+    mCtx.fillStyle=ok?'rgba(52,168,83,0.42)':(S.blockMode?'rgba(217,48,37,0.35)':'rgba(242,153,0,0.38)');
+    mCtx.fillRect(0,0,w,h);mCtx.restore();
+  }
+  if(hasP){
+    const pl=res.poseLandmarks;
+    S.lastPose=pl;S.lastFace=res.faceLandmarks||null;
+    const ok2=allOk();
+    const skC=ok2?'rgba(52,168,83,0.8)':'rgba(66,133,244,0.7)';
+    const lw=Math.max(2,w*0.004);
+    if(window.drawConnectors&&window.POSE_CONNECTIONS){
+      drawConnectors(pCtx,pl,POSE_CONNECTIONS,{color:skC,lineWidth:lw});
+      drawLandmarks(pCtx,pl,{color:'rgba(255,255,255,0.9)',fillColor:skC,lineWidth:1,radius:3});
+    }
+    if(res.faceLandmarks&&window.FACEMESH_CONTOURS){
+      drawConnectors(pCtx,res.faceLandmarks,FACEMESH_CONTOURS,{color:'rgba(255,255,255,0.15)',lineWidth:1});
+    }
+    if(res.leftHandLandmarks&&window.HAND_CONNECTIONS){
+      drawConnectors(pCtx,res.leftHandLandmarks,HAND_CONNECTIONS,{color:'rgba(255,100,100,0.75)',lineWidth:2});
+      drawLandmarks(pCtx,res.leftHandLandmarks,{color:'rgba(255,255,255,0.8)',fillColor:'rgba(255,80,80,0.6)',lineWidth:1,radius:2});
+    }
+    if(res.rightHandLandmarks&&window.HAND_CONNECTIONS){
+      drawConnectors(pCtx,res.rightHandLandmarks,HAND_CONNECTIONS,{color:'rgba(80,220,100,0.75)',lineWidth:2});
+      drawLandmarks(pCtx,res.rightHandLandmarks,{color:'rgba(255,255,255,0.8)',fillColor:'rgba(80,200,80,0.6)',lineWidth:1,radius:2});
+    }
+    runChecks(pl);
+    if(S.phase==='front')estimateHeight();
+  }else{
+    S.lastPose=null;
+    S.checks.body=false;S.checks.dist=false;S.checks.pose=false;
+  }
+  pCtx.restore();updateUI();
+}
+
+function allOk(){
+  const keys=S.mpReady?['light','steady','level','body','dist','pose']:['light','steady','level'];
+  return keys.every(k=>S.checks[k]);
+}
+
+/* BRIGHTNESS */
+function sampleBright(){
+  if(!vid.videoWidth)return;
+  try{
+    bCtx.drawImage(vid,0,0,32,32);
+    const d=bCtx.getImageData(0,0,32,32).data;
+    let s=0;for(let i=0;i<d.length;i+=4)s+=d[i]*0.299+d[i+1]*0.587+d[i+2]*0.114;
+    S.checks.light=(s/1024)>C.BRIGHT_MIN;
+  }catch(e){S.checks.light=true;}
+}
+
+/* SENSORS */
+function onOrientation(e){
+  S.checks.level=Math.abs((e.beta||0)-90)<C.TILT_BETA&&Math.abs(e.gamma||0)<C.TILT_GAMMA;
+}
+function onMotion(e){
+  const a=e.accelerationIncludingGravity;
+  if(!a){S.checks.steady=true;return;}
+  const dx=Math.abs((a.x||0)-S.lastAcc.x);
+  const dy=Math.abs((a.y||0)-S.lastAcc.y);
+  const dz=Math.abs((a.z||0)-S.lastAcc.z);
+  S.lastAcc={x:a.x||0,y:a.y||0,z:a.z||0};
+  if(Math.sqrt(dx*dx+dy*dy+dz*dz)>C.SHAKE_RMS){
+    S.shakeOk=false;clearTimeout(S.shakeTmr);
+    S.shakeTmr=setTimeout(()=>{S.shakeOk=true;},C.SHAKE_SETTLE);
+  }
+  S.checks.steady=S.shakeOk;
+}
+
+/* POSE CHECKS */
+function vis(lm,i,vt,pt){
+  vt=vt||0.30;pt=pt||0.20;
+  const p=lm[i];if(!p)return false;
+  return(p.visibility!==undefined?p.visibility:1)>=vt&&(p.presence!==undefined?p.presence:1)>=pt;
+}
+function runChecks(lm){
+  const nose=vis(lm,0,0.3,0.2)?lm[0]:null;
+  let ankleY=0;
+  [[27,0.3,0.2],[28,0.3,0.2],[29,0.25,0.15],[30,0.25,0.15]].forEach(function(x){
+    if(vis(lm,x[0],x[1],x[2]))ankleY=Math.max(ankleY,lm[x[0]].y);
+  });
+  const span=(nose&&ankleY>0)?ankleY-nose.y:0;
+  S.checks.dist=span>=C.BODY_MIN&&span<=C.BODY_MAX;
+  S.checks.body=checkBody(lm,span);
+  S.checks.pose=S.phase==='front'?checkFront(lm):checkSide(lm);
+}
+function checkBody(lm,span){
+  if(span<0.40)return false;
+  if(S.phase==='front'){
+    if(![0,11,12,23,24].every(i=>vis(lm,i,0.35,0.25)))return false;
+    return[13,14,25,26,27,28].filter(i=>vis(lm,i,0.25,0.15)).length>=3;
+  }
+  const lv=(lm[11]&&lm[11].visibility)||0,rv=(lm[12]&&lm[12].visibility)||0;
+  const arr=lv>=rv?[11,13,23,25,27]:[12,14,24,26,28];
+  if(!vis(lm,0,0.3,0.2)||!vis(lm,arr[0],0.35,0.25)||!vis(lm,arr[2],0.35,0.25))return false;
+  return[arr[1],arr[3],arr[4]].filter(i=>vis(lm,i,0.25,0.15)).length>=2;
+}
+function checkFront(lm){
+  if(![11,12,13,14,23,24].every(i=>vis(lm,i,0.25,0.15)))return false;
+  const ls=lm[11],rs=lm[12],le=lm[13],re=lm[14],lh=lm[23],rh=lm[24];
+  if(Math.abs(rs.x-ls.x)<0.08)return false;
+  const tx=((ls.x+rs.x)/2)-((lh.x+rh.x)/2),ty=((ls.y+rs.y)/2)-((lh.y+rh.y)/2);
+  const tl=Math.sqrt(tx*tx+ty*ty);
+  if(tl<0.05)return false;
+  function ang(sh,el){
+    const ax=el.x-sh.x,ay=el.y-sh.y,al=Math.sqrt(ax*ax+ay*ay);
+    if(al<0.02)return 0;
+    const a=Math.acos(Math.max(-1,Math.min(1,(ax*tx+ay*ty)/(al*tl))))*180/Math.PI;
+    return a>90?180-a:a;
+  }
+  return ang(ls,le)>=C.ARM_RAISE_DEG&&ang(rs,re)>=C.ARM_RAISE_DEG;
+}
+function checkSide(lm){
+  if(![11,12,23,24].every(i=>vis(lm,i,0.30,0.20)))return false;
+  const ls=lm[11],rs=lm[12],lh=lm[23],rh=lm[24];
+  const sMy=(ls.y+rs.y)/2,hMy=(lh.y+rh.y)/2,tH=Math.max(hMy-sMy,0.05);
+  if(Math.abs(rs.x-ls.x)/tH>0.35)return false;
+  if(Math.abs(rh.x-lh.x)/tH>0.32)return false;
+  const eI=((lm[11]&&lm[11].visibility)||0)>=((lm[12]&&lm[12].visibility)||0)?13:14;
+  if(vis(lm,eI,0.25,0.15)&&lm[eI].y<sMy-tH*0.2)return false;
+  return true;
+}
+
+/* HEIGHT ESTIMATION */
+function estimateHeight(){
+  const fl=S.lastFace,pl=S.lastPose,dH=mCvs.height;
+  if(!fl||!pl||fl.length===0||dH===0){g('c-hbadge').classList.remove('on');return;}
+  let topY=Infinity;
+  for(let i=0;i<fl.length;i++)if(fl[i].y<topY)topY=fl[i].y;
+  let botY=-Infinity;
+  [29,30,31,32].forEach(function(i){if(pl[i]&&pl[i].y>botY)botY=pl[i].y;});
+  if(!isFinite(topY)||!isFinite(botY)||botY<=topY){g('c-hbadge').classList.remove('on');return;}
+  const Pp=(botY-topY)*dH,Pc=(botY-0.5)*dH;
+  if(Pc<=0||Pp<=0){g('c-hbadge').classList.remove('on');return;}
+  const hM=(S.camH/100)*Pp/Pc;
+  if(hM<=0||hM>3){g('c-hbadge').classList.remove('on');return;}
+  g('c-hbadge').classList.add('on');
+  g('c-hval').textContent=(hM*100).toFixed(1)+' cm';
+}
+
+/* UI */
+function activateNoPose(){
+  S.noPose=true;
+  S.checks.body=true;S.checks.dist=true;S.checks.pose=true;
+  S.blockMode=false;
+  g('c-block').classList.remove('on');g('c-warn').classList.add('on');
+  g('h-block').classList.remove('on');g('h-warn').classList.add('on');
+  g('c-mpill').classList.add('hidden');
+  g('c-npose').classList.add('on');
+  g('c-top').classList.add('pushed');
+  ['ch-body','ch-dist','ch-pose'].forEach(id=>{const e=g(id);if(e)e.className='chip dis';});
+}
+const CHIPS={light:'ch-light',steady:'ch-steady',level:'ch-level',body:'ch-body',dist:'ch-dist',pose:'ch-pose'};
+const POSE_KEYS=['body','dist','pose'];
+function updateUI(){
+  const keys=S.mpReady?['light','steady','level','body','dist','pose']:['light','steady','level'];
+  const ok=keys.every(k=>S.checks[k]);
+  const canShoot=S.blockMode?ok:true;
+  g('c-ring').className=ok?'ok':(S.blockMode?'bad':'warn');
+  const sh=g('c-shutter');
+  if(!S.camRunning)sh.className='off';
+  else if(canShoot)sh.className=ok?'ok':'warn';
+  else sh.className='off';
+  Object.keys(CHIPS).forEach(k=>{
+    const el=g(CHIPS[k]);if(!el)return;
+    if(!S.mpReady&&POSE_KEYS.indexOf(k)>=0){el.className='chip dis';return;}
+    el.className='chip '+(S.checks[k]?'ok':(S.blockMode?'bad':'warn'));
+  });
+  const fails=keys.filter(k=>!S.checks[k]);
+  const guide=g('c-guide');
+  const MSGS={
+    light:S.blockMode?'Improve lighting':'Low light',
+    steady:S.blockMode?'Hold phone steady':'Phone moving',
+    level:S.blockMode?'Hold phone upright vertically':'Phone tilted',
+    body:S.blockMode?'Full body must be visible':'Body partially out of frame',
+    dist:(function(){
+      if(!S.lastPose)return'No person detected';
+      const nose=S.lastPose[0];
+      return(nose&&nose.y>0.6)?'Step back':'Move closer';
+    })(),
+    pose:S.phase==='front'
+      ?(S.blockMode?'Raise both arms away from body (\u2265'+C.ARM_RAISE_DEG+'\u00b0)':'Arms not raised enough')
+      :(S.blockMode?'Turn sideways \u2014 profile view':'Not quite side-on'),
+  };
+  if(!fails.length){
+    guide.textContent=S.phase==='front'?'Arms raised \u2014 tap to capture':'Side view ready \u2014 tap to capture';
+    guide.style.color='rgba(52,168,83,0.9)';
+  }else{
+    guide.textContent=MSGS[fails[0]]||fails[0];
+    guide.style.color=S.blockMode?'rgba(217,48,37,0.9)':'rgba(242,153,0,0.9)';
+  }
+}
+
+/* MODE */
 function setMode(block){
-  S.blockMode = block;
-  document.getElementById('cam-block').classList.toggle('on', block);
-  document.getElementById('cam-warn').classList.toggle('on', !block);
-  document.getElementById('tb-block').classList.toggle('on', block);
-  document.getElementById('tb-warn').classList.toggle('on', !block);
+  S.blockMode=block;
+  [g('c-block'),g('h-block')].forEach(b=>b.classList.toggle('on',block));
+  [g('c-warn'),g('h-warn')].forEach(b=>b.classList.toggle('on',!block));
 }
-document.getElementById('cam-block').addEventListener('click', () => setMode(true));
-document.getElementById('cam-warn').addEventListener('click',  () => setMode(false));
-document.getElementById('tb-block').addEventListener('click',  () => setMode(true));
-document.getElementById('tb-warn').addEventListener('click',   () => setMode(false));
+g('c-block').addEventListener('click',()=>setMode(true));
+g('c-warn').addEventListener('click',()=>setMode(false));
+g('h-block').addEventListener('click',()=>setMode(true));
+g('h-warn').addEventListener('click',()=>setMode(false));
 
-/* ═══════════════════════════════════════════════════════
-   SILHOUETTES
-═══════════════════════════════════════════════════════ */
-const SIL_FRONT = `<svg viewBox="0 0 180 240" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <defs><style>.sl{fill:rgba(255,255,255,.10);stroke:rgba(255,255,255,.28);stroke-width:1.2}.sl2{fill:rgba(255,255,255,.07);stroke:rgba(255,255,255,.18);stroke-width:1}</style></defs>
-  <ellipse class="sl" cx="90" cy="19" rx="13" ry="15"/>
-  <ellipse class="sl2" cx="77" cy="20" rx="3" ry="4.5"/>
-  <ellipse class="sl2" cx="103" cy="20" rx="3" ry="4.5"/>
-  <path class="sl2" d="M85 33 L95 33 L94 40 L86 40 Z"/>
-  <path class="sl" d="M52 40 Q90 35 128 40 L124 108 Q90 115 56 108 Z"/>
-  <path class="sl2" d="M56 106 Q90 112 124 106 L120 122 Q90 128 60 122 Z"/>
-  <!-- LEFT ARM raised ~45deg from torso -->
-  <path d="M54 50 L22 72" stroke="rgba(255,255,255,.26)" stroke-width="9" stroke-linecap="round"/>
-  <circle cx="20" cy="73" r="5.5" fill="rgba(255,255,255,.13)" stroke="rgba(255,255,255,.26)" stroke-width="1.1"/>
-  <path d="M20 73 L8 68" stroke="rgba(255,255,255,.20)" stroke-width="7" stroke-linecap="round"/>
-  <ellipse cx="5" cy="66" rx="6" ry="5" fill="rgba(255,255,255,.15)" stroke="rgba(255,255,255,.24)" stroke-width="1"/>
-  <!-- RIGHT ARM raised ~45deg from torso -->
-  <path d="M126 50 L158 72" stroke="rgba(255,255,255,.26)" stroke-width="9" stroke-linecap="round"/>
-  <circle cx="160" cy="73" r="5.5" fill="rgba(255,255,255,.13)" stroke="rgba(255,255,255,.26)" stroke-width="1.1"/>
-  <path d="M160 73 L172 68" stroke="rgba(255,255,255,.20)" stroke-width="7" stroke-linecap="round"/>
-  <ellipse cx="175" cy="66" rx="6" ry="5" fill="rgba(255,255,255,.15)" stroke="rgba(255,255,255,.24)" stroke-width="1"/>
-  <!-- LEFT LEG -->
-  <path d="M72 120 L68 172" stroke="rgba(255,255,255,.22)" stroke-width="11" stroke-linecap="round"/>
-  <ellipse cx="67" cy="175" rx="7.5" ry="6" fill="rgba(255,255,255,.11)" stroke="rgba(255,255,255,.20)" stroke-width="1.1"/>
-  <path d="M67 180 L65 225" stroke="rgba(255,255,255,.18)" stroke-width="9" stroke-linecap="round"/>
-  <ellipse cx="64" cy="228" rx="5.5" ry="4" fill="rgba(255,255,255,.10)" stroke="rgba(255,255,255,.17)" stroke-width="1"/>
-  <path class="sl2" d="M53 228 Q64 222 76 226 L77 234 Q64 238 51 234 Z"/>
-  <!-- RIGHT LEG -->
-  <path d="M108 120 L112 172" stroke="rgba(255,255,255,.22)" stroke-width="11" stroke-linecap="round"/>
-  <ellipse cx="113" cy="175" rx="7.5" ry="6" fill="rgba(255,255,255,.11)" stroke="rgba(255,255,255,.20)" stroke-width="1.1"/>
-  <path d="M113 180 L115 225" stroke="rgba(255,255,255,.18)" stroke-width="9" stroke-linecap="round"/>
-  <ellipse cx="116" cy="228" rx="5.5" ry="4" fill="rgba(255,255,255,.10)" stroke="rgba(255,255,255,.17)" stroke-width="1"/>
-  <path class="sl2" d="M104 228 Q116 222 128 226 L129 234 Q116 238 102 234 Z"/>
-</svg>`;
+/* SILHOUETTES */
+const SIL_FRONT='<svg viewBox="0 0 180 240" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><style>.s{fill:rgba(255,255,255,.09);stroke:rgba(255,255,255,.25);stroke-width:1.1}.s2{fill:rgba(255,255,255,.06);stroke:rgba(255,255,255,.16);stroke-width:0.9}</style></defs><ellipse class="s" cx="90" cy="19" rx="13" ry="15"/><path class="s2" d="M85 33 L95 33 L94 40 L86 40 Z"/><path class="s" d="M52 40 Q90 35 128 40 L124 108 Q90 115 56 108 Z"/><path class="s2" d="M56 106 Q90 112 124 106 L120 122 Q90 128 60 122 Z"/><path d="M54 50 L22 72" stroke="rgba(255,255,255,.22)" stroke-width="9" stroke-linecap="round"/><path d="M22 72 L10 67" stroke="rgba(255,255,255,.18)" stroke-width="7" stroke-linecap="round"/><ellipse cx="7" cy="65" rx="5.5" ry="4.5" fill="rgba(255,255,255,.13)" stroke="rgba(255,255,255,.22)" stroke-width="0.9"/><path d="M126 50 L158 72" stroke="rgba(255,255,255,.22)" stroke-width="9" stroke-linecap="round"/><path d="M158 72 L170 67" stroke="rgba(255,255,255,.18)" stroke-width="7" stroke-linecap="round"/><ellipse cx="173" cy="65" rx="5.5" ry="4.5" fill="rgba(255,255,255,.13)" stroke="rgba(255,255,255,.22)" stroke-width="0.9"/><path d="M72 120 L68 172" stroke="rgba(255,255,255,.20)" stroke-width="11" stroke-linecap="round"/><path d="M67 177 L65 224" stroke="rgba(255,255,255,.16)" stroke-width="9" stroke-linecap="round"/><path class="s2" d="M53 226 Q65 220 77 224 L78 232 Q65 236 51 232 Z"/><path d="M108 120 L112 172" stroke="rgba(255,255,255,.20)" stroke-width="11" stroke-linecap="round"/><path d="M113 177 L115 224" stroke="rgba(255,255,255,.16)" stroke-width="9" stroke-linecap="round"/><path class="s2" d="M103 226 Q115 220 127 224 L128 232 Q115 236 101 232 Z"/></svg>';
+const SIL_SIDE='<svg viewBox="0 0 180 240" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><style>.s{fill:rgba(255,255,255,.09);stroke:rgba(255,255,255,.25);stroke-width:1.1}.s2{fill:rgba(255,255,255,.06);stroke:rgba(255,255,255,.16);stroke-width:0.9}.f{stroke:rgba(255,255,255,.10);stroke-dasharray:5 4;fill:rgba(255,255,255,.03)}</style></defs><ellipse class="s" cx="96" cy="19" rx="12" ry="15"/><path class="s2" d="M89 33 L101 33 L100 40 L90 40 Z"/><path class="s" d="M82 40 L104 40 L102 108 L80 108 Z"/><path class="s2" d="M80 106 L102 106 L100 122 L82 122 Z"/><path d="M100 52 L98 92" stroke="rgba(255,255,255,.10)" stroke-width="8" stroke-linecap="round" stroke-dasharray="7 5"/><path d="M97 96 L95 126" stroke="rgba(255,255,255,.08)" stroke-width="6" stroke-linecap="round" stroke-dasharray="6 5"/><path d="M84 52 L82 92" stroke="rgba(255,255,255,.24)" stroke-width="9" stroke-linecap="round"/><path d="M81 96 L79 128" stroke="rgba(255,255,255,.18)" stroke-width="7" stroke-linecap="round"/><ellipse cx="77" cy="134" rx="5.5" ry="5" fill="rgba(255,255,255,.13)" stroke="rgba(255,255,255,.20)" stroke-width="0.9"/><path d="M92 120 L94 170" stroke="rgba(255,255,255,.10)" stroke-width="10" stroke-linecap="round" stroke-dasharray="8 5"/><path d="M94 174 L96 220" stroke="rgba(255,255,255,.08)" stroke-width="8" stroke-linecap="round" stroke-dasharray="7 5"/><path class="f" d="M84 222 L108 222 L110 230 L82 230 Z" stroke-width="0.9"/><path d="M84 120 L82 170" stroke="rgba(255,255,255,.22)" stroke-width="12" stroke-linecap="round"/><path d="M81 174 L78 220" stroke="rgba(255,255,255,.18)" stroke-width="9" stroke-linecap="round"/><path class="s2" d="M64 222 Q78 216 92 221 L93 229 Q78 234 62 229 Z"/></svg>';
+function setSil(){g('c-sil').innerHTML=S.phase==='front'?SIL_FRONT:SIL_SIDE;}
 
-const SIL_SIDE = `<svg viewBox="0 0 180 240" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <defs><style>.sl{fill:rgba(255,255,255,.10);stroke:rgba(255,255,255,.28);stroke-width:1.2}.sl2{fill:rgba(255,255,255,.07);stroke:rgba(255,255,255,.18);stroke-width:1}.far{stroke:rgba(255,255,255,.12);stroke-dasharray:6 4;fill:rgba(255,255,255,.04)}</style></defs>
-  <ellipse class="sl" cx="96" cy="19" rx="12" ry="15"/>
-  <ellipse class="sl2" cx="84" cy="20" rx="3" ry="4"/>
-  <path class="sl2" d="M89 33 L101 33 L100 40 L90 40 Z"/>
-  <path class="sl" d="M82 40 L104 40 L102 108 L80 108 Z"/>
-  <path class="sl2" d="M80 106 L102 106 L100 122 L82 122 Z"/>
-  <!-- FAR ARM dashed -->
-  <path d="M100 52 L98 92" stroke="rgba(255,255,255,.12)" stroke-width="8" stroke-linecap="round" stroke-dasharray="7 5"/>
-  <ellipse cx="97" cy="95" rx="5" ry="4.5" fill="rgba(255,255,255,.05)" stroke="rgba(255,255,255,.12)" stroke-width="1" stroke-dasharray="4 3"/>
-  <path d="M97 98 L95 128" stroke="rgba(255,255,255,.09)" stroke-width="6" stroke-linecap="round" stroke-dasharray="6 5"/>
-  <!-- NEAR ARM solid at rest -->
-  <path d="M84 52 L82 92" stroke="rgba(255,255,255,.26)" stroke-width="9" stroke-linecap="round"/>
-  <ellipse cx="81" cy="96" rx="6" ry="5.5" fill="rgba(255,255,255,.13)" stroke="rgba(255,255,255,.26)" stroke-width="1.1"/>
-  <path d="M81 100 L79 130" stroke="rgba(255,255,255,.20)" stroke-width="7" stroke-linecap="round"/>
-  <ellipse cx="78" cy="134" rx="5" ry="4" fill="rgba(255,255,255,.12)" stroke="rgba(255,255,255,.20)" stroke-width="1"/>
-  <ellipse cx="77" cy="140" rx="6" ry="5" fill="rgba(255,255,255,.14)" stroke="rgba(255,255,255,.22)" stroke-width="1"/>
-  <!-- FAR LEG dashed -->
-  <path d="M92 120 L94 170" stroke="rgba(255,255,255,.12)" stroke-width="10" stroke-linecap="round" stroke-dasharray="8 5"/>
-  <ellipse cx="94" cy="174" rx="6.5" ry="5.5" fill="rgba(255,255,255,.05)" stroke="rgba(255,255,255,.12)" stroke-width="1" stroke-dasharray="4 3"/>
-  <path d="M94 178 L96 222" stroke="rgba(255,255,255,.10)" stroke-width="8" stroke-linecap="round" stroke-dasharray="7 5"/>
-  <path class="far" d="M84 224 L108 224 L110 232 L82 232 Z" stroke-width="1"/>
-  <!-- NEAR LEG solid -->
-  <path d="M84 120 L82 170" stroke="rgba(255,255,255,.24)" stroke-width="12" stroke-linecap="round"/>
-  <ellipse cx="81" cy="174" rx="8" ry="6.5" fill="rgba(255,255,255,.12)" stroke="rgba(255,255,255,.22)" stroke-width="1.2"/>
-  <path d="M81 179 L78 222" stroke="rgba(255,255,255,.20)" stroke-width="9" stroke-linecap="round"/>
-  <ellipse cx="77" cy="225" rx="5.5" ry="4" fill="rgba(255,255,255,.11)" stroke="rgba(255,255,255,.18)" stroke-width="1"/>
-  <path class="sl2" d="M64 225 Q78 218 92 223 L93 231 Q78 236 62 231 Z"/>
-</svg>`;
-
-function setSilhouette(){
-  document.getElementById('sil-wrap').innerHTML =
-    S.phase === 'front' ? SIL_FRONT : SIL_SIDE;
-}
-
-/* ═══════════════════════════════════════════════════════
-   SHUTTER & CAPTURE
-═══════════════════════════════════════════════════════ */
-document.getElementById('shutter').addEventListener('click', () => {
-  if (document.getElementById('shutter').classList.contains('off')) return;
+/* SHUTTER */
+g('c-shutter').addEventListener('click',()=>{
+  if(g('c-shutter').classList.contains('off'))return;
   doCapture();
 });
-
 function doCapture(){
-  // Flash
-  const flash = document.getElementById('flash');
-  flash.classList.add('on');
-  requestAnimationFrame(() => requestAnimationFrame(() => flash.classList.remove('on')));
-
-  // Capture 3:4 crop at 1080×1440
-  const W=1080, H=1440;
-  const cap = document.createElement('canvas');
-  cap.width = W; cap.height = H;
-  const ctx = cap.getContext('2d');
-  const vw = video.videoWidth, vh = video.videoHeight;
-  if (!vw || !vh) return;
-  const TR = 3/4, SR = vw/vh;
+  const fl=g('c-flash');fl.classList.add('on');
+  requestAnimationFrame(()=>requestAnimationFrame(()=>fl.classList.remove('on')));
+  const W=1080,H=1440,cap=document.createElement('canvas');
+  cap.width=W;cap.height=H;
+  const ctx=cap.getContext('2d'),vw=vid.videoWidth,vh=vid.videoHeight;
+  if(!vw||!vh)return;
+  const TR=3/4,SR=vw/vh;
   let sx,sy,sw,sh;
-  if (SR > TR){ sh=vh; sw=Math.round(vh*TR); sx=Math.round((vw-sw)/2); sy=0; }
-  else         { sw=vw; sh=Math.round(vw/TR); sx=0; sy=Math.round((vh-sh)/2); }
-  ctx.drawImage(video, sx,sy,sw,sh, 0,0,W,H);
-
-  cap.toBlob(blob => {
-    if (!blob) return;
-    if (S.phase === 'front') S.frontBlob = blob;
-    else                     S.sideBlob  = blob;
-    showPopup(cap.toDataURL('image/jpeg', 0.75));
-  }, 'image/jpeg', 0.93);
+  if(SR>TR){sh=vh;sw=Math.round(vh*TR);sx=Math.round((vw-sw)/2);sy=0;}
+  else{sw=vw;sh=Math.round(vw/TR);sx=0;sy=Math.round((vh-sh)/2);}
+  ctx.drawImage(vid,sx,sy,sw,sh,0,0,W,H);
+  cap.toBlob(function(blob){
+    if(!blob)return;
+    if(S.phase==='front')S.frontBlob=blob;else S.sideBlob=blob;
+    showPreview(cap.toDataURL('image/jpeg',0.75));
+  },'image/jpeg',0.93);
 }
 
-function showPopup(dataUrl){
-  document.getElementById('cp-img').src = dataUrl;
-  document.getElementById('cp-label').textContent =
-    S.phase === 'front' ? 'FRONT VIEW' : 'SIDE VIEW';
-  const statusEl = document.getElementById('cp-upload-status');
-  statusEl.textContent = '';
-  statusEl.className = 'cp-upload-status';
-  const nextBtn = document.getElementById('cp-next');
-  nextBtn.disabled = false;
-  nextBtn.textContent = 'Next \u2192';
-  popupMode = S.phase === 'front' ? 'front-normal' : 'side-normal';
-  document.getElementById('capture-popup').classList.add('show');
+/* PREVIEW */
+function showPreview(dataUrl){
+  g('prev-img').src=dataUrl;
+  g('prev-label').textContent=S.phase==='front'?'FRONT VIEW':'SIDE VIEW';
+  g('prev-status').textContent='';g('prev-status').className='prev-status';
+  const nb=g('prev-next');nb.textContent='Next \u2192';nb.disabled=false;
+  S.popupMode=S.phase==='front'?'front-normal':'side-normal';
+  g('c-preview').classList.add('on');
 }
+function hidePreview(){g('c-preview').classList.remove('on');}
 
-function hidePopup(){
-  document.getElementById('capture-popup').classList.remove('show');
-}
-
-// Popup action mode: 'front-normal' | 'side-normal' | 'front-retry' | 'side-retry'
-let popupMode = 'front-normal';
-
-document.getElementById('cp-retake').addEventListener('click', () => {
-  if (popupMode === 'front-normal' || popupMode === 'front-retry'){
-    S.frontBlob = null; hidePopup();
-  } else {
-    S.sideBlob = null; hidePopup();
+g('prev-retake').addEventListener('click',()=>{
+  if(S.popupMode.indexOf('front')===0)S.frontBlob=null;else S.sideBlob=null;
+  hidePreview();
+});
+g('prev-next').addEventListener('click',()=>{
+  const nb=g('prev-next');nb.disabled=true;
+  if(S.popupMode==='front-normal'||S.popupMode==='front-retry'){
+    S.frontDone=false;S.frontErr=null;
+    uploadBlob(S.frontBlob,S.uuid+'_front.jpg','front');
+    hidePreview();
+    S.phase='side';setSil();
+    g('c-phase-lbl').textContent='SIDE VIEW';
+    g('c-hbadge').classList.remove('on');
+  }else{
+    S.sideDone=false;S.sideErr=null;
+    uploadBlob(S.sideBlob,S.uuid+'_side.jpg','side');
+    g('prev-status').textContent='Uploading\u2026';g('prev-status').className='prev-status uploading on';
+    pollSide();
   }
 });
+function pollSide(){
+  if(S.sideErr)return;
+  if(S.sideDone){hidePreview();goForm();return;}
+  setTimeout(pollSide,200);
+}
 
-document.getElementById('cp-next').addEventListener('click', () => {
-  const nextBtn = document.getElementById('cp-next');
-  nextBtn.disabled = true;
-
-  if (popupMode === 'front-normal' || popupMode === 'front-retry'){
-    // Upload front in background, proceed to side
-    S.frontUploadDone = false; S.frontUploadError = null;
-    uploadBlob(S.frontBlob, `${S.uuid}_front.jpg`, 'front');
-    hidePopup();
-    S.phase = 'side';
-    setSilhouette();
-    document.getElementById('cam-phase-label').textContent = 'SIDE VIEW';
-    document.getElementById('height-badge').classList.remove('show');
-  } else {
-    // side-normal or side-retry: upload side, wait for completion
-    S.sideUploadDone = false; S.sideUploadError = null;
-    uploadBlob(S.sideBlob, `${S.uuid}_side.jpg`, 'side');
-    monitorUploads();
-  }
-});
-
-/* ═══════════════════════════════════════════════════════
-   UPLOAD BLOBS (background with retry-on-fail)
-═══════════════════════════════════════════════════════ */
-function uploadBlob(blob, filename, side){
-  const fd = new FormData();
-  fd.append('file', blob, filename);
-  authFetch(CFG.API + '/file', 'POST', fd, true)
-    .then(r => {
-      if (!r.ok) throw new Error('Server ' + r.status);
-      if (side === 'front'){
-        S.frontUploadDone = true; S.frontUploadError = null;
-      } else {
-        S.sideUploadDone = true; S.sideUploadError = null;
-      }
+/* UPLOAD */
+function uploadBlob(blob,filename,side){
+  const fd=new FormData();fd.append('file',blob,filename);
+  apiFetch('/file','POST',fd,true)
+    .then(r=>{
+      if(!r.ok)throw new Error('HTTP '+r.status);
+      if(side==='front'){S.frontDone=true;S.frontErr=null;}
+      else{S.sideDone=true;S.sideErr=null;}
     })
-    .catch(e => {
-      if (side === 'front'){
-        S.frontUploadError = e.message;
-        showUploadError('front', e.message);
-      } else {
-        S.sideUploadError = e.message;
-        showUploadError('side', e.message);
-      }
+    .catch(e=>{
+      if(side==='front'){S.frontErr=e.message;showUploadErr('front',e.message);}
+      else{S.sideErr=e.message;showUploadErr('side',e.message);}
     });
 }
-
-function showUploadError(side, message){
-  const statusEl = document.getElementById('cp-upload-status');
-  if (side === 'front'){
-    // We moved to side view — go back to front and show retry
-    S.phase = 'front';
-    setSilhouette();
-    document.getElementById('cam-phase-label').textContent = 'FRONT VIEW';
-    document.getElementById('height-badge').classList.add('show');
-    if (S.frontBlob){
-      const url = URL.createObjectURL(S.frontBlob);
-      document.getElementById('cp-img').src = url;
-      document.getElementById('cp-label').textContent = 'FRONT VIEW';
-      statusEl.textContent = '⚠ Upload failed — ' + message;
-      statusEl.className = 'cp-upload-status show err';
-      document.getElementById('cp-next').disabled = false;
-      document.getElementById('cp-next').textContent = 'Retry ↻';
-      popupMode = 'front-retry';
-      showScreen('screen-camera');
-      document.getElementById('capture-popup').classList.add('show');
+function showUploadErr(side,msg){
+  const st=g('prev-status');
+  if(side==='front'){
+    S.phase='front';setSil();
+    g('c-phase-lbl').textContent='FRONT VIEW';
+    g('c-hbadge').classList.add('on');
+    if(S.frontBlob){
+      g('prev-img').src=URL.createObjectURL(S.frontBlob);
+      g('prev-label').textContent='FRONT VIEW';
+      st.textContent='Upload failed: '+msg;st.className='prev-status err on';
+      const nb=g('prev-next');nb.textContent='Retry \u21bb';nb.disabled=false;
+      S.popupMode='front-retry';
+      showScreen('s-camera');g('c-preview').classList.add('on');
     }
-  } else {
-    // Side upload failed — bring back camera + side preview
-    S.phase = 'side';
-    setSilhouette();
-    document.getElementById('cam-phase-label').textContent = 'SIDE VIEW';
-    if (S.sideBlob){
-      const url = URL.createObjectURL(S.sideBlob);
-      document.getElementById('cp-img').src = url;
-      document.getElementById('cp-label').textContent = 'SIDE VIEW';
-      statusEl.textContent = '⚠ Upload failed — ' + message;
-      statusEl.className = 'cp-upload-status show err';
-      document.getElementById('cp-next').disabled = false;
-      document.getElementById('cp-next').textContent = 'Retry ↻';
-      popupMode = 'side-retry';
-      showScreen('screen-camera');
-      document.getElementById('capture-popup').classList.add('show');
+  }else{
+    if(S.sideBlob){
+      g('prev-img').src=URL.createObjectURL(S.sideBlob);
+      g('prev-label').textContent='SIDE VIEW';
+      st.textContent='Upload failed: '+msg;st.className='prev-status err on';
+      const nb=g('prev-next');nb.textContent='Retry \u21bb';nb.disabled=false;
+      S.popupMode='side-retry';
+      showScreen('s-camera');g('c-preview').classList.add('on');
     }
   }
 }
 
-function monitorUploads(){
-  const statusEl = document.getElementById('cp-upload-status');
-  const nextBtn  = document.getElementById('cp-next');
-  statusEl.textContent = 'Uploading\u2026';
-  statusEl.className = 'cp-upload-status show';
-  nextBtn.textContent = 'Next \u2192';
-
-  function check(){
-    if (S.sideUploadError) return; // handled in showUploadError
-    if (S.sideUploadDone){
-      hidePopup();
-      goToForm();
-    } else {
-      setTimeout(check, 200);
-    }
-  }
-  check();
+/* FORM */
+function goForm(){
+  stopCam();
+  S.consentOn=false;S.genderVal=null;S.litVal=null;
+  ['f-dob','f-weight','f-height','f-muac'].forEach(id=>g(id).value='');
+  g('f-caste').value='';
+  g('consent-box').classList.remove('on');
+  g('form-submit').disabled=true;
+  g('form-msg').textContent='';g('form-msg').className='form-msg';
+  document.querySelectorAll('.seg-btn').forEach(b=>b.classList.remove('on'));
+  showScreen('s-form');
 }
-
-/* ═══════════════════════════════════════════════════════
-   FORM SCREEN
-═══════════════════════════════════════════════════════ */
-function goToForm(){
-  stopCamera();
-  // Reset form
-  S.consentChecked = false;
-  S.genderVal = null;
-  S.literacyVal = null;
-  document.getElementById('f-dob').value = '';
-  document.getElementById('f-weight').value = '';
-  document.getElementById('f-height').value = '';
-  document.getElementById('f-muac').value = '';
-  document.getElementById('f-caste').value = '';
-  document.getElementById('consent-check').classList.remove('checked');
-  document.getElementById('form-submit').disabled = true;
-  document.getElementById('form-msg').textContent = '';
-  document.getElementById('form-msg').className = 'form-msg';
-  // Reset toggle buttons
-  document.querySelectorAll('.gender-btn').forEach(b => b.classList.remove('on'));
-  document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('on'));
-  showScreen('screen-form');
-}
-
-// Gender buttons
-document.querySelectorAll('.gender-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    S.genderVal = btn.dataset.val;
-    document.querySelectorAll('.gender-btn').forEach(b => b.classList.remove('on'));
-    btn.classList.add('on');
+document.querySelectorAll('#g-male,#g-female').forEach(function(b){
+  b.addEventListener('click',function(){
+    S.genderVal=b.dataset.v;
+    document.querySelectorAll('#g-male,#g-female').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on');
   });
 });
-
-// Literacy buttons
-document.querySelectorAll('#lit-yes, #lit-no').forEach(btn => {
-  btn.addEventListener('click', () => {
-    S.literacyVal = btn.dataset.val;
-    document.querySelectorAll('#lit-yes, #lit-no').forEach(b => b.classList.remove('on'));
-    btn.classList.add('on');
+document.querySelectorAll('#lit-yes,#lit-no').forEach(function(b){
+  b.addEventListener('click',function(){
+    S.litVal=b.dataset.v;
+    document.querySelectorAll('#lit-yes,#lit-no').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on');
   });
 });
-
-// Consent
-document.getElementById('consent-label').addEventListener('click', () => {
-  S.consentChecked = !S.consentChecked;
-  document.getElementById('consent-check').classList.toggle('checked', S.consentChecked);
-  document.getElementById('form-submit').disabled = !S.consentChecked;
+g('consent-row').addEventListener('click',function(){
+  S.consentOn=!S.consentOn;
+  g('consent-box').classList.toggle('on',S.consentOn);
+  g('form-submit').disabled=!S.consentOn;
 });
-
-// Submit
-document.getElementById('form-submit').addEventListener('click', async () => {
-  if (!S.consentChecked) return;
-
-  const submitBtn = document.getElementById('form-submit');
-  const msgEl = document.getElementById('form-msg');
-  submitBtn.disabled = true;
-  msgEl.textContent = 'Submitting…';
-  msgEl.className = 'form-msg';
-
-  // Parse date
-  const dobRaw = document.getElementById('f-dob').value; // yyyy-mm-dd
-  let dobFormatted = '';
-  if (dobRaw){
-    const [y,m,d] = dobRaw.split('-');
-    dobFormatted = `${d}/${m}/${y}`;
-  }
-
-  const payload = {
-    uuid:          S.uuid,
-    timestamp:     new Date().toISOString(),
-    consent:       true,
-    lat:           S.location ? S.location.lat   : null,
-    lon:           S.location ? S.location.lon   : null,
-    location_accuracy_m: S.location ? S.location.accuracy : null,
-    date_of_birth: dobFormatted || null,
-    gender:        S.genderVal  || null,
-    weight_g:      parseFloat(document.getElementById('f-weight').value) || null,
-    height_cm:     parseFloat(document.getElementById('f-height').value) || null,
-    muac_mm:       parseFloat(document.getElementById('f-muac').value)   || null,
-    female_literacy: S.literacyVal || null,
-    caste:         document.getElementById('f-caste').value || null,
+g('form-submit').addEventListener('click',async function(){
+  if(!S.consentOn)return;
+  const sb=g('form-submit'),msg=g('form-msg');
+  sb.disabled=true;msg.textContent='Submitting\u2026';msg.className='form-msg';
+  const dobRaw=g('f-dob').value;
+  let dob='';
+  if(dobRaw){const parts=dobRaw.split('-');dob=parts[2]+'/'+parts[1]+'/'+parts[0];}
+  const payload={
+    uuid:S.uuid,
+    timestamp:new Date().toISOString(),
+    consent:true,
+    lat:S.location?S.location.lat:null,
+    lon:S.location?S.location.lon:null,
+    location_accuracy_m:S.location?S.location.acc:null,
+    date_of_birth:dob||null,
+    gender:S.genderVal||null,
+    weight_g:parseFloat(g('f-weight').value)||null,
+    height_cm:parseFloat(g('f-height').value)||null,
+    muac_mm:parseFloat(g('f-muac').value)||null,
+    female_literacy:S.litVal||null,
+    caste:g('f-caste').value||null,
   };
-
-  try {
-    const r = await authFetch(CFG.API + '/data', 'POST', payload, false);
-    if (!r.ok){
-      const body = await r.text();
-      throw new Error(`Server ${r.status}: ${body}`);
-    }
-    msgEl.textContent = 'Submitted successfully!';
-    msgEl.className = 'form-msg ok';
-    setTimeout(() => goToSession(), 1200);
-  } catch(e){
-    msgEl.textContent = 'Submission failed: ' + e.message;
-    msgEl.className = 'form-msg err';
-    submitBtn.disabled = false;
+  try{
+    const r=await apiFetch('/data','POST',payload,false);
+    if(!r.ok){const t=await r.text();throw new Error(r.status+': '+t);}
+    msg.textContent='Submitted.';msg.className='form-msg ok';
+    setTimeout(()=>goSession(),1000);
+  }catch(e){
+    msg.textContent='Failed: '+e.message;msg.className='form-msg err';
+    sb.disabled=false;
   }
 });
+g('h-reset').addEventListener('click',()=>goSession());
 
-/* ═══════════════════════════════════════════════════════
-   RESET BUTTON (form screen only)
-═══════════════════════════════════════════════════════ */
-document.getElementById('topbar-reset').addEventListener('click', () => {
-  goToSession();
-});
-
-/* ═══════════════════════════════════════════════════════
-   BOOT
-═══════════════════════════════════════════════════════ */
-// Init sensors
-if (typeof DeviceOrientationEvent !== 'undefined'){
-  if (typeof DeviceOrientationEvent.requestPermission !== 'function'){
-    window.addEventListener('deviceorientation', handleOrientation);
-  }
-} else { S.checks.level = true; }
-
-if (typeof DeviceMotionEvent !== 'undefined'){
-  if (typeof DeviceMotionEvent.requestPermission !== 'function'){
-    window.addEventListener('devicemotion', handleMotion);
-  }
-} else { S.checks.steady = true; }
-
-// Start GIS
-showScreen('screen-home');
-initGIS();
+/* BOOT */
+if(typeof DeviceOrientationEvent!=='undefined'&&typeof DeviceOrientationEvent.requestPermission!=='function'){
+  window.addEventListener('deviceorientation',onOrientation);
+}
+if(typeof DeviceMotionEvent!=='undefined'&&typeof DeviceMotionEvent.requestPermission!=='function'){
+  window.addEventListener('devicemotion',onMotion);
+}
+showScreen('s-setup');
+runSetup();
 
 })();
 </script>

@@ -185,10 +185,10 @@ html,body{
 .mpb{padding:4px 12px;border-radius:16px;border:none;font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:0.5px;cursor:pointer;background:transparent;color:var(--text3);transition:all 0.15s;}
 .mpb.on{background:var(--accent);color:#fff;}
 #h-display{display:flex;gap:0;border-bottom:1px solid var(--line);}
-.h-box{flex:1;padding:10px 14px;display:flex;flex-direction:column;gap:2px;border-right:1px solid var(--line);}
+.h-box{flex:1;padding:8px 10px;display:flex;flex-direction:column;gap:2px;border-right:1px solid var(--line);}
 .h-box:last-child{border-right:none;}
 .h-lbl{font-family:var(--mono);font-size:10px;letter-spacing:1.5px;color:var(--text3);text-transform:uppercase;}
-.h-val{font-size:22px;font-weight:600;color:var(--text);font-family:var(--mono);}
+.h-val{font-size:18px;font-weight:600;color:var(--text);font-family:var(--mono);}
 .h-val.dim{color:var(--text3);font-weight:400;}
 #chips-row{display:flex;gap:6px;padding:8px 14px;overflow-x:auto;-webkit-overflow-scrolling:touch;border-bottom:1px solid var(--line);scrollbar-width:none;}
 #chips-row::-webkit-scrollbar{display:none;}
@@ -371,12 +371,16 @@ select.f-in{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns
       </div>
       <div id="h-display">
         <div class="h-box">
-          <div class="h-lbl">Height Est.</div>
+          <div class="h-lbl">Height</div>
           <div class="h-val dim" id="hval-cur">&mdash;</div>
         </div>
         <div class="h-box">
-          <div class="h-lbl" id="hval-saved-lbl">Front Saved</div>
-          <div class="h-val dim" id="hval-saved">&mdash;</div>
+          <div class="h-lbl">Pp</div>
+          <div class="h-val dim" id="hval-pp">&mdash;</div>
+        </div>
+        <div class="h-box">
+          <div class="h-lbl">Pc</div>
+          <div class="h-val dim" id="hval-pc">&mdash;</div>
         </div>
       </div>
       <div id="chips-row">
@@ -418,7 +422,7 @@ select.f-in{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns
           <div class="seg"><button class="seg-btn" id="lit-yes" data-v="yes">Yes</button><button class="seg-btn" id="lit-no" data-v="no">No</button></div>
         </div>
         <div class="form-field">
-          <label class="f-lbl" for="f-caste">Caste Category</label>
+          <label class="f-lbl" for="f-caste">Social Group</label>
           <select class="f-in" id="f-caste">
             <option value="">&mdash; Select &mdash;</option>
             <option>Scheduled Caste</option><option>Scheduled Tribe</option>
@@ -463,7 +467,7 @@ const C={
   TV_CDN:       'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision',
   TV_WASM:      'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision/wasm',
   MODEL_URL:    'https://storage.googleapis.com/mediapipe-models/holistic_landmarker/holistic_landmarker/float16/latest/holistic_landmarker.task',
-  MODEL_CACHE:  'aimm-holistic-v4',
+  MODEL_CACHE:  'aimm-holistic',
   CAM_H_DEFAULT:70,
   CAM_H_KEY:    'aimm.camh',
   TOKEN_KEY:    'aimm.token',
@@ -864,11 +868,10 @@ function beginCapture(phase){
   S.phase=phase;
   updatePoseSil();
   g('cam-phase-lbl').textContent=phase==='front'?'FRONT VIEW':'SIDE VIEW';
-  g('hval-saved-lbl').textContent=phase==='front'?'Side Saved':'Front Saved';
-  const savedH=phase==='front'?S.sideHeight:S.frontHeight;
-  g('hval-saved').textContent=savedH?savedH.toFixed(1)+' cm':'\u2014';
-  g('hval-saved').className=savedH?'h-val':'h-val dim';
+  // reset realtime displays
   g('hval-cur').textContent='\u2014';g('hval-cur').className='h-val dim';
+  g('hval-pp').textContent='\u2014';g('hval-pp').className='h-val dim';
+  g('hval-pc').textContent='\u2014';g('hval-pc').className='h-val dim';
   if(!S.mpReady)activateNoPose();
   showScreen('s-camera');
   startCam();
@@ -987,7 +990,14 @@ function onHolisticResults(result){
     updateHBadge(null);
   }
 
-  /* 2 ── Pose skeleton + landmarks ──────────────────────────────────────── */
+  /* 2 ── Overlay: 5 separate layers, each with distinct default colors ────
+     Layer order (bottom to top on pCvs):
+       1. Face mesh tesselation  — blue  #4882ff  (subtle, behind everything)
+       2. Face contours/features — cyan eyes, red lips, blue oval
+       3. Face landmark dots     — white small
+       4. Pose skeleton          — green #00DC96
+       5. Hand landmarks         — left=amber, right=purple
+  ──────────────────────────────────────────────────────────────────────── */
   pCtx.save();
   pCtx.clearRect(0,0,pCvs.width,pCvs.height);
 
@@ -996,43 +1006,79 @@ function onHolisticResults(result){
   const lh=result.leftHandLandmarks&&result.leftHandLandmarks[0];
   const rh=result.rightHandLandmarks&&result.rightHandLandmarks[0];
 
-  if(face&&S.drawUtils){
-    // Face tesselation — subtle blue
-    pCtx.globalAlpha=0.18;
-    S.drawUtils.drawConnectors(face,TESSELATION()||[],{color:'#4882ff',lineWidth:0.5});
+  /* Layer 1: Face mesh tesselation — very subtle blue grid */
+  if(face&&S.drawUtils&&TESSELATION()){
+    pCtx.globalAlpha=0.12;
+    S.drawUtils.drawConnectors(face,TESSELATION(),{color:'#4882ff',lineWidth:0.5});
     pCtx.globalAlpha=1;
-    // Face oval
-    S.drawUtils.drawConnectors(face,FACE_OVAL()||[],{color:'rgba(72,130,255,0.6)',lineWidth:1.2});
-    // Eye contours cyan
-    S.drawUtils.drawConnectors(face,L_EYE()||[],{color:'rgba(0,220,175,0.8)',lineWidth:1.3});
-    S.drawUtils.drawConnectors(face,R_EYE()||[],{color:'rgba(0,220,175,0.8)',lineWidth:1.3});
-    // Lips
-    S.drawUtils.drawConnectors(face,LIPS()||[],{color:'rgba(245,80,90,0.65)',lineWidth:1.4});
-    // Face dots
-    S.drawUtils.drawLandmarks(face,{color:'rgba(255,255,255,0.25)',fillColor:'rgba(72,130,255,0.3)',lineWidth:0,radius:0.8});
   }
 
+  /* Layer 2a: Face oval — solid blue */
+  if(face&&S.drawUtils&&FACE_OVAL()){
+    S.drawUtils.drawConnectors(face,FACE_OVAL(),{color:'rgba(72,130,255,0.65)',lineWidth:1.5});
+  }
+
+  /* Layer 2b: Eye contours — cyan */
+  if(face&&S.drawUtils){
+    if(L_EYE())S.drawUtils.drawConnectors(face,L_EYE(),{color:'rgba(0,220,175,0.85)',lineWidth:1.4});
+    if(R_EYE())S.drawUtils.drawConnectors(face,R_EYE(),{color:'rgba(0,220,175,0.85)',lineWidth:1.4});
+  }
+
+  /* Layer 2c: Lip contours — red */
+  if(face&&S.drawUtils&&LIPS()){
+    S.drawUtils.drawConnectors(face,LIPS(),{color:'rgba(248,80,80,0.75)',lineWidth:1.5});
+  }
+
+  /* Layer 3: Face landmark dots — small white dots */
+  if(face&&S.drawUtils){
+    S.drawUtils.drawLandmarks(face,{
+      color:'rgba(255,255,255,0.7)',
+      fillColor:'rgba(72,130,255,0.35)',
+      lineWidth:0,
+      radius:1.2,
+    });
+  }
+
+  /* Layer 4: Pose skeleton — green connectors + teal-green dots */
   if(pose&&S.drawUtils){
     S.lastPose=pose;S.lastFace=face||null;
     const lw=Math.max(2,pCvs.width*0.004);
-    S.drawUtils.drawConnectors(pose,POSE_CONN()||[],{color:'rgba(0,220,175,0.85)',lineWidth:lw});
-    S.drawUtils.drawLandmarks(pose,{color:'rgba(255,255,255,0.9)',fillColor:'rgba(0,220,175,1)',lineWidth:1,radius:d=>{const z=(d&&d.from)?d.from.z:0;return Math.max(2,5-z*8);}});
+    if(POSE_CONN()){
+      S.drawUtils.drawConnectors(pose,POSE_CONN(),{color:'rgba(0,220,150,0.9)',lineWidth:lw});
+    }
+    S.drawUtils.drawLandmarks(pose,{
+      color:'rgba(255,255,255,0.9)',
+      fillColor:'rgba(0,232,130,1)',
+      lineWidth:1,
+      radius:d=>{const z=(d&&d.from)?d.from.z:0;return Math.max(2,5-z*8);},
+    });
     runChecks(pose);
   }else{
     S.lastPose=null;
     S.checks.body=false;S.checks.dist=false;S.checks.pose=false;
   }
 
-  if(lh&&S.drawUtils){
-    S.drawUtils.drawConnectors(lh,HAND_CONN()||[],{color:'rgba(240,185,50,0.9)',lineWidth:1.8});
-    S.drawUtils.drawLandmarks(lh,{color:'rgba(240,185,50,0.9)',fillColor:'rgba(240,185,50,0.2)',lineWidth:0,radius:2.5});
-  }
-  if(rh&&S.drawUtils){
-    S.drawUtils.drawConnectors(rh,HAND_CONN()||[],{color:'rgba(176,96,240,0.9)',lineWidth:1.8});
-    S.drawUtils.drawLandmarks(rh,{color:'rgba(176,96,240,0.9)',fillColor:'rgba(176,96,240,0.2)',lineWidth:0,radius:2.5});
+  /* Layer 5a: Left hand — amber */
+  if(lh&&S.drawUtils&&HAND_CONN()){
+    S.drawUtils.drawConnectors(lh,HAND_CONN(),{color:'rgba(240,185,50,0.9)',lineWidth:2});
+    S.drawUtils.drawLandmarks(lh,{
+      color:'rgba(240,185,50,0.95)',
+      fillColor:'rgba(240,185,50,0.25)',
+      lineWidth:0,radius:3,
+    });
   }
 
-  // Draw Pc reference line (top point marker) on pCvs
+  /* Layer 5b: Right hand — purple */
+  if(rh&&S.drawUtils&&HAND_CONN()){
+    S.drawUtils.drawConnectors(rh,HAND_CONN(),{color:'rgba(176,96,240,0.9)',lineWidth:2});
+    S.drawUtils.drawLandmarks(rh,{
+      color:'rgba(176,96,240,0.95)',
+      fillColor:'rgba(176,96,240,0.25)',
+      lineWidth:0,radius:3,
+    });
+  }
+
+  // Draw × marker at top of measured height span
   drawHeightOverlay();
 
   pCtx.restore();
@@ -1105,38 +1151,39 @@ function computeHeightFromMask(f32,mW,mH,dispW,dispH){
 
 function updateHBadge(hcm){
   const el=g('hval-cur');
-  if(hcm===null){el.textContent='\u2014';el.className='h-val dim';S._lastHcm=null;}
-  else{el.textContent=hcm.toFixed(1)+' cm';el.className='h-val';S._lastHcm=hcm;}
+  if(hcm===null){
+    el.textContent='\u2014';el.className='h-val dim';S._lastHcm=null;
+    g('hval-pp').textContent='\u2014';g('hval-pp').className='h-val dim';
+    g('hval-pc').textContent='\u2014';g('hval-pc').className='h-val dim';
+  }else{
+    el.textContent=hcm.toFixed(1)+' cm';el.className='h-val';S._lastHcm=hcm;
+    // Pp and Pc are stored as normalised (0-1); display as percentage of frame
+    if(S._lastPpNorm!==null){
+      g('hval-pp').textContent=(S._lastPpNorm*100).toFixed(1)+'%';
+      g('hval-pp').className='h-val';
+    }
+    if(S._lastPcNorm!==null){
+      g('hval-pc').textContent=(S._lastPcNorm*100).toFixed(1)+'%';
+      g('hval-pc').className='h-val';
+    }
+  }
 }
 
-/* Draw top-point marker (×) and Pc line on the overlay canvas */
+/* Draw top-point marker (×) only — marks the top of the measured Pp span */
 function drawHeightOverlay(){
   if(S._lastTopRow===null||S._lastMH===null)return;
   const dispH=pCvs.height,dispW=pCvs.width;
   const topPx=(S._lastTopRow/S._lastMH)*dispH;
-  const botPx=(S._lastBotRow/S._lastMH)*dispH;
-  const midPx=dispH/2;
+  // Find horizontal centre of the person mask at topRow for better × placement
   const cx=dispW/2;
-
-  // Top point × marker — amber, centred on person top
-  const r=8;
+  const r=9;
   pCtx.save();
-  pCtx.strokeStyle='rgba(255,200,50,0.95)';pCtx.lineWidth=2.5;
+  pCtx.strokeStyle='rgba(255,210,50,0.95)';
+  pCtx.lineWidth=2.5;
+  pCtx.lineCap='round';
+  // × cross
   pCtx.beginPath();pCtx.moveTo(cx-r,topPx-r);pCtx.lineTo(cx+r,topPx+r);pCtx.stroke();
   pCtx.beginPath();pCtx.moveTo(cx+r,topPx-r);pCtx.lineTo(cx-r,topPx+r);pCtx.stroke();
-  // Small label
-  pCtx.fillStyle='rgba(255,200,50,0.85)';pCtx.font='bold 10px DM Mono,monospace';
-  pCtx.fillText('TOP',cx+r+3,topPx+4);
-
-  // Pc dashed line — from mid to bot
-  pCtx.setLineDash([6,4]);
-  pCtx.strokeStyle='rgba(255,200,50,0.5)';pCtx.lineWidth=1.5;
-  pCtx.beginPath();pCtx.moveTo(cx,midPx);pCtx.lineTo(cx,botPx);pCtx.stroke();
-  pCtx.setLineDash([]);
-  // midpoint tick
-  pCtx.strokeStyle='rgba(255,200,50,0.7)';pCtx.lineWidth=2;
-  pCtx.beginPath();pCtx.moveTo(cx-10,midPx);pCtx.lineTo(cx+10,midPx);pCtx.stroke();
-  pCtx.fillText('Pc',cx+12,midPx+4);
   pCtx.restore();
 }
 
@@ -1309,10 +1356,9 @@ g('prev-next').addEventListener('click',()=>{
     hidePreview();
     S.phase='side';updatePoseSil();
     g('cam-phase-lbl').textContent='SIDE VIEW';
-    g('hval-saved-lbl').textContent='Front Saved';
-    g('hval-saved').textContent=S.frontHeight?S.frontHeight.toFixed(1)+' cm':'\u2014';
-    g('hval-saved').className=S.frontHeight?'h-val':'h-val dim';
     g('hval-cur').textContent='\u2014';g('hval-cur').className='h-val dim';
+    g('hval-pp').textContent='\u2014';g('hval-pp').className='h-val dim';
+    g('hval-pc').textContent='\u2014';g('hval-pc').className='h-val dim';
   }else{
     S.sideDone=false;S.sideErr=null;
     uploadBlob(S.sideBlob,S.uuid+'_side.jpg','side');

@@ -219,11 +219,13 @@ html,body{
   width:100%;height:100%;
   object-fit:cover;
 }
-#c-canvas{
+#c-mask,#c-pose{
   position:absolute;inset:0;
   width:100%;height:100%;
   pointer-events:none;
 }
+#c-mask{z-index:1;}
+#c-pose{z-index:2;}
 /* Pose guide card — bottom-left corner of viewport */
 #pose-card{
   position:absolute;bottom:8px;left:8px;z-index:10;
@@ -541,7 +543,8 @@ select.f-in{
   <div class="screen" id="s-camera">
     <div id="cam-viewport">
       <video id="vid" autoplay playsinline muted></video>
-      <canvas id="c-canvas"></canvas>
+      <canvas id="c-mask"></canvas>
+      <canvas id="c-pose"></canvas>
       <div id="pose-card"><svg id="pose-sil" viewBox="0 0 60 80" fill="none" xmlns="http://www.w3.org/2000/svg"></svg></div>
       <div id="c-flash"></div>
     </div>
@@ -1014,16 +1017,19 @@ g('cam-reset').addEventListener('click',newSession);
 
 /* ── CAMERA ── */
 const vid=g('vid');
-const cvs=g('c-canvas');
-const ctx=cvs.getContext('2d');
+const mCvs=g('c-mask');   // body segmentation mask canvas
+const pCvs=g('c-pose');   // skeleton/face/hands canvas
+const mCtx=mCvs.getContext('2d');
+const pCtx=pCvs.getContext('2d');
 // Brightness sampling canvas
 const bCvs=document.createElement('canvas');bCvs.width=32;bCvs.height=32;
 const bCtx=bCvs.getContext('2d',{willReadFrequently:true});
 
 function syncCanvasSize(){
-  const w=cvs.parentElement.clientWidth||cvs.offsetWidth||1;
-  const h=cvs.parentElement.clientHeight||cvs.offsetHeight||1;
-  if(cvs.width!==w||cvs.height!==h){cvs.width=w;cvs.height=h;}
+  const w=mCvs.parentElement.clientWidth||mCvs.offsetWidth||1;
+  const h=mCvs.parentElement.clientHeight||mCvs.offsetHeight||1;
+  if(mCvs.width!==w||mCvs.height!==h){mCvs.width=w;mCvs.height=h;}
+  if(pCvs.width!==w||pCvs.height!==h){pCvs.width=w;pCvs.height=h;}
 }
 function sizeCamViewport(){
   const vp=g('cam-viewport');
@@ -1033,7 +1039,7 @@ function sizeCamViewport(){
   vp.style.height=vpH+'px';
   syncCanvasSize();
 }
-if(window.ResizeObserver){new ResizeObserver(()=>{if(S.camRunning)syncCanvasSize();}).observe(cvs);}
+if(window.ResizeObserver){new ResizeObserver(()=>{if(S.camRunning)syncCanvasSize();}).observe(mCvs);}
 
 function beginCapture(phase){
   S.phase=phase;
@@ -1085,7 +1091,8 @@ function camTick(){
     S.lastVideoTime=vid.currentTime;
     S.holistic.send({image:vid}).catch(()=>{});
   }else if(!S.mpReady){
-    ctx.clearRect(0,0,cvs.width,cvs.height);
+    mCtx.clearRect(0,0,mCvs.width,mCvs.height);
+    pCtx.clearRect(0,0,pCvs.width,pCvs.height);
     updateUI();
   }
   requestAnimationFrame(camTick);
@@ -1094,7 +1101,7 @@ function camTick(){
 /* Compute cover-crop offsets so landmarks map correctly to canvas pixels */
 function computeCrop(){
   const vW=vid.videoWidth,vH=vid.videoHeight;
-  const cW=cvs.width,cH=cvs.height;
+  const cW=mCvs.width,cH=mCvs.height;
   if(!vW||!vH||!cW||!cH){S.cropL=0;S.cropT=0;S.cropW=1;S.cropH=1;return;}
   S.vidW=vW;S.vidH=vH;
   const vAR=vW/vH,cAR=cW/cH;
@@ -1105,97 +1112,169 @@ function computeCrop(){
   S.cropL=sx/vW;S.cropT=sy/vH;S.cropW=sW/vW;S.cropH=sH/vH;
 }
 
-/* ── HOLISTIC RESULTS — overlay uses ar.html colour scheme ── */
-// Face oval indices
+/* ── HOLISTIC RESULTS ── */
+// Face oval/eye/lip index arrays for manual mesh drawing
 const FOVAL=[10,338,297,332,284,251,389,356,454,323,361,288,397,365,379,378,400,377,152,148,176,149,150,136,172,58,132,93,234,127,162,21,54,103,67,109];
 const FLEYE=[33,7,163,144,145,153,154,155,133,173,157,158,159,160,161,246];
 const FREYE=[362,382,381,380,374,373,390,249,263,466,388,387,386,385,384,398];
 const FLIPS=[61,185,40,39,37,0,267,269,270,409,291,375,321,405,314,17,84,181,91,146];
 
-function lx(lm){return((lm.x-S.cropL)/S.cropW)*cvs.width;}
-function ly(lm){return((lm.y-S.cropT)/S.cropH)*cvs.height;}
+// Map normalized landmark to canvas pixel — accounts for video cover-crop
+function lx(lm){return((lm.x-S.cropL)/S.cropW)*pCvs.width;}
+function ly(lm){return((lm.y-S.cropT)/S.cropH)*pCvs.height;}
 
 function onHolisticResults(res){
   if(!S.camRunning)return;
-  ctx.clearRect(0,0,cvs.width,cvs.height);
 
-  const hasP=!!(res.poseLandmarks&&res.poseLandmarks.length);
-  const hasF=!!(res.faceLandmarks&&res.faceLandmarks.length);
+  const W=mCvs.width, H=mCvs.height;
 
-  /* 1. Body segmentation mask — teal tint
-     Legacy @mediapipe/holistic returns segmentationMask as HTMLCanvasElement or ImageBitmap.
-     Draw it directly as a mask — no .getAsFloat32Array(), no .close(). */
+  // ── 1. Body segmentation mask ───────────────────────────────────────────
+  // res.segmentationMask is HTMLCanvasElement whose natural size = full video frame
+  // We must draw only the cover-crop region to match what the video element shows
+  mCtx.clearRect(0,0,W,H);
   if(res.segmentationMask){
-    // Draw mask into an offscreen canvas, then composite teal colour over it
     const mask=res.segmentationMask;
+    const mW=mask.width||vid.videoWidth||W;
+    const mH=mask.height||vid.videoHeight||H;
+    // Source rect = the crop region inside the full video frame
+    const sx=S.cropL*mW, sy=S.cropT*mH;
+    const sw=S.cropW*mW, sh=S.cropH*mH;
+
+    // Draw cropped mask into offscreen, composite teal fill, paste to mCvs
     const tmp=document.createElement('canvas');
-    tmp.width=cvs.width;tmp.height=cvs.height;
+    tmp.width=W; tmp.height=H;
     const tc=tmp.getContext('2d');
-    tc.drawImage(mask,0,0,cvs.width,cvs.height);
-    // Use mask as alpha: where mask is white (person) apply teal tint
+    // Draw only the visible crop of the mask scaled to full canvas
+    tc.drawImage(mask, sx,sy,sw,sh, 0,0,W,H);
+    // Composite: keep alpha from mask, fill with teal colour
     tc.globalCompositeOperation='source-in';
-    tc.fillStyle='rgba(0,220,180,0.38)';
-    tc.fillRect(0,0,cvs.width,cvs.height);
-    ctx.drawImage(tmp,0,0);
+    tc.fillStyle='rgba(0,220,180,0.42)';
+    tc.fillRect(0,0,W,H);
+    mCtx.drawImage(tmp,0,0);
   }
 
-  /* 2. Face mesh — blue fill + contours (from ar.html) */
+  // ── 2. Pose canvas: face mesh + pose skeleton + hands ───────────────────
+  pCtx.save();
+  pCtx.clearRect(0,0,pCvs.width,pCvs.height);
+
+  const hasF=!!(res.faceLandmarks&&res.faceLandmarks.length);
+  const hasP=!!(res.poseLandmarks&&res.poseLandmarks.length);
+
+  // ── 2a. Face mesh — blue fill + contours ─────────────────────────────
   if(hasF){
     const L=res.faceLandmarks;
-    ctx.beginPath();
-    FOVAL.forEach((i,j)=>{if(!L[i])return;j===0?ctx.moveTo(lx(L[i]),ly(L[i])):ctx.lineTo(lx(L[i]),ly(L[i]));});
-    ctx.closePath();
-    ctx.fillStyle='rgba(72,130,255,.18)';ctx.fill();
-    ctx.strokeStyle='rgba(72,130,255,.6)';ctx.lineWidth=1.2;ctx.stroke();
-    const contour=(pts,col,lw)=>{
-      ctx.beginPath();
-      pts.forEach((i,j)=>{if(!L[i])return;j===0?ctx.moveTo(lx(L[i]),ly(L[i])):ctx.lineTo(lx(L[i]),ly(L[i]));});
-      ctx.strokeStyle=col;ctx.lineWidth=lw||1;ctx.stroke();
-    };
-    contour(FLEYE,'rgba(0,220,175,.7)');contour(FREYE,'rgba(0,220,175,.7)');contour(FLIPS,'rgba(245,80,90,.55)');
+
+    // Face oval filled
+    pCtx.beginPath();
+    FOVAL.forEach((i,j)=>{
+      if(!L[i])return;
+      j===0?pCtx.moveTo(lx(L[i]),ly(L[i])):pCtx.lineTo(lx(L[i]),ly(L[i]));
+    });
+    pCtx.closePath();
+    pCtx.fillStyle='rgba(72,130,255,0.18)';
+    pCtx.fill();
+    pCtx.strokeStyle='rgba(72,130,255,0.55)';
+    pCtx.lineWidth=1.2;
+    pCtx.stroke();
+
+    // Eye contours — cyan
+    function contour(pts,col,lw){
+      pCtx.beginPath();
+      pts.forEach((i,j)=>{
+        if(!L[i])return;
+        j===0?pCtx.moveTo(lx(L[i]),ly(L[i])):pCtx.lineTo(lx(L[i]),ly(L[i]));
+      });
+      pCtx.closePath();
+      pCtx.strokeStyle=col; pCtx.lineWidth=lw||1; pCtx.stroke();
+    }
+    contour(FLEYE,'rgba(0,220,175,0.80)',1.2);
+    contour(FREYE,'rgba(0,220,175,0.80)',1.2);
+    contour(FLIPS,'rgba(245,80,90,0.65)',1.4);
+
+    // Face landmark dots — tiny white
+    L.forEach(lm=>{
+      if(!lm)return;
+      pCtx.beginPath();
+      pCtx.arc(lx(lm),ly(lm),1,0,Math.PI*2);
+      pCtx.fillStyle='rgba(255,255,255,0.25)';
+      pCtx.fill();
+    });
   }
 
-  /* 3. Pose skeleton — green/teal (from ar.html) */
+  // ── 2b. Pose skeleton — teal connectors + landmarks ──────────────────
   if(hasP){
     const L=res.poseLandmarks;
-    S.lastPose=L;S.lastFace=res.faceLandmarks||null;
-    ctx.strokeStyle='rgba(0,220,175,.85)';ctx.lineWidth=2.5;
+    S.lastPose=L; S.lastFace=res.faceLandmarks||null;
+    const lw=Math.max(2,pCvs.width*0.004);
+
+    // Connectors
+    pCtx.strokeStyle='rgba(0,220,175,0.85)';
+    pCtx.lineWidth=lw;
     if(window.POSE_CONNECTIONS){
       POSE_CONNECTIONS.forEach(([a,b])=>{
         const la=L[a],lb=L[b];
-        if(!la||!lb||(la.visibility!==undefined?la.visibility:1)<0.3||(lb.visibility!==undefined?lb.visibility:1)<0.3)return;
-        ctx.beginPath();ctx.moveTo(lx(la),ly(la));ctx.lineTo(lx(lb),ly(lb));ctx.stroke();
+        if(!la||!lb)return;
+        pCtx.beginPath();
+        pCtx.moveTo(lx(la),ly(la));
+        pCtx.lineTo(lx(lb),ly(lb));
+        pCtx.stroke();
       });
     }
+    // Landmarks — white dot with teal fill
     L.forEach(lm=>{
-      if(!lm||(lm.visibility!==undefined?lm.visibility:1)<0.25)return;
-      ctx.beginPath();ctx.arc(lx(lm),ly(lm),3.5,0,Math.PI*2);
-      ctx.fillStyle='rgba(0,232,184,1)';ctx.fill();
+      if(!lm)return;
+      pCtx.beginPath();
+      pCtx.arc(lx(lm),ly(lm),3.5,0,Math.PI*2);
+      pCtx.fillStyle='rgba(0,232,184,1)';
+      pCtx.fill();
+      pCtx.strokeStyle='rgba(255,255,255,0.7)';
+      pCtx.lineWidth=1;
+      pCtx.stroke();
     });
+
     runChecks(L);
     computeHeight();
   }else{
     S.lastPose=null;
-    S.checks.body=false;S.checks.dist=false;S.checks.pose=false;
+    S.checks.body=false; S.checks.dist=false; S.checks.pose=false;
   }
 
-  /* 4. Hands — left=amber, right=purple (from ar.html) */
-  function drawHand(lms,col,fill){
-    ctx.beginPath();
-    [0,1,5,9,13,17,0].forEach((i,j)=>{if(!lms[i])return;j===0?ctx.moveTo(lx(lms[i]),ly(lms[i])):ctx.lineTo(lx(lms[i]),ly(lms[i]));});
-    ctx.fillStyle=fill;ctx.fill();
+  // ── 2c. Hands — left=amber, right=purple ─────────────────────────────
+  function drawHand(lms,col,fillCol){
+    if(!lms||!lms.length)return;
+    // Palm outline
+    pCtx.beginPath();
+    [0,1,5,9,13,17,0].forEach((i,j)=>{
+      if(!lms[i])return;
+      j===0?pCtx.moveTo(lx(lms[i]),ly(lms[i])):pCtx.lineTo(lx(lms[i]),ly(lms[i]));
+    });
+    pCtx.closePath();
+    pCtx.fillStyle=fillCol; pCtx.fill();
+    // Finger connectors
     if(window.HAND_CONNECTIONS){
-      ctx.strokeStyle=col;ctx.lineWidth=1.8;
-      HAND_CONNECTIONS.forEach(([a,b])=>{ctx.beginPath();ctx.moveTo(lx(lms[a]),ly(lms[a]));ctx.lineTo(lx(lms[b]),ly(lms[b]));ctx.stroke();});
+      pCtx.strokeStyle=col; pCtx.lineWidth=1.8;
+      HAND_CONNECTIONS.forEach(([a,b])=>{
+        if(!lms[a]||!lms[b])return;
+        pCtx.beginPath();
+        pCtx.moveTo(lx(lms[a]),ly(lms[a]));
+        pCtx.lineTo(lx(lms[b]),ly(lms[b]));
+        pCtx.stroke();
+      });
     }
-    lms.forEach(lm=>{ctx.beginPath();ctx.arc(lx(lm),ly(lm),2.5,0,Math.PI*2);ctx.fillStyle=col;ctx.fill();});
+    // Knuckle dots
+    lms.forEach(lm=>{
+      if(!lm)return;
+      pCtx.beginPath();
+      pCtx.arc(lx(lm),ly(lm),2.5,0,Math.PI*2);
+      pCtx.fillStyle=col; pCtx.fill();
+    });
   }
-  if(res.leftHandLandmarks&&res.leftHandLandmarks.length)drawHand(res.leftHandLandmarks,'rgba(240,185,50,.9)','rgba(240,185,50,.12)');
-  if(res.rightHandLandmarks&&res.rightHandLandmarks.length)drawHand(res.rightHandLandmarks,'rgba(176,96,240,.9)','rgba(176,96,240,.12)');
+  drawHand(res.leftHandLandmarks, 'rgba(240,185,50,0.9)','rgba(240,185,50,0.12)');
+  drawHand(res.rightHandLandmarks,'rgba(176,96,240,0.9)','rgba(176,96,240,0.12)');
 
+  pCtx.restore();
   updateUI();
 }
-
 /* ── HEIGHT ESTIMATION (Pp/Pc geometry, same for front and side) ── */
 function computeHeight(){
   const fl=S.lastFace,pl=S.lastPose;
@@ -1210,7 +1289,7 @@ function computeHeight(){
   // Map to display coords accounting for cover crop
   const topDisp=(topNorm-S.cropT)/S.cropH;
   const botDisp=(botNorm-S.cropT)/S.cropH;
-  const dispH=cvs.height;
+  const dispH=pCvs.height;
   const Pp=(botDisp-topDisp)*dispH;
   const Pc=(botDisp-0.5)*dispH;
   if(Pc<=0||Pp<=0){updateHBadge(null);return;}

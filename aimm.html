@@ -656,6 +656,8 @@ select.f-in{
 (function(){
 'use strict';
 
+function g(id){return document.getElementById(id);}
+
 const C={
   API:'https://aimm-450300910281.asia-south1.run.app',
   GID:'450300910281-c42g9vc3q8f27la48e2j5vc6428nk7sj.apps.googleusercontent.com',
@@ -720,7 +722,6 @@ function chkDev(){
 chkDev();addEventListener('resize',chkDev);
 
 /* ── HELPERS ── */
-function g(id){return document.getElementById(id);}
 
 function showScreen(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
@@ -730,32 +731,6 @@ function showScreen(id){
   g('h-signout').classList.toggle('hidden',!isSess&&id!=='s-form');
   g('h-reset').classList.toggle('hidden',id!=='s-form');
   if(isCam)sizeCamViewport();
-}
-
-function sizeCamViewport(){
-  // Camera screen: header is hidden, so we use full window height
-  // viewport is 3:4 portrait; remaining space goes to controls panel
-  const vp=g('cam-viewport');
-  const panel=g('cam-panel');
-  const winH=window.innerHeight;
-  const winW=window.innerWidth;
-  // 3:4 means width * 4/3 = height
-  let vpH=Math.round(winW*4/3);
-  if(vpH>winH*0.62)vpH=Math.round(winH*0.62); // leave at least 38% for controls
-  vp.style.height=vpH+'px';
-  // Sync canvas pixel buffer to actual display size
-  syncCanvasSize();
-}
-
-function syncCanvasSize(){
-  const w=cvs.parentElement.clientWidth||cvs.offsetWidth||1;
-  const h=cvs.parentElement.clientHeight||cvs.offsetHeight||1;
-  if(cvs.width!==w||cvs.height!==h){cvs.width=w;cvs.height=h;}
-}
-
-// Keep canvas in sync if layout changes
-if(window.ResizeObserver){
-  new ResizeObserver(()=>{if(S.camRunning)syncCanvasSize();}).observe(cvs);
 }
 
 function setStep(id,state,msg){
@@ -1044,6 +1019,21 @@ const ctx=cvs.getContext('2d');
 // Brightness sampling canvas
 const bCvs=document.createElement('canvas');bCvs.width=32;bCvs.height=32;
 const bCtx=bCvs.getContext('2d',{willReadFrequently:true});
+
+function syncCanvasSize(){
+  const w=cvs.parentElement.clientWidth||cvs.offsetWidth||1;
+  const h=cvs.parentElement.clientHeight||cvs.offsetHeight||1;
+  if(cvs.width!==w||cvs.height!==h){cvs.width=w;cvs.height=h;}
+}
+function sizeCamViewport(){
+  const vp=g('cam-viewport');
+  const winH=window.innerHeight,winW=window.innerWidth;
+  let vpH=Math.round(winW*4/3);
+  if(vpH>winH*0.62)vpH=Math.round(winH*0.62);
+  vp.style.height=vpH+'px';
+  syncCanvasSize();
+}
+if(window.ResizeObserver){new ResizeObserver(()=>{if(S.camRunning)syncCanvasSize();}).observe(cvs);}
 
 function beginCapture(phase){
   S.phase=phase;

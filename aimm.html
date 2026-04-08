@@ -467,7 +467,7 @@ const C={
   TV_CDN:       'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision',
   TV_WASM:      'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision/wasm',
   MODEL_URL:    'https://storage.googleapis.com/mediapipe-models/holistic_landmarker/holistic_landmarker/float16/latest/holistic_landmarker.task',
-  MODEL_CACHE:  'aimm-holistic',
+  MODEL_CACHE:  'aimm-holistic-v4',
   CAM_H_DEFAULT:70,
   CAM_H_KEY:    'aimm.camh',
   TOKEN_KEY:    'aimm.token',
@@ -484,9 +484,9 @@ const C={
   TILT_BETA:    15,
   TILT_GAMMA:   13,
   GEO_TIMEOUT:  5000,
-  // mask scan resolution: 256 rows for height scan
-  SCAN_RES:     256,
-  SCAN_MIN_W:   3,   // min consecutive fg pixels in a row to count (works for newborn side-on)
+  // mask scan: threshold and min consecutive fg pixels per row
+  MASK_THR:     0.4,  // MPMask foreground threshold [0-1]
+  SCAN_MIN_W:   3,    // min consecutive fg pixels per row (works for newborn side-on)
 };
 
 /* ── STATE ── */
@@ -512,7 +512,7 @@ const S={
   frontHeight:null, frontPpNorm:null, frontPcNorm:null,
   sideHeight:null,  sidePpNorm:null,  sidePcNorm:null,
   _lastHcm:null, _lastPpNorm:null, _lastPcNorm:null,
-  _lastTopRow:null, _lastBotRow:null, // in SCAN_RES units
+  _lastTopRow:null, _lastBotRow:null, // in mask-native row coords (0..mH)
 };
 
 /* ── THEME ── */
@@ -843,10 +843,7 @@ const pCtx=pCvs.getContext('2d');
 // brightness sampling canvas (persistent)
 const bCvs=document.createElement('canvas');bCvs.width=32;bCvs.height=32;
 const bCtx=bCvs.getContext('2d',{willReadFrequently:true});
-// height scan canvas (persistent, SCAN_RES x SCAN_RES)
-const sCvs=document.createElement('canvas');sCvs.width=C.SCAN_RES;sCvs.height=C.SCAN_RES;
-const sCtx=sCvs.getContext('2d',{willReadFrequently:true});
-// mask compositing canvas (persistent, matches mCvs size)
+// mask compositing canvas (persistent, self-sizes to mask native resolution each frame)
 const maskTmp=document.createElement('canvas');
 
 function syncCanvasSize(){
@@ -855,7 +852,6 @@ function syncCanvasSize(){
   const h=vid.offsetHeight||vid.clientHeight||1;
   if(mCvs.width!==w||mCvs.height!==h){mCvs.width=w;mCvs.height=h;}
   if(pCvs.width!==w||pCvs.height!==h){pCvs.width=w;pCvs.height=h;}
-  if(maskTmp.width!==w||maskTmp.height!==h){maskTmp.width=w;maskTmp.height=h;}
   // position canvases on top of video (video height = auto, need explicit pixel size)
   mCvs.style.width=w+'px';mCvs.style.height=h+'px';
   pCvs.style.width=w+'px';pCvs.style.height=h+'px';
@@ -916,7 +912,7 @@ function camTick(){
     S.lastVideoTime=vid.currentTime;
     try{
       S.holistic.detectForVideo(vid,performance.now(),onHolisticResults);
-    }catch(e){}
+    }catch(e){console.warn('detectForVideo:',e);}
   }else if(!S.mpReady){
     mCtx.clearRect(0,0,mCvs.width,mCvs.height);
     pCtx.clearRect(0,0,pCvs.width,pCvs.height);
@@ -969,7 +965,10 @@ function onHolisticResults(result){
     try{
       const mW=mask.width,mH=mask.height;
       const f32=mask.getAsFloat32Array();
-      // Build RGBA from float mask into maskTmp
+
+      // maskTmp must be exactly mW×mH (mask native res, typically 256×256)
+      // NOT display size — we scale it to display when drawing via drawImage
+      if(maskTmp.width!==mW||maskTmp.height!==mH){maskTmp.width=mW;maskTmp.height=mH;}
       const tc=maskTmp.getContext('2d');
       const id=tc.createImageData(mW,mH);
       const rgba=id.data;
@@ -981,11 +980,16 @@ function onHolisticResults(result){
         }
       }
       tc.putImageData(id,0,0);
+      // Scale mask-native canvas to full display canvas
       mCtx.drawImage(maskTmp,0,0,W,H);
 
-      /* Height scan — directly from Float32Array (no canvas read-back) */
+      // Height scan — directly from Float32Array (no extra canvas readback)
       computeHeightFromMask(f32,mW,mH,W,H);
-    }catch(e){updateHBadge(null);}
+    }catch(e){updateHBadge(null);console.warn('mask:',e);}
+    finally{
+      // Always close MPMask to free GPU memory
+      try{mask.close();}catch(e){}
+    }
   }else{
     updateHBadge(null);
   }
@@ -999,6 +1003,7 @@ function onHolisticResults(result){
        5. Hand landmarks         — left=amber, right=purple
   ──────────────────────────────────────────────────────────────────────── */
   pCtx.save();
+  pCtx.globalAlpha=1; // ensure clean state
   pCtx.clearRect(0,0,pCvs.width,pCvs.height);
 
   const pose=result.poseLandmarks&&result.poseLandmarks[0];
@@ -1010,7 +1015,7 @@ function onHolisticResults(result){
   if(face&&S.drawUtils&&TESSELATION()){
     pCtx.globalAlpha=0.12;
     S.drawUtils.drawConnectors(face,TESSELATION(),{color:'#4882ff',lineWidth:0.5});
-    pCtx.globalAlpha=1;
+    pCtx.globalAlpha=1; // always reset after tesselation
   }
 
   /* Layer 2a: Face oval — solid blue */
@@ -1098,8 +1103,8 @@ function onHolisticResults(result){
 ──────────────────────────────────────────────────────────────────────── */
 function computeHeightFromMask(f32,mW,mH,dispW,dispH){
   if(!f32||!mW||!mH||dispH===0){updateHBadge(null);return;}
-  const THR=0.4;  // foreground threshold in [0,1]
-  const MIN_W=C.SCAN_MIN_W; // min consecutive fg pixels per row
+  const THR=C.MASK_THR;
+  const MIN_W=C.SCAN_MIN_W;
 
   let topRow=-1,botRow=-1;
 
@@ -1155,9 +1160,11 @@ function updateHBadge(hcm){
     el.textContent='\u2014';el.className='h-val dim';S._lastHcm=null;
     g('hval-pp').textContent='\u2014';g('hval-pp').className='h-val dim';
     g('hval-pc').textContent='\u2014';g('hval-pc').className='h-val dim';
+    // clear overlay state so stale × doesn't persist
+    S._lastTopRow=null;S._lastBotRow=null;S._lastMH=null;
+    S._lastPpNorm=null;S._lastPcNorm=null;
   }else{
     el.textContent=hcm.toFixed(1)+' cm';el.className='h-val';S._lastHcm=hcm;
-    // Pp and Pc are stored as normalised (0-1); display as percentage of frame
     if(S._lastPpNorm!==null){
       g('hval-pp').textContent=(S._lastPpNorm*100).toFixed(1)+'%';
       g('hval-pp').className='h-val';

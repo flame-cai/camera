@@ -467,7 +467,7 @@ const C={
   TV_CDN:       'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision',
   TV_WASM:      'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision/wasm',
   MODEL_URL:    'https://storage.googleapis.com/mediapipe-models/holistic_landmarker/holistic_landmarker/float16/latest/holistic_landmarker.task',
-  MODEL_CACHE:  'aimm-holistic-v4',
+  MODEL_CACHE:  'aimm-holistic',
   CAM_H_DEFAULT:70,
   CAM_H_KEY:    'aimm.camh',
   TOKEN_KEY:    'aimm.token',
@@ -498,7 +498,6 @@ const S={
   frontDone:false, sideDone:false,
   frontErr:null, sideErr:null,
   holistic:null, mpReady:false,
-  drawUtils:null,
   camStream:null, camRunning:false, lastVideoTime:-1,
   checks:{light:false,steady:false,level:false,body:false,dist:false,pose:false},
   blockMode:true,
@@ -751,7 +750,7 @@ async function loadModel(){
     try{
       // Dynamic import of the tasks-vision ESM bundle
       const tv=await import(C.TV_CDN+'/vision_bundle.mjs');
-      const {HolisticLandmarker,DrawingUtils,FilesetResolver}=tv;
+      const {HolisticLandmarker,FilesetResolver}=tv;
       const vision=await FilesetResolver.forVisionTasks(C.TV_WASM);
       const hl=await HolisticLandmarker.createFromOptions(vision,{
         baseOptions:{modelAssetPath:C.MODEL_URL,delegate:'GPU'},
@@ -769,11 +768,8 @@ async function loadModel(){
       clearInterval(anim);g('st-model-fill').style.width='100%';
       S.holistic=hl;
       S.mpReady=true;
-      // DrawingUtils instance for 2D canvas
-      S.drawUtils=new DrawingUtils(pCtx);
-      // Store connections for overlay drawing
+      // Store HolisticLandmarker class for connection arrays (POSE_CONNECTIONS etc)
       window._HL=HolisticLandmarker;
-      window._DU=DrawingUtils;
       setStep('st-model','done','Model ready');setProg(95,'Model loaded');
       resolve(true);
     }catch(e){
@@ -782,7 +778,7 @@ async function loadModel(){
       if(e.message&&e.message.toLowerCase().includes('gpu')){
         try{
           const tv2=await import(C.TV_CDN+'/vision_bundle.mjs');
-          const {HolisticLandmarker:HL2,DrawingUtils:DU2,FilesetResolver:FR2}=tv2;
+          const {HolisticLandmarker:HL2,FilesetResolver:FR2}=tv2;
           const vision2=await FR2.forVisionTasks(C.TV_WASM);
           const hl2=await HL2.createFromOptions(vision2,{
             baseOptions:{modelAssetPath:C.MODEL_URL,delegate:'CPU'},
@@ -795,8 +791,7 @@ async function loadModel(){
           });
           g('st-model-fill').style.width='100%';
           S.holistic=hl2;S.mpReady=true;
-          S.drawUtils=new DU2(pCtx);
-          window._HL=HL2;window._DU=DU2;
+          window._HL=HL2;
           setStep('st-model','done','Model ready (CPU)');setProg(95,'Model loaded');
           resolve(true);return;
         }catch(e2){}
@@ -904,15 +899,28 @@ function stopCam(){
   pCtx.clearRect(0,0,pCvs.width,pCvs.height);
 }
 
+let _lastDetectT=0;
 function camTick(){
   if(!S.camRunning)return;
   syncCanvasSize();
   sampleBright();
-  if(S.mpReady&&S.holistic&&vid.readyState>=2&&vid.currentTime!==S.lastVideoTime){
-    S.lastVideoTime=vid.currentTime;
-    try{
-      S.holistic.detectForVideo(vid,performance.now(),onHolisticResults);
-    }catch(e){console.warn('detectForVideo:',e);}
+  const now=performance.now();
+  if(S.mpReady&&S.holistic&&vid.readyState>=2){
+    // throttle inference to ~14fps max to avoid queueing (same as ar.html)
+    if(now-_lastDetectT>=70){
+      _lastDetectT=now;
+      try{
+        // SYNC call — result returned directly, no callback
+        const result=S.holistic.detectForVideo(vid,now);
+        drawResults(result);
+      }catch(e){
+        console.warn('detectForVideo:',e);
+        mCtx.clearRect(0,0,mCvs.width,mCvs.height);
+        pCtx.clearRect(0,0,pCvs.width,pCvs.height);
+        updateHBadge(null);
+        updateUI();
+      }
+    }
   }else if(!S.mpReady){
     mCtx.clearRect(0,0,mCvs.width,mCvs.height);
     pCtx.clearRect(0,0,pCvs.width,pCvs.height);
@@ -921,141 +929,106 @@ function camTick(){
   requestAnimationFrame(camTick);
 }
 
-/* ── HOLISTIC RESULTS (tasks-vision API) ── */
-/*
-  tasks-vision result structure (vs legacy):
-  result.poseLandmarks[0]          — 33 NormalizedLandmark {x,y,z,visibility}
-  result.poseWorldLandmarks[0]     — 33 Landmark {x,y,z,visibility} in metres
-  result.faceLandmarks[0]          — 478 NormalizedLandmark (468 + 10 iris)
-  result.leftHandLandmarks[0]      — 21 NormalizedLandmark
-  result.rightHandLandmarks[0]     — 21 NormalizedLandmark
-  result.poseSegmentationMasks[0]  — MPMask {width,height,getAsFloat32Array()}
-  
-  Landmarks normalised 0-1 to VIDEO frame (same as legacy).
-  Video is displayed with width:100% height:auto — NO cover-crop on portrait video.
-  So lx(lm) = lm.x * canvasWidth, ly(lm) = lm.y * canvasHeight exactly.
-*/
+/* ── OVERLAY DRAWING — mirrors ar.html approach exactly ──────────────────
+   Uses raw canvas 2D API (no DrawingUtils dependency).
+   Face index arrays hardcoded from MediaPipe face mesh map.
+   Pose/hand connections from HolisticLandmarker static properties.
+   drawResults() is called with the SYNC result object from detectForVideo.
+────────────────────────────────────────────────────────────────────────── */
 
-// face mesh connection groups from HolisticLandmarker static properties
-const TESSELATION=()=>window._HL&&window._HL.FACE_LANDMARKS_TESSELATION;
-const FACE_OVAL =()=>window._HL&&window._HL.FACE_LANDMARKS_FACE_OVAL;
-const FACE_CONT =()=>window._HL&&window._HL.FACE_LANDMARKS_CONTOURS;
-const L_EYE     =()=>window._HL&&window._HL.FACE_LANDMARKS_LEFT_EYE;
-const R_EYE     =()=>window._HL&&window._HL.FACE_LANDMARKS_RIGHT_EYE;
-const LIPS      =()=>window._HL&&window._HL.FACE_LANDMARKS_LIPS;
-const POSE_CONN =()=>window._HL&&window._HL.POSE_CONNECTIONS;
-const HAND_CONN =()=>window._HL&&window._HL.HAND_CONNECTIONS;
+// Face mesh index arrays (same as ar.html)
+const FOVAL=[10,338,297,332,284,251,389,356,454,323,361,288,397,365,379,378,400,377,152,148,176,149,150,136,172,58,132,93,234,127,162,21,54,103,67,109];
+const FLEYE=[33,7,163,144,145,153,154,155,133,173,157,158,159,160,161,246];
+const FREYE=[362,382,381,380,374,373,390,249,263,466,388,387,386,385,384,398];
+const FLIPS=[61,185,40,39,37,0,267,269,270,409,291,375,321,405,314,17,84,181,91,146];
 
-function lx(lm){return lm.x*pCvs.width;}
-function ly(lm){return lm.y*pCvs.height;}
+// lx/ly: landmark normalised coords → canvas pixels (no crop needed with height:auto video)
+function lx(lm,W){return lm.x*W;}
+function ly(lm,H){return lm.y*H;}
 
-function onHolisticResults(result){
+function drawResults(result){
   if(!S.camRunning)return;
   const W=mCvs.width,H=mCvs.height;
 
-  /* 1 ── Segmentation mask ───────────────────────────────────────────────
-     poseSegmentationMasks[0] is MPMask.
-     getAsFloat32Array() returns Float32Array length=width*height,
-     values 0.0 (background) to 1.0 (foreground/person).
-     Dimensions are the model's internal size (typically 256×256 for holistic task).
-     We draw it scaled to mCvs, then scan the Float32Array directly for height. */
+  /* ── CANVAS 1: body segmentation mask (mCvs) ── */
   mCtx.clearRect(0,0,W,H);
   const mask=result.poseSegmentationMasks&&result.poseSegmentationMasks[0];
   if(mask){
     try{
       const mW=mask.width,mH=mask.height;
-      const f32=mask.getAsFloat32Array();
-
-      // maskTmp must be exactly mW×mH (mask native res, typically 256×256)
-      // NOT display size — we scale it to display when drawing via drawImage
+      const d=mask.getAsFloat32Array();
+      // size maskTmp to mask native resolution each frame
       if(maskTmp.width!==mW||maskTmp.height!==mH){maskTmp.width=mW;maskTmp.height=mH;}
       const tc=maskTmp.getContext('2d');
       const id=tc.createImageData(mW,mH);
-      const rgba=id.data;
-      // teal = rgb(0,220,180), alpha proportional to confidence
-      for(let i=0,px=0;i<f32.length;i++,px+=4){
-        const v=f32[i];
-        if(v>0.4){
-          rgba[px]=0;rgba[px+1]=220;rgba[px+2]=180;rgba[px+3]=Math.round(v*110);
-        }
+      for(let i=0;i<mW*mH;i++){
+        const v=d[i],r=i*4;
+        if(v>0.4){id.data[r]=0;id.data[r+1]=220;id.data[r+2]=180;id.data[r+3]=Math.round(v*68);}
       }
       tc.putImageData(id,0,0);
-      // Scale mask-native canvas to full display canvas
       mCtx.drawImage(maskTmp,0,0,W,H);
-
-      // Height scan — directly from Float32Array (no extra canvas readback)
-      computeHeightFromMask(f32,mW,mH,W,H);
+      computeHeightFromMask(d,mW,mH,W,H);
     }catch(e){updateHBadge(null);console.warn('mask:',e);}
-    finally{
-      // Always close MPMask to free GPU memory
-      try{mask.close();}catch(e){}
-    }
+    finally{try{mask.close();}catch(e){}}
   }else{
     updateHBadge(null);
   }
 
-  /* 2 ── Overlay: 5 separate layers, each with distinct default colors ────
-     Layer order (bottom to top on pCvs):
-       1. Face mesh tesselation  — blue  #4882ff  (subtle, behind everything)
-       2. Face contours/features — cyan eyes, red lips, blue oval
-       3. Face landmark dots     — white small
-       4. Pose skeleton          — green #00DC96
-       5. Hand landmarks         — left=amber, right=purple
-  ──────────────────────────────────────────────────────────────────────── */
-  pCtx.save();
-  pCtx.globalAlpha=1; // ensure clean state
-  pCtx.clearRect(0,0,pCvs.width,pCvs.height);
+  /* ── CANVAS 2: landmarks overlay (pCvs) ── */
+  pCtx.clearRect(0,0,W,H);
 
   const pose=result.poseLandmarks&&result.poseLandmarks[0];
   const face=result.faceLandmarks&&result.faceLandmarks[0];
-  const lh=result.leftHandLandmarks&&result.leftHandLandmarks[0];
-  const rh=result.rightHandLandmarks&&result.rightHandLandmarks[0];
+  const lhand=result.leftHandLandmarks&&result.leftHandLandmarks[0];
+  const rhand=result.rightHandLandmarks&&result.rightHandLandmarks[0];
 
-  /* Layer 1: Face mesh tesselation — very subtle blue grid */
-  if(face&&S.drawUtils&&TESSELATION()){
-    pCtx.globalAlpha=0.12;
-    S.drawUtils.drawConnectors(face,TESSELATION(),{color:'#4882ff',lineWidth:0.5});
-    pCtx.globalAlpha=1; // always reset after tesselation
-  }
-
-  /* Layer 2a: Face oval — solid blue */
-  if(face&&S.drawUtils&&FACE_OVAL()){
-    S.drawUtils.drawConnectors(face,FACE_OVAL(),{color:'rgba(72,130,255,0.65)',lineWidth:1.5});
-  }
-
-  /* Layer 2b: Eye contours — cyan */
-  if(face&&S.drawUtils){
-    if(L_EYE())S.drawUtils.drawConnectors(face,L_EYE(),{color:'rgba(0,220,175,0.85)',lineWidth:1.4});
-    if(R_EYE())S.drawUtils.drawConnectors(face,R_EYE(),{color:'rgba(0,220,175,0.85)',lineWidth:1.4});
-  }
-
-  /* Layer 2c: Lip contours — red */
-  if(face&&S.drawUtils&&LIPS()){
-    S.drawUtils.drawConnectors(face,LIPS(),{color:'rgba(248,80,80,0.75)',lineWidth:1.5});
-  }
-
-  /* Layer 3: Face landmark dots — small white dots */
-  if(face&&S.drawUtils){
-    S.drawUtils.drawLandmarks(face,{
-      color:'rgba(255,255,255,0.7)',
-      fillColor:'rgba(72,130,255,0.35)',
-      lineWidth:0,
-      radius:1.2,
+  /* Face mesh fill + contours */
+  if(face){
+    // Face oval filled — blue
+    pCtx.beginPath();
+    FOVAL.forEach((i,j)=>{
+      if(!face[i])return;
+      j===0?pCtx.moveTo(lx(face[i],W),ly(face[i],H)):pCtx.lineTo(lx(face[i],W),ly(face[i],H));
+    });
+    pCtx.closePath();
+    pCtx.fillStyle='rgba(72,130,255,0.18)';pCtx.fill();
+    pCtx.strokeStyle='rgba(72,130,255,0.60)';pCtx.lineWidth=1.2;pCtx.stroke();
+    // Eye contours — cyan
+    const contour=(pts,col,lw)=>{
+      pCtx.beginPath();
+      pts.forEach((i,j)=>{if(!face[i])return;j===0?pCtx.moveTo(lx(face[i],W),ly(face[i],H)):pCtx.lineTo(lx(face[i],W),ly(face[i],H));});
+      pCtx.strokeStyle=col;pCtx.lineWidth=lw||1;pCtx.stroke();
+    };
+    contour(FLEYE,'rgba(0,220,175,0.75)',1.2);
+    contour(FREYE,'rgba(0,220,175,0.75)',1.2);
+    contour(FLIPS,'rgba(245,80,90,0.60)',1.4);
+    // Face landmark dots — tiny white
+    pCtx.fillStyle='rgba(255,255,255,0.25)';
+    face.forEach(lm=>{
+      if(!lm)return;
+      pCtx.beginPath();pCtx.arc(lx(lm,W),ly(lm,H),0.8,0,Math.PI*2);pCtx.fill();
     });
   }
 
-  /* Layer 4: Pose skeleton — green connectors + teal-green dots */
-  if(pose&&S.drawUtils){
+  /* Pose skeleton — green */
+  if(pose){
     S.lastPose=pose;S.lastFace=face||null;
-    const lw=Math.max(2,pCvs.width*0.004);
-    if(POSE_CONN()){
-      S.drawUtils.drawConnectors(pose,POSE_CONN(),{color:'rgba(0,220,150,0.9)',lineWidth:lw});
+    const PC=window._HL&&window._HL.POSE_CONNECTIONS;
+    const lw=Math.max(2,W*0.004);
+    pCtx.strokeStyle='rgba(0,220,175,0.85)';pCtx.lineWidth=lw;
+    if(PC){
+      PC.forEach(conn=>{
+        const a=conn.start??conn[0],b=conn.end??conn[1];
+        const la=pose[a],lb=pose[b];
+        if(!la||!lb)return;
+        if((la.visibility??1)<0.3||(lb.visibility??1)<0.3)return;
+        pCtx.beginPath();pCtx.moveTo(lx(la,W),ly(la,H));pCtx.lineTo(lx(lb,W),ly(lb,H));pCtx.stroke();
+      });
     }
-    S.drawUtils.drawLandmarks(pose,{
-      color:'rgba(255,255,255,0.9)',
-      fillColor:'rgba(0,232,130,1)',
-      lineWidth:1,
-      radius:d=>{const z=(d&&d.from)?d.from.z:0;return Math.max(2,5-z*8);},
+    pose.forEach(lm=>{
+      if(!lm||(lm.visibility??1)<0.25)return;
+      pCtx.beginPath();pCtx.arc(lx(lm,W),ly(lm,H),3.5,0,Math.PI*2);
+      pCtx.fillStyle='rgba(0,232,184,1)';pCtx.fill();
     });
     runChecks(pose);
   }else{
@@ -1063,30 +1036,35 @@ function onHolisticResults(result){
     S.checks.body=false;S.checks.dist=false;S.checks.pose=false;
   }
 
-  /* Layer 5a: Left hand — amber */
-  if(lh&&S.drawUtils&&HAND_CONN()){
-    S.drawUtils.drawConnectors(lh,HAND_CONN(),{color:'rgba(240,185,50,0.9)',lineWidth:2});
-    S.drawUtils.drawLandmarks(lh,{
-      color:'rgba(240,185,50,0.95)',
-      fillColor:'rgba(240,185,50,0.25)',
-      lineWidth:0,radius:3,
+  /* Hands — left=amber, right=purple */
+  const HC=window._HL&&window._HL.HAND_CONNECTIONS;
+  function drawHand(lms,col,fill){
+    if(!lms||!lms.length)return;
+    pCtx.beginPath();
+    [0,1,5,9,13,17,0].forEach((i,j)=>{
+      if(!lms[i])return;
+      j===0?pCtx.moveTo(lx(lms[i],W),ly(lms[i],H)):pCtx.lineTo(lx(lms[i],W),ly(lms[i],H));
+    });
+    pCtx.fillStyle=fill;pCtx.fill();
+    if(HC){
+      pCtx.strokeStyle=col;pCtx.lineWidth=1.8;
+      HC.forEach(conn=>{
+        const a=conn.start??conn[0],b=conn.end??conn[1];
+        if(!lms[a]||!lms[b])return;
+        pCtx.beginPath();pCtx.moveTo(lx(lms[a],W),ly(lms[a],H));pCtx.lineTo(lx(lms[b],W),ly(lms[b],H));pCtx.stroke();
+      });
+    }
+    pCtx.fillStyle=col;
+    lms.forEach(lm=>{
+      if(!lm)return;
+      pCtx.beginPath();pCtx.arc(lx(lm,W),ly(lm,H),2.5,0,Math.PI*2);pCtx.fill();
     });
   }
+  drawHand(lhand,'rgba(240,185,50,0.9)','rgba(240,185,50,0.12)');
+  drawHand(rhand,'rgba(176,96,240,0.9)','rgba(176,96,240,0.12)');
 
-  /* Layer 5b: Right hand — purple */
-  if(rh&&S.drawUtils&&HAND_CONN()){
-    S.drawUtils.drawConnectors(rh,HAND_CONN(),{color:'rgba(176,96,240,0.9)',lineWidth:2});
-    S.drawUtils.drawLandmarks(rh,{
-      color:'rgba(176,96,240,0.95)',
-      fillColor:'rgba(176,96,240,0.25)',
-      lineWidth:0,radius:3,
-    });
-  }
-
-  // Draw × marker at top of measured height span
+  // × marker at top of measured height span
   drawHeightOverlay();
-
-  pCtx.restore();
   updateUI();
 }
 

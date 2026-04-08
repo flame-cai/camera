@@ -8,424 +8,473 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>AIMM</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/holistic/holistic.js" crossorigin="anonymous"></script>
 </head>
 <body>
 <style>
-:root {
-  --bg:#ffffff; --bg2:#f5f5f5; --bg3:#ebebeb;
-  --line:#e0e0e0; --line2:#cccccc;
-  --text:#111111; --text2:#555555; --text3:#999999;
-  --accent:#1a73e8; --accent-bg:#e8f0fe;
-  --green:#1e8e3e; --green-bg:#e6f4ea;
-  --red:#d93025; --red-bg:#fce8e6;
-  --amber:#f29900; --amber-bg:#fef7e0;
-  --font:'Inter',sans-serif; --mono:'JetBrains Mono',monospace;
-  --radius:8px;
-  --safe-t:max(env(safe-area-inset-top,0px),12px);
-  --safe-b:max(env(safe-area-inset-bottom,0px),16px);
+:root{
+  --bg:#f8f8f8;--bg2:#ffffff;--bg3:#eeeeee;
+  --line:#e2e2e2;--line2:#cccccc;
+  --text:#0d0d0d;--text2:#444444;--text3:#888888;
+  --accent:#1a73e8;--accent-bg:#e8f0fe;--accent-dark:#1557b0;
+  --green:#188038;--green-bg:#e6f4ea;
+  --red:#c5221f;--red-bg:#fce8e6;
+  --amber:#b06000;--amber-bg:#fff3e0;
+  --font:'DM Sans',system-ui,sans-serif;
+  --mono:'DM Mono',monospace;
+  --r:10px;
+  --safe-t:max(env(safe-area-inset-top,0px),14px);
+  --safe-b:max(env(safe-area-inset-bottom,0px),20px);
 }
-[data-dark] {
-  --bg:#111111; --bg2:#1a1a1a; --bg3:#242424;
-  --line:#2a2a2a; --line2:#383838;
-  --text:#f0f0f0; --text2:#aaaaaa; --text3:#555555;
-  --accent:#4da3ff; --accent-bg:#1a2a3a;
-  --green:#34a853; --green-bg:#0d2a18;
-  --red:#f28b82; --red-bg:#2a1515;
-  --amber:#fdd663; --amber-bg:#2a2100;
+[data-dark]{
+  --bg:#0e0e0e;--bg2:#181818;--bg3:#222222;
+  --line:#2c2c2c;--line2:#3a3a3a;
+  --text:#f2f2f2;--text2:#aaaaaa;--text3:#555555;
+  --accent:#5ba8ff;--accent-bg:#1a2d45;--accent-dark:#4a90e2;
+  --green:#34a853;--green-bg:#0d2818;
+  --red:#f28b82;--red-bg:#2a1010;
+  --amber:#ffca28;--amber-bg:#2a1e00;
 }
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 html,body{
   width:100%;height:100%;overflow:hidden;
   background:var(--bg);color:var(--text);
-  font-family:var(--font);font-size:14px;
+  font-family:var(--font);font-size:16px;line-height:1.5;
   -webkit-tap-highlight-color:transparent;
   touch-action:manipulation;
   -webkit-user-select:none;user-select:none;
   overscroll-behavior:none;
 }
+/* Desktop wall */
 #dwall{
   display:none;position:fixed;inset:0;z-index:9999;
   background:var(--bg);flex-direction:column;
-  align-items:center;justify-content:center;
-  gap:12px;text-align:center;padding:40px;
+  align-items:center;justify-content:center;gap:16px;
+  text-align:center;padding:40px;
 }
-#dwall .dw-logo{font-family:var(--mono);font-size:28px;letter-spacing:6px;color:var(--accent);}
-#dwall p{color:var(--text2);line-height:1.6;max-width:260px;}
+#dwall .logo{font-family:var(--mono);font-size:32px;letter-spacing:8px;color:var(--accent);}
+#dwall p{color:var(--text2);line-height:1.7;max-width:280px;font-size:17px;}
 @media(min-width:1024px){#dwall{display:flex}#app{display:none!important}}
+
+/* App shell */
 #app{position:fixed;inset:0;background:var(--bg);}
+
+/* Header */
 #header{
   position:fixed;top:0;left:0;right:0;z-index:300;
-  height:calc(var(--safe-t) + 44px);
+  height:calc(var(--safe-t) + 52px);
   padding-top:var(--safe-t);
   display:flex;align-items:center;justify-content:space-between;
-  padding-left:16px;padding-right:12px;
-  background:var(--bg);border-bottom:1px solid var(--line);
+  padding-left:20px;padding-right:14px;
+  background:var(--bg2);
+  border-bottom:1px solid var(--line);
 }
-.h-logo{font-family:var(--mono);font-size:15px;letter-spacing:4px;color:var(--text);font-weight:500;}
-.h-right{display:flex;gap:4px;align-items:center;}
+.h-logo{font-family:var(--mono);font-size:17px;letter-spacing:5px;color:var(--text);font-weight:500;}
+.h-right{display:flex;gap:6px;align-items:center;}
 .h-btn{
-  width:36px;height:36px;border-radius:50%;
-  border:1px solid var(--line);background:transparent;
-  color:var(--text2);font-size:16px;cursor:pointer;
+  width:40px;height:40px;border-radius:50%;
+  border:1.5px solid var(--line2);background:transparent;
+  color:var(--text2);font-size:18px;cursor:pointer;
   display:flex;align-items:center;justify-content:center;
-  transition:background 0.15s;
+  transition:background 0.15s;font-family:var(--font);
 }
 .h-btn:active{background:var(--bg3);}
 .h-btn.hidden{display:none;}
-.mode-pill{
-  display:flex;align-items:center;
-  background:var(--bg2);border:1px solid var(--line);
-  border-radius:20px;padding:2px;gap:2px;
-}
-.mode-pill.hidden{display:none;}
-.mpb{
-  padding:3px 10px;border-radius:16px;border:none;
-  font-family:var(--mono);font-size:10px;font-weight:500;
-  letter-spacing:0.5px;cursor:pointer;
-  background:transparent;color:var(--text3);transition:all 0.15s;
-}
-.mpb.on{background:var(--accent);color:#fff;}
+
+/* Screens */
 .screen{
   position:fixed;inset:0;
-  padding-top:calc(var(--safe-t) + 44px);
+  padding-top:calc(var(--safe-t) + 52px);
   padding-bottom:var(--safe-b);
   display:none;flex-direction:column;
   overflow-y:auto;-webkit-overflow-scrolling:touch;
 }
 .screen.on{display:flex;}
-.sp{padding:20px 16px;flex:1;display:flex;flex-direction:column;}
+.sp{padding:24px 20px;flex:1;display:flex;flex-direction:column;gap:20px;}
+
+/* ── SETUP ── */
 #s-setup{background:var(--bg);}
-.setup-title{font-size:22px;font-weight:600;color:var(--text);margin-bottom:4px;}
-.setup-sub{font-size:13px;color:var(--text2);margin-bottom:28px;line-height:1.5;}
-.step-list{display:flex;flex-direction:column;gap:1px;margin-bottom:24px;}
+.setup-hd{font-size:28px;font-weight:600;line-height:1.2;color:var(--text);}
+.setup-sub{font-size:16px;color:var(--text2);margin-top:4px;}
+.step-list{display:flex;flex-direction:column;}
 .step-row{
-  display:flex;align-items:center;gap:12px;
-  padding:14px 0;border-bottom:1px solid var(--line);
+  display:flex;align-items:flex-start;gap:16px;
+  padding:16px 0;border-bottom:1px solid var(--line);
 }
 .step-row:last-child{border-bottom:none;}
-.step-icon{
-  width:32px;height:32px;border-radius:50%;flex-shrink:0;
-  border:1.5px solid var(--line2);background:var(--bg2);
+.step-ico{
+  width:36px;height:36px;border-radius:50%;flex-shrink:0;
+  border:2px solid var(--line2);background:var(--bg2);
   display:flex;align-items:center;justify-content:center;
-  font-family:var(--mono);font-size:12px;color:var(--text3);
-  font-weight:500;transition:all 0.2s;
+  font-family:var(--mono);font-size:13px;color:var(--text3);
+  font-weight:500;transition:all 0.2s;margin-top:2px;
 }
-.step-row.active .step-icon{border-color:var(--accent);color:var(--accent);background:var(--accent-bg);}
-.step-row.done .step-icon{border-color:var(--green);color:var(--green);background:var(--green-bg);}
-.step-row.err .step-icon{border-color:var(--red);color:var(--red);background:var(--red-bg);}
-.step-row.skip .step-icon{border-color:var(--amber);color:var(--amber);background:var(--amber-bg);}
+.step-row.active .step-ico{border-color:var(--accent);color:var(--accent);background:var(--accent-bg);}
+.step-row.done .step-ico{border-color:var(--green);color:var(--green);background:var(--green-bg);}
+.step-row.err .step-ico{border-color:var(--red);color:var(--red);background:var(--red-bg);}
+.step-row.skip .step-ico{border-color:var(--amber);color:var(--amber);background:var(--amber-bg);}
 .step-body{flex:1;min-width:0;}
-.step-name{font-size:13px;font-weight:500;color:var(--text2);margin-bottom:2px;transition:color 0.2s;}
+.step-name{font-size:17px;font-weight:500;color:var(--text2);transition:color 0.2s;}
 .step-row.active .step-name,.step-row.done .step-name{color:var(--text);}
 .step-row.err .step-name{color:var(--red);}
 .step-row.skip .step-name{color:var(--amber);}
-.step-msg{font-family:var(--mono);font-size:10px;color:var(--text3);line-height:1.4;word-break:break-word;}
+.step-msg{font-family:var(--mono);font-size:12px;color:var(--text3);line-height:1.5;margin-top:2px;word-break:break-word;}
 .step-row.active .step-msg{color:var(--text2);}
 .step-row.err .step-msg{color:var(--red);}
-.step-bar{margin-top:6px;height:2px;background:var(--line);border-radius:1px;overflow:hidden;display:none;}
-.step-bar-fill{height:100%;background:var(--accent);border-radius:1px;width:0%;transition:width 0.25s linear;}
+.step-bar{margin-top:8px;height:3px;background:var(--line);border-radius:2px;overflow:hidden;display:none;}
+.step-bar-fill{height:100%;background:var(--accent);border-radius:2px;width:0%;transition:width 0.3s linear;}
 .spin{
-  width:14px;height:14px;border-radius:50%;
-  border:2px solid var(--accent-bg);border-top-color:var(--accent);
+  width:16px;height:16px;border-radius:50%;
+  border:2.5px solid var(--accent-bg);border-top-color:var(--accent);
   animation:spin 0.7s linear infinite;flex-shrink:0;
 }
 @keyframes spin{to{transform:rotate(360deg);}}
-.prog-wrap{margin-bottom:20px;}
-.prog-track{height:3px;background:var(--line);border-radius:2px;overflow:hidden;}
+.prog-track{height:4px;background:var(--line);border-radius:2px;overflow:hidden;}
 .prog-fill{height:100%;background:var(--accent);border-radius:2px;width:0%;transition:width 0.4s ease;}
-.prog-lbl{font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:6px;}
-.err-banner{
-  display:none;background:var(--red-bg);border:1px solid var(--red);
-  border-radius:var(--radius);padding:12px 14px;margin-bottom:16px;
+.prog-lbl{font-family:var(--mono);font-size:12px;color:var(--text3);margin-top:8px;}
+.err-box{
+  display:none;background:var(--red-bg);border:1.5px solid var(--red);
+  border-radius:var(--r);padding:14px 16px;
 }
-.err-banner.on{display:block;}
-.err-banner-title{font-size:12px;font-weight:600;color:var(--red);margin-bottom:4px;}
-.err-banner-msg{font-family:var(--mono);font-size:10px;color:var(--red);line-height:1.5;word-break:break-all;white-space:pre-wrap;max-height:80px;overflow-y:auto;}
+.err-box.on{display:block;}
+.err-box-title{font-size:16px;font-weight:600;color:var(--red);margin-bottom:4px;}
+.err-box-msg{font-family:var(--mono);font-size:12px;color:var(--red);line-height:1.5;word-break:break-all;white-space:pre-wrap;max-height:80px;overflow-y:auto;}
 .btn{
-  width:100%;padding:14px;border-radius:var(--radius);border:none;
-  font-family:var(--font);font-size:14px;font-weight:500;
+  width:100%;padding:15px 20px;border-radius:var(--r);border:none;
+  font-family:var(--font);font-size:17px;font-weight:500;
   cursor:pointer;transition:opacity 0.15s,background 0.15s;text-align:center;
+  letter-spacing:-0.01em;
 }
 .btn-primary{background:var(--accent);color:#fff;}
 .btn-primary:active{opacity:0.85;}
 .btn-primary:disabled{opacity:0.35;cursor:not-allowed;}
-.btn-secondary{background:transparent;color:var(--text2);border:1px solid var(--line2);}
-.btn-secondary:active{background:var(--bg2);}
-.mt8{margin-top:8px;}
-.mt16{margin-top:16px;}
+.btn-ghost{background:transparent;color:var(--text2);border:1.5px solid var(--line2);}
+.btn-ghost:active{background:var(--bg3);}
 .g-btn{
   width:100%;display:flex;align-items:center;justify-content:center;
-  gap:10px;padding:13px 16px;
-  background:#fff;border:1px solid #dadce0;border-radius:var(--radius);
-  font-family:var(--font);font-size:14px;font-weight:500;color:#3c4043;
-  cursor:pointer;transition:box-shadow 0.2s,opacity 0.15s;
+  gap:12px;padding:14px 20px;
+  background:#fff;border:1.5px solid #dadce0;border-radius:var(--r);
+  font-family:var(--font);font-size:17px;font-weight:500;color:#3c4043;
+  cursor:pointer;transition:opacity 0.15s;
 }
-.g-btn:active{opacity:0.85;}
+.g-btn:active{opacity:0.8;}
 .g-btn:disabled{opacity:0.4;cursor:not-allowed;}
 .g-btn svg{flex-shrink:0;}
+
+/* ── SESSION ── */
 #s-session{background:var(--bg);}
-.section{margin-bottom:16px;}
-.section-label{
-  font-family:var(--mono);font-size:10px;font-weight:500;
-  letter-spacing:1px;color:var(--text3);text-transform:uppercase;margin-bottom:8px;
+.card{background:var(--bg2);border:1.5px solid var(--line);border-radius:var(--r);overflow:hidden;}
+.card-label{
+  font-family:var(--mono);font-size:11px;font-weight:500;
+  letter-spacing:1.5px;color:var(--text3);text-transform:uppercase;
+  padding:10px 16px;border-bottom:1px solid var(--line);
+  background:var(--bg3);
 }
-.data-card{background:var(--bg2);border:1px solid var(--line);border-radius:var(--radius);padding:14px;}
-.data-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
-.data-row:last-child{margin-bottom:0;}
-.data-dot{width:7px;height:7px;border-radius:50%;background:var(--text3);flex-shrink:0;}
-.data-dot.ok{background:var(--green);}
-.data-dot.err{background:var(--red);}
-.data-dot.ld{background:var(--accent);animation:pulse 1s infinite;}
-@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.3;}}
-.data-val{font-family:var(--mono);font-size:11px;color:var(--text2);line-height:1.4;flex:1;}
-.data-val.accent{color:var(--accent);letter-spacing:1px;}
-.field-row{display:flex;align-items:center;gap:8px;}
-.field-label-inline{font-size:12px;color:var(--text2);flex-shrink:0;}
-.field-input{
-  flex:1;background:var(--bg);border:1px solid var(--line2);
-  border-radius:6px;color:var(--text);
-  font-family:var(--mono);font-size:13px;font-weight:500;
-  padding:9px 12px;outline:none;transition:border-color 0.2s;
+.card-body{padding:14px 16px;}
+.uuid-val{
+  font-family:var(--mono);font-size:13px;color:var(--accent);
+  letter-spacing:2px;word-break:break-all;line-height:2;
+}
+.loc-row{display:flex;align-items:center;gap:10px;}
+.loc-dot{width:8px;height:8px;border-radius:50%;background:var(--text3);flex-shrink:0;}
+.loc-dot.ok{background:var(--green);}
+.loc-dot.err{background:var(--red);}
+.loc-dot.ld{background:var(--accent);animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.2;}}
+.loc-val{font-family:var(--mono);font-size:13px;color:var(--text2);flex:1;}
+.field-row{display:flex;align-items:center;gap:10px;}
+.field-lbl{font-size:16px;color:var(--text2);flex-shrink:0;}
+.field-in{
+  flex:1;background:var(--bg);border:1.5px solid var(--line2);
+  border-radius:8px;color:var(--text);
+  font-family:var(--mono);font-size:16px;font-weight:500;
+  padding:10px 14px;outline:none;transition:border-color 0.2s;
   -webkit-user-select:text;user-select:text;-webkit-appearance:none;
 }
-.field-input:focus{border-color:var(--accent);}
-.field-unit{font-family:var(--mono);font-size:11px;color:var(--text3);flex-shrink:0;}
+.field-in:focus{border-color:var(--accent);}
+.field-unit{font-family:var(--mono);font-size:13px;color:var(--text3);flex-shrink:0;}
 .spacer{flex:1;}
-#s-camera{background:#000;padding:0;overflow:hidden;}
-#cam-frame{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#000;}
-#cam-inner{
+
+/* ── CAMERA SCREEN ── */
+#s-camera{
+  background:#000;
+  padding:0!important;overflow:hidden;
+  flex-direction:column;
+}
+/* Camera viewport — strict 3:4 portrait, no stretch */
+#cam-viewport{
   position:relative;
-  width:min(100vw,calc(100vh * 3/4));
-  height:min(100vh,calc(100vw * 4/3));
-  overflow:hidden;background:#000;flex-shrink:0;
+  width:100%;
+  flex:0 0 auto;
+  overflow:hidden;
+  background:#000;
+  touch-action:none;
 }
-#vid{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:100%;height:100%;object-fit:cover;}
-#c-mask,#c-pose{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;}
-#c-mask{z-index:1;}#c-pose{z-index:2;}
-#c-ring{position:absolute;inset:0;pointer-events:none;z-index:5;}
-#c-ring::after{
-  content:'';position:absolute;inset:0;border:2px solid transparent;
-  transition:border-color 0.25s,box-shadow 0.25s;
+/* Canvas overlays sit exactly on top of video */
+#vid{
+  display:block;
+  width:100%;height:100%;
+  object-fit:cover;
 }
-#c-ring.ok::after{border-color:rgba(52,168,83,0.8);box-shadow:inset 0 0 24px rgba(52,168,83,0.06);}
-#c-ring.bad::after{border-color:rgba(217,48,37,0.7);box-shadow:inset 0 0 24px rgba(217,48,37,0.05);}
-#c-ring.warn::after{border-color:rgba(242,153,0,0.7);box-shadow:inset 0 0 24px rgba(242,153,0,0.05);}
-#c-sil{position:absolute;inset:0;z-index:3;display:flex;align-items:center;justify-content:center;pointer-events:none;}
-#c-sil svg{height:86%;width:auto;}
-#c-npose{
-  position:absolute;top:0;left:0;right:0;z-index:30;
-  background:rgba(242,153,0,0.15);border-bottom:1px solid rgba(242,153,0,0.4);
-  height:0;overflow:hidden;transition:height 0.3s ease;
-  display:flex;align-items:center;justify-content:center;gap:6px;pointer-events:none;
-}
-#c-npose.on{height:34px;}
-#c-npose span{font-family:var(--mono);font-size:9px;letter-spacing:0.5px;color:#f29900;}
-#c-top{
-  position:absolute;top:0;left:0;right:0;z-index:20;
-  display:flex;align-items:center;justify-content:space-between;
-  padding:max(env(safe-area-inset-top,0px),10px) 12px 8px;
-  background:linear-gradient(to bottom,rgba(0,0,0,0.7) 0%,transparent 100%);
-  transition:padding-top 0.3s;
-}
-#c-top.pushed{padding-top:calc(max(env(safe-area-inset-top,0px),10px) + 34px);}
-.c-phase{font-family:var(--mono);font-size:11px;letter-spacing:2px;color:rgba(255,255,255,0.6);}
-.c-top-right{display:flex;gap:6px;align-items:center;}
-.c-btn{
-  width:32px;height:32px;border-radius:50%;
-  border:1px solid rgba(255,255,255,0.2);background:rgba(0,0,0,0.5);
-  color:rgba(255,255,255,0.75);font-size:15px;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;transition:background 0.15s;
-}
-.c-btn:active{background:rgba(255,255,255,0.15);}
-.c-mode-pill{
-  display:flex;align-items:center;
-  background:rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.2);
-  border-radius:20px;padding:2px;gap:2px;
-}
-.c-mode-pill.hidden{opacity:0;pointer-events:none;}
-#c-hbadge{
-  position:absolute;z-index:20;right:10px;
-  top:calc(max(env(safe-area-inset-top,0px),10px) + 46px);
-  background:rgba(0,0,0,0.55);border:1px solid rgba(255,255,255,0.2);
-  border-radius:20px;padding:3px 10px;
-  display:none;align-items:center;gap:5px;pointer-events:none;
-}
-#c-hbadge.on{display:flex;}
-#c-hbadge span{font-family:var(--mono);font-size:10px;color:rgba(255,255,255,0.75);}
-#c-chips{
-  position:absolute;left:0;right:0;z-index:20;
-  display:flex;gap:4px;align-items:center;justify-content:center;
-  flex-wrap:nowrap;overflow:hidden;pointer-events:none;
-  bottom:calc(var(--safe-b) + 100px);padding:0 8px;
-}
-.chip{
-  display:flex;align-items:center;gap:3px;
-  background:rgba(0,0,0,0.65);border:1px solid rgba(255,255,255,0.2);
-  border-radius:20px;padding:4px 7px;flex-shrink:0;
-}
-.chip-d{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,0.3);}
-.chip-l{font-family:var(--mono);font-size:9px;color:rgba(255,255,255,0.4);letter-spacing:0.3px;}
-.chip.ok{border-color:rgba(52,168,83,0.5);background:rgba(52,168,83,0.12);}
-.chip.ok .chip-d{background:#34a853;}.chip.ok .chip-l{color:#34a853;}
-.chip.bad{border-color:rgba(217,48,37,0.5);background:rgba(217,48,37,0.1);}
-.chip.bad .chip-d{background:#ea4335;}.chip.bad .chip-l{color:#ea4335;}
-.chip.warn{border-color:rgba(242,153,0,0.5);background:rgba(242,153,0,0.1);}
-.chip.warn .chip-d{background:#f29900;}.chip.warn .chip-l{color:#f29900;}
-.chip.dis{opacity:0.35;}
-#c-guide{
-  position:absolute;left:0;right:0;z-index:20;
-  bottom:calc(var(--safe-b) + 82px);
-  font-family:var(--mono);font-size:10px;letter-spacing:0.3px;
-  color:rgba(255,255,255,0.5);text-align:center;
-  pointer-events:none;padding:0 20px;transition:color 0.2s;
-}
-#c-shutter-zone{
-  position:absolute;bottom:0;left:0;right:0;z-index:20;
-  display:flex;align-items:center;justify-content:center;
-  padding-bottom:calc(var(--safe-b) + 8px);padding-top:8px;
-  background:linear-gradient(to top,rgba(0,0,0,0.7) 0%,transparent 100%);
+#c-canvas{
+  position:absolute;inset:0;
+  width:100%;height:100%;
   pointer-events:none;
 }
-#c-shutter{
-  width:72px;height:72px;border-radius:50%;
-  border:2.5px solid rgba(255,255,255,0.3);background:transparent;
+/* Pose guide card — bottom-left corner of viewport */
+#pose-card{
+  position:absolute;bottom:8px;left:8px;z-index:10;
+  width:72px;height:96px;border-radius:8px;
+  background:rgba(0,0,0,0.55);border:1px solid rgba(255,255,255,0.15);
+  overflow:hidden;display:flex;align-items:center;justify-content:center;
+  pointer-events:none;
+}
+#pose-card svg{width:60px;height:80px;}
+/* Camera controls panel — BELOW viewport */
+#cam-panel{
+  flex:1;background:var(--bg);overflow:hidden;
+  display:flex;flex-direction:column;padding:0;
+}
+/* Top bar inside cam panel */
+#cam-topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 16px 6px;border-bottom:1px solid var(--line);
+  background:var(--bg2);
+}
+.cam-phase{font-family:var(--mono);font-size:12px;letter-spacing:2.5px;color:var(--text3);}
+.cam-topright{display:flex;gap:6px;align-items:center;}
+.cam-btn{
+  width:38px;height:38px;border-radius:50%;
+  border:1.5px solid var(--line2);background:transparent;
+  color:var(--text2);font-size:17px;cursor:pointer;
   display:flex;align-items:center;justify-content:center;
-  cursor:pointer;pointer-events:all;transition:border-color 0.2s,opacity 0.2s;
+  transition:background 0.15s;font-family:var(--font);
 }
-#c-shutter::after{
-  content:'';width:56px;height:56px;border-radius:50%;
-  background:rgba(255,255,255,0.18);transition:background 0.2s,transform 0.1s;
+.cam-btn:active{background:var(--bg3);}
+.mode-pill{
+  display:flex;align-items:center;
+  background:var(--bg3);border:1.5px solid var(--line2);
+  border-radius:20px;padding:2px;gap:2px;
 }
-#c-shutter:active::after{transform:scale(0.88);}
-#c-shutter.ok{border-color:#34a853;}
-#c-shutter.ok::after{background:#34a853;}
-#c-shutter.warn{border-color:#f29900;}
-#c-shutter.warn::after{background:rgba(242,153,0,0.6);}
-#c-shutter.off{opacity:0.25;pointer-events:none;}
-#c-flash{position:absolute;inset:0;z-index:60;background:#fff;opacity:0;pointer-events:none;transition:opacity 0.06s;}
-#c-flash.on{opacity:0.85;}
-#c-preview{
-  position:absolute;inset:0;z-index:70;background:rgba(0,0,0,0.96);
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:14px;padding:20px;opacity:0;pointer-events:none;transition:opacity 0.2s;
+.mpb{
+  padding:4px 12px;border-radius:16px;border:none;
+  font-family:var(--mono);font-size:11px;font-weight:500;
+  letter-spacing:0.5px;cursor:pointer;
+  background:transparent;color:var(--text3);transition:all 0.15s;
 }
-#c-preview.on{opacity:1;pointer-events:all;}
-.prev-label{font-family:var(--mono);font-size:10px;letter-spacing:1px;color:rgba(255,255,255,0.4);}
+.mpb.on{background:var(--accent);color:#fff;}
+/* Height display */
+#h-display{
+  display:flex;gap:0;border-bottom:1px solid var(--line);
+}
+.h-box{
+  flex:1;padding:10px 14px;display:flex;flex-direction:column;gap:2px;
+  border-right:1px solid var(--line);
+}
+.h-box:last-child{border-right:none;}
+.h-lbl{font-family:var(--mono);font-size:10px;letter-spacing:1.5px;color:var(--text3);text-transform:uppercase;}
+.h-val{font-size:22px;font-weight:600;color:var(--text);font-family:var(--mono);}
+.h-val.dim{color:var(--text3);font-weight:400;}
+/* Chips row */
+#chips-row{
+  display:flex;gap:6px;padding:8px 14px;
+  overflow-x:auto;-webkit-overflow-scrolling:touch;
+  border-bottom:1px solid var(--line);
+  scrollbar-width:none;
+}
+#chips-row::-webkit-scrollbar{display:none;}
+.chip{
+  display:flex;align-items:center;gap:5px;flex-shrink:0;
+  background:var(--bg3);border:1.5px solid var(--line2);
+  border-radius:20px;padding:5px 10px;
+}
+.chip-dot{width:6px;height:6px;border-radius:50%;background:var(--text3);}
+.chip-lbl{font-family:var(--mono);font-size:11px;color:var(--text3);font-weight:500;}
+.chip.ok{border-color:var(--green);background:var(--green-bg);}
+.chip.ok .chip-dot{background:var(--green);}
+.chip.ok .chip-lbl{color:var(--green);}
+.chip.bad{border-color:var(--red);background:var(--red-bg);}
+.chip.bad .chip-dot{background:var(--red);}
+.chip.bad .chip-lbl{color:var(--red);}
+.chip.warn{border-color:var(--amber);background:var(--amber-bg);}
+.chip.warn .chip-dot{background:var(--amber);}
+.chip.warn .chip-lbl{color:var(--amber);}
+.chip.dis{opacity:0.3;}
+/* Guide text */
+#guide-txt{
+  padding:8px 16px;font-size:15px;color:var(--text2);
+  border-bottom:1px solid var(--line);min-height:40px;
+  display:flex;align-items:center;
+}
+#guide-txt.ok{color:var(--green);}
+#guide-txt.bad{color:var(--red);}
+#guide-txt.warn{color:var(--amber);}
+/* Shutter row */
+#shutter-row{
+  flex:1;display:flex;align-items:center;justify-content:center;
+  padding:8px 0;
+}
+#shutter{
+  width:68px;height:68px;border-radius:50%;
+  border:3px solid var(--line2);background:var(--bg2);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:all 0.15s;
+  position:relative;
+}
+#shutter::after{
+  content:'';width:52px;height:52px;border-radius:50%;
+  background:var(--bg3);transition:all 0.15s;
+}
+#shutter:active::after{transform:scale(0.88);}
+#shutter.ok{border-color:var(--green);}
+#shutter.ok::after{background:var(--green);}
+#shutter.warn{border-color:var(--amber);}
+#shutter.warn::after{background:var(--amber);}
+#shutter.off{opacity:0.3;cursor:not-allowed;}
+/* Flash */
+#c-flash{position:absolute;inset:0;z-index:50;background:#fff;opacity:0;pointer-events:none;transition:opacity 0.05s;}
+#c-flash.on{opacity:0.9;}
+/* No-pose banner */
+#no-pose-bar{
+  display:none;background:var(--amber-bg);border-bottom:1.5px solid var(--amber);
+  padding:8px 16px;font-family:var(--mono);font-size:12px;color:var(--amber);
+}
+#no-pose-bar.on{display:block;}
+/* Preview overlay — full camera screen */
+#preview{
+  position:fixed;inset:0;z-index:200;
+  background:rgba(0,0,0,0.97);
+  display:none;flex-direction:column;align-items:center;justify-content:center;
+  gap:16px;padding:24px;
+}
+#preview.on{display:flex;}
+.prev-lbl{font-family:var(--mono);font-size:12px;letter-spacing:2px;color:rgba(255,255,255,0.4);}
 .prev-img-wrap{
-  width:min(76vw,calc(70vh * 0.75));height:min(70vh,calc(76vw * 4/3));
-  border-radius:10px;overflow:hidden;border:1px solid rgba(255,255,255,0.12);
-  background:#000;position:relative;flex-shrink:0;
+  position:relative;border-radius:12px;overflow:hidden;
+  width:min(72vw,calc(65vh * 0.75));
+  height:min(65vh,calc(72vw * 4/3));
+  background:#000;flex-shrink:0;
 }
 .prev-img-wrap img{width:100%;height:100%;object-fit:cover;display:block;}
 .prev-status{
-  position:absolute;bottom:0;left:0;right:0;padding:7px 10px;
-  font-family:var(--mono);font-size:9px;text-align:center;
-  background:rgba(0,0,0,0.75);display:none;
+  position:absolute;bottom:0;left:0;right:0;padding:8px 12px;
+  font-family:var(--mono);font-size:11px;text-align:center;
+  background:rgba(0,0,0,0.8);display:none;
 }
 .prev-status.on{display:block;}
 .prev-status.uploading{color:#fdd663;}
 .prev-status.err{color:#f28b82;}
-.prev-btns{display:flex;gap:8px;width:min(76vw,calc(70vh * 0.75));flex-shrink:0;}
+.prev-btns{display:flex;gap:10px;width:min(72vw,calc(65vh * 0.75));flex-shrink:0;}
 .prev-btn{
-  flex:1;padding:12px 0;border-radius:var(--radius);
-  font-family:var(--font);font-size:13px;font-weight:500;
-  border:1px solid rgba(255,255,255,0.15);cursor:pointer;transition:opacity 0.15s;
+  flex:1;padding:13px 0;border-radius:var(--r);
+  font-family:var(--font);font-size:17px;font-weight:500;
+  border:1.5px solid rgba(255,255,255,0.15);cursor:pointer;transition:opacity 0.15s;
 }
 .prev-btn:active{opacity:0.75;}
 .prev-btn.retake{background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.7);}
 .prev-btn.proceed{background:var(--accent);color:#fff;border-color:var(--accent);}
 .prev-btn.proceed:disabled{opacity:0.35;pointer-events:none;}
+
+/* ── FORM ── */
 #s-form{background:var(--bg);}
-.form-block{background:var(--bg2);border:1px solid var(--line);border-radius:var(--radius);padding:0;margin-bottom:12px;overflow:hidden;}
-.form-block-title{
-  font-family:var(--mono);font-size:10px;font-weight:500;
-  letter-spacing:1px;color:var(--text3);text-transform:uppercase;
-  padding:10px 14px;border-bottom:1px solid var(--line);background:var(--bg3);
+.form-card{background:var(--bg2);border:1.5px solid var(--line);border-radius:var(--r);overflow:hidden;margin-bottom:14px;}
+.form-card-hd{
+  font-family:var(--mono);font-size:11px;font-weight:500;
+  letter-spacing:1.5px;color:var(--text3);text-transform:uppercase;
+  padding:10px 16px;border-bottom:1px solid var(--line);background:var(--bg3);
 }
-.form-field{padding:12px 14px;border-bottom:1px solid var(--line);}
+.form-field{padding:14px 16px;border-bottom:1px solid var(--line);}
 .form-field:last-child{border-bottom:none;}
-.f-label{font-size:11px;color:var(--text2);display:block;margin-bottom:6px;font-weight:500;}
-.f-input{
-  width:100%;background:var(--bg);border:1px solid var(--line2);
-  border-radius:6px;color:var(--text);font-family:var(--mono);font-size:13px;
-  padding:9px 12px;outline:none;transition:border-color 0.2s;
+.f-lbl{font-size:14px;color:var(--text2);display:block;margin-bottom:8px;font-weight:500;}
+.f-in{
+  width:100%;background:var(--bg);border:1.5px solid var(--line2);
+  border-radius:8px;color:var(--text);font-family:var(--mono);font-size:16px;
+  padding:10px 14px;outline:none;transition:border-color 0.2s;
   -webkit-user-select:text;user-select:text;-webkit-appearance:none;
 }
-.f-input:focus{border-color:var(--accent);}
-.f-input::placeholder{color:var(--text3);}
-input[type="date"].f-input{color-scheme:light dark;}
-select.f-input{
+.f-in:focus{border-color:var(--accent);}
+.f-in::placeholder{color:var(--text3);}
+input[type="date"].f-in{color-scheme:light dark;}
+select.f-in{
   cursor:pointer;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23999'/%3E%3C/svg%3E");
-  background-repeat:no-repeat;background-position:right 12px center;padding-right:32px;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23888'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 14px center;padding-right:36px;
 }
-.seg{display:flex;gap:6px;}
+.seg{display:flex;gap:8px;}
 .seg-btn{
-  flex:1;padding:9px 0;border-radius:6px;border:1px solid var(--line2);background:var(--bg);
-  font-size:12px;font-weight:500;color:var(--text2);cursor:pointer;text-align:center;transition:all 0.15s;
+  flex:1;padding:10px 0;border-radius:8px;border:1.5px solid var(--line2);background:var(--bg);
+  font-size:16px;font-weight:500;color:var(--text2);cursor:pointer;text-align:center;transition:all 0.15s;
 }
 .seg-btn.on{background:var(--accent-bg);border-color:var(--accent);color:var(--accent);}
-.seg-btn:active{opacity:0.75;}
-.consent-wrap{background:var(--amber-bg);border:1px solid rgba(242,153,0,0.3);border-radius:var(--radius);padding:14px;margin-bottom:12px;}
-.consent-row{display:flex;align-items:flex-start;gap:12px;cursor:pointer;}
+.seg-btn:active{opacity:0.7;}
+.consent-wrap{background:var(--amber-bg);border:1.5px solid rgba(180,100,0,0.25);border-radius:var(--r);padding:16px;margin-bottom:14px;}
+.consent-row{display:flex;align-items:flex-start;gap:14px;cursor:pointer;}
 .consent-box{
-  width:20px;height:20px;min-width:20px;border-radius:4px;
-  border:1.5px solid var(--line2);background:var(--bg);
-  margin-top:1px;display:flex;align-items:center;justify-content:center;transition:all 0.15s;
+  width:22px;height:22px;min-width:22px;border-radius:5px;
+  border:2px solid var(--line2);background:var(--bg);
+  margin-top:2px;display:flex;align-items:center;justify-content:center;transition:all 0.15s;
 }
 .consent-box.on{background:var(--accent);border-color:var(--accent);}
-.consent-tick{color:#fff;font-size:12px;font-weight:700;opacity:0;transition:opacity 0.15s;}
+.consent-tick{color:#fff;font-size:13px;font-weight:700;opacity:0;transition:opacity 0.15s;}
 .consent-box.on .consent-tick{opacity:1;}
-.consent-txt{font-size:11px;color:var(--text2);line-height:1.65;-webkit-user-select:text;user-select:text;}
-.form-msg{font-family:var(--mono);font-size:10px;text-align:center;min-height:18px;padding:4px 0;}
+.consent-txt{font-size:14px;color:var(--text2);line-height:1.7;-webkit-user-select:text;user-select:text;}
+.form-msg{font-family:var(--mono);font-size:13px;text-align:center;min-height:20px;padding:6px 0;}
 .form-msg.ok{color:var(--green);}
 .form-msg.err{color:var(--red);}
 </style>
 
 <!-- DESKTOP WALL -->
 <div id="dwall">
-  <div class="dw-logo">AIMM</div>
-  <p>This app is designed for smartphones and tablets only.<br><br>Please open it on your mobile device.</p>
+  <div class="logo">AIMM</div>
+  <p>This app is designed for mobile devices only.</p>
 </div>
 
 <div id="app">
+
+  <!-- Header -->
   <div id="header">
     <span class="h-logo">AIMM</span>
     <div class="h-right">
-      <div class="mode-pill hidden" id="h-mode">
-        <button class="mpb on" id="h-block">BLOCK</button>
-        <button class="mpb" id="h-warn">WARN</button>
-      </div>
-      <button class="h-btn hidden" id="h-reset">&#8634;</button>
-      <button class="h-btn hidden" id="h-signout">&#9167;</button>
+      <button class="h-btn hidden" id="h-reset" title="New session">&#8634;</button>
+      <button class="h-btn hidden" id="h-signout" title="Sign out">&#9167;</button>
       <button class="h-btn" id="h-theme">&#9680;</button>
     </div>
   </div>
 
-  <!-- SETUP -->
+  <!-- SETUP SCREEN -->
   <div class="screen on" id="s-setup">
     <div class="sp">
-      <div class="setup-title">AIMM</div>
-      <div class="setup-sub">Anthropometric Imaging &amp; Measurement Module</div>
+      <div>
+        <div class="setup-hd">AIMM</div>
+        <div class="setup-sub">Anthropometric Imaging &amp; Measurement Module</div>
+      </div>
       <div class="step-list">
         <div class="step-row" id="st-cam">
-          <div class="step-icon" id="st-cam-ico">1</div>
-          <div class="step-body"><div class="step-name">Camera</div><div class="step-msg" id="st-cam-msg">Waiting&hellip;</div></div>
+          <div class="step-ico" id="st-cam-ico">1</div>
+          <div class="step-body">
+            <div class="step-name">Camera</div>
+            <div class="step-msg" id="st-cam-msg">Waiting&hellip;</div>
+          </div>
         </div>
         <div class="step-row" id="st-loc">
-          <div class="step-icon" id="st-loc-ico">2</div>
-          <div class="step-body"><div class="step-name">Location</div><div class="step-msg" id="st-loc-msg">Waiting&hellip;</div></div>
+          <div class="step-ico" id="st-loc-ico">2</div>
+          <div class="step-body">
+            <div class="step-name">Location</div>
+            <div class="step-msg" id="st-loc-msg">Waiting&hellip;</div>
+          </div>
         </div>
         <div class="step-row" id="st-auth">
-          <div class="step-icon" id="st-auth-ico">3</div>
-          <div class="step-body"><div class="step-name">Sign in</div><div class="step-msg" id="st-auth-msg">Waiting&hellip;</div></div>
+          <div class="step-ico" id="st-auth-ico">3</div>
+          <div class="step-body">
+            <div class="step-name">Sign in</div>
+            <div class="step-msg" id="st-auth-msg">Waiting&hellip;</div>
+          </div>
         </div>
         <div class="step-row" id="st-model">
-          <div class="step-icon" id="st-model-ico">4</div>
+          <div class="step-ico" id="st-model-ico">4</div>
           <div class="step-body">
             <div class="step-name">Holistic Model</div>
             <div class="step-msg" id="st-model-msg">Waiting&hellip;</div>
@@ -433,16 +482,16 @@ select.f-input{
           </div>
         </div>
       </div>
-      <div class="prog-wrap">
+      <div>
         <div class="prog-track"><div class="prog-fill" id="prog-fill"></div></div>
         <div class="prog-lbl" id="prog-lbl">Starting&hellip;</div>
       </div>
-      <div class="err-banner" id="err-banner">
-        <div class="err-banner-title" id="err-title">Error</div>
-        <div class="err-banner-msg" id="err-msg"></div>
+      <div class="err-box" id="err-box">
+        <div class="err-box-title" id="err-title">Error</div>
+        <div class="err-box-msg" id="err-msg"></div>
       </div>
       <button class="g-btn" id="g-signin" style="display:none" onclick="triggerSignIn()">
-        <svg width="18" height="18" viewBox="0 0 18 18">
+        <svg width="20" height="20" viewBox="0 0 18 18">
           <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/>
           <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/>
           <path fill="#FBBC05" d="M3.964 10.707A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.707V4.961H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.039l3.007-2.332z"/>
@@ -450,120 +499,131 @@ select.f-input{
         </svg>
         Sign in with Google
       </button>
-      <button class="btn btn-secondary mt8" id="btn-retry" style="display:none" onclick="retrySetup()">Retry</button>
-      <button class="btn btn-secondary mt8" id="btn-skip-model" style="display:none" onclick="skipModel()">Continue without pose detection</button>
+      <button class="btn btn-ghost" id="btn-skip-model" style="display:none" onclick="skipModel()">Continue without pose detection</button>
+      <div class="spacer"></div>
     </div>
   </div>
 
-  <!-- SESSION -->
+  <!-- SESSION SCREEN -->
   <div class="screen" id="s-session">
     <div class="sp">
-      <div class="section">
-        <div class="section-label">Session ID</div>
-        <div class="data-card"><div class="data-val accent" id="sess-uuid" style="word-break:break-all;line-height:2;letter-spacing:2px">&mdash;</div></div>
+      <div class="card">
+        <div class="card-label">Session ID</div>
+        <div class="card-body">
+          <div class="uuid-val" id="sess-uuid">&mdash;</div>
+        </div>
       </div>
-      <div class="section">
-        <div class="section-label">Location</div>
-        <div class="data-card">
-          <div class="data-row">
-            <div class="data-dot ld" id="loc-dot"></div>
-            <div class="data-val" id="loc-val">Acquiring&hellip;</div>
+      <div class="card">
+        <div class="card-label">Location</div>
+        <div class="card-body">
+          <div class="loc-row">
+            <div class="loc-dot ld" id="loc-dot"></div>
+            <div class="loc-val" id="loc-val">Acquiring&hellip;</div>
           </div>
         </div>
       </div>
-      <div class="section">
-        <div class="section-label">Camera Height</div>
-        <div class="data-card">
+      <div class="card">
+        <div class="card-label">Camera Height</div>
+        <div class="card-body">
           <div class="field-row">
-            <span class="field-label-inline">Height from ground</span>
-            <input class="field-input" type="number" id="camh-input" min="10" max="300" placeholder="70">
+            <span class="field-lbl">Height from ground</span>
+            <input class="field-in" type="number" id="camh-input" min="10" max="300" placeholder="70">
             <span class="field-unit">cm</span>
           </div>
         </div>
       </div>
       <div class="spacer"></div>
-      <button class="btn btn-primary" id="sess-go">Begin Capture &#8594;</button>
+      <button class="btn btn-primary" id="sess-go">Begin Capture &rarr;</button>
     </div>
   </div>
 
-  <!-- CAMERA -->
+  <!-- CAMERA SCREEN -->
   <div class="screen" id="s-camera">
-    <div id="cam-frame">
-      <div id="cam-inner">
-        <video id="vid" autoplay playsinline muted></video>
-        <canvas id="c-mask"></canvas>
-        <canvas id="c-pose"></canvas>
-        <div id="c-ring" class="bad"></div>
-        <div id="c-sil"></div>
-        <div id="c-npose"><span>POSE DETECTION UNAVAILABLE &mdash; WARN MODE</span></div>
-        <div id="c-top">
-          <span class="c-phase" id="c-phase-lbl">FRONT VIEW</span>
-          <div class="c-top-right">
-            <div class="c-mode-pill" id="c-mpill">
-              <button class="mpb on" id="c-block">BLOCK</button>
-              <button class="mpb" id="c-warn">WARN</button>
-            </div>
-            <button class="c-btn" id="c-reset-btn">&#8634;</button>
-            <button class="c-btn" id="c-signout-btn">&#9167;</button>
-            <button class="c-btn" id="c-theme-btn">&#9680;</button>
+    <div id="cam-viewport">
+      <video id="vid" autoplay playsinline muted></video>
+      <canvas id="c-canvas"></canvas>
+      <div id="pose-card"><svg id="pose-sil" viewBox="0 0 60 80" fill="none" xmlns="http://www.w3.org/2000/svg"></svg></div>
+      <div id="c-flash"></div>
+    </div>
+    <div id="cam-panel">
+      <div id="no-pose-bar">POSE DETECTION UNAVAILABLE &mdash; WARN MODE ACTIVE</div>
+      <div id="cam-topbar">
+        <span class="cam-phase" id="cam-phase-lbl">FRONT VIEW</span>
+        <div class="cam-topright">
+          <div class="mode-pill" id="cam-mpill">
+            <button class="mpb on" id="cam-block">BLOCK</button>
+            <button class="mpb" id="cam-warn">WARN</button>
           </div>
+          <button class="cam-btn" id="cam-reset">&#8634;</button>
+          <button class="cam-btn" id="cam-signout">&#9167;</button>
+          <button class="cam-btn" id="cam-theme">&#9680;</button>
         </div>
-        <div id="c-hbadge"><span id="c-hval">&mdash; cm</span></div>
-        <div id="c-chips">
-          <div class="chip" id="ch-light"><div class="chip-d"></div><span class="chip-l">LIGHT</span></div>
-          <div class="chip" id="ch-steady"><div class="chip-d"></div><span class="chip-l">STEADY</span></div>
-          <div class="chip" id="ch-level"><div class="chip-d"></div><span class="chip-l">LEVEL</span></div>
-          <div class="chip" id="ch-body"><div class="chip-d"></div><span class="chip-l">BODY</span></div>
-          <div class="chip" id="ch-dist"><div class="chip-d"></div><span class="chip-l">DIST</span></div>
-          <div class="chip" id="ch-pose"><div class="chip-d"></div><span class="chip-l">POSE</span></div>
+      </div>
+      <div id="h-display">
+        <div class="h-box">
+          <div class="h-lbl">Height Est.</div>
+          <div class="h-val dim" id="hval-cur">&mdash;</div>
         </div>
-        <div id="c-guide">Initialising&hellip;</div>
-        <div id="c-shutter-zone"><button id="c-shutter" class="off"></button></div>
-        <div id="c-flash"></div>
-        <div id="c-preview">
-          <div class="prev-label" id="prev-label">FRONT VIEW</div>
-          <div class="prev-img-wrap">
-            <img id="prev-img" src="" alt="">
-            <div class="prev-status" id="prev-status"></div>
-          </div>
-          <div class="prev-btns">
-            <button class="prev-btn retake" id="prev-retake">&#8617; Retake</button>
-            <button class="prev-btn proceed" id="prev-next">Next &#8594;</button>
-          </div>
+        <div class="h-box">
+          <div class="h-lbl" id="hval-saved-lbl">Front Saved</div>
+          <div class="h-val dim" id="hval-saved">&mdash;</div>
         </div>
+      </div>
+      <div id="chips-row">
+        <div class="chip" id="ch-light"><div class="chip-dot"></div><span class="chip-lbl">LIGHT</span></div>
+        <div class="chip" id="ch-steady"><div class="chip-dot"></div><span class="chip-lbl">STEADY</span></div>
+        <div class="chip" id="ch-level"><div class="chip-dot"></div><span class="chip-lbl">LEVEL</span></div>
+        <div class="chip" id="ch-body"><div class="chip-dot"></div><span class="chip-lbl">BODY</span></div>
+        <div class="chip" id="ch-dist"><div class="chip-dot"></div><span class="chip-lbl">DIST</span></div>
+        <div class="chip" id="ch-pose"><div class="chip-dot"></div><span class="chip-lbl">POSE</span></div>
+      </div>
+      <div id="guide-txt">Initialising&hellip;</div>
+      <div id="shutter-row">
+        <button id="shutter" class="off"></button>
       </div>
     </div>
   </div>
 
-  <!-- FORM -->
+  <!-- FORM SCREEN -->
   <div class="screen" id="s-form">
     <div class="sp">
-      <div class="form-block">
-        <div class="form-block-title">Biometric</div>
-        <div class="form-field"><label class="f-label" for="f-dob">Date of Birth</label><input class="f-input" type="date" id="f-dob"></div>
+      <div class="form-card">
+        <div class="form-card-hd">Biometric</div>
+        <div class="form-field"><label class="f-lbl" for="f-dob">Date of Birth</label><input class="f-in" type="date" id="f-dob"></div>
         <div class="form-field">
-          <label class="f-label">Gender</label>
+          <label class="f-lbl">Gender</label>
           <div class="seg"><button class="seg-btn" id="g-male" data-v="Male">Male</button><button class="seg-btn" id="g-female" data-v="Female">Female</button></div>
         </div>
-        <div class="form-field"><label class="f-label" for="f-weight">Weight (g)</label><input class="f-input" type="number" id="f-weight" placeholder="e.g. 65000" min="0"></div>
-        <div class="form-field"><label class="f-label" for="f-height">Height (cm)</label><input class="f-input" type="number" id="f-height" placeholder="e.g. 165" min="0"></div>
-        <div class="form-field"><label class="f-label" for="f-muac">MUAC (mm)</label><input class="f-input" type="number" id="f-muac" placeholder="e.g. 240" min="0"></div>
+        <div class="form-field"><label class="f-lbl" for="f-weight">Weight (g)</label><input class="f-in" type="number" id="f-weight" placeholder="e.g. 65000" min="0"></div>
+        <div class="form-field"><label class="f-lbl" for="f-height">Height (cm) &mdash; Self-reported</label><input class="f-in" type="number" id="f-height" placeholder="e.g. 165" min="0"></div>
+        <div class="form-field"><label class="f-lbl" for="f-muac">MUAC (mm)</label><input class="f-in" type="number" id="f-muac" placeholder="e.g. 240" min="0"></div>
       </div>
-      <div class="form-block">
-        <div class="form-block-title">Household</div>
+      <div class="form-card">
+        <div class="form-card-hd">Measurements</div>
         <div class="form-field">
-          <label class="f-label">Female Literacy</label>
+          <label class="f-lbl">Front View Height (cm) &mdash; estimated</label>
+          <input class="f-in" type="number" id="f-h-front" placeholder="&mdash;" readonly>
+        </div>
+        <div class="form-field">
+          <label class="f-lbl">Side View Height (cm) &mdash; estimated</label>
+          <input class="f-in" type="number" id="f-h-side" placeholder="&mdash;" readonly>
+        </div>
+      </div>
+      <div class="form-card">
+        <div class="form-card-hd">Household</div>
+        <div class="form-field">
+          <label class="f-lbl">Female Literacy</label>
           <div class="seg"><button class="seg-btn" id="lit-yes" data-v="yes">Yes</button><button class="seg-btn" id="lit-no" data-v="no">No</button></div>
         </div>
         <div class="form-field">
-          <label class="f-label" for="f-caste">Caste Category</label>
-          <select class="f-input" id="f-caste">
+          <label class="f-lbl" for="f-caste">Caste Category</label>
+          <select class="f-in" id="f-caste">
             <option value="">&mdash; Select &mdash;</option>
-            <option value="Scheduled Caste">Scheduled Caste</option>
-            <option value="Scheduled Tribe">Scheduled Tribe</option>
-            <option value="Other Backward Class">Other Backward Class</option>
-            <option value="General">General</option>
-            <option value="Prefer not to answer">Prefer not to answer</option>
+            <option>Scheduled Caste</option>
+            <option>Scheduled Tribe</option>
+            <option>Other Backward Class</option>
+            <option>General</option>
+            <option>Prefer not to answer</option>
           </select>
         </div>
       </div>
@@ -577,7 +637,21 @@ select.f-input{
       <div class="form-msg" id="form-msg"></div>
     </div>
   </div>
-</div>
+
+  <!-- Preview overlay -->
+  <div id="preview">
+    <div class="prev-lbl" id="prev-lbl">FRONT VIEW</div>
+    <div class="prev-img-wrap">
+      <img id="prev-img" src="" alt="">
+      <div class="prev-status" id="prev-status"></div>
+    </div>
+    <div class="prev-btns">
+      <button class="prev-btn retake" id="prev-retake">&#8617; Retake</button>
+      <button class="prev-btn proceed" id="prev-next">Next &rarr;</button>
+    </div>
+  </div>
+
+</div><!-- #app -->
 <script>
 (function(){
 'use strict';
@@ -591,17 +665,17 @@ const C={
   EXPIRY_KEY:'aimm.expiry',
   EMAIL_KEY:'aimm.email',
   THEME_KEY:'aimm.theme',
-  MODEL_CACHE:'aimm-holistic-v2',
+  MODEL_CACHE:'aimm-holistic-v3',
   REFRESH_AHEAD:5*60*1000,
   ARM_RAISE_DEG:45,
-  BODY_MIN:0.55,
+  BODY_MIN:0.50,
   BODY_MAX:0.93,
-  BRIGHT_MIN:52,
+  BRIGHT_MIN:45,
   SHAKE_RMS:2.8,
   SHAKE_SETTLE:550,
   TILT_BETA:15,
   TILT_GAMMA:13,
-  GEO_TIMEOUT:30000,
+  GEO_TIMEOUT:5000,
 };
 
 const S={
@@ -621,39 +695,58 @@ const S={
   consentOn:false,genderVal:null,litVal:null,
   setupPhase:'idle',
   authResolve:null,
+  // Height estimates (cm)
+  frontHeight:null,
+  sideHeight:null,
+  // Crop offsets for landmark->pixel mapping
+  cropL:0,cropT:0,cropW:1,cropH:1,
+  vidW:0,vidH:0,
 };
 
-/* THEME */
+/* ── THEME ── */
 let dark=localStorage.getItem(C.THEME_KEY)==='dark'||
-  (!localStorage.getItem(C.THEME_KEY)&&window.matchMedia('(prefers-color-scheme:dark)').matches);
-function applyTheme(){
-  if(dark)document.documentElement.setAttribute('data-dark','');
-  else document.documentElement.removeAttribute('data-dark');
-  localStorage.setItem(C.THEME_KEY,dark?'dark':'light');
-}
+  (!localStorage.getItem(C.THEME_KEY)&&matchMedia('(prefers-color-scheme:dark)').matches);
+function applyTheme(){dark?document.documentElement.setAttribute('data-dark',''):document.documentElement.removeAttribute('data-dark');localStorage.setItem(C.THEME_KEY,dark?'dark':'light');}
 applyTheme();
 function toggleTheme(){dark=!dark;applyTheme();}
 g('h-theme').addEventListener('click',toggleTheme);
-g('c-theme-btn').addEventListener('click',toggleTheme);
+g('cam-theme').addEventListener('click',toggleTheme);
 
-/* DEVICE CHECK */
+/* ── DEVICE CHECK ── */
 function chkDev(){
   const mob=/Android|iPhone|iPad|iPod|Mobile|Tablet/i.test(navigator.userAgent);
-  if(!mob&&window.innerWidth>=1024){g('dwall').style.display='flex';g('app').style.display='none';}
+  if(!mob&&innerWidth>=1024){g('dwall').style.display='flex';g('app').style.display='none';}
 }
-chkDev();window.addEventListener('resize',chkDev);
+chkDev();addEventListener('resize',chkDev);
 
-/* HELPERS */
+/* ── HELPERS ── */
 function g(id){return document.getElementById(id);}
+
 function showScreen(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
   g(id).classList.add('on');
-  const isCam=id==='s-camera',isSess=id==='s-session',isForm=id==='s-form';
+  const isCam=id==='s-camera',isSess=id==='s-session';
   g('header').style.display=isCam?'none':'flex';
-  g('h-signout').classList.toggle('hidden',!(isSess||isForm));
-  g('h-reset').classList.toggle('hidden',!isForm);
-  g('h-mode').classList.toggle('hidden',!isForm);
+  g('h-signout').classList.toggle('hidden',!isSess&&id!=='s-form');
+  g('h-reset').classList.toggle('hidden',id!=='s-form');
+  if(isCam)sizeCamViewport();
 }
+
+function sizeCamViewport(){
+  // Camera screen: header is hidden, so we use full window height
+  // viewport is 3:4 portrait; remaining space goes to controls panel
+  const vp=g('cam-viewport');
+  const panel=g('cam-panel');
+  const winH=window.innerHeight;
+  const winW=window.innerWidth;
+  // 3:4 means width * 4/3 = height
+  let vpH=Math.round(winW*4/3);
+  if(vpH>winH*0.62)vpH=Math.round(winH*0.62); // leave at least 38% for controls
+  vp.style.height=vpH+'px';
+  const cvs=g('c-canvas'),vid=g('vid');
+  cvs.width=winW;cvs.height=vpH;
+}
+
 function setStep(id,state,msg){
   const row=g(id),ico=g(id+'-ico'),msgEl=g(id+'-msg');
   row.className='step-row '+(state||'');
@@ -670,388 +763,303 @@ function setProg(pct,lbl){
   if(pct!==null)g('prog-fill').style.width=pct+'%';
   if(lbl)g('prog-lbl').textContent=lbl;
 }
-function showErr(title,msg){
-  g('err-banner').classList.add('on');
-  g('err-title').textContent=title;
-  g('err-msg').textContent=msg;
-}
-function clearErr(){g('err-banner').classList.remove('on');}
+function showErr(title,msg){g('err-box').classList.add('on');g('err-title').textContent=title;g('err-msg').textContent=msg;}
+function clearErr(){g('err-box').classList.remove('on');}
 
-/* SETUP FLOW */
+/* ── SETUP ── */
 async function runSetup(){
-  clearErr();
-  g('btn-retry').style.display='none';
-  g('btn-skip-model').style.display='none';
-  g('g-signin').style.display='none';
+  clearErr();g('btn-skip-model').style.display='none';g('g-signin').style.display='none';
 
-  /* Step 1: Camera */
+  /* 1. Camera permission — mandatory */
   S.setupPhase='cam';
-  setStep('st-cam','active','Requesting camera access\u2026');
-  setProg(5,'Requesting camera\u2026');
+  setStep('st-cam','active','Requesting camera access\u2026');setProg(5,'Requesting camera\u2026');
   try{
     let stream=null;
-    const constraints=[
+    for(const c of[
       {video:{facingMode:{exact:'environment'},width:{ideal:1440},height:{ideal:1920}},audio:false},
       {video:{facingMode:'environment',width:{ideal:1440},height:{ideal:1920}},audio:false},
       {video:{facingMode:'environment'},audio:false},
-    ];
-    for(const c of constraints){
-      try{stream=await navigator.mediaDevices.getUserMedia(c);break;}catch(e){}
-    }
-    if(!stream)throw new Error('No camera found');
+    ]){try{stream=await navigator.mediaDevices.getUserMedia(c);break;}catch(e){}}
+    if(!stream)throw new Error('No rear camera found');
     stream.getTracks().forEach(t=>t.stop());
     setStep('st-cam','done','Camera access granted');
   }catch(e){
     setStep('st-cam','err',e.message);
-    showErr('Camera permission denied',e.message);
-    g('btn-retry').style.display='block';
-    return;
+    showErr('Camera required',e.message+'\n\nPlease allow camera access and retry.');
+    showRetryBtn('cam');return;
   }
 
-  /* Sensors */
+  /* Sensors (best-effort, iOS needs user gesture) */
   if(typeof DeviceOrientationEvent!=='undefined'){
-    if(typeof DeviceOrientationEvent.requestPermission==='function'){
-      try{await DeviceOrientationEvent.requestPermission();}catch(e){}
-    }
-    window.addEventListener('deviceorientation',onOrientation);
-  }else{S.checks.level=true;}
+    if(typeof DeviceOrientationEvent.requestPermission==='function')try{await DeviceOrientationEvent.requestPermission();}catch(e){}
+    addEventListener('deviceorientation',onOrientation);
+  }else S.checks.level=true;
   if(typeof DeviceMotionEvent!=='undefined'){
-    if(typeof DeviceMotionEvent.requestPermission==='function'){
-      try{await DeviceMotionEvent.requestPermission();}catch(e){}
-    }
-    window.addEventListener('devicemotion',onMotion);
-  }else{S.checks.steady=true;}
+    if(typeof DeviceMotionEvent.requestPermission==='function')try{await DeviceMotionEvent.requestPermission();}catch(e){}
+    addEventListener('devicemotion',onMotion);
+  }else S.checks.steady=true;
 
-  /* Step 2: Location */
+  /* 2. Location — mandatory, 5s timeout, watch for best accuracy */
   S.setupPhase='loc';
-  setStep('st-loc','active','Acquiring GPS location\u2026');
-  setProg(25,'Acquiring location\u2026');
-  await new Promise(resolve=>{
-    if(!navigator.geolocation){
-      setStep('st-loc','skip','Not available');S.location=null;resolve();return;
-    }
-    navigator.geolocation.getCurrentPosition(
-      pos=>{
-        S.location={lat:pos.coords.latitude,lon:pos.coords.longitude,acc:pos.coords.accuracy};
-        setStep('st-loc','done',`${S.location.lat.toFixed(5)}, ${S.location.lon.toFixed(5)} \u00b1${S.location.acc.toFixed(0)}m`);
-        resolve();
-      },
-      err=>{setStep('st-loc','skip',err.message);S.location=null;resolve();},
-      {enableHighAccuracy:true,timeout:C.GEO_TIMEOUT,maximumAge:0}
-    );
-  });
+  setStep('st-loc','active','Acquiring GPS (high accuracy, 5s)\u2026');setProg(25,'Acquiring location\u2026');
+  const locOk=await getLocation();
+  if(!locOk){
+    setStep('st-loc','err','Location required');
+    showErr('Location required','Location access is required. Please allow location and retry.');
+    showRetryBtn('loc');return;
+  }
 
-  /* Step 3: Auth */
+  /* 3. Sign-in — mandatory */
   S.setupPhase='auth';
   setProg(45,'Waiting for sign-in\u2026');
-  await doAuth();
+  const authOk=await doAuth();
+  if(!authOk)return; // doAuth handles its own retry UI
 
-  /* Step 4: Model */
+  /* 4. Model — mandatory */
   S.setupPhase='model';
   setProg(60,'Loading holistic model\u2026');
-  await loadModel();
+  const modelOk=await loadModel();
+  if(!modelOk)return; // loadModel handles retry UI
 
-  S.setupPhase='done';
-  setProg(100,'Ready');
+  S.setupPhase='done';setProg(100,'Ready');
   setTimeout(()=>goSession(),350);
 }
 
-/* AUTH */
+let _retryBtn=null;
+function showRetryBtn(phase){
+  if(_retryBtn)_retryBtn.remove();
+  const b=document.createElement('button');
+  b.className='btn btn-ghost';b.textContent='Retry';
+  b.onclick=()=>{b.remove();_retryBtn=null;S.setupPhase='idle';runSetup();};
+  _retryBtn=b;
+  g('s-setup').querySelector('.sp').appendChild(b);
+}
+
+/* ── LOCATION with watch ── */
+function getLocation(){
+  return new Promise(resolve=>{
+    if(!navigator.geolocation){resolve(false);return;}
+    let bestAcc=Infinity,settled=false,watchId=null;
+    function done(loc,ok){
+      if(settled)return;settled=true;
+      if(watchId!==null)navigator.geolocation.clearWatch(watchId);
+      if(ok){
+        S.location=loc;
+        setStep('st-loc','done',`${loc.lat.toFixed(5)}, ${loc.lon.toFixed(5)} \u00b1${loc.acc.toFixed(0)}m`);
+      }
+      resolve(ok);
+    }
+    watchId=navigator.geolocation.watchPosition(
+      pos=>{
+        const acc=pos.coords.accuracy;
+        if(acc<bestAcc){
+          bestAcc=acc;
+          const loc={lat:pos.coords.latitude,lon:pos.coords.longitude,acc};
+          setStep('st-loc','active',`${loc.lat.toFixed(5)}, ${loc.lon.toFixed(5)} \u00b1${acc.toFixed(0)}m`);
+          S.location=loc; // keep updating
+          if(acc<=15)done(loc,true); // good enough, stop early
+        }
+      },
+      err=>{done(null,false);},
+      {enableHighAccuracy:true,timeout:C.GEO_TIMEOUT,maximumAge:0}
+    );
+    // Always resolve after timeout with whatever we have
+    setTimeout(()=>{
+      if(settled)return;
+      if(S.location){done(S.location,true);}
+      else{done(null,false);}
+    },C.GEO_TIMEOUT+500);
+  });
+}
+
+/* ── AUTH ── */
 function doAuth(){
   return new Promise(resolve=>{
     setStep('st-auth','active','Checking saved session\u2026');
-    const tk=localStorage.getItem(C.TOKEN_KEY);
-    const ex=parseInt(localStorage.getItem(C.EXPIRY_KEY)||'0',10);
-    const em=localStorage.getItem(C.EMAIL_KEY)||'';
+    const tk=localStorage.getItem(C.TOKEN_KEY),ex=parseInt(localStorage.getItem(C.EXPIRY_KEY)||'0',10),em=localStorage.getItem(C.EMAIL_KEY)||'';
     if(tk&&ex>Date.now()+60000&&em){
-      S.token=tk;S.expiry=ex;S.email=em;
-      scheduleRefresh(ex);
+      S.token=tk;S.expiry=ex;S.email=em;scheduleRefresh(ex);
       verifyServer().then(ok=>{
-        if(ok){setStep('st-auth','done',em);resolve();}
+        if(ok){setStep('st-auth','done',em);resolve(true);}
         else{clearStoredAuth();promptSignIn(resolve);}
-      });
-      return;
+      });return;
     }
-    clearStoredAuth();
-    promptSignIn(resolve);
+    clearStoredAuth();promptSignIn(resolve);
   });
 }
-
 function promptSignIn(resolve){
   setStep('st-auth','active','Sign in to continue');
   waitForGIS(()=>{
-    google.accounts.id.initialize({
-      client_id:C.GID,
-      callback:cred=>handleCredential(cred,resolve),
-      auto_select:true,
-    });
+    google.accounts.id.initialize({client_id:C.GID,callback:cred=>handleCredential(cred,resolve),auto_select:true});
     google.accounts.id.prompt(n=>{
       if(n.isSkippedMoment()||n.isDismissedMoment()){
-        g('g-signin').style.display='flex';
-        g('g-signin').disabled=false;
-        S.authResolve=resolve;
+        g('g-signin').style.display='flex';g('g-signin').disabled=false;S.authResolve=resolve;
       }
     });
   });
 }
-
 window.triggerSignIn=function(){
   g('g-signin').disabled=true;
-  waitForGIS(()=>{
-    google.accounts.id.prompt(n=>{
-      if(n.isSkippedMoment()||n.isDismissedMoment()){
-        g('g-signin').disabled=false;
-        showErr('Sign-in dismissed','Please try again or check pop-up blockers.');
-      }
-    });
-  });
+  waitForGIS(()=>{google.accounts.id.prompt(n=>{
+    if(n.isSkippedMoment()||n.isDismissedMoment()){g('g-signin').disabled=false;showErr('Sign-in dismissed','Please try again.');}
+  });});
 };
-
 function handleCredential(cred,resolve){
   g('g-signin').style.display='none';clearErr();
   try{
     const p=JSON.parse(atob(cred.credential.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
     S.token=cred.credential;S.expiry=p.exp*1000;S.email=p.email||'';
-    localStorage.setItem(C.TOKEN_KEY,S.token);
-    localStorage.setItem(C.EXPIRY_KEY,String(S.expiry));
-    localStorage.setItem(C.EMAIL_KEY,S.email);
+    localStorage.setItem(C.TOKEN_KEY,S.token);localStorage.setItem(C.EXPIRY_KEY,String(S.expiry));localStorage.setItem(C.EMAIL_KEY,S.email);
     scheduleRefresh(S.expiry);
     setStep('st-auth','active','Verifying\u2026');
     verifyServer().then(ok=>{
-      if(ok){
-        setStep('st-auth','done',S.email);
-        const res=resolve||S.authResolve;S.authResolve=null;
-        if(res)res();
-      }else{
-        setStep('st-auth','err','Server verification failed');
-        showErr('Verification failed','Could not verify. Check network and try again.');
-        g('btn-retry').style.display='block';
-      }
+      if(ok){setStep('st-auth','done',S.email);const res=resolve||S.authResolve;S.authResolve=null;if(res)res(true);}
+      else{setStep('st-auth','err','Server verification failed');showErr('Verification failed','Check network and retry.');showRetryBtn('auth');}
     });
-  }catch(e){
-    setStep('st-auth','err',e.message);
-    showErr('Auth error',e.message);
-    g('btn-retry').style.display='block';
-  }
+  }catch(e){setStep('st-auth','err',e.message);showErr('Auth error',e.message);showRetryBtn('auth');}
 }
-
-async function verifyServer(){
-  try{const r=await apiFetch('/','GET');return r.ok;}catch(e){return false;}
-}
-function clearStoredAuth(){
-  localStorage.removeItem(C.TOKEN_KEY);
-  localStorage.removeItem(C.EXPIRY_KEY);
-  localStorage.removeItem(C.EMAIL_KEY);
-}
-function scheduleRefresh(exp){
-  if(S.refreshTimer)clearTimeout(S.refreshTimer);
-  S.refreshTimer=setTimeout(silentRefresh,Math.max(0,exp-Date.now()-C.REFRESH_AHEAD));
-}
-function silentRefresh(){
-  waitForGIS(()=>{
-    google.accounts.id.prompt(n=>{
-      if(n.isSkippedMoment()||n.isDismissedMoment())doSignOut();
-    });
-  });
-}
-function waitForGIS(cb){
-  if(window.google&&window.google.accounts&&window.google.accounts.id){cb();return;}
-  const t=setInterval(()=>{if(window.google&&window.google.accounts&&window.google.accounts.id){clearInterval(t);cb();}},100);
-}
+async function verifyServer(){try{const r=await apiFetch('/','GET');return r.ok;}catch(e){return false;}}
+function clearStoredAuth(){localStorage.removeItem(C.TOKEN_KEY);localStorage.removeItem(C.EXPIRY_KEY);localStorage.removeItem(C.EMAIL_KEY);}
+function scheduleRefresh(exp){if(S.refreshTimer)clearTimeout(S.refreshTimer);S.refreshTimer=setTimeout(silentRefresh,Math.max(0,exp-Date.now()-C.REFRESH_AHEAD));}
+function silentRefresh(){waitForGIS(()=>{google.accounts.id.prompt(n=>{if(n.isSkippedMoment()||n.isDismissedMoment())doSignOut();});});}
+function waitForGIS(cb){if(window.google&&window.google.accounts&&window.google.accounts.id){cb();return;}const t=setInterval(()=>{if(window.google&&window.google.accounts&&window.google.accounts.id){clearInterval(t);cb();}},100);}
 function doSignOut(){
   if(S.refreshTimer)clearTimeout(S.refreshTimer);
-  const em=S.email;
-  S.token=null;S.expiry=null;S.email=null;
-  clearStoredAuth();
-  waitForGIS(()=>{
-    google.accounts.id.disableAutoSelect();
-    if(em)try{google.accounts.id.revoke(em,()=>{});}catch(e){}
-  });
-  stopCam();
-  S.setupPhase='idle';
+  const em=S.email;S.token=null;S.expiry=null;S.email=null;clearStoredAuth();
+  waitForGIS(()=>{google.accounts.id.disableAutoSelect();if(em)try{google.accounts.id.revoke(em,()=>{});}catch(e){}});
+  stopCam();S.setupPhase='idle';
   ['st-cam','st-loc','st-auth','st-model'].forEach(id=>setStep(id,'','Waiting\u2026'));
   setProg(0,'Starting\u2026');clearErr();
-  g('g-signin').style.display='none';
-  g('btn-retry').style.display='none';
-  g('btn-skip-model').style.display='none';
+  g('g-signin').style.display='none';g('btn-skip-model').style.display='none';
   showScreen('s-setup');runSetup();
 }
 g('h-signout').addEventListener('click',doSignOut);
-g('c-signout-btn').addEventListener('click',doSignOut);
+g('cam-signout').addEventListener('click',doSignOut);
 
-/* API FETCH */
 async function apiFetch(path,method,body,isForm){
   if(!S.token)throw new Error('Not authenticated');
   const hdrs={'Authorization':'Bearer '+S.token};
   if(!isForm)hdrs['Content-Type']='application/json';
-  const opts={method,headers:hdrs};
-  if(body)opts.body=isForm?body:JSON.stringify(body);
+  const opts={method,headers:hdrs};if(body)opts.body=isForm?body:JSON.stringify(body);
   return fetch(C.API+path,opts);
 }
 
-/* MODEL with Cache Storage caching */
-async function loadModel(){
-  setStep('st-model','active','Preparing\u2026');
-  g('st-model-bar').style.display='block';
-  await installSW();
-  return new Promise(resolve=>{
+/* ── MODEL with Service Worker cache ── */
+function loadModel(){
+  return new Promise(async resolve=>{
+    setStep('st-model','active','Preparing cache\u2026');
+    g('st-model-bar').style.display='block';
+    await installSW();
     let pct=0;
-    const anim=setInterval(()=>{
-      pct=Math.min(pct+1.5,88);
-      g('st-model-fill').style.width=pct+'%';
-    },180);
-    setStep('st-model','active','Loading model files\u2026');
+    const anim=setInterval(()=>{pct=Math.min(pct+1.2,88);g('st-model-fill').style.width=pct+'%';},200);
+    setStep('st-model','active','Loading model files (cached after first load)\u2026');
     try{
-      const h=new Holistic({
-        locateFile:file=>`https://cdn.jsdelivr.net/npm/@mediapipe/holistic/${file}`
-      });
-      h.setOptions({
-        modelComplexity:1,smoothLandmarks:true,
-        enableSegmentation:true,smoothSegmentation:true,
-        refineFaceLandmarks:false,
-        minDetectionConfidence:0.5,minTrackingConfidence:0.5,
-      });
+      const h=new Holistic({locateFile:file=>`https://cdn.jsdelivr.net/npm/@mediapipe/holistic/${file}`});
+      h.setOptions({modelComplexity:1,smoothLandmarks:true,enableSegmentation:true,smoothSegmentation:true,refineFaceLandmarks:false,minDetectionConfidence:0.5,minTrackingConfidence:0.5});
       h.onResults(onHolisticResults);
-      const dummy=document.createElement('canvas');
-      dummy.width=4;dummy.height=4;
-      const dc=dummy.getContext('2d');
-      dc.fillStyle='#000';dc.fillRect(0,0,4,4);
+      const dummy=document.createElement('canvas');dummy.width=4;dummy.height=4;
+      dummy.getContext('2d').fillRect(0,0,4,4);
       h.send({image:dummy}).then(()=>{
-        clearInterval(anim);
-        g('st-model-fill').style.width='100%';
+        clearInterval(anim);g('st-model-fill').style.width='100%';
         S.holistic=h;S.mpReady=true;
-        setStep('st-model','done','Holistic model ready');
-        setProg(95,'Model loaded');
-        resolve();
+        setStep('st-model','done','Model ready');setProg(95,'Model loaded');
+        resolve(true);
       }).catch(e=>{
         clearInterval(anim);
-        setStep('st-model','skip',e.message.slice(0,60));
-        S.noPose=true;
-        g('btn-skip-model').style.display='block';
-        setProg(95,'Model failed \u2014 continue without?');
+        setStep('st-model','err',e.message.slice(0,80));
+        showErr('Model failed',e.message+'\n\nModel is required. Check network and retry.');
+        showRetryBtn('model');resolve(false);
       });
     }catch(e){
       clearInterval(anim);
-      setStep('st-model','skip',e.message.slice(0,60));
-      S.noPose=true;
-      g('btn-skip-model').style.display='block';
-      setProg(95,'Model failed \u2014 continue without?');
+      setStep('st-model','err',e.message.slice(0,80));
+      showErr('Model failed',e.message);
+      showRetryBtn('model');resolve(false);
     }
   });
 }
 
-window.skipModel=function(){
-  S.noPose=true;S.mpReady=false;
-  g('btn-skip-model').style.display='none';
-  setProg(100,'Ready (no pose detection)');
-  setTimeout(()=>goSession(),300);
-};
+window.skipModel=function(){};// disabled — model mandatory
 
 async function installSW(){
   if(!('serviceWorker' in navigator)||!('caches' in window))return;
   try{
     const regs=await navigator.serviceWorker.getRegistrations();
-    if(regs.length>0)return;
+    // Check if our cache SW is already running
+    for(const r of regs){if(r.active&&r.active.scriptURL&&r.active.scriptURL.startsWith('blob:'))return;}
     const swCode=`
 const CACHE='${C.MODEL_CACHE}';
 const MP='https://cdn.jsdelivr.net/npm/@mediapipe/';
+self.addEventListener('install',()=>self.skipWaiting());
+self.addEventListener('activate',e=>e.waitUntil(self.clients.claim()));
 self.addEventListener('fetch',e=>{
   if(!e.request.url.startsWith(MP))return;
-  e.respondWith(
-    caches.open(CACHE).then(cache=>
-      cache.match(e.request).then(hit=>{
-        if(hit)return hit;
-        return fetch(e.request).then(r=>{
-          if(r&&r.ok)cache.put(e.request,r.clone());
-          return r;
-        });
-      })
-    )
-  );
+  e.respondWith(caches.open(CACHE).then(cache=>
+    cache.match(e.request).then(hit=>{
+      if(hit){return hit;}
+      return fetch(e.request).then(r=>{
+        if(r&&r.ok)cache.put(e.request,r.clone());
+        return r;
+      });
+    })
+  ));
 });`;
     const blob=new Blob([swCode],{type:'application/javascript'});
     const url=URL.createObjectURL(blob);
-    await navigator.serviceWorker.register(url,{scope:'/'});
+    const reg=await navigator.serviceWorker.register(url,{scope:'/'});
+    // Wait for it to be active
+    await new Promise(res=>{
+      if(reg.active){res();return;}
+      const onState=()=>{if(reg.installing&&reg.installing.state==='activated'){reg.installing.removeEventListener('statechange',onState);res();}};
+      if(reg.installing)reg.installing.addEventListener('statechange',onState);
+      else res();
+    });
   }catch(e){console.warn('SW:',e.message);}
 }
 
-window.retrySetup=function(){
-  clearErr();
-  g('btn-retry').style.display='none';
-  g('g-signin').style.display='none';
-  const ph=S.setupPhase;
-  if(ph==='cam'||ph==='idle'){
-    ['st-cam','st-loc','st-auth','st-model'].forEach(id=>setStep(id,'','Waiting\u2026'));
-    setProg(0,'Starting\u2026');runSetup();
-  }else if(ph==='auth'){
-    setStep('st-auth','','Waiting\u2026');
-    setProg(45,'Waiting for sign-in\u2026');
-    doAuth().then(()=>{
-      S.setupPhase='model';setProg(60,'Loading holistic model\u2026');
-      loadModel().then(()=>{setProg(100,'Ready');setTimeout(()=>goSession(),350);});
-    });
-  }else if(ph==='model'){
-    loadModel().then(()=>{setProg(100,'Ready');setTimeout(()=>goSession(),350);});
-  }
-};
-
-/* SESSION */
+/* ── SESSION ── */
 function goSession(){
   S.uuid=genUUID();
-  S.frontBlob=null;S.sideBlob=null;
-  S.frontDone=false;S.sideDone=false;
-  S.frontErr=null;S.sideErr=null;
-  S.phase='front';
+  S.frontBlob=null;S.sideBlob=null;S.frontDone=false;S.sideDone=false;S.frontErr=null;S.sideErr=null;
+  S.frontHeight=null;S.sideHeight=null;S.phase='front';
   g('sess-uuid').textContent=S.uuid;
   const dot=g('loc-dot'),val=g('loc-val');
-  if(S.location){
-    dot.className='data-dot ok';
-    val.textContent=`${S.location.lat.toFixed(5)}, ${S.location.lon.toFixed(5)} \u00b1${S.location.acc.toFixed(0)}m`;
-  }else{
-    dot.className='data-dot err';
-    val.textContent='Location unavailable';
-  }
+  if(S.location){dot.className='loc-dot ok';val.textContent=`${S.location.lat.toFixed(5)}, ${S.location.lon.toFixed(5)} \u00b1${S.location.acc.toFixed(0)}m`;}
+  else{dot.className='loc-dot err';val.textContent='Location unavailable';}
   const saved=parseFloat(localStorage.getItem(C.CAM_H_KEY));
   S.camH=isNaN(saved)?C.CAM_H_DEFAULT:saved;
   g('camh-input').value=S.camH;
+  g('h-signout').classList.remove('hidden');
   showScreen('s-session');
 }
-
-function genUUID(){
-  const ch='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-  const arr=new Uint8Array(32);
-  crypto.getRandomValues(arr);
-  return Array.from(arr,b=>ch[b%ch.length]).join('');
-}
-
-g('camh-input').addEventListener('input',function(){
-  const v=parseFloat(this.value);
-  if(!isNaN(v)&&v>0){S.camH=v;localStorage.setItem(C.CAM_H_KEY,v);}
-});
-g('sess-go').addEventListener('click',()=>{
-  const v=parseFloat(g('camh-input').value);
-  if(!isNaN(v)&&v>0)S.camH=v;
-  beginCapture('front');
-});
+function genUUID(){const ch='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789',a=new Uint8Array(32);crypto.getRandomValues(a);return Array.from(a,b=>ch[b%ch.length]).join('');}
+g('camh-input').addEventListener('input',function(){const v=parseFloat(this.value);if(!isNaN(v)&&v>0){S.camH=v;localStorage.setItem(C.CAM_H_KEY,v);}});
+g('sess-go').addEventListener('click',()=>{const v=parseFloat(g('camh-input').value);if(!isNaN(v)&&v>0)S.camH=v;beginCapture('front');});
 function newSession(){stopCam();goSession();}
 g('h-reset').addEventListener('click',newSession);
-g('c-reset-btn').addEventListener('click',newSession);
+g('cam-reset').addEventListener('click',newSession);
 
-/* CAMERA */
-const vid=g('vid'),mCvs=g('c-mask'),pCvs=g('c-pose');
-const mCtx=mCvs.getContext('2d'),pCtx=pCvs.getContext('2d');
+/* ── CAMERA ── */
+const vid=g('vid');
+const cvs=g('c-canvas');
+const ctx=cvs.getContext('2d');
+// Brightness sampling canvas
 const bCvs=document.createElement('canvas');bCvs.width=32;bCvs.height=32;
 const bCtx=bCvs.getContext('2d',{willReadFrequently:true});
 
 function beginCapture(phase){
-  S.phase=phase;setSil();
-  g('c-phase-lbl').textContent=phase==='front'?'FRONT VIEW':'SIDE VIEW';
-  g('c-hbadge').classList.toggle('on',phase==='front');
-  g('c-mpill').classList.remove('hidden');
-  g('c-npose').classList.remove('on');
-  g('c-top').classList.remove('pushed');
+  S.phase=phase;
+  updatePoseSil();
+  g('cam-phase-lbl').textContent=phase==='front'?'FRONT VIEW':'SIDE VIEW';
+  // height saved label
+  g('hval-saved-lbl').textContent=phase==='front'?'Side Saved':'Front Saved';
+  const savedH=phase==='front'?S.sideHeight:S.frontHeight;
+  g('hval-saved').textContent=savedH?savedH.toFixed(1)+' cm':'\u2014';
+  g('hval-saved').className=savedH?'h-val':'h-val dim';
+  g('hval-cur').textContent='\u2014';g('hval-cur').className='h-val dim';
   if(S.noPose)activateNoPose();
   showScreen('s-camera');
+  sizeCamViewport();
   startCam();
 }
 
@@ -1064,11 +1072,10 @@ function startCam(){
     {video:true,audio:false},
   ];
   async function tryNext(i){
-    if(i>=tryList.length){g('c-guide').textContent='Camera unavailable';return;}
+    if(i>=tryList.length){g('guide-txt').textContent='Camera unavailable \u2014 check permissions';return;}
     try{
       const stream=await navigator.mediaDevices.getUserMedia(tryList[i]);
-      S.camStream=stream;
-      vid.srcObject=stream;
+      S.camStream=stream;vid.srcObject=stream;
       vid.onloadeddata=()=>{S.camRunning=true;S.lastVideoTime=-1;requestAnimationFrame(camTick);};
       vid.onerror=()=>tryNext(i+1);
     }catch(e){tryNext(i+1);}
@@ -1081,126 +1088,185 @@ function stopCam(){
   if(S.camStream){S.camStream.getTracks().forEach(t=>t.stop());S.camStream=null;}
 }
 
-function sizeCvs(){
-  const w=mCvs.parentElement.clientWidth||vid.videoWidth||1;
-  const h=mCvs.parentElement.clientHeight||vid.videoHeight||1;
-  if(mCvs.width!==w||mCvs.height!==h){mCvs.width=w;mCvs.height=h;}
-  if(pCvs.width!==w||pCvs.height!==h){pCvs.width=w;pCvs.height=h;}
-}
-
 function camTick(){
   if(!S.camRunning)return;
-  sizeCvs();sampleBright();
+  sampleBright();
+  computeCrop();
   if(S.mpReady&&S.holistic&&vid.readyState>=2&&vid.currentTime!==S.lastVideoTime){
     S.lastVideoTime=vid.currentTime;
     S.holistic.send({image:vid}).catch(()=>{});
-  }else if(!S.mpReady){updateUI();}
+  }else if(!S.mpReady){
+    ctx.clearRect(0,0,cvs.width,cvs.height);
+    updateUI();
+  }
   requestAnimationFrame(camTick);
 }
 
-/* HOLISTIC RESULTS */
+/* Compute cover-crop offsets so landmarks map correctly to canvas pixels */
+function computeCrop(){
+  const vW=vid.videoWidth,vH=vid.videoHeight;
+  const cW=cvs.width,cH=cvs.height;
+  if(!vW||!vH){S.cropL=0;S.cropT=0;S.cropW=1;S.cropH=1;return;}
+  S.vidW=vW;S.vidH=vH;
+  const vAR=vW/vH,cAR=cW/cH;
+  let sW,sH;
+  if(vAR>cAR){sH=vH;sW=Math.round(vH*cAR);}
+  else{sW=vW;sH=Math.round(vW/cAR);}
+  const sx=Math.round((vW-sW)/2),sy=Math.round((vH-sH)/2);
+  S.cropL=sx/vW;S.cropT=sy/vH;S.cropW=sW/vW;S.cropH=sH/vH;
+}
+
+/* ── HOLISTIC RESULTS — overlay uses ar.html colour scheme ── */
+// Face oval indices
+const FOVAL=[10,338,297,332,284,251,389,356,454,323,361,288,397,365,379,378,400,377,152,148,176,149,150,136,172,58,132,93,234,127,162,21,54,103,67,109];
+const FLEYE=[33,7,163,144,145,153,154,155,133,173,157,158,159,160,161,246];
+const FREYE=[362,382,381,380,374,373,390,249,263,466,388,387,386,385,384,398];
+const FLIPS=[61,185,40,39,37,0,267,269,270,409,291,375,321,405,314,17,84,181,91,146];
+
+function lx(lm){return((lm.x-S.cropL)/S.cropW)*cvs.width;}
+function ly(lm){return((lm.y-S.cropT)/S.cropH)*cvs.height;}
+
 function onHolisticResults(res){
   if(!S.camRunning)return;
-  sizeCvs();
-  const w=mCvs.width,h=mCvs.height;
-  mCtx.clearRect(0,0,w,h);
-  pCtx.save();pCtx.clearRect(0,0,w,h);
+  ctx.clearRect(0,0,cvs.width,cvs.height);
+
   const hasP=!!(res.poseLandmarks&&res.poseLandmarks.length);
+  const hasF=!!(res.faceLandmarks&&res.faceLandmarks.length);
+
+  /* 1. Body segmentation mask — teal tint (from ar.html) */
   if(res.segmentationMask){
-    const ok=allOk();
-    mCtx.save();
-    mCtx.drawImage(res.segmentationMask,0,0,w,h);
-    mCtx.globalCompositeOperation='source-in';
-    mCtx.fillStyle=ok?'rgba(52,168,83,0.42)':(S.blockMode?'rgba(217,48,37,0.35)':'rgba(242,153,0,0.38)');
-    mCtx.fillRect(0,0,w,h);mCtx.restore();
+    const mask=res.segmentationMask;
+    const d=mask.getAsFloat32Array(),mW=mask.width,mH=mask.height;
+    const tmp=document.createElement('canvas');tmp.width=mW;tmp.height=mH;
+    const tc=tmp.getContext('2d'),id2=tc.createImageData(mW,mH);
+    for(let i=0;i<mW*mH;i++){
+      const v=d[i],r=i*4;
+      if(v>0.4){id2.data[r]=0;id2.data[r+1]=220;id2.data[r+2]=180;id2.data[r+3]=Math.round(v*68);}
+    }
+    tc.putImageData(id2,0,0);
+    ctx.drawImage(tmp,0,0,cvs.width,cvs.height);
+    mask.close();
   }
+
+  /* 2. Face mesh — blue fill + contours (from ar.html) */
+  if(hasF){
+    const L=res.faceLandmarks;
+    ctx.beginPath();
+    FOVAL.forEach((i,j)=>{if(!L[i])return;j===0?ctx.moveTo(lx(L[i]),ly(L[i])):ctx.lineTo(lx(L[i]),ly(L[i]));});
+    ctx.closePath();
+    ctx.fillStyle='rgba(72,130,255,.18)';ctx.fill();
+    ctx.strokeStyle='rgba(72,130,255,.6)';ctx.lineWidth=1.2;ctx.stroke();
+    const contour=(pts,col,lw)=>{
+      ctx.beginPath();
+      pts.forEach((i,j)=>{if(!L[i])return;j===0?ctx.moveTo(lx(L[i]),ly(L[i])):ctx.lineTo(lx(L[i]),ly(L[i]));});
+      ctx.strokeStyle=col;ctx.lineWidth=lw||1;ctx.stroke();
+    };
+    contour(FLEYE,'rgba(0,220,175,.7)');contour(FREYE,'rgba(0,220,175,.7)');contour(FLIPS,'rgba(245,80,90,.55)');
+  }
+
+  /* 3. Pose skeleton — green/teal (from ar.html) */
   if(hasP){
-    const pl=res.poseLandmarks;
-    S.lastPose=pl;S.lastFace=res.faceLandmarks||null;
-    const ok2=allOk();
-    const skC=ok2?'rgba(52,168,83,0.8)':'rgba(66,133,244,0.7)';
-    const lw=Math.max(2,w*0.004);
-    if(window.drawConnectors&&window.POSE_CONNECTIONS){
-      drawConnectors(pCtx,pl,POSE_CONNECTIONS,{color:skC,lineWidth:lw});
-      drawLandmarks(pCtx,pl,{color:'rgba(255,255,255,0.9)',fillColor:skC,lineWidth:1,radius:3});
+    const L=res.poseLandmarks;
+    S.lastPose=L;S.lastFace=res.faceLandmarks||null;
+    ctx.strokeStyle='rgba(0,220,175,.85)';ctx.lineWidth=2.5;
+    if(window.POSE_CONNECTIONS){
+      POSE_CONNECTIONS.forEach(([a,b])=>{
+        const la=L[a],lb=L[b];
+        if(!la||!lb||(la.visibility!==undefined?la.visibility:1)<0.3||(lb.visibility!==undefined?lb.visibility:1)<0.3)return;
+        ctx.beginPath();ctx.moveTo(lx(la),ly(la));ctx.lineTo(lx(lb),ly(lb));ctx.stroke();
+      });
     }
-    if(res.faceLandmarks&&window.FACEMESH_CONTOURS){
-      drawConnectors(pCtx,res.faceLandmarks,FACEMESH_CONTOURS,{color:'rgba(255,255,255,0.15)',lineWidth:1});
-    }
-    if(res.leftHandLandmarks&&window.HAND_CONNECTIONS){
-      drawConnectors(pCtx,res.leftHandLandmarks,HAND_CONNECTIONS,{color:'rgba(255,100,100,0.75)',lineWidth:2});
-      drawLandmarks(pCtx,res.leftHandLandmarks,{color:'rgba(255,255,255,0.8)',fillColor:'rgba(255,80,80,0.6)',lineWidth:1,radius:2});
-    }
-    if(res.rightHandLandmarks&&window.HAND_CONNECTIONS){
-      drawConnectors(pCtx,res.rightHandLandmarks,HAND_CONNECTIONS,{color:'rgba(80,220,100,0.75)',lineWidth:2});
-      drawLandmarks(pCtx,res.rightHandLandmarks,{color:'rgba(255,255,255,0.8)',fillColor:'rgba(80,200,80,0.6)',lineWidth:1,radius:2});
-    }
-    runChecks(pl);
-    if(S.phase==='front')estimateHeight();
+    L.forEach(lm=>{
+      if(!lm||(lm.visibility!==undefined?lm.visibility:1)<0.25)return;
+      ctx.beginPath();ctx.arc(lx(lm),ly(lm),3.5,0,Math.PI*2);
+      ctx.fillStyle='rgba(0,232,184,1)';ctx.fill();
+    });
+    runChecks(L);
+    computeHeight();
   }else{
     S.lastPose=null;
     S.checks.body=false;S.checks.dist=false;S.checks.pose=false;
   }
-  pCtx.restore();updateUI();
+
+  /* 4. Hands — left=amber, right=purple (from ar.html) */
+  function drawHand(lms,col,fill){
+    ctx.beginPath();
+    [0,1,5,9,13,17,0].forEach((i,j)=>{if(!lms[i])return;j===0?ctx.moveTo(lx(lms[i]),ly(lms[i])):ctx.lineTo(lx(lms[i]),ly(lms[i]));});
+    ctx.fillStyle=fill;ctx.fill();
+    if(window.HAND_CONNECTIONS){
+      ctx.strokeStyle=col;ctx.lineWidth=1.8;
+      HAND_CONNECTIONS.forEach(([a,b])=>{ctx.beginPath();ctx.moveTo(lx(lms[a]),ly(lms[a]));ctx.lineTo(lx(lms[b]),ly(lms[b]));ctx.stroke();});
+    }
+    lms.forEach(lm=>{ctx.beginPath();ctx.arc(lx(lm),ly(lm),2.5,0,Math.PI*2);ctx.fillStyle=col;ctx.fill();});
+  }
+  if(res.leftHandLandmarks&&res.leftHandLandmarks.length)drawHand(res.leftHandLandmarks,'rgba(240,185,50,.9)','rgba(240,185,50,.12)');
+  if(res.rightHandLandmarks&&res.rightHandLandmarks.length)drawHand(res.rightHandLandmarks,'rgba(176,96,240,.9)','rgba(176,96,240,.12)');
+
+  updateUI();
 }
 
-function allOk(){
-  const keys=S.mpReady?['light','steady','level','body','dist','pose']:['light','steady','level'];
-  return keys.every(k=>S.checks[k]);
+/* ── HEIGHT ESTIMATION (Pp/Pc geometry, same for front and side) ── */
+function computeHeight(){
+  const fl=S.lastFace,pl=S.lastPose;
+  if(!fl||!pl||fl.length===0){updateHBadge(null);return;}
+  // Top: min Y across all 468 face landmarks
+  let topNorm=Infinity;
+  for(let i=0;i<fl.length;i++){if(fl[i].y<topNorm)topNorm=fl[i].y;}
+  // Bottom: max Y across heel/foot indices 29-32
+  let botNorm=-Infinity;
+  [29,30,31,32].forEach(i=>{if(pl[i]&&pl[i].y>botNorm)botNorm=pl[i].y;});
+  if(!isFinite(topNorm)||!isFinite(botNorm)||botNorm<=topNorm){updateHBadge(null);return;}
+  // Map to display coords accounting for cover crop
+  const topDisp=(topNorm-S.cropT)/S.cropH;
+  const botDisp=(botNorm-S.cropT)/S.cropH;
+  const dispH=cvs.height;
+  const Pp=(botDisp-topDisp)*dispH;
+  const Pc=(botDisp-0.5)*dispH;
+  if(Pc<=0||Pp<=0){updateHBadge(null);return;}
+  const h=(S.camH/100)*Pp/Pc; // metres
+  if(h<=0||h>3){updateHBadge(null);return;}
+  const hcm=h*100;
+  updateHBadge(hcm);
 }
 
-/* BRIGHTNESS */
+function updateHBadge(hcm){
+  const el=g('hval-cur');
+  if(hcm===null){el.textContent='\u2014';el.className='h-val dim';}
+  else{el.textContent=hcm.toFixed(1)+' cm';el.className='h-val';}
+  // Store running estimate for save-on-capture
+  S._lastHcm=hcm;
+}
+
+/* ── BRIGHTNESS ── */
 function sampleBright(){
   if(!vid.videoWidth)return;
-  try{
-    bCtx.drawImage(vid,0,0,32,32);
-    const d=bCtx.getImageData(0,0,32,32).data;
-    let s=0;for(let i=0;i<d.length;i+=4)s+=d[i]*0.299+d[i+1]*0.587+d[i+2]*0.114;
-    S.checks.light=(s/1024)>C.BRIGHT_MIN;
-  }catch(e){S.checks.light=true;}
+  try{bCtx.drawImage(vid,0,0,32,32);const d=bCtx.getImageData(0,0,32,32).data;let s=0;for(let i=0;i<d.length;i+=4)s+=d[i]*0.299+d[i+1]*0.587+d[i+2]*0.114;S.checks.light=(s/1024)>C.BRIGHT_MIN;}
+  catch(e){S.checks.light=true;}
 }
 
-/* SENSORS */
-function onOrientation(e){
-  S.checks.level=Math.abs((e.beta||0)-90)<C.TILT_BETA&&Math.abs(e.gamma||0)<C.TILT_GAMMA;
-}
+/* ── SENSORS ── */
+function onOrientation(e){S.checks.level=Math.abs((e.beta||0)-90)<C.TILT_BETA&&Math.abs(e.gamma||0)<C.TILT_GAMMA;}
 function onMotion(e){
-  const a=e.accelerationIncludingGravity;
-  if(!a){S.checks.steady=true;return;}
-  const dx=Math.abs((a.x||0)-S.lastAcc.x);
-  const dy=Math.abs((a.y||0)-S.lastAcc.y);
-  const dz=Math.abs((a.z||0)-S.lastAcc.z);
+  const a=e.accelerationIncludingGravity;if(!a){S.checks.steady=true;return;}
+  const dx=Math.abs((a.x||0)-S.lastAcc.x),dy=Math.abs((a.y||0)-S.lastAcc.y),dz=Math.abs((a.z||0)-S.lastAcc.z);
   S.lastAcc={x:a.x||0,y:a.y||0,z:a.z||0};
-  if(Math.sqrt(dx*dx+dy*dy+dz*dz)>C.SHAKE_RMS){
-    S.shakeOk=false;clearTimeout(S.shakeTmr);
-    S.shakeTmr=setTimeout(()=>{S.shakeOk=true;},C.SHAKE_SETTLE);
-  }
+  if(Math.sqrt(dx*dx+dy*dy+dz*dz)>C.SHAKE_RMS){S.shakeOk=false;clearTimeout(S.shakeTmr);S.shakeTmr=setTimeout(()=>{S.shakeOk=true;},C.SHAKE_SETTLE);}
   S.checks.steady=S.shakeOk;
 }
 
-/* POSE CHECKS */
-function vis(lm,i,vt,pt){
-  vt=vt||0.30;pt=pt||0.20;
-  const p=lm[i];if(!p)return false;
-  return(p.visibility!==undefined?p.visibility:1)>=vt&&(p.presence!==undefined?p.presence:1)>=pt;
-}
+/* ── POSE CHECKS ── */
+function vis(lm,i,vt,pt){vt=vt||0.30;pt=pt||0.20;const p=lm[i];if(!p)return false;return(p.visibility!==undefined?p.visibility:1)>=vt&&(p.presence!==undefined?p.presence:1)>=pt;}
 function runChecks(lm){
   const nose=vis(lm,0,0.3,0.2)?lm[0]:null;
-  let ankleY=0;
-  [[27,0.3,0.2],[28,0.3,0.2],[29,0.25,0.15],[30,0.25,0.15]].forEach(function(x){
-    if(vis(lm,x[0],x[1],x[2]))ankleY=Math.max(ankleY,lm[x[0]].y);
-  });
+  let ankleY=0;[[27,0.3,0.2],[28,0.3,0.2],[29,0.25,0.15],[30,0.25,0.15]].forEach(function(x){if(vis(lm,x[0],x[1],x[2]))ankleY=Math.max(ankleY,lm[x[0]].y);});
   const span=(nose&&ankleY>0)?ankleY-nose.y:0;
   S.checks.dist=span>=C.BODY_MIN&&span<=C.BODY_MAX;
   S.checks.body=checkBody(lm,span);
   S.checks.pose=S.phase==='front'?checkFront(lm):checkSide(lm);
 }
 function checkBody(lm,span){
-  if(span<0.40)return false;
-  if(S.phase==='front'){
-    if(![0,11,12,23,24].every(i=>vis(lm,i,0.35,0.25)))return false;
-    return[13,14,25,26,27,28].filter(i=>vis(lm,i,0.25,0.15)).length>=3;
-  }
+  if(span<0.38)return false;
+  if(S.phase==='front'){if(![0,11,12,23,24].every(i=>vis(lm,i,0.35,0.25)))return false;return[13,14,25,26,27,28].filter(i=>vis(lm,i,0.25,0.15)).length>=3;}
   const lv=(lm[11]&&lm[11].visibility)||0,rv=(lm[12]&&lm[12].visibility)||0;
   const arr=lv>=rv?[11,13,23,25,27]:[12,14,24,26,28];
   if(!vis(lm,0,0.3,0.2)||!vis(lm,arr[0],0.35,0.25)||!vis(lm,arr[2],0.35,0.25))return false;
@@ -1210,15 +1276,9 @@ function checkFront(lm){
   if(![11,12,13,14,23,24].every(i=>vis(lm,i,0.25,0.15)))return false;
   const ls=lm[11],rs=lm[12],le=lm[13],re=lm[14],lh=lm[23],rh=lm[24];
   if(Math.abs(rs.x-ls.x)<0.08)return false;
-  const tx=((ls.x+rs.x)/2)-((lh.x+rh.x)/2),ty=((ls.y+rs.y)/2)-((lh.y+rh.y)/2);
-  const tl=Math.sqrt(tx*tx+ty*ty);
+  const tx=((ls.x+rs.x)/2)-((lh.x+rh.x)/2),ty=((ls.y+rs.y)/2)-((lh.y+rh.y)/2),tl=Math.sqrt(tx*tx+ty*ty);
   if(tl<0.05)return false;
-  function ang(sh,el){
-    const ax=el.x-sh.x,ay=el.y-sh.y,al=Math.sqrt(ax*ax+ay*ay);
-    if(al<0.02)return 0;
-    const a=Math.acos(Math.max(-1,Math.min(1,(ax*tx+ay*ty)/(al*tl))))*180/Math.PI;
-    return a>90?180-a:a;
-  }
+  function ang(sh,el){const ax=el.x-sh.x,ay=el.y-sh.y,al=Math.sqrt(ax*ax+ay*ay);if(al<0.02)return 0;const a=Math.acos(Math.max(-1,Math.min(1,(ax*tx+ay*ty)/(al*tl))))*180/Math.PI;return a>90?180-a:a;}
   return ang(ls,le)>=C.ARM_RAISE_DEG&&ang(rs,re)>=C.ARM_RAISE_DEG;
 }
 function checkSide(lm){
@@ -1232,34 +1292,15 @@ function checkSide(lm){
   return true;
 }
 
-/* HEIGHT ESTIMATION */
-function estimateHeight(){
-  const fl=S.lastFace,pl=S.lastPose,dH=mCvs.height;
-  if(!fl||!pl||fl.length===0||dH===0){g('c-hbadge').classList.remove('on');return;}
-  let topY=Infinity;
-  for(let i=0;i<fl.length;i++)if(fl[i].y<topY)topY=fl[i].y;
-  let botY=-Infinity;
-  [29,30,31,32].forEach(function(i){if(pl[i]&&pl[i].y>botY)botY=pl[i].y;});
-  if(!isFinite(topY)||!isFinite(botY)||botY<=topY){g('c-hbadge').classList.remove('on');return;}
-  const Pp=(botY-topY)*dH,Pc=(botY-0.5)*dH;
-  if(Pc<=0||Pp<=0){g('c-hbadge').classList.remove('on');return;}
-  const hM=(S.camH/100)*Pp/Pc;
-  if(hM<=0||hM>3){g('c-hbadge').classList.remove('on');return;}
-  g('c-hbadge').classList.add('on');
-  g('c-hval').textContent=(hM*100).toFixed(1)+' cm';
-}
-
-/* UI */
+/* ── UI ── */
 function activateNoPose(){
-  S.noPose=true;
-  S.checks.body=true;S.checks.dist=true;S.checks.pose=true;
-  S.blockMode=false;
-  g('c-block').classList.remove('on');g('c-warn').classList.add('on');
-  g('h-block').classList.remove('on');g('h-warn').classList.add('on');
-  g('c-mpill').classList.add('hidden');
-  g('c-npose').classList.add('on');
-  g('c-top').classList.add('pushed');
+  S.noPose=true;S.checks.body=true;S.checks.dist=true;S.checks.pose=true;S.blockMode=false;
+  g('cam-block').classList.remove('on');g('cam-warn').classList.add('on');
+  g('no-pose-bar').classList.add('on');
   ['ch-body','ch-dist','ch-pose'].forEach(id=>{const e=g(id);if(e)e.className='chip dis';});
+}
+function allOk(){
+  return(S.mpReady?['light','steady','level','body','dist','pose']:['light','steady','level']).every(k=>S.checks[k]);
 }
 const CHIPS={light:'ch-light',steady:'ch-steady',level:'ch-level',body:'ch-body',dist:'ch-dist',pose:'ch-pose'};
 const POSE_KEYS=['body','dist','pose'];
@@ -1267,8 +1308,7 @@ function updateUI(){
   const keys=S.mpReady?['light','steady','level','body','dist','pose']:['light','steady','level'];
   const ok=keys.every(k=>S.checks[k]);
   const canShoot=S.blockMode?ok:true;
-  g('c-ring').className=ok?'ok':(S.blockMode?'bad':'warn');
-  const sh=g('c-shutter');
+  const sh=g('shutter');
   if(!S.camRunning)sh.className='off';
   else if(canShoot)sh.className=ok?'ok':'warn';
   else sh.className='off';
@@ -1278,83 +1318,85 @@ function updateUI(){
     el.className='chip '+(S.checks[k]?'ok':(S.blockMode?'bad':'warn'));
   });
   const fails=keys.filter(k=>!S.checks[k]);
-  const guide=g('c-guide');
+  const gt=g('guide-txt');
   const MSGS={
-    light:S.blockMode?'Improve lighting':'Low light',
-    steady:S.blockMode?'Hold phone steady':'Phone moving',
-    level:S.blockMode?'Hold phone upright vertically':'Phone tilted',
-    body:S.blockMode?'Full body must be visible':'Body partially out of frame',
-    dist:(function(){
-      if(!S.lastPose)return'No person detected';
-      const nose=S.lastPose[0];
-      return(nose&&nose.y>0.6)?'Step back':'Move closer';
-    })(),
-    pose:S.phase==='front'
-      ?(S.blockMode?'Raise both arms away from body (\u2265'+C.ARM_RAISE_DEG+'\u00b0)':'Arms not raised enough')
-      :(S.blockMode?'Turn sideways \u2014 profile view':'Not quite side-on'),
+    light:S.blockMode?'Improve lighting \u2014 too dark':'Low light warning',
+    steady:S.blockMode?'Hold phone steady':'Phone is moving',
+    level:S.blockMode?'Hold phone vertically upright':'Phone is tilted',
+    body:S.blockMode?'Full body must be in frame':'Body partially out of frame',
+    dist:(function(){if(!S.lastPose)return'No person detected';const n=S.lastPose[0];return(n&&n.y>0.6)?'Step back from camera':'Move further away';})(),
+    pose:S.phase==='front'?(S.blockMode?'Raise both arms to sides (\u2265'+C.ARM_RAISE_DEG+'\u00b0)':'Arms need to be raised more'):(S.blockMode?'Turn sideways for profile view':'Not quite side-on'),
   };
-  if(!fails.length){
-    guide.textContent=S.phase==='front'?'Arms raised \u2014 tap to capture':'Side view ready \u2014 tap to capture';
-    guide.style.color='rgba(52,168,83,0.9)';
-  }else{
-    guide.textContent=MSGS[fails[0]]||fails[0];
-    guide.style.color=S.blockMode?'rgba(217,48,37,0.9)':'rgba(242,153,0,0.9)';
-  }
+  if(!fails.length){gt.textContent=S.phase==='front'?'Arms raised \u2014 tap shutter to capture':'Side view ready \u2014 tap shutter to capture';gt.className='guide-txt ok';}
+  else{gt.textContent=MSGS[fails[0]]||fails[0];gt.className='guide-txt '+(S.blockMode?'bad':'warn');}
 }
 
-/* MODE */
+/* ── MODE ── */
 function setMode(block){
   S.blockMode=block;
-  [g('c-block'),g('h-block')].forEach(b=>b.classList.toggle('on',block));
-  [g('c-warn'),g('h-warn')].forEach(b=>b.classList.toggle('on',!block));
+  g('cam-block').classList.toggle('on',block);g('cam-warn').classList.toggle('on',!block);
 }
-g('c-block').addEventListener('click',()=>setMode(true));
-g('c-warn').addEventListener('click',()=>setMode(false));
-g('h-block').addEventListener('click',()=>setMode(true));
-g('h-warn').addEventListener('click',()=>setMode(false));
+g('cam-block').addEventListener('click',()=>setMode(true));
+g('cam-warn').addEventListener('click',()=>setMode(false));
 
-/* SILHOUETTES */
-const SIL_FRONT='<svg viewBox="0 0 180 240" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><style>.s{fill:rgba(255,255,255,.09);stroke:rgba(255,255,255,.25);stroke-width:1.1}.s2{fill:rgba(255,255,255,.06);stroke:rgba(255,255,255,.16);stroke-width:0.9}</style></defs><ellipse class="s" cx="90" cy="19" rx="13" ry="15"/><path class="s2" d="M85 33 L95 33 L94 40 L86 40 Z"/><path class="s" d="M52 40 Q90 35 128 40 L124 108 Q90 115 56 108 Z"/><path class="s2" d="M56 106 Q90 112 124 106 L120 122 Q90 128 60 122 Z"/><path d="M54 50 L22 72" stroke="rgba(255,255,255,.22)" stroke-width="9" stroke-linecap="round"/><path d="M22 72 L10 67" stroke="rgba(255,255,255,.18)" stroke-width="7" stroke-linecap="round"/><ellipse cx="7" cy="65" rx="5.5" ry="4.5" fill="rgba(255,255,255,.13)" stroke="rgba(255,255,255,.22)" stroke-width="0.9"/><path d="M126 50 L158 72" stroke="rgba(255,255,255,.22)" stroke-width="9" stroke-linecap="round"/><path d="M158 72 L170 67" stroke="rgba(255,255,255,.18)" stroke-width="7" stroke-linecap="round"/><ellipse cx="173" cy="65" rx="5.5" ry="4.5" fill="rgba(255,255,255,.13)" stroke="rgba(255,255,255,.22)" stroke-width="0.9"/><path d="M72 120 L68 172" stroke="rgba(255,255,255,.20)" stroke-width="11" stroke-linecap="round"/><path d="M67 177 L65 224" stroke="rgba(255,255,255,.16)" stroke-width="9" stroke-linecap="round"/><path class="s2" d="M53 226 Q65 220 77 224 L78 232 Q65 236 51 232 Z"/><path d="M108 120 L112 172" stroke="rgba(255,255,255,.20)" stroke-width="11" stroke-linecap="round"/><path d="M113 177 L115 224" stroke="rgba(255,255,255,.16)" stroke-width="9" stroke-linecap="round"/><path class="s2" d="M103 226 Q115 220 127 224 L128 232 Q115 236 101 232 Z"/></svg>';
-const SIL_SIDE='<svg viewBox="0 0 180 240" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><style>.s{fill:rgba(255,255,255,.09);stroke:rgba(255,255,255,.25);stroke-width:1.1}.s2{fill:rgba(255,255,255,.06);stroke:rgba(255,255,255,.16);stroke-width:0.9}.f{stroke:rgba(255,255,255,.10);stroke-dasharray:5 4;fill:rgba(255,255,255,.03)}</style></defs><ellipse class="s" cx="96" cy="19" rx="12" ry="15"/><path class="s2" d="M89 33 L101 33 L100 40 L90 40 Z"/><path class="s" d="M82 40 L104 40 L102 108 L80 108 Z"/><path class="s2" d="M80 106 L102 106 L100 122 L82 122 Z"/><path d="M100 52 L98 92" stroke="rgba(255,255,255,.10)" stroke-width="8" stroke-linecap="round" stroke-dasharray="7 5"/><path d="M97 96 L95 126" stroke="rgba(255,255,255,.08)" stroke-width="6" stroke-linecap="round" stroke-dasharray="6 5"/><path d="M84 52 L82 92" stroke="rgba(255,255,255,.24)" stroke-width="9" stroke-linecap="round"/><path d="M81 96 L79 128" stroke="rgba(255,255,255,.18)" stroke-width="7" stroke-linecap="round"/><ellipse cx="77" cy="134" rx="5.5" ry="5" fill="rgba(255,255,255,.13)" stroke="rgba(255,255,255,.20)" stroke-width="0.9"/><path d="M92 120 L94 170" stroke="rgba(255,255,255,.10)" stroke-width="10" stroke-linecap="round" stroke-dasharray="8 5"/><path d="M94 174 L96 220" stroke="rgba(255,255,255,.08)" stroke-width="8" stroke-linecap="round" stroke-dasharray="7 5"/><path class="f" d="M84 222 L108 222 L110 230 L82 230 Z" stroke-width="0.9"/><path d="M84 120 L82 170" stroke="rgba(255,255,255,.22)" stroke-width="12" stroke-linecap="round"/><path d="M81 174 L78 220" stroke="rgba(255,255,255,.18)" stroke-width="9" stroke-linecap="round"/><path class="s2" d="M64 222 Q78 216 92 221 L93 229 Q78 234 62 229 Z"/></svg>';
-function setSil(){g('c-sil').innerHTML=S.phase==='front'?SIL_FRONT:SIL_SIDE;}
+/* ── POSE SILHOUETTES ── */
+const SIL_FRONT=`<ellipse cx="30" cy="7" rx="5" ry="6" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="1.2"/>
+<path d="M26 12 Q30 10 34 12 L33 30 Q30 32 27 30 Z" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="1.2"/>
+<path d="M26 15 L18 24" stroke="rgba(255,255,255,.45)" stroke-width="2.5" stroke-linecap="round"/>
+<path d="M18 24 L14 22" stroke="rgba(255,255,255,.35)" stroke-width="2" stroke-linecap="round"/>
+<path d="M34 15 L42 24" stroke="rgba(255,255,255,.45)" stroke-width="2.5" stroke-linecap="round"/>
+<path d="M42 24 L46 22" stroke="rgba(255,255,255,.35)" stroke-width="2" stroke-linecap="round"/>
+<path d="M28 30 L27 52" stroke="rgba(255,255,255,.45)" stroke-width="3" stroke-linecap="round"/>
+<path d="M27 52 L26 72" stroke="rgba(255,255,255,.38)" stroke-width="2.5" stroke-linecap="round"/>
+<path d="M32 30 L33 52" stroke="rgba(255,255,255,.45)" stroke-width="3" stroke-linecap="round"/>
+<path d="M33 52 L34 72" stroke="rgba(255,255,255,.38)" stroke-width="2.5" stroke-linecap="round"/>`;
+const SIL_SIDE=`<ellipse cx="32" cy="7" rx="5" ry="6" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="1.2"/>
+<path d="M30 12 Q34 10 36 12 L35 30 Q32 32 29 30 Z" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="1.2"/>
+<path d="M30 16 L28 34" stroke="rgba(255,255,255,.45)" stroke-width="2.5" stroke-linecap="round"/>
+<path d="M28 34 L27 46" stroke="rgba(255,255,255,.35)" stroke-width="2" stroke-linecap="round"/>
+<path d="M34 16 L34 28" stroke="rgba(255,255,255,.15)" stroke-width="2" stroke-linecap="round" stroke-dasharray="4 3"/>
+<path d="M30 30 L29 52" stroke="rgba(255,255,255,.45)" stroke-width="3" stroke-linecap="round"/>
+<path d="M29 52 L28 72" stroke="rgba(255,255,255,.38)" stroke-width="2.5" stroke-linecap="round"/>
+<path d="M33 30 L34 52" stroke="rgba(255,255,255,.15)" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="5 4"/>`;
 
-/* SHUTTER */
-g('c-shutter').addEventListener('click',()=>{
-  if(g('c-shutter').classList.contains('off'))return;
-  doCapture();
-});
+function updatePoseSil(){
+  g('pose-sil').innerHTML=S.phase==='front'?SIL_FRONT:SIL_SIDE;
+}
+
+/* ── SHUTTER ── */
+g('shutter').addEventListener('click',()=>{if(g('shutter').classList.contains('off'))return;doCapture();});
 function doCapture(){
+  // Save height at moment of capture
+  if(S.phase==='front')S.frontHeight=S._lastHcm||null;
+  else S.sideHeight=S._lastHcm||null;
+
   const fl=g('c-flash');fl.classList.add('on');
   requestAnimationFrame(()=>requestAnimationFrame(()=>fl.classList.remove('on')));
-  const W=1080,H=1440,cap=document.createElement('canvas');
-  cap.width=W;cap.height=H;
-  const ctx=cap.getContext('2d'),vw=vid.videoWidth,vh=vid.videoHeight;
+  const W=1080,H=1440,cap=document.createElement('canvas');cap.width=W;cap.height=H;
+  const octx=cap.getContext('2d'),vw=vid.videoWidth,vh=vid.videoHeight;
   if(!vw||!vh)return;
   const TR=3/4,SR=vw/vh;
   let sx,sy,sw,sh;
   if(SR>TR){sh=vh;sw=Math.round(vh*TR);sx=Math.round((vw-sw)/2);sy=0;}
   else{sw=vw;sh=Math.round(vw/TR);sx=0;sy=Math.round((vh-sh)/2);}
-  ctx.drawImage(vid,sx,sy,sw,sh,0,0,W,H);
-  cap.toBlob(function(blob){
-    if(!blob)return;
-    if(S.phase==='front')S.frontBlob=blob;else S.sideBlob=blob;
-    showPreview(cap.toDataURL('image/jpeg',0.75));
-  },'image/jpeg',0.93);
+  octx.drawImage(vid,sx,sy,sw,sh,0,0,W,H);
+  cap.toBlob(function(blob){if(!blob)return;if(S.phase==='front')S.frontBlob=blob;else S.sideBlob=blob;showPreview(cap.toDataURL('image/jpeg',0.75));cap=null;},'image/jpeg',0.93);
 }
 
-/* PREVIEW */
+/* ── PREVIEW ── */
 function showPreview(dataUrl){
   g('prev-img').src=dataUrl;
-  g('prev-label').textContent=S.phase==='front'?'FRONT VIEW':'SIDE VIEW';
+  g('prev-lbl').textContent=S.phase==='front'?'FRONT VIEW':'SIDE VIEW';
   g('prev-status').textContent='';g('prev-status').className='prev-status';
   const nb=g('prev-next');nb.textContent='Next \u2192';nb.disabled=false;
   S.popupMode=S.phase==='front'?'front-normal':'side-normal';
-  g('c-preview').classList.add('on');
+  g('preview').classList.add('on');
 }
-function hidePreview(){g('c-preview').classList.remove('on');}
+function hidePreview(){g('preview').classList.remove('on');}
 
 g('prev-retake').addEventListener('click',()=>{
-  if(S.popupMode.indexOf('front')===0)S.frontBlob=null;else S.sideBlob=null;
+  if(S.popupMode.indexOf('front')===0){S.frontBlob=null;S.frontHeight=null;}
+  else{S.sideBlob=null;S.sideHeight=null;}
   hidePreview();
 });
 g('prev-next').addEventListener('click',()=>{
@@ -1363,9 +1405,12 @@ g('prev-next').addEventListener('click',()=>{
     S.frontDone=false;S.frontErr=null;
     uploadBlob(S.frontBlob,S.uuid+'_front.jpg','front');
     hidePreview();
-    S.phase='side';setSil();
-    g('c-phase-lbl').textContent='SIDE VIEW';
-    g('c-hbadge').classList.remove('on');
+    S.phase='side';updatePoseSil();
+    g('cam-phase-lbl').textContent='SIDE VIEW';
+    g('hval-saved-lbl').textContent='Front Saved';
+    g('hval-saved').textContent=S.frontHeight?S.frontHeight.toFixed(1)+' cm':'\u2014';
+    g('hval-saved').className=S.frontHeight?'h-val':'h-val dim';
+    g('hval-cur').textContent='\u2014';g('hval-cur').className='h-val dim';
   }else{
     S.sideDone=false;S.sideErr=null;
     uploadBlob(S.sideBlob,S.uuid+'_side.jpg','side');
@@ -1373,101 +1418,59 @@ g('prev-next').addEventListener('click',()=>{
     pollSide();
   }
 });
-function pollSide(){
-  if(S.sideErr)return;
-  if(S.sideDone){hidePreview();goForm();return;}
-  setTimeout(pollSide,200);
-}
+function pollSide(){if(S.sideErr)return;if(S.sideDone){hidePreview();goForm();return;}setTimeout(pollSide,200);}
 
-/* UPLOAD */
 function uploadBlob(blob,filename,side){
   const fd=new FormData();fd.append('file',blob,filename);
   apiFetch('/file','POST',fd,true)
-    .then(r=>{
-      if(!r.ok)throw new Error('HTTP '+r.status);
-      if(side==='front'){S.frontDone=true;S.frontErr=null;}
-      else{S.sideDone=true;S.sideErr=null;}
-    })
-    .catch(e=>{
-      if(side==='front'){S.frontErr=e.message;showUploadErr('front',e.message);}
-      else{S.sideErr=e.message;showUploadErr('side',e.message);}
-    });
+    .then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);if(side==='front'){S.frontDone=true;S.frontErr=null;}else{S.sideDone=true;S.sideErr=null;}})
+    .catch(e=>{if(side==='front'){S.frontErr=e.message;showUploadErr('front',e.message);}else{S.sideErr=e.message;showUploadErr('side',e.message);}});
 }
 function showUploadErr(side,msg){
   const st=g('prev-status');
   if(side==='front'){
-    S.phase='front';setSil();
-    g('c-phase-lbl').textContent='FRONT VIEW';
-    g('c-hbadge').classList.add('on');
-    if(S.frontBlob){
-      g('prev-img').src=URL.createObjectURL(S.frontBlob);
-      g('prev-label').textContent='FRONT VIEW';
-      st.textContent='Upload failed: '+msg;st.className='prev-status err on';
-      const nb=g('prev-next');nb.textContent='Retry \u21bb';nb.disabled=false;
-      S.popupMode='front-retry';
-      showScreen('s-camera');g('c-preview').classList.add('on');
-    }
+    S.phase='front';updatePoseSil();g('cam-phase-lbl').textContent='FRONT VIEW';
+    if(S.frontBlob){g('prev-img').src=URL.createObjectURL(S.frontBlob);g('prev-lbl').textContent='FRONT VIEW';st.textContent='Upload failed: '+msg;st.className='prev-status err on';const nb=g('prev-next');nb.textContent='Retry \u21bb';nb.disabled=false;S.popupMode='front-retry';showScreen('s-camera');g('preview').classList.add('on');}
   }else{
-    if(S.sideBlob){
-      g('prev-img').src=URL.createObjectURL(S.sideBlob);
-      g('prev-label').textContent='SIDE VIEW';
-      st.textContent='Upload failed: '+msg;st.className='prev-status err on';
-      const nb=g('prev-next');nb.textContent='Retry \u21bb';nb.disabled=false;
-      S.popupMode='side-retry';
-      showScreen('s-camera');g('c-preview').classList.add('on');
-    }
+    if(S.sideBlob){g('prev-img').src=URL.createObjectURL(S.sideBlob);g('prev-lbl').textContent='SIDE VIEW';st.textContent='Upload failed: '+msg;st.className='prev-status err on';const nb=g('prev-next');nb.textContent='Retry \u21bb';nb.disabled=false;S.popupMode='side-retry';showScreen('s-camera');g('preview').classList.add('on');}
   }
 }
 
-/* FORM */
+/* ── FORM ── */
 function goForm(){
   stopCam();
   S.consentOn=false;S.genderVal=null;S.litVal=null;
   ['f-dob','f-weight','f-height','f-muac'].forEach(id=>g(id).value='');
   g('f-caste').value='';
+  // Pre-fill estimated heights
+  g('f-h-front').value=S.frontHeight?S.frontHeight.toFixed(1):'';
+  g('f-h-side').value=S.sideHeight?S.sideHeight.toFixed(1):'';
   g('consent-box').classList.remove('on');
   g('form-submit').disabled=true;
   g('form-msg').textContent='';g('form-msg').className='form-msg';
   document.querySelectorAll('.seg-btn').forEach(b=>b.classList.remove('on'));
   showScreen('s-form');
 }
-document.querySelectorAll('#g-male,#g-female').forEach(function(b){
-  b.addEventListener('click',function(){
-    S.genderVal=b.dataset.v;
-    document.querySelectorAll('#g-male,#g-female').forEach(x=>x.classList.remove('on'));
-    b.classList.add('on');
-  });
-});
-document.querySelectorAll('#lit-yes,#lit-no').forEach(function(b){
-  b.addEventListener('click',function(){
-    S.litVal=b.dataset.v;
-    document.querySelectorAll('#lit-yes,#lit-no').forEach(x=>x.classList.remove('on'));
-    b.classList.add('on');
-  });
-});
-g('consent-row').addEventListener('click',function(){
-  S.consentOn=!S.consentOn;
-  g('consent-box').classList.toggle('on',S.consentOn);
-  g('form-submit').disabled=!S.consentOn;
-});
+document.querySelectorAll('#g-male,#g-female').forEach(function(b){b.addEventListener('click',function(){S.genderVal=b.dataset.v;document.querySelectorAll('#g-male,#g-female').forEach(x=>x.classList.remove('on'));b.classList.add('on');});});
+document.querySelectorAll('#lit-yes,#lit-no').forEach(function(b){b.addEventListener('click',function(){S.litVal=b.dataset.v;document.querySelectorAll('#lit-yes,#lit-no').forEach(x=>x.classList.remove('on'));b.classList.add('on');});});
+g('consent-row').addEventListener('click',function(){S.consentOn=!S.consentOn;g('consent-box').classList.toggle('on',S.consentOn);g('form-submit').disabled=!S.consentOn;});
 g('form-submit').addEventListener('click',async function(){
   if(!S.consentOn)return;
   const sb=g('form-submit'),msg=g('form-msg');
   sb.disabled=true;msg.textContent='Submitting\u2026';msg.className='form-msg';
-  const dobRaw=g('f-dob').value;
-  let dob='';
-  if(dobRaw){const parts=dobRaw.split('-');dob=parts[2]+'/'+parts[1]+'/'+parts[0];}
+  const dobRaw=g('f-dob').value;let dob='';
+  if(dobRaw){const p=dobRaw.split('-');dob=p[2]+'/'+p[1]+'/'+p[0];}
   const payload={
-    uuid:S.uuid,
-    timestamp:new Date().toISOString(),
-    consent:true,
+    uuid:S.uuid,timestamp:new Date().toISOString(),consent:true,
     lat:S.location?S.location.lat:null,
     lon:S.location?S.location.lon:null,
     location_accuracy_m:S.location?S.location.acc:null,
     date_of_birth:dob||null,
     gender:S.genderVal||null,
     weight_g:parseFloat(g('f-weight').value)||null,
-    height_cm:parseFloat(g('f-height').value)||null,
+    height_cm_self_reported:parseFloat(g('f-height').value)||null,
+    height_cm_front_estimate:S.frontHeight?parseFloat(S.frontHeight.toFixed(1)):null,
+    height_cm_side_estimate:S.sideHeight?parseFloat(S.sideHeight.toFixed(1)):null,
     muac_mm:parseFloat(g('f-muac').value)||null,
     female_literacy:S.litVal||null,
     caste:g('f-caste').value||null,
@@ -1475,22 +1478,17 @@ g('form-submit').addEventListener('click',async function(){
   try{
     const r=await apiFetch('/data','POST',payload,false);
     if(!r.ok){const t=await r.text();throw new Error(r.status+': '+t);}
-    msg.textContent='Submitted.';msg.className='form-msg ok';
-    setTimeout(()=>goSession(),1000);
-  }catch(e){
-    msg.textContent='Failed: '+e.message;msg.className='form-msg err';
-    sb.disabled=false;
-  }
+    msg.textContent='Submitted successfully.';msg.className='form-msg ok';
+    setTimeout(()=>goSession(),1200);
+  }catch(e){msg.textContent='Failed: '+e.message;msg.className='form-msg err';sb.disabled=false;}
 });
 g('h-reset').addEventListener('click',()=>goSession());
 
-/* BOOT */
-if(typeof DeviceOrientationEvent!=='undefined'&&typeof DeviceOrientationEvent.requestPermission!=='function'){
-  window.addEventListener('deviceorientation',onOrientation);
-}
-if(typeof DeviceMotionEvent!=='undefined'&&typeof DeviceMotionEvent.requestPermission!=='function'){
-  window.addEventListener('devicemotion',onMotion);
-}
+/* ── SENSORS INIT ── */
+if(typeof DeviceOrientationEvent!=='undefined'&&typeof DeviceOrientationEvent.requestPermission!=='function')addEventListener('deviceorientation',onOrientation);
+if(typeof DeviceMotionEvent!=='undefined'&&typeof DeviceMotionEvent.requestPermission!=='function')addEventListener('devicemotion',onMotion);
+
+/* ── BOOT ── */
 showScreen('s-setup');
 runSetup();
 

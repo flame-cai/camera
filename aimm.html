@@ -743,8 +743,19 @@ function sizeCamViewport(){
   let vpH=Math.round(winW*4/3);
   if(vpH>winH*0.62)vpH=Math.round(winH*0.62); // leave at least 38% for controls
   vp.style.height=vpH+'px';
-  const cvs=g('c-canvas'),vid=g('vid');
-  cvs.width=winW;cvs.height=vpH;
+  // Sync canvas pixel buffer to actual display size
+  syncCanvasSize();
+}
+
+function syncCanvasSize(){
+  const w=cvs.parentElement.clientWidth||cvs.offsetWidth||1;
+  const h=cvs.parentElement.clientHeight||cvs.offsetHeight||1;
+  if(cvs.width!==w||cvs.height!==h){cvs.width=w;cvs.height=h;}
+}
+
+// Keep canvas in sync if layout changes
+if(window.ResizeObserver){
+  new ResizeObserver(()=>{if(S.camRunning)syncCanvasSize();}).observe(cvs);
 }
 
 function setStep(id,state,msg){
@@ -949,7 +960,7 @@ function loadModel(){
   return new Promise(async resolve=>{
     setStep('st-model','active','Preparing cache\u2026');
     g('st-model-bar').style.display='block';
-    await installSW();
+    await installCachingFetch();
     let pct=0;
     const anim=setInterval(()=>{pct=Math.min(pct+1.2,88);g('st-model-fill').style.width=pct+'%';},200);
     setStep('st-model','active','Loading model files (cached after first load)\u2026');
@@ -981,40 +992,27 @@ function loadModel(){
 
 window.skipModel=function(){};// disabled — model mandatory
 
-async function installSW(){
-  if(!('serviceWorker' in navigator)||!('caches' in window))return;
-  try{
-    const regs=await navigator.serviceWorker.getRegistrations();
-    // Check if our cache SW is already running
-    for(const r of regs){if(r.active&&r.active.scriptURL&&r.active.scriptURL.startsWith('blob:'))return;}
-    const swCode=`
-const CACHE='${C.MODEL_CACHE}';
-const MP='https://cdn.jsdelivr.net/npm/@mediapipe/';
-self.addEventListener('install',()=>self.skipWaiting());
-self.addEventListener('activate',e=>e.waitUntil(self.clients.claim()));
-self.addEventListener('fetch',e=>{
-  if(!e.request.url.startsWith(MP))return;
-  e.respondWith(caches.open(CACHE).then(cache=>
-    cache.match(e.request).then(hit=>{
-      if(hit){return hit;}
-      return fetch(e.request).then(r=>{
-        if(r&&r.ok)cache.put(e.request,r.clone());
-        return r;
-      });
-    })
-  ));
-});`;
-    const blob=new Blob([swCode],{type:'application/javascript'});
-    const url=URL.createObjectURL(blob);
-    const reg=await navigator.serviceWorker.register(url,{scope:'/'});
-    // Wait for it to be active
-    await new Promise(res=>{
-      if(reg.active){res();return;}
-      const onState=()=>{if(reg.installing&&reg.installing.state==='activated'){reg.installing.removeEventListener('statechange',onState);res();}};
-      if(reg.installing)reg.installing.addEventListener('statechange',onState);
-      else res();
-    });
-  }catch(e){console.warn('SW:',e.message);}
+/* Model caching via fetch monkey-patch + Cache Storage.
+   A SW registered from a blob: URL gets scope blob://, NOT the page origin,
+   so it cannot intercept https:// fetches. Instead we override window.fetch
+   for the mediapipe CDN origin to serve from Cache Storage directly. */
+async function installCachingFetch(){
+  if(!('caches' in window))return;
+  const MP='https://cdn.jsdelivr.net/npm/@mediapipe/';
+  const CACHE=C.MODEL_CACHE;
+  const _origFetch=window.fetch.bind(window);
+  window.fetch=async function(input,...args){
+    const url=typeof input==='string'?input:(input&&input.url)||'';
+    if(!url.startsWith(MP))return _origFetch(input,...args);
+    try{
+      const cache=await caches.open(CACHE);
+      const hit=await cache.match(url);
+      if(hit)return hit;
+      const resp=await _origFetch(input,...args);
+      if(resp&&resp.ok)cache.put(url,resp.clone());
+      return resp;
+    }catch(e){return _origFetch(input,...args);}
+  };
 }
 
 /* ── SESSION ── */
@@ -1090,6 +1088,7 @@ function stopCam(){
 
 function camTick(){
   if(!S.camRunning)return;
+  syncCanvasSize();
   sampleBright();
   computeCrop();
   if(S.mpReady&&S.holistic&&vid.readyState>=2&&vid.currentTime!==S.lastVideoTime){
@@ -1106,7 +1105,7 @@ function camTick(){
 function computeCrop(){
   const vW=vid.videoWidth,vH=vid.videoHeight;
   const cW=cvs.width,cH=cvs.height;
-  if(!vW||!vH){S.cropL=0;S.cropT=0;S.cropW=1;S.cropH=1;return;}
+  if(!vW||!vH||!cW||!cH){S.cropL=0;S.cropT=0;S.cropW=1;S.cropH=1;return;}
   S.vidW=vW;S.vidH=vH;
   const vAR=vW/vH,cAR=cW/cH;
   let sW,sH;
@@ -1133,19 +1132,21 @@ function onHolisticResults(res){
   const hasP=!!(res.poseLandmarks&&res.poseLandmarks.length);
   const hasF=!!(res.faceLandmarks&&res.faceLandmarks.length);
 
-  /* 1. Body segmentation mask — teal tint (from ar.html) */
+  /* 1. Body segmentation mask — teal tint
+     Legacy @mediapipe/holistic returns segmentationMask as HTMLCanvasElement or ImageBitmap.
+     Draw it directly as a mask — no .getAsFloat32Array(), no .close(). */
   if(res.segmentationMask){
+    // Draw mask into an offscreen canvas, then composite teal colour over it
     const mask=res.segmentationMask;
-    const d=mask.getAsFloat32Array(),mW=mask.width,mH=mask.height;
-    const tmp=document.createElement('canvas');tmp.width=mW;tmp.height=mH;
-    const tc=tmp.getContext('2d'),id2=tc.createImageData(mW,mH);
-    for(let i=0;i<mW*mH;i++){
-      const v=d[i],r=i*4;
-      if(v>0.4){id2.data[r]=0;id2.data[r+1]=220;id2.data[r+2]=180;id2.data[r+3]=Math.round(v*68);}
-    }
-    tc.putImageData(id2,0,0);
-    ctx.drawImage(tmp,0,0,cvs.width,cvs.height);
-    mask.close();
+    const tmp=document.createElement('canvas');
+    tmp.width=cvs.width;tmp.height=cvs.height;
+    const tc=tmp.getContext('2d');
+    tc.drawImage(mask,0,0,cvs.width,cvs.height);
+    // Use mask as alpha: where mask is white (person) apply teal tint
+    tc.globalCompositeOperation='source-in';
+    tc.fillStyle='rgba(0,220,180,0.38)';
+    tc.fillRect(0,0,cvs.width,cvs.height);
+    ctx.drawImage(tmp,0,0);
   }
 
   /* 2. Face mesh — blue fill + contours (from ar.html) */

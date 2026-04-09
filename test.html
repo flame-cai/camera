@@ -391,12 +391,12 @@ select.f-in{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns
           <div class="h-val dim" id="hval-cur">&mdash;</div>
         </div>
         <div class="h-box">
-          <div class="h-lbl">Pp</div>
-          <div class="h-val dim" id="hval-pp">&mdash;</div>
+          <div class="h-lbl">&beta;</div>
+          <div class="h-val dim" id="hval-beta">&mdash;</div>
         </div>
         <div class="h-box">
-          <div class="h-lbl">Pc</div>
-          <div class="h-val dim" id="hval-pc">&mdash;</div>
+          <div class="h-lbl">&gamma;</div>
+          <div class="h-val dim" id="hval-gamma">&mdash;</div>
         </div>
       </div>
       <div id="chips-row">
@@ -959,8 +959,6 @@ function beginCapture(phase){
   g('cam-phase-lbl').textContent=phase==='front'?'FRONT VIEW':'SIDE VIEW';
   // reset realtime displays
   g('hval-cur').textContent='\u2014';g('hval-cur').className='h-val dim';
-  g('hval-pp').textContent='\u2014';g('hval-pp').className='h-val dim';
-  g('hval-pc').textContent='\u2014';g('hval-pc').className='h-val dim';
   if(!S.mpReady)activateNoPose();
   showScreen('s-camera');
   startCam();
@@ -1327,21 +1325,11 @@ function updateHBadge(hcm){
   const el=g('hval-cur');
   if(hcm===null){
     el.textContent='\u2014';el.className='h-val dim';S._lastHcm=null;
-    g('hval-pp').textContent='\u2014';g('hval-pp').className='h-val dim';
-    g('hval-pc').textContent='\u2014';g('hval-pc').className='h-val dim';
     // clear overlay state so stale × doesn't persist
     S._lastTopRow=null;S._lastBotRow=null;S._lastMH=null;
     S._lastPpNorm=null;S._lastPcNorm=null;
   }else{
     el.textContent=hcm.toFixed(1)+' cm';el.className='h-val';S._lastHcm=hcm;
-    if(S._lastPpNorm!==null){
-      g('hval-pp').textContent=(S._lastPpNorm*100).toFixed(1)+'%';
-      g('hval-pp').className='h-val';
-    }
-    if(S._lastPcNorm!==null){
-      g('hval-pc').textContent=(S._lastPcNorm*100).toFixed(1)+'%';
-      g('hval-pc').className='h-val';
-    }
   }
 }
 
@@ -1369,7 +1357,15 @@ function sampleBright(){
 }
 
 /* ── SENSORS ── */
-function onOrientation(e){S.checks.level=Math.abs((e.beta||0)-90)<C.TILT_BETA&&Math.abs(e.gamma||0)<C.TILT_GAMMA;}
+function onOrientation(e){
+  const beta=e.beta||0, gamma=e.gamma||0;
+  const betaOk=Math.abs(beta-90)<C.TILT_BETA, gammaOk=Math.abs(gamma)<C.TILT_GAMMA;
+  S.checks.level=betaOk&&gammaOk;
+  // write live to display — green when within constraint, amber when outside
+  const bEl=g('hval-beta'), gEl=g('hval-gamma');
+  if(bEl){bEl.textContent=(beta).toFixed(1)+'\u00b0';bEl.className='h-val'+(betaOk?'':' dim');}
+  if(gEl){gEl.textContent=(gamma).toFixed(1)+'\u00b0';gEl.className='h-val'+(gammaOk?'':' dim');}
+}
 function onMotion(e){
   const a=e.accelerationIncludingGravity;if(!a){S.checks.steady=true;return;}
   const dx=Math.abs((a.x||0)-S.lastAcc.x),dy=Math.abs((a.y||0)-S.lastAcc.y),dz=Math.abs((a.z||0)-S.lastAcc.z);
@@ -1536,8 +1532,6 @@ g('prev-next').addEventListener('click',()=>{
     S.phase='side';updatePoseSil();
     g('cam-phase-lbl').textContent='SIDE VIEW';
     g('hval-cur').textContent='\u2014';g('hval-cur').className='h-val dim';
-    g('hval-pp').textContent='\u2014';g('hval-pp').className='h-val dim';
-    g('hval-pc').textContent='\u2014';g('hval-pc').className='h-val dim';
   }else{
     S.sideDone=false;S.sideErr=null;
     uploadBlob(S.sideBlob,S.uuid+'_side.jpg','side');

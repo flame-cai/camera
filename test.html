@@ -394,7 +394,8 @@ select.f-in{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns
       <div id="cam-topbar">
         <span class="cam-phase" id="cam-phase-lbl">FRONT VIEW</span>
         <div class="cam-topright">
-<button class="cam-btn" id="cam-reset">&#8634;</button>
+          <button id="cam-lang-btn" onclick="toggleLang()" style="padding:0 8px;border-radius:16px;border:1.5px solid var(--line2);background:transparent;color:var(--text2);font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:1px;cursor:pointer;height:32px;">EN</button>
+          <button class="cam-btn" id="cam-reset">&#8634;</button>
           <button class="cam-btn" id="cam-signout">&#9167;</button>
           <button class="cam-btn" id="cam-theme">&#9680;</button>
         </div>
@@ -420,7 +421,7 @@ select.f-in{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns
         <div class="chip" id="ch-body" data-chip="body"><div class="chip-dot"></div><span class="chip-lbl" data-t="chip_body">BODY</span></div>
         <div class="chip" id="ch-dist" data-chip="dist"><div class="chip-dot"></div><span class="chip-lbl" data-t="chip_dist">DIST</span></div>
         <div class="chip" id="ch-pose" data-chip="pose"><div class="chip-dot"></div><span class="chip-lbl" data-t="chip_pose">POSE</span></div>
-        <div class="chip dis" id="ch-muac" data-chip="muac"><div class="chip-dot"></div><span class="chip-lbl" data-t="chip_muac">MUAC</span></div>
+        <div class="chip dis" id="ch-sleeve" data-chip="sleeve"><div class="chip-dot"></div><span class="chip-lbl" data-t="chip_sleeve">SLEEVE</span></div>
       </div>
       <div id="guide-txt">Initialising&hellip;</div>
       <div id="shutter-row"><button id="shutter" class="off"></button></div>
@@ -532,7 +533,7 @@ const C={
   LANG_KEY:     'aimm.lang',
   CHIP_KEY:     'aimm.chipblock',
   // MUAC sleeve check: fraction of mid-upper-arm pixels that must be skin (class 2)
-  MUAC_SKIN_THR:0.60
+  SLEEVE_THR:0.60
 };
 
 /* ── STATE ── */
@@ -548,8 +549,8 @@ const S={
   _lastSegU8:null, _lastSegW:0, _lastSegH:0, // last multiclass uint8 mask
   _lastSegT:0,   // timestamp of last segmenter run
   camStream:null, camRunning:false, lastVideoTime:-1,
-  checks:{light:false,steady:false,level:false,body:false,dist:false,pose:false,muac:true},
-  chipBlock:{light:true,steady:true,level:true,body:true,dist:true,pose:true,muac:true},
+  checks:{light:false,steady:false,level:false,body:false,dist:false,pose:false,sleeve:true},
+  chipBlock:{light:true,steady:true,level:true,body:true,dist:true,pose:true,sleeve:true},
   lastPose:null, lastFace:null,
   shakeOk:true, shakeTmr:null, lastAcc:{x:0,y:0,z:0},
   sensorFired:false,
@@ -566,7 +567,7 @@ const S={
   sideBeta:null,  sideGamma:null,  // snapshotted at side capture
   _reauthScreen:null,
   _pollSideCount:0,
-  _muacLeft:true, _muacRight:true,
+  _sleeveLeft:true, _sleeveRight:true,
 };
 
 /* ── THEME ── */
@@ -605,7 +606,7 @@ en:{
   btn_submit:'Submit',
   // chips
   chip_light:'LIGHT', chip_steady:'STEADY', chip_level:'LEVEL',
-  chip_body:'BODY', chip_dist:'DIST', chip_pose:'POSE', chip_muac:'MUAC',
+  chip_body:'BODY', chip_dist:'DIST', chip_pose:'POSE', chip_sleeve:'SLEEVE',
   // camera
   front_view:'FRONT VIEW', side_view:'SIDE VIEW',
   no_pose:'POSE DETECTION UNAVAILABLE — WARN MODE ACTIVE',
@@ -617,8 +618,8 @@ en:{
   g_dist_far:'Step back from camera', g_dist_near:'Move closer', g_dist_none:'No person detected',
   g_pose_front_blk:'Raise both arms to sides', g_pose_front_wrn:'Arms need to be raised more',
   g_pose_side_blk:'Turn sideways for profile view', g_pose_side_wrn:'Not quite side-on',
-  g_muac_both:'Roll up sleeves for MUAC measurement',
-  g_muac_left:'Expose left upper arm for MUAC', g_muac_right:'Expose right upper arm for MUAC',
+  g_sleeve_both:'Roll up sleeves for measurement',
+  g_sleeve_left:'Expose left upper arm', g_sleeve_right:'Expose right upper arm',
   g_front_ok:'Arms raised — tap shutter to capture',
   g_side_ok:'Side view ready — tap shutter to capture',
   // preview
@@ -649,7 +650,7 @@ mr:{
   opt_gen:'साधारण', opt_pnta:'सांगणे नको',
   btn_submit:'सादर करा',
   chip_light:'प्रकाश', chip_steady:'स्थिर', chip_level:'समतल',
-  chip_body:'शरीर', chip_dist:'अंतर', chip_pose:'मुद्रा', chip_muac:'MUAC',
+  chip_body:'शरीर', chip_dist:'अंतर', chip_pose:'मुद्रा', chip_sleeve:'SLEEVE',
   front_view:'समोरील दृश्य', side_view:'बाजूचे दृश्य',
   no_pose:'मुद्रा शोध उपलब्ध नाही — सूचना मोड',
   g_light_blk:'प्रकाश सुधारा — खूप अंधार', g_light_wrn:'कमी प्रकाशाची सूचना',
@@ -659,7 +660,7 @@ mr:{
   g_dist_far:'कॅमेर्यापासून दूर जा', g_dist_near:'जवळ या', g_dist_none:'व्यक्ती आढळली नाही',
   g_pose_front_blk:'दोन्ही हात बाजूला उचला', g_pose_front_wrn:'हात आणखी उचलणे आवश्यक',
   g_pose_side_blk:'प्रोफाइल दृश्यासाठी बाजूला उभे रहा', g_pose_side_wrn:'पूर्ण बाजू नाही',
-  g_muac_both:'MUAC साठी बाह्या गुंडाळा', g_muac_left:'डावा दंड उघडा करा', g_muac_right:'उजवा दंड उघडा करा',
+  g_sleeve_both:'MUAC साठी बाह्या गुंडाळा', g_sleeve_left:'डावा दंड उघडा करा', g_sleeve_right:'उजवा दंड उघडा करा',
   g_front_ok:'हात उचललेले — शटर दाबा', g_side_ok:'बाजूचे दृश्य तयार — शटर दाबा',
   prev_front:'समोरील दृश्य', prev_side:'बाजूचे दृश्य',
   prev_next:'पुढे →', prev_retake:'↰ पुन्हा घ्या', prev_uploading:'अपलोड होत आहे…',
@@ -693,6 +694,12 @@ function applyLang(){
   const np=g('no-pose-txt');if(np)np.textContent=T('no_pose');
   // reauth banner
   const rm=g('reauth-msg');if(rm&&rm.dataset.key)rm.textContent=T(rm.dataset.key);
+  // cam-lang-btn mirrors header lang-btn
+  const clb=g('cam-lang-btn');if(clb)clb.textContent=_lang==='en'?'EN':'MR';
+  // cam phase label
+  const cpl=g('cam-phase-lbl');if(cpl)cpl.textContent=S.phase==='front'?T('front_view'):T('side_view');
+  // refresh guide text and chip labels if camera is running
+  if(typeof updateUI==='function')updateUI();
 }
 
 /* ── DEVICE CHECK ── */
@@ -1051,7 +1058,7 @@ function goSession(){
   S.frontBlob=null;S.sideBlob=null;S.frontDone=false;S.sideDone=false;S.frontErr=null;S.sideErr=null;
   S.frontHeight=null;S.frontPpNorm=null;S.frontPcNorm=null;S.frontBeta=null;S.frontGamma=null;
   S.sideHeight=null;S.sidePpNorm=null;S.sidePcNorm=null;S.sideBeta=null;S.sideGamma=null;
-  S._muacLeft=true;S._muacRight=true;
+  S._sleeveLeft=true;S._sleeveRight=true;
   S.phase='front';
   g('sess-uuid').textContent=S.uuid;
   const dot=g('loc-dot'),val=g('loc-val');
@@ -1568,11 +1575,11 @@ function runChecks(lm){
   S.checks.dist=span>=C.BODY_MIN&&span<=C.BODY_MAX;
   S.checks.body=checkBody(lm,span);
   S.checks.pose=S.phase==='front'?checkFront(lm):checkSide(lm);
-  // MUAC sleeve check — front view only, requires segmenter
+  // Sleeve check — front view only, requires segmenter
   if(S.phase==='front'&&S.segReady&&S._lastSegU8){
-    S.checks.muac=checkMuac(lm);
+    S.checks.sleeve=checkSleeve(lm);
   }else{
-    S.checks.muac=true; // not checked in side view or without segmenter
+    S.checks.sleeve=true; // not checked in side view or without segmenter
   }
 }
 function checkBody(lm,span){
@@ -1606,13 +1613,13 @@ function checkSide(lm){
   return true;
 }
 
-/* ── MUAC SLEEVE CHECK ──────────────────────────────────────────────────────
+/* ── SLEEVE CHECK ──────────────────────────────────────────────────────
    Samples pixels along shoulder→elbow for both arms in the multiclass mask.
    Class 2 = body-skin, class 4 = clothes.
    Checks the mid-upper-arm region (midpoint ± spread) specifically.
-   Returns true if both mid-upper-arms are ≥ MUAC_SKIN_THR fraction skin.
+   Returns true if both mid-upper-arms are ≥ SLEEVE_THR fraction skin.
 ────────────────────────────────────────────────────────────────────────── */
-function checkMuac(pose){
+function checkSleeve(pose){
   if(!pose||!S._lastSegU8)return true;
   const u8=S._lastSegU8,mW=S._lastSegW,mH=S._lastSegH;
   if(!mW||!mH)return true;
@@ -1636,29 +1643,29 @@ function checkMuac(pose){
       }
     }
     if(totalPx===0)return true;
-    return(skinPx/totalPx)>=C.MUAC_SKIN_THR;
+    return(skinPx/totalPx)>=C.SLEEVE_THR;
   }
   const leftOk=armExposed(11,13);
   const rightOk=armExposed(12,14);
   // store for guide message
-  S._muacLeft=leftOk;S._muacRight=rightOk;
+  S._sleeveLeft=leftOk;S._sleeveRight=rightOk;
   return leftOk&&rightOk;
 }
 
 /* ── UI ── */
 function activateNoPose(){
   S.checks.body=true;S.checks.dist=true;S.checks.pose=true;
-  S.chipBlock.body=false;S.chipBlock.dist=false;S.chipBlock.pose=false;S.chipBlock.muac=false;
+  S.chipBlock.body=false;S.chipBlock.dist=false;S.chipBlock.pose=false;S.chipBlock.sleeve=false;
   g('no-pose-bar').classList.add('on');
-  ['ch-body','ch-dist','ch-pose','ch-muac'].forEach(id=>{const e=g(id);if(e)e.className='chip dis';});
+  ['ch-body','ch-dist','ch-pose','ch-sleeve'].forEach(id=>{const e=g(id);if(e)e.className='chip dis';});
   saveChipBlock();
 }
 function allOk(){
   return(S.mpReady?['light','steady','level','body','dist','pose']:['light','steady','level']).every(k=>S.checks[k]);
 }
-const CHIPS={light:'ch-light',steady:'ch-steady',level:'ch-level',body:'ch-body',dist:'ch-dist',pose:'ch-pose',muac:'ch-muac'};
+const CHIPS={light:'ch-light',steady:'ch-steady',level:'ch-level',body:'ch-body',dist:'ch-dist',pose:'ch-pose',sleeve:'ch-sleeve'};
 function updateUI(){
-  const allKeys=S.mpReady?['light','steady','level','body','dist','pose','muac']:['light','steady','level'];
+  const allKeys=S.mpReady?['light','steady','level','body','dist','pose','sleeve']:['light','steady','level'];
   const blockedFails=allKeys.filter(k=>S.chipBlock[k]&&!S.checks[k]);
   const warnFails=allKeys.filter(k=>!S.chipBlock[k]&&!S.checks[k]);
   const canShoot=blockedFails.length===0;
@@ -1669,17 +1676,19 @@ function updateUI(){
   else sh.className='off';
   Object.keys(CHIPS).forEach(k=>{
     const el=g(CHIPS[k]);if(!el)return;
-    const isDisabled=(!S.mpReady&&['body','dist','pose','muac'].indexOf(k)>=0)||(!S.segReady&&k==='muac');
-    if(isDisabled){el.className='chip dis';return;}
+    const isDisabled=(!S.mpReady&&['body','dist','pose','sleeve'].indexOf(k)>=0)||(!S.segReady&&k==='sleeve');
+    // sleeve chip is hidden (dis) on side view — not relevant for side photo
+    const isSideView=S.phase==='side'&&k==='sleeve';
+    if(isDisabled||isSideView){el.className='chip dis';return;}
     if(S.checks[k])el.className='chip ok';
     else if(S.chipBlock[k])el.className='chip bad';
     else el.className='chip soft';
   });
   const gt=g('guide-txt');
-  function muacMsg(){
-    if(!S._muacLeft&&!S._muacRight)return T('g_muac_both');
-    if(!S._muacLeft)return T('g_muac_left');
-    return T('g_muac_right');
+  function sleeveMsg(){
+    if(!S._sleeveLeft&&!S._sleeveRight)return T('g_sleeve_both');
+    if(!S._sleeveLeft)return T('g_sleeve_left');
+    return T('g_sleeve_right');
   }
   function getMsg(k,isBlocked){
     switch(k){
@@ -1693,7 +1702,7 @@ function updateUI(){
       case 'pose':
         if(S.phase==='front')return T(isBlocked?'g_pose_front_blk':'g_pose_front_wrn')+' (\u2265'+C.ARM_RAISE_DEG+'\u00b0)';
         return T(isBlocked?'g_pose_side_blk':'g_pose_side_wrn');
-      case 'muac': return muacMsg();
+      case 'sleeve': return sleeveMsg();
     }
     return k;
   }

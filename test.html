@@ -628,6 +628,47 @@ en:{
   prev_upload_fail:'Upload failed: ', prev_retry:'Retry ↻',
   // form msgs
   form_submitting:'Submitting…', form_ok:'Submitted successfully.',
+  // setup flow
+  setup_cam_req:'Requesting camera access…',
+  setup_cam_done:'Camera access granted',
+  setup_loc:'Acquiring GPS…',
+  setup_loc_fail:'Location required',
+  setup_auth_check:'Checking saved session…',
+  setup_auth_prompt:'Sign in to continue',
+  setup_auth_verify:'Verifying…',
+  setup_auth_fail:'Server verification failed',
+  setup_auth_resume:'Sign in to resume session',
+  setup_model:'Loading (cached after first load)…',
+  setup_model_cpu:'Holistic (CPU)…',
+  setup_model_done:'Holistic ready',
+  setup_seg:'Loading segmenter…',
+  setup_seg_done:'Segmenter ready',
+  setup_seg_fail:'Segmenter unavailable (degraded)',
+  setup_ready:'Ready',
+  setup_starting:'Starting…',
+  setup_cam_prog:'Requesting camera…',
+  setup_loc_prog:'Acquiring location…',
+  setup_auth_prog:'Waiting for sign-in…',
+  setup_model_prog:'Loading holistic model…',
+  setup_models_done:'Models loaded',
+  setup_cache:'Preparing cache…',
+  // misc
+  retry:'Retry',
+  loc_unavailable:'Location unavailable',
+  cam_unavailable:'Camera unavailable',
+  failed:'Failed: ',
+  loc_acquiring:'Acquiring…',
+  // error titles
+  err_cam_title:'Camera required',
+  err_loc_title:'Location required',
+  err_verified:'Verification failed',
+  err_check_net:'Check network and retry.',
+  err_model_fail:'Model failed',
+  err_signin_dismissed:'Sign-in dismissed',
+  err_try_again:'Please try again.',
+  err_not_auth:'Not authenticated',
+  err_auth_error:'Auth error',
+  err_upload_timeout:'Upload timed out — check network',
   // consent
   consent:CONSENT_EN,
   // reauth
@@ -650,7 +691,7 @@ mr:{
   opt_gen:'साधारण', opt_pnta:'सांगणे नको',
   btn_submit:'सादर करा',
   chip_light:'प्रकाश', chip_steady:'स्थिर', chip_level:'समतल',
-  chip_body:'शरीर', chip_dist:'अंतर', chip_pose:'मुद्रा', chip_sleeve:'SLEEVE',
+  chip_body:'शरीर', chip_dist:'अंतर', chip_pose:'मुद्रा', chip_sleeve:'बाही',
   front_view:'समोरील दृश्य', side_view:'बाजूचे दृश्य',
   no_pose:'मुद्रा शोध उपलब्ध नाही — सूचना मोड',
   g_light_blk:'प्रकाश सुधारा — खूप अंधार', g_light_wrn:'कमी प्रकाशाची सूचना',
@@ -660,12 +701,52 @@ mr:{
   g_dist_far:'कॅमेर्यापासून दूर जा', g_dist_near:'जवळ या', g_dist_none:'व्यक्ती आढळली नाही',
   g_pose_front_blk:'दोन्ही हात बाजूला उचला', g_pose_front_wrn:'हात आणखी उचलणे आवश्यक',
   g_pose_side_blk:'प्रोफाइल दृश्यासाठी बाजूला उभे रहा', g_pose_side_wrn:'पूर्ण बाजू नाही',
-  g_sleeve_both:'MUAC साठी बाह्या गुंडाळा', g_sleeve_left:'डावा दंड उघडा करा', g_sleeve_right:'उजवा दंड उघडा करा',
+  g_sleeve_both:'मापनासाठी बाह्या वर करा', g_sleeve_left:'डावा दंड उघडा करा', g_sleeve_right:'उजवा दंड उघडा करा',
   g_front_ok:'हात उचललेले — शटर दाबा', g_side_ok:'बाजूचे दृश्य तयार — शटर दाबा',
   prev_front:'समोरील दृश्य', prev_side:'बाजूचे दृश्य',
   prev_next:'पुढे →', prev_retake:'↰ पुन्हा घ्या', prev_uploading:'अपलोड होत आहे…',
   prev_upload_fail:'अपलोड अयशस्वी: ', prev_retry:'पुन्हा प्रयत्न करा ↻',
   form_submitting:'सादर करत आहे…', form_ok:'यशस्वीरित्या सादर केले.',
+  // setup flow
+  setup_cam_req:'कॅमेरा परवानगी विनंती…',
+  setup_cam_done:'कॅमेरा परवानगी मिळाली',
+  setup_loc:'गुगल लोकेशन मिळवत आहे…',
+  setup_loc_fail:'स्थान आवश्यक',
+  setup_auth_check:'सेशन तपासत आहे…',
+  setup_auth_prompt:'पुढे जाण्यासाठी साइन इन करा',
+  setup_auth_verify:'पडताळणी होत आहे…',
+  setup_auth_fail:'सर्वर पडताळणी अयशस्वी',
+  setup_auth_resume:'सेशन चालू ठेवण्यास साइन इन करा',
+  setup_model:'लोड होत आहे (प्रथम लोड नंतर कॅश)…',
+  setup_model_cpu:'होलिस्टिक (CPU)…',
+  setup_model_done:'होलिस्टिक तयार',
+  setup_seg:'सेगमेंटर लोड होत आहे…',
+  setup_seg_done:'सेगमेंटर तयार',
+  setup_seg_fail:'सेगमेंटर उपलब्ध नाही',
+  setup_ready:'तयार',
+  setup_starting:'सुरु होत आहे…',
+  setup_cam_prog:'कॅमेरा विनंती…',
+  setup_loc_prog:'स्थान मिळवत आहे…',
+  setup_auth_prog:'साइन इन वाट पहात आहे…',
+  setup_model_prog:'होलिस्टिक मॉडेल लोड होत आहे…',
+  setup_models_done:'मॉडेल तयार',
+  setup_cache:'कॅश तयार करत आहे…',
+  // misc
+  retry:'पुन्हा प्रयत्न करा',
+  loc_unavailable:'स्थान उपलब्ध नाही',
+  cam_unavailable:'कॅमेरा उपलब्ध नाही',
+  failed:'अयशस्वी: ',
+  loc_acquiring:'स्थान मिळवत आहे…',
+  err_cam_title:'कॅमेरा आवश्यक',
+  err_loc_title:'स्थान आवश्यक',
+  err_verified:'पडताळणी अयशस्वी',
+  err_check_net:'नेटवर्क तपासा आणि पुन्हा प्रयत्न करा.',
+  err_model_fail:'मॉडेल अयशस्वी',
+  err_signin_dismissed:'साइन इन रद्द',
+  err_try_again:'पुन्हा प्रयत्न करा.',
+  err_not_auth:'प्रमाणीकरण नाही',
+  err_auth_error:'साइन इन त्रुटी',
+  err_upload_timeout:'अपलोड वेळ संपली — नेटवर्क तपासा',
   consent:CONSENT_MR,
   ra_expiring:'सेशन संपत आहे — पुन्हा साइन इन करा',
   ra_expired:'सेशन संपले — पुढे साइन इन करा',
@@ -742,13 +823,13 @@ async function runSetup(){
     let stream=null;
     for(const c of[
       {video:{facingMode:{exact:'environment'}},audio:false},
-      {video:{facingMode:'environment'},audio:false},
+      {video:{facingMode:'environment'},audio:false}
     ]){try{stream=await navigator.mediaDevices.getUserMedia(c);break;}catch(e){}}
     if(!stream)throw new Error('No rear camera found');
     stream.getTracks().forEach(t=>t.stop());
-    setStep('st-cam','done','Camera access granted');
+    setStep('st-cam','done',T('setup_cam_done'));
   }catch(e){
-    setStep('st-cam','err',e.message);showErr('Camera required',e.message);
+    setStep('st-cam','err',e.message);showErr(T('err_cam_title'),e.message);
     showRetryBtn('cam');return;
   }
 
@@ -774,7 +855,7 @@ async function runSetup(){
   S.setupPhase='loc';
   setStep('st-loc','active','Acquiring GPS\u2026');setProg(25,'Acquiring location\u2026');
   const locOk=await getLocation();
-  if(!locOk){setStep('st-loc','err','Location required');showErr('Location required','Allow location access and retry.');showRetryBtn('loc');return;}
+  if(!locOk){setStep('st-loc','err','Location required');showErr(T('err_loc_title'),T('err_loc_title'));showRetryBtn('loc');return;}
 
   /* 3 — Auth */
   S.setupPhase='auth';setProg(45,'Waiting for sign-in\u2026');
@@ -786,7 +867,7 @@ async function runSetup(){
   const modelOk=await loadModel();
   if(!modelOk)return;
 
-  S.setupPhase='done';setProg(100,'Ready');
+  S.setupPhase='done';setProg(100,T('setup_ready'));
   setTimeout(()=>goSession(),350);
 }
 
@@ -794,7 +875,7 @@ let _retryBtn=null;
 function showRetryBtn(){
   if(_retryBtn)_retryBtn.remove();
   const b=document.createElement('button');
-  b.className='btn btn-ghost';b.textContent='Retry';
+  b.className='btn btn-ghost';b.textContent=T('retry');
   b.onclick=()=>{b.remove();_retryBtn=null;S.setupPhase='idle';runSetup();};
   _retryBtn=b;
   g('s-setup').querySelector('.sp').appendChild(b);
@@ -843,7 +924,7 @@ function doAuth(){
   });
 }
 function promptSignIn(resolve){
-  setStep('st-auth','active','Sign in to continue');
+  setStep('st-auth','active',T('setup_auth_prompt'));
   waitForGIS(()=>{
     google.accounts.id.initialize({client_id:C.GID,callback:cred=>handleCredential(cred,resolve),auto_select:true});
     google.accounts.id.prompt(n=>{if(n.isSkippedMoment()||n.isDismissedMoment()){g('g-signin').style.display='flex';g('g-signin').disabled=false;S.authResolve=resolve;}});
@@ -851,7 +932,7 @@ function promptSignIn(resolve){
 }
 window.triggerSignIn=function(){
   g('g-signin').disabled=true;
-  waitForGIS(()=>{google.accounts.id.prompt(n=>{if(n.isSkippedMoment()||n.isDismissedMoment()){g('g-signin').disabled=false;showErr('Sign-in dismissed','Please try again.');}});});
+  waitForGIS(()=>{google.accounts.id.prompt(n=>{if(n.isSkippedMoment()||n.isDismissedMoment()){g('g-signin').disabled=false;showErr(T('err_signin_dismissed'),T('err_try_again'));}});});
 };
 function handleCredential(cred,resolve){
   g('g-signin').style.display='none';clearErr();
@@ -872,9 +953,9 @@ function handleCredential(cred,resolve){
     setStep('st-auth','active','Verifying\u2026');
     verifyServer().then(ok=>{
       if(ok){setStep('st-auth','done',S.email);const res=resolve||S.authResolve;S.authResolve=null;if(res)res(true);}
-      else{setStep('st-auth','err','Server verification failed');showErr('Verification failed','Check network and retry.');showRetryBtn();}
+      else{setStep('st-auth','err',T('setup_auth_fail'));showErr(T('err_verified'),T('err_check_net'));showRetryBtn();}
     });
-  }catch(e){setStep('st-auth','err',e.message);showErr('Auth error',e.message);showRetryBtn();}
+  }catch(e){setStep('st-auth','err',e.message);showErr(T('err_auth_error'),e.message);showRetryBtn();}
 }
 async function verifyServer(){try{const r=await fetchWithTimeout(C.API+'/',{method:'GET',headers:{'Authorization':'Bearer '+S.token}},10000);return r.ok;}catch(e){return false;}}
 function clearStoredAuth(){localStorage.removeItem(C.TOKEN_KEY);localStorage.removeItem(C.EXPIRY_KEY);localStorage.removeItem(C.EMAIL_KEY);}
@@ -925,7 +1006,7 @@ window.triggerReauth=function(){
         S.authResolve=null;
         // temporarily show setup screen sign-in area
         showScreen('s-setup');
-        setStep('st-auth','active','Sign in to resume session');
+        setStep('st-auth','active',T('setup_auth_resume'));
       }
     });
   });
@@ -975,7 +1056,7 @@ async function installCachingFetch(){
   const CACHE=C.MODEL_CACHE;
   const PREFIXES=[
     'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision',
-    'https://storage.googleapis.com/mediapipe-models/',
+    'https://storage.googleapis.com/mediapipe-models/'
   ];
   const _orig=window.fetch.bind(window);
   window.fetch=async function(input,...args){
@@ -1010,7 +1091,7 @@ async function loadModel(){
           runningMode:'VIDEO',outputPoseSegmentationMasks:true,outputFaceBlendshapes:false,
           minFaceDetectionConfidence:0.5,minFaceSuppressionThreshold:0.3,minFacePresenceConfidence:0.5,
           minPoseDetectionConfidence:0.5,minPoseSuppressionThreshold:0.3,minPosePresenceConfidence:0.5,
-          minHandLandmarksConfidence:0.5,
+          minHandLandmarksConfidence:0.5
         });
       }
       let hl;
@@ -1018,7 +1099,7 @@ async function loadModel(){
       clearInterval(anim);g('st-model-fill').style.width='65%';
       S.holistic=hl;S.mpReady=true;
       window._HL=HolisticLandmarker;
-      setStep('st-model','done','Holistic ready');
+      setStep('st-model','done',T('setup_model_done'));
       // load ImageSegmenter (selfie multiclass)
       setStep('st-seg','active','Loading segmenter\u2026');
       let pct2=65;
@@ -1027,25 +1108,25 @@ async function loadModel(){
         const makeSeg=async delegate=>{
           return ImageSegmenter.createFromOptions(vision,{
             baseOptions:{modelAssetPath:C.SEG_MODEL_URL,delegate},
-            runningMode:'VIDEO',outputCategoryMask:true,outputConfidenceMasks:false,
+            runningMode:'VIDEO',outputCategoryMask:true,outputConfidenceMasks:false
           });
         }
         let seg;
         try{seg=await makeSeg('GPU');}catch(_eg2){seg=await makeSeg('CPU');}
         clearInterval(anim2);g('st-model-fill').style.width='100%';
         S.segmenter=seg;S.segReady=true;
-        setStep('st-seg','done','Segmenter ready');
+        setStep('st-seg','done',T('setup_seg_done'));
       }catch(e2){
         clearInterval(anim2);g('st-model-fill').style.width='100%';
-        setStep('st-seg','err','Segmenter unavailable (degraded)');
+        setStep('st-seg','err',T('setup_seg_fail'));
         console.warn('Segmenter failed:',e2);
       }
-      setProg(95,'Models loaded');
+      setProg(95,T('setup_models_done'));
       resolve(true);
     }catch(e){
       clearInterval(anim);
       setStep('st-model','err',e.message.slice(0,80));
-      showErr('Model failed',e.message+'\n\nCheck network and retry.');
+      showErr(T('err_model_fail'),e.message+'\n\n'+T('err_check_net'));
       showRetryBtn();resolve(false);
     }
   });
@@ -1063,7 +1144,7 @@ function goSession(){
   g('sess-uuid').textContent=S.uuid;
   const dot=g('loc-dot'),val=g('loc-val');
   if(S.location){dot.className='loc-dot ok';val.textContent=`${S.location.lat.toFixed(5)}, ${S.location.lon.toFixed(5)} \u00b1${S.location.acc.toFixed(0)}m`;}
-  else{dot.className='loc-dot err';val.textContent='Location unavailable';}
+  else{dot.className='loc-dot err';val.textContent=T('loc_unavailable');}
   const saved=parseFloat(localStorage.getItem(C.CAM_H_KEY));
   S.camH=isNaN(saved)?C.CAM_H_DEFAULT:saved;
   g('camh-input').value=S.camH;
@@ -1121,10 +1202,10 @@ function startCam(){
   const tryList=[
     {video:{facingMode:{exact:'environment'}},audio:false},
     {video:{facingMode:'environment'},audio:false},
-    {video:true,audio:false},
+    {video:true,audio:false}
   ];
   async function tryNext(i){
-    if(i>=tryList.length){g('guide-txt').textContent='Camera unavailable';return;}
+    if(i>=tryList.length){g('guide-txt').textContent=T('cam_unavailable');return;}
     try{
       const stream=await navigator.mediaDevices.getUserMedia(tryList[i]);
       S.camStream=stream;vid.srcObject=stream;
@@ -1799,7 +1880,7 @@ function showPreview(dataUrl){
   g('prev-img').src=dataUrl;
   g('prev-lbl').textContent=S.phase==='front'?T('prev_front'):T('prev_side');
   g('prev-status').textContent='';g('prev-status').className='prev-status';
-  const nb=g('prev-next');nb.textContent='Next \u2192';nb.disabled=false;
+  const nb=g('prev-next');nb.textContent=T('prev_next');nb.disabled=false;
   g('prev-retake').textContent=T('prev_retake');
   S.popupMode=S.phase==='front'?'front-normal':'side-normal';
   g('preview').classList.add('on');
@@ -1832,7 +1913,7 @@ function pollSide(){
   if(S.sideDone){hidePreview();goForm();return;}
   // timeout after 30s
   S._pollSideCount=(S._pollSideCount||0)+1;
-  if(S._pollSideCount>150){S._pollSideCount=0;showUploadErr('side','Upload timed out — check network');return;}
+  if(S._pollSideCount>150){S._pollSideCount=0;showUploadErr('side',T('err_upload_timeout'));return;}
   setTimeout(pollSide,200);
 }
 
@@ -1844,11 +1925,11 @@ function fetchWithTimeout(input,opts,ms){
 
 function uploadBlob(blob,filename,side){
   const fd=new FormData();fd.append('file',blob,filename);
-  if(!S.token){if(side==='front'){S.frontErr='Not authenticated';showUploadErr('front','Not authenticated');}else{S.sideErr='Not authenticated';showUploadErr('side','Not authenticated');}return;}
+  if(!S.token){if(side==='front'){S.frontErr='Not authenticated';showUploadErr('front',T('err_not_auth'));}else{S.sideErr='Not authenticated';showUploadErr('side',T('err_not_auth'));}return;}
   const hdrs={'Authorization':'Bearer '+S.token};
   fetchWithTimeout(C.API+'/file',{method:'POST',headers:hdrs,body:fd},30000)
     .then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);if(side==='front'){S.frontDone=true;S.frontErr=null;S._pollSideCount=0;}else{S.sideDone=true;S.sideErr=null;}})
-    .catch(e=>{const msg=e.name==='AbortError'?'Upload timed out':e.message;if(side==='front'){S.frontErr=msg;showUploadErr('front',msg);}else{S.sideErr=msg;showUploadErr('side',msg);}});
+    .catch(e=>{const msg=e.name==='AbortError'?T('err_upload_timeout'):e.message;if(side==='front'){S.frontErr=msg;showUploadErr('front',msg);}else{S.sideErr=msg;showUploadErr('side',msg);}});
 }
 function showUploadErr(side,msg){
   const st=g('prev-status');
@@ -1914,7 +1995,7 @@ g('form-submit').addEventListener('click',async function(){
     if(!r.ok){const t=await r.text();throw new Error(r.status+': '+t);}
     msg.textContent=T('form_ok');msg.className='form-msg ok';
     setTimeout(()=>goSession(),1200);
-  }catch(e){msg.textContent='Failed: '+e.message;msg.className='form-msg err';sb.disabled=false;}
+  }catch(e){msg.textContent=T('failed')+e.message;msg.className='form-msg err';sb.disabled=false;}
 });
 g('h-reset').addEventListener('click',()=>goSession());
 

@@ -1638,19 +1638,17 @@ async function loadModel(){
       S.holistic=hl;S.mpReady=true;
       window._HL=HolisticLandmarker;
       setStep('st-model','done',T('setup_model_done'));
-      // load ImageSegmenter (selfie multiclass)
-      setStep('st-seg','active','Loading segmenter\u2026');
+      // load ImageSegmenter — SEPARATE FilesetResolver to avoid WASM heap conflict
+      // Force CPU: sharing WebGL context with HolisticLandmarker corrupts shared WASM state
+      setStep('st-seg','active','Loading segmenter…');
       let pct2=65;
       const anim2=setInterval(()=>{pct2=Math.min(pct2+1,95);g('st-model-fill').style.width=pct2+'%';},200);
       try{
-        const makeSeg=async delegate=>{
-          return ImageSegmenter.createFromOptions(vision,{
-            baseOptions:{modelAssetPath:C.SEG_MODEL_URL,delegate},
-            runningMode:'VIDEO',outputCategoryMask:true,outputConfidenceMasks:false
-          });
-        }
-        let seg;
-        try{seg=await makeSeg('GPU');}catch(_eg2){seg=await makeSeg('CPU');}
+        const vision2=await FilesetResolver.forVisionTasks(C.TV_WASM);
+        const seg=await ImageSegmenter.createFromOptions(vision2,{
+          baseOptions:{modelAssetPath:C.SEG_MODEL_URL,delegate:'CPU'},
+          runningMode:'VIDEO',outputCategoryMask:true,outputConfidenceMasks:false
+        });
         clearInterval(anim2);g('st-model-fill').style.width='100%';
         S.segmenter=seg;S.segReady=true;
         setStep('st-seg','done',T('setup_seg_done'));

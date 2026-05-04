@@ -696,7 +696,7 @@ const C={
   SHAKE_SETTLE: 500,
   TILT_BETA:    10,
   TILT_GAMMA:   75,
-  GEO_TIMEOUT:  5000,
+  GEO_TIMEOUT:  40000,
   // mask scan: threshold and min consecutive fg pixels per row
   MASK_THR:     0.4,  // MPMask foreground threshold [0-1]
   SCAN_MIN_W:   3,    // min consecutive fg pixels per row (works for newborn side-on)
@@ -1517,10 +1517,58 @@ async function apiFetch(path,method,body,isForm,_retry){
 }
 
 /* ── MODEL — tasks-vision HolisticLandmarker ── */
+// ── Model asset cache: Cache API (primary) + IDB blob (offline fallback) ──
+// MediaPipe fetches .task/.wasm/.mjs files. We intercept and store them
+// in both Cache API (fast, cleared by browser) and IDB (persistent offline).
+// IDB store: object store 'model_cache', key=url, value={url,data:ArrayBuffer,ts}
 let _cachingInstalled=false;
+let _modelCacheDB=null;
+
+async function openModelCacheDB(){
+  if(_modelCacheDB)return _modelCacheDB;
+  return new Promise((res,rej)=>{
+    const req=indexedDB.open('aimm_model_cache',1);
+    req.onupgradeneeded=e=>{
+      const db=e.target.result;
+      if(!db.objectStoreNames.contains('model_cache'))
+        db.createObjectStore('model_cache',{keyPath:'url'});
+    };
+    req.onsuccess=e=>{_modelCacheDB=e.target.result;res(_modelCacheDB);};
+    req.onerror=()=>rej(req.error);
+  });
+}
+
+async function getModelFromIDB(url){
+  try{
+    const db=await openModelCacheDB();
+    return new Promise((res,rej)=>{
+      const tx=db.transaction('model_cache','readonly');
+      const req=tx.objectStore('model_cache').get(url);
+      req.onsuccess=()=>{
+        const rec=req.result;
+        if(!rec){res(null);return;}
+        // Reconstruct a Response from the stored ArrayBuffer
+        res(new Response(rec.data,{status:200,headers:{'Content-Type':rec.ct||'application/octet-stream'}}));
+      };
+      req.onerror=()=>res(null);
+    });
+  }catch(e){return null;}
+}
+
+async function putModelToIDB(url,buf,ct){
+  try{
+    const db=await openModelCacheDB();
+    return new Promise(res=>{
+      const tx=db.transaction('model_cache','readwrite');
+      tx.objectStore('model_cache').put({url,data:buf,ct,ts:Date.now()});
+      tx.oncomplete=()=>res(true);
+      tx.onerror=()=>res(false);
+    });
+  }catch(e){return false;}
+}
 
 async function installCachingFetch(){
-  if(_cachingInstalled||!('caches' in window))return;
+  if(_cachingInstalled)return;
   _cachingInstalled=true;
   const CACHE=C.MODEL_CACHE;
   const PREFIXES=[
@@ -1532,13 +1580,34 @@ async function installCachingFetch(){
     const url=typeof input==='string'?input:(input&&input.url)||'';
     if(!PREFIXES.some(p=>url.startsWith(p)))return _orig(input,...args);
     try{
-      const cache=await caches.open(CACHE);
-      const hit=await cache.match(url);
-      if(hit)return hit;
+      // 1. Try Cache API (fastest, browser-managed)
+      if('caches' in window){
+        const cache=await caches.open(CACHE);
+        const hit=await cache.match(url);
+        if(hit)return hit.clone(); // clone — Response body is single-use stream
+      }
+      // 2. Try IDB blob store (offline fallback — persists across sessions)
+      const idbHit=await getModelFromIDB(url);
+      if(idbHit)return idbHit;
+      // 3. Fetch from network — store in both Cache API and IDB
       const resp=await _orig(input,...args);
-      if(resp&&resp.ok)cache.put(url,resp.clone());
+      if(resp&&resp.ok){
+        const ct=resp.headers.get('Content-Type')||'application/octet-stream';
+        // Clone twice: one for Cache API, one to read as ArrayBuffer for IDB
+        const r1=resp.clone(),r2=resp.clone();
+        if('caches' in window){
+          caches.open(CACHE).then(c=>c.put(url,r1)).catch(()=>{});
+        }
+        // Store ArrayBuffer in IDB for offline use (don't await — background)
+        r2.arrayBuffer().then(buf=>putModelToIDB(url,buf,ct)).catch(()=>{});
+      }
       return resp;
-    }catch(e){return _orig(input,...args);}
+    }catch(e){
+      // Network failed — try IDB one more time (may have been populated earlier)
+      const idbFallback=await getModelFromIDB(url);
+      if(idbFallback)return idbFallback;
+      throw e;
+    }
   };
 }
 
@@ -1940,7 +2009,8 @@ function drawResults(result){
 
   // × marker at top of measured height span
   drawHeightOverlay();
-  updateUI();
+  // throttled: updateUI called by onOrientation at 10Hz; call directly only if sensor not firing
+  const _nt=performance.now();if(_nt-_lastUIUpdate>100){_lastUIUpdate=_nt;updateUI();}
 }
 
 /* ── HEIGHT CALCULATION ────────────────────────────────────────────────────
@@ -2538,6 +2608,7 @@ g('h-reset').addEventListener('click',()=>goSession());
 applyLang();
 loadChipBlock();
 openDB().then(db=>{S._db=db;refreshQueueCount();setTimeout(drainQueue,1000);}).catch(e=>console.warn('IDB:',e));
+openModelCacheDB().catch(e=>console.warn('modelCacheDB:',e)); // pre-open model cache IDB
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&S._db)setTimeout(drainQueue,500);});
 window.addEventListener('online',()=>{setOnline(true);setTimeout(drainQueue,1000);});
 window.addEventListener('offline',()=>setOnline(false));

@@ -1,409 +1,2556 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Flame CAI · Cloud Run Console</title>
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root {
-      --bg: #0b0f14; --surface: #131920; --border: #1e2a35;
-      --accent: #00e5ff; --accent2: #ff4f7b; --text: #d6e4ef;
-      --muted: #4a6070; --success: #00e5a0; --error: #ff4f7b;
-      --mono: 'IBM Plex Mono', monospace; --sans: 'Space Grotesk', sans-serif;
-    }
-    body { background: var(--bg); color: var(--text); font-family: var(--sans); min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 40px 16px 80px; }
-    body::before { content: ''; position: fixed; inset: 0; background-image: linear-gradient(rgba(0,229,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0,229,255,0.03) 1px, transparent 1px); background-size: 40px 40px; pointer-events: none; z-index: 0; }
-    .wrapper { position: relative; z-index: 1; width: 100%; max-width: 760px; display: flex; flex-direction: column; gap: 24px; }
-    header { display: flex; align-items: center; gap: 14px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
-    .logo { width: 36px; height: 36px; background: linear-gradient(135deg, var(--accent), var(--accent2)); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-size: 14px; font-weight: 600; color: #000; }
-    header h1 { font-size: 18px; font-weight: 700; letter-spacing: -0.3px; }
-    header span { font-size: 12px; color: var(--muted); font-family: var(--mono); margin-left: auto; }
-    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; }
-    .card-title { font-size: 11px; font-family: var(--mono); color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 16px; }
-    .auth-row { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
-    .status-pill { display: flex; align-items: center; gap: 8px; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-family: var(--mono); border: 1px solid var(--border); background: var(--bg); transition: all 0.3s; }
-    .status-pill.signed-in { border-color: var(--success); color: var(--success); }
-    .status-pill.refreshing { border-color: var(--accent); color: var(--accent); }
-    .status-pill .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); transition: background 0.3s; }
-    .status-pill.signed-in .dot { background: var(--success); box-shadow: 0 0 6px var(--success); }
-    .status-pill.refreshing .dot { background: var(--accent); box-shadow: 0 0 6px var(--accent); animation: pulse 1s infinite; }
-    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
-    .user-info { font-size: 13px; color: var(--muted); font-family: var(--mono); }
-    .user-info span { color: var(--text); }
-    .auth-actions { margin-left: auto; display: flex; gap: 8px; align-items: center; }
-    .btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 12px; font-family: var(--mono); transition: all 0.2s; }
-    .btn-ghost:hover { border-color: var(--accent2); color: var(--accent2); }
-    .method-url-row { display: flex; gap: 10px; align-items: stretch; }
-    select, input, textarea { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: var(--mono); font-size: 13px; padding: 10px 14px; outline: none; transition: border-color 0.2s; }
-    select:focus, input:focus, textarea:focus { border-color: var(--accent); }
-    #methodSelect { width: 100px; flex-shrink: 0; cursor: pointer; color: var(--accent); font-weight: 600; }
-    #urlInput { flex: 1; }
-    .field-label { font-size: 11px; font-family: var(--mono); color: var(--muted); margin-bottom: 6px; letter-spacing: 0.05em; }
-    #bodyField { display: none; }
-    #bodyInput { width: 100%; resize: vertical; min-height: 100px; }
-    #sendBtn { width: 100%; padding: 13px; border-radius: 8px; border: none; background: linear-gradient(135deg, var(--accent) 0%, #0095b3 100%); color: #000; font-family: var(--sans); font-weight: 700; font-size: 14px; cursor: pointer; letter-spacing: 0.05em; transition: opacity 0.2s, transform 0.1s; }
-    #sendBtn:disabled { opacity: 0.35; cursor: not-allowed; }
-    #sendBtn:not(:disabled):hover { opacity: 0.9; }
-    #sendBtn:not(:disabled):active { transform: scale(0.99); }
-    #sendBtn .btn-inner { display: flex; align-items: center; justify-content: center; gap: 8px; }
-    #responseCard { display: none; }
-    .response-meta { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
-    .status-badge { font-family: var(--mono); font-size: 12px; padding: 3px 10px; border-radius: 4px; font-weight: 600; }
-    .status-badge.ok { background: rgba(0,229,160,0.15); color: var(--success); }
-    .status-badge.err { background: rgba(255,79,123,0.15); color: var(--error); }
-    .response-time { font-size: 12px; color: var(--muted); font-family: var(--mono); margin-left: auto; }
-    #responseOutput { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 16px; font-family: var(--mono); font-size: 12px; line-height: 1.7; white-space: pre-wrap; word-break: break-all; max-height: 360px; overflow-y: auto; color: var(--text); }
-    #responseOutput::-webkit-scrollbar { width: 4px; }
-    #responseOutput::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-    .token-toggle { display: flex; align-items: center; gap: 8px; font-size: 12px; font-family: var(--mono); color: var(--muted); cursor: pointer; user-select: none; margin-top: 12px; }
-    .token-toggle:hover { color: var(--accent); }
-    .chevron { transition: transform 0.2s; display: inline-block; }
-    .chevron.open { transform: rotate(90deg); }
-    #tokenBox { display: none; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px; font-family: var(--mono); font-size: 11px; color: var(--muted); word-break: break-all; line-height: 1.6; margin-top: 10px; max-height: 80px; overflow-y: auto; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .spinner { width: 14px; height: 14px; border: 2px solid rgba(0,0,0,0.3); border-top-color: #000; border-radius: 50%; animation: spin 0.7s linear infinite; display: none; }
-    /* Custom Google sign-in button */
-    #signInBtn { display: flex; align-items: center; gap: 10px; margin-top: 16px; padding: 10px 20px; background: #fff; border: none; border-radius: 8px; cursor: pointer; font-family: var(--sans); font-size: 14px; font-weight: 500; color: #3c4043; transition: box-shadow 0.2s, opacity 0.2s; }
-    #signInBtn:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.35); }
-    #signInBtn:disabled { opacity: 0.5; cursor: not-allowed; }
-    #signInBtn svg { flex-shrink: 0; }
-    .session-badge { font-size: 11px; font-family: var(--mono); color: var(--accent); border: 1px solid var(--accent); padding: 3px 8px; border-radius: 4px; display: none; }
-    .session-badge.show { display: inline-block; }
-    @media (max-width: 500px) { .method-url-row { flex-direction: column; } #methodSelect { width: 100%; } }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>AIMM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
-<div class="wrapper">
+<style>
+:root{
+  --bg:#f8f8f8;--bg2:#ffffff;--bg3:#eeeeee;
+  --line:#e2e2e2;--line2:#cccccc;
+  --text:#0d0d0d;--text2:#444444;--text3:#888888;
+  --accent:#1a73e8;--accent-bg:#e8f0fe;
+  --green:#188038;--green-bg:#e6f4ea;
+  --red:#c5221f;--red-bg:#fce8e6;
+  --amber:#b06000;--amber-bg:#fff3e0;
+  --font:'DM Sans',system-ui,sans-serif;
+  --mono:'DM Mono',monospace;
+  --r:clamp(6px,2vw,12px);
+  --safe-t:max(env(safe-area-inset-top,0px),14px);
+  --safe-b:max(env(safe-area-inset-bottom,0px),20px);
 
-  <header>
-    <div class="logo">FC</div>
-    <h1>Cloud Run Console</h1>
-    <span>asia-south1</span>
-  </header>
+  /* ── Viewport-relative size tokens ── */
+  /* Font sizes: clamp(min, vw-based, max) */
+  --fs-xs:   clamp(0.6rem,  2.2vw, 0.75rem);   /* 10-12px — labels, mono tags */
+  --fs-sm:   clamp(0.688rem,2.6vw, 0.875rem);   /* 11-14px — secondary text */
+  --fs-md:   clamp(0.813rem,3.2vw, 1rem);       /* 13-16px — body / inputs */
+  --fs-lg:   clamp(0.938rem,3.8vw, 1.125rem);   /* 15-18px — primary UI text */
+  --fs-xl:   clamp(1.25rem, 5.5vw, 1.75rem);    /* 20-28px — headings */
 
-  <!-- Auth -->
-  <div class="card">
-    <div class="card-title">// authentication</div>
-    <div class="auth-row">
-      <div class="status-pill" id="statusPill">
-        <div class="dot"></div>
-        <span id="statusText">not signed in</span>
-      </div>
-      <div class="user-info" id="userInfo" style="display:none">
-        <span id="userEmail"></span>
-      </div>
-      <span class="session-badge" id="sessionBadge">persistent</span>
-      <div class="auth-actions" id="authActions" style="display:none">
-        <button class="btn-ghost" onclick="signOut()">sign out</button>
-      </div>
+  /* Spacing: clamp(min, vw-based, max) */
+  --sp-2:  clamp(3px,  0.8vw, 6px);
+  --sp-4:  clamp(4px,  1.2vw, 8px);
+  --sp-6:  clamp(5px,  1.5vw, 10px);
+  --sp-8:  clamp(6px,  2vw,   12px);
+  --sp-10: clamp(8px,  2.5vw, 14px);
+  --sp-12: clamp(9px,  3vw,   16px);
+  --sp-14: clamp(10px, 3.5vw, 18px);
+  --sp-16: clamp(12px, 4vw,   20px);
+  --sp-20: clamp(14px, 5vw,   24px);
+  --sp-24: clamp(16px, 6vw,   28px);
+
+  /* Touch targets */
+  --tap:     clamp(2rem, 9vw, 2.75rem);   /* 32-44px */
+  --tap-sm:  clamp(1.75rem,8vw,2.375rem); /* 28-38px */
+  --tap-lg:  clamp(3.25rem,13vw,4.5rem);  /* 52-72px shutter */
+
+  /* Header */
+  --hdr-h: clamp(44px, 12vw, 56px);
+}
+[data-dark]{
+  --bg:#0e0e0e;--bg2:#181818;--bg3:#222222;
+  --line:#2c2c2c;--line2:#3a3a3a;
+  --text:#f2f2f2;--text2:#aaaaaa;--text3:#555555;
+  --accent:#5ba8ff;--accent-bg:#1a2d45;
+  --green:#34a853;--green-bg:#0d2818;
+  --red:#f28b82;--red-bg:#2a1010;
+  --amber:#ffca28;--amber-bg:#2a1e00;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{font-size:100%;}
+body{
+  width:100%;height:100%;overflow:hidden;
+  background:var(--bg);color:var(--text);
+  font-family:var(--font);font-size:var(--fs-md);line-height:1.5;
+  -webkit-tap-highlight-color:transparent;
+  touch-action:manipulation;-webkit-user-select:none;user-select:none;
+  overscroll-behavior:none;
+}
+#dwall{
+  display:none;position:fixed;inset:0;z-index:9999;background:var(--bg);
+  flex-direction:column;align-items:center;justify-content:center;
+  gap:var(--sp-16);text-align:center;padding:var(--sp-24);
+}
+#dwall .logo{font-family:var(--mono);font-size:var(--fs-xl);letter-spacing:0.5em;color:var(--accent);}
+#dwall p{color:var(--text2);line-height:1.7;max-width:280px;font-size:var(--fs-lg);}
+@media(min-width:1024px){#dwall{display:flex}#app{display:none!important}}
+#app{position:fixed;inset:0;background:var(--bg);}
+#header{
+  position:fixed;top:0;left:0;right:0;z-index:300;
+  height:calc(var(--safe-t) + var(--hdr-h));
+  padding-top:var(--safe-t);
+  display:flex;align-items:center;justify-content:space-between;
+  padding-left:var(--sp-20);padding-right:var(--sp-12);
+  background:var(--bg2);border-bottom:1px solid var(--line);
+}
+.h-logo{font-family:var(--mono);font-size:var(--fs-lg);letter-spacing:0.3em;color:var(--text);font-weight:500;}
+.h-right{display:flex;gap:var(--sp-6);align-items:center;}
+.h-btn{
+  width:var(--tap);height:var(--tap);border-radius:50%;
+  border:1.5px solid var(--line2);background:transparent;
+  color:var(--text2);font-size:var(--fs-lg);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:background 0.15s;font-family:var(--font);
+}
+.h-btn:active{background:var(--bg3);}
+.h-btn.hidden{display:none;}
+.screen{
+  position:fixed;inset:0;
+  padding-top:calc(var(--safe-t) + var(--hdr-h));
+  padding-bottom:var(--safe-b);display:none;flex-direction:column;
+  overflow-y:auto;-webkit-overflow-scrolling:touch;
+}
+.screen.on{display:flex;}
+.sp{padding:var(--sp-24) var(--sp-20);flex:1;display:flex;flex-direction:column;gap:var(--sp-20);}
+
+/* SETUP */
+#s-setup{background:var(--bg);}
+.setup-hd{font-size:var(--fs-xl);font-weight:600;color:var(--text);}
+.step-list{display:flex;flex-direction:column;}
+.step-row{display:flex;align-items:flex-start;gap:var(--sp-16);padding:var(--sp-14) 0;border-bottom:1px solid var(--line);}
+.step-row:last-child{border-bottom:none;}
+.step-ico{
+  width:var(--tap-sm);height:var(--tap-sm);border-radius:50%;flex-shrink:0;
+  border:2px solid var(--line2);background:var(--bg2);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-size:var(--fs-sm);color:var(--text3);
+  font-weight:500;transition:all 0.2s;margin-top:2px;
+}
+.step-row.active .step-ico{border-color:var(--accent);color:var(--accent);background:var(--accent-bg);}
+.step-row.done .step-ico{border-color:var(--green);color:var(--green);background:var(--green-bg);}
+.step-row.err .step-ico{border-color:var(--red);color:var(--red);background:var(--red-bg);}
+.step-body{flex:1;min-width:0;}
+.step-name{font-size:var(--fs-lg);font-weight:500;color:var(--text2);transition:color 0.2s;}
+.step-row.active .step-name,.step-row.done .step-name{color:var(--text);}
+.step-row.err .step-name{color:var(--red);}
+.step-msg{font-family:var(--mono);font-size:var(--fs-xs);color:var(--text3);line-height:1.5;margin-top:2px;word-break:break-word;}
+.step-row.active .step-msg{color:var(--text2);}
+.step-row.err .step-msg{color:var(--red);}
+.step-bar{margin-top:var(--sp-8);height:3px;background:var(--line);border-radius:2px;overflow:hidden;display:none;}
+.step-bar-fill{height:100%;background:var(--accent);border-radius:2px;width:0%;transition:width 0.3s linear;}
+.spin{width:var(--fs-lg);height:var(--fs-lg);border-radius:50%;border:2.5px solid var(--accent-bg);border-top-color:var(--accent);animation:spin 0.7s linear infinite;flex-shrink:0;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.prog-track{height:4px;background:var(--line);border-radius:2px;overflow:hidden;}
+.prog-fill{height:100%;background:var(--accent);border-radius:2px;width:0%;transition:width 0.4s ease;}
+.prog-lbl{font-family:var(--mono);font-size:var(--fs-xs);color:var(--text3);margin-top:var(--sp-8);}
+.err-box{display:none;background:var(--red-bg);border:1.5px solid var(--red);border-radius:var(--r);padding:var(--sp-12) var(--sp-16);}
+.err-box.on{display:block;}
+.err-box-title{font-size:var(--fs-md);font-weight:600;color:var(--red);margin-bottom:var(--sp-4);}
+.err-box-msg{font-family:var(--mono);font-size:var(--fs-xs);color:var(--red);line-height:1.5;word-break:break-all;white-space:pre-wrap;max-height:5rem;overflow-y:auto;}
+.btn{width:100%;padding:0.875em 1.25em;border-radius:var(--r);border:none;font-family:var(--font);font-size:var(--fs-lg);font-weight:500;cursor:pointer;transition:opacity 0.15s,background 0.15s;text-align:center;}
+.btn-primary{background:var(--accent);color:#fff;}
+.btn-primary:active{opacity:0.85;}
+.btn-primary:disabled{opacity:0.35;cursor:not-allowed;}
+.btn-ghost{background:transparent;color:var(--text2);border:1.5px solid var(--line2);}
+.btn-ghost:active{background:var(--bg3);}
+.g-btn{
+  width:100%;display:flex;align-items:center;justify-content:center;
+  gap:var(--sp-10);padding:0.875em 1.25em;background:#fff;border:1.5px solid #dadce0;
+  border-radius:var(--r);font-family:var(--font);font-size:var(--fs-lg);font-weight:500;color:#3c4043;
+  cursor:pointer;transition:opacity 0.15s;
+}
+.g-btn:active{opacity:0.8;}.g-btn:disabled{opacity:0.4;cursor:not-allowed;}.g-btn svg{flex-shrink:0;}
+
+/* SESSION */
+.card{background:var(--bg2);border:1.5px solid var(--line);border-radius:var(--r);overflow:hidden;}
+.card-label{font-family:var(--mono);font-size:var(--fs-xs);font-weight:500;letter-spacing:0.1em;color:var(--text3);text-transform:uppercase;padding:var(--sp-10) var(--sp-16);border-bottom:1px solid var(--line);background:var(--bg3);}
+.card-body{padding:var(--sp-12) var(--sp-16);}
+.uuid-val{font-family:var(--mono);font-size:var(--fs-sm);color:var(--accent);letter-spacing:0.1em;word-break:break-all;line-height:2;}
+.loc-row{display:flex;align-items:center;gap:var(--sp-10);}
+.loc-dot{width:8px;height:8px;border-radius:50%;background:var(--text3);flex-shrink:0;}
+.loc-dot.ok{background:var(--green);}.loc-dot.err{background:var(--red);}
+.loc-dot.ld{background:var(--accent);animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.2;}}
+.loc-val{font-family:var(--mono);font-size:var(--fs-sm);color:var(--text2);flex:1;}
+.field-row{display:flex;align-items:center;gap:var(--sp-10);}
+.field-lbl{font-size:var(--fs-md);color:var(--text2);flex-shrink:0;}
+.field-in{flex:1;background:var(--bg);border:1.5px solid var(--line2);border-radius:var(--r);color:var(--text);font-family:var(--mono);font-size:var(--fs-md);font-weight:500;padding:0.6em 0.875em;outline:none;transition:border-color 0.2s;-webkit-user-select:text;user-select:text;-webkit-appearance:none;}
+.field-in:focus{border-color:var(--accent);}
+.field-unit{font-family:var(--mono);font-size:var(--fs-sm);color:var(--text3);flex-shrink:0;}
+.spacer{flex:1;}
+
+/* CAMERA */
+#s-camera{background:#000;padding:0!important;overflow:hidden;flex-direction:column;}
+#cam-viewport{
+  position:relative;width:100%;flex:0 0 auto;
+  background:#000;touch-action:none;overflow:hidden;
+}
+#vid{display:block;width:100%;height:auto;}
+#c-mask,#c-pose{
+  position:absolute;top:0;left:0;
+  pointer-events:none;
+}
+#c-mask{z-index:1;}#c-pose{z-index:2;}
+#pose-card{
+  position:absolute;bottom:var(--sp-8);left:var(--sp-8);z-index:10;
+  width:clamp(52px,14vw,72px);height:clamp(70px,19vw,96px);border-radius:var(--r);
+  background:rgba(0,0,0,0.55);border:1px solid rgba(255,255,255,0.15);
+  overflow:hidden;display:flex;align-items:center;justify-content:center;
+  pointer-events:none;
+}
+#pose-card svg{width:85%;height:85%;}
+#c-flash{position:absolute;inset:0;z-index:50;background:#fff;opacity:0;pointer-events:none;transition:opacity 0.05s;}
+#c-flash.on{opacity:0.9;}
+#cam-panel{flex:1;background:var(--bg);overflow:hidden;display:flex;flex-direction:column;min-height:0;}
+#no-pose-bar{display:none;background:var(--amber-bg);border-bottom:1.5px solid var(--amber);padding:var(--sp-6) var(--sp-16);font-family:var(--mono);font-size:var(--fs-xs);color:var(--amber);flex-shrink:0;}
+#no-pose-bar.on{display:block;}
+#cam-topbar{display:flex;align-items:center;justify-content:space-between;padding:var(--sp-8) var(--sp-16) var(--sp-6);border-bottom:1px solid var(--line);background:var(--bg2);flex-shrink:0;}
+.cam-phase{font-family:var(--mono);font-size:var(--fs-xs);letter-spacing:0.2em;color:var(--text3);}
+.cam-topright{display:flex;gap:var(--sp-6);align-items:center;}
+.cam-btn{width:var(--tap-sm);height:var(--tap-sm);border-radius:50%;border:1.5px solid var(--line2);background:transparent;color:var(--text2);font-size:var(--fs-md);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.15s;font-family:var(--font);}
+.cam-btn:active{background:var(--bg3);}
+.mode-pill{display:flex;align-items:center;background:var(--bg3);border:1.5px solid var(--line2);border-radius:1.25rem;padding:2px;gap:2px;}
+.mpb{padding:0.25em 0.75em;border-radius:1rem;border:none;font-family:var(--mono);font-size:var(--fs-xs);font-weight:500;letter-spacing:0.05em;cursor:pointer;background:transparent;color:var(--text3);transition:all 0.15s;}
+.mpb.on{background:var(--accent);color:#fff;}
+#h-display{display:flex;gap:0;border-bottom:1px solid var(--line);flex-shrink:0;}
+.h-box{flex:1;padding:var(--sp-6) var(--sp-8);display:flex;flex-direction:column;gap:2px;border-right:1px solid var(--line);}
+.h-box:last-child{border-right:none;}
+.h-lbl{font-family:var(--mono);font-size:var(--fs-xs);letter-spacing:0.1em;color:var(--text3);text-transform:uppercase;}
+.h-val{font-size:var(--fs-lg);font-weight:600;color:var(--text);font-family:var(--mono);}
+.h-val.dim{color:var(--text3);font-weight:400;}
+#chips-row{display:flex;gap:var(--sp-6);padding:var(--sp-6) var(--sp-12);overflow-x:auto;-webkit-overflow-scrolling:touch;border-bottom:1px solid var(--line);scrollbar-width:none;flex-shrink:0;}
+#chips-row::-webkit-scrollbar{display:none;}
+.chip{display:flex;align-items:center;gap:var(--sp-4);flex-shrink:0;background:var(--bg3);border:1.5px solid var(--line2);border-radius:1.25rem;padding:var(--sp-4) var(--sp-8);}
+.chip-dot{width:6px;height:6px;border-radius:50%;background:var(--text3);flex-shrink:0;}
+.chip-lbl{font-family:var(--mono);font-size:var(--fs-xs);color:var(--text3);font-weight:500;}
+.chip.ok{border-color:var(--green);background:var(--green-bg);}
+.chip.ok .chip-dot{background:var(--green);}.chip.ok .chip-lbl{color:var(--green);}
+.chip.bad{border-color:var(--red);background:var(--red-bg);}
+.chip.bad .chip-dot{background:var(--red);}.chip.bad .chip-lbl{color:var(--red);}
+.chip.warn{border-color:var(--amber);background:var(--amber-bg);}
+.chip.warn .chip-dot{background:var(--amber);}.chip.warn .chip-lbl{color:var(--amber);}
+.chip{cursor:pointer;-webkit-tap-highlight-color:transparent;}
+.chip.dis{opacity:0.3;cursor:default;}
+.chip.soft{border-color:var(--amber);background:var(--amber-bg);opacity:0.6;}
+.chip.soft .chip-dot{background:var(--amber);}.chip.soft .chip-lbl{color:var(--amber);}
+#lang-btn{
+  padding:0 var(--sp-8);border-radius:1.25rem;border:1.5px solid var(--line2);
+  background:transparent;color:var(--text2);font-family:var(--mono);
+  font-size:var(--fs-xs);font-weight:600;letter-spacing:0.05em;cursor:pointer;
+  height:var(--tap-sm);transition:all 0.15s;display:flex;align-items:center;
+}
+#lang-btn:active{background:var(--bg3);}
+#guide-txt{padding:var(--sp-6) var(--sp-16);font-size:var(--fs-md);color:var(--text2);border-bottom:1px solid var(--line);min-height:2.5em;display:flex;align-items:center;flex-shrink:0;line-height:1.4;}
+#guide-txt.ok{color:var(--green);}#guide-txt.bad{color:var(--red);}#guide-txt.warn{color:var(--amber);}
+#shutter-row{flex:1;display:flex;align-items:center;justify-content:center;padding:var(--sp-6) 0;min-height:0;}
+#shutter{width:var(--tap-lg);height:var(--tap-lg);border-radius:50%;border:3px solid var(--line2);background:var(--bg2);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.15s;position:relative;}
+#shutter::after{content:'';width:77%;height:77%;border-radius:50%;background:var(--bg3);transition:all 0.15s;}
+#shutter:active::after{transform:scale(0.88);}
+#shutter.ok{border-color:var(--green);}#shutter.ok::after{background:var(--green);}
+#shutter.warn{border-color:var(--amber);}#shutter.warn::after{background:var(--amber);}
+#shutter.off{opacity:0.3;cursor:not-allowed;}
+
+/* PREVIEW */
+#preview{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.97);display:none;flex-direction:column;align-items:center;justify-content:center;gap:var(--sp-12);padding:var(--sp-16);}
+#preview.on{display:flex;}
+.prev-lbl{font-family:var(--mono);font-size:var(--fs-xs);letter-spacing:0.15em;color:rgba(255,255,255,0.4);flex-shrink:0;}
+.prev-img-wrap{
+  position:relative;border-radius:var(--r);overflow:hidden;
+  width:min(75vw,calc((100svh - 8rem) * 0.75));
+  height:min(calc(75vw * 4 / 3),calc(100svh - 8rem));
+  background:#000;flex-shrink:1;min-height:0;
+}
+.prev-img-wrap img{width:100%;height:100%;object-fit:cover;display:block;}
+.prev-status{position:absolute;bottom:0;left:0;right:0;padding:var(--sp-6) var(--sp-8);font-family:var(--mono);font-size:var(--fs-xs);text-align:center;background:rgba(0,0,0,0.8);display:none;}
+.prev-status.on{display:block;}.prev-status.uploading{color:#fdd663;}.prev-status.err{color:#f28b82;}
+.prev-btns{display:flex;gap:var(--sp-10);width:min(75vw,calc((100svh - 8rem) * 0.75));flex-shrink:0;}
+.prev-btn{flex:1;padding:0.75em 0;border-radius:var(--r);font-family:var(--font);font-size:var(--fs-lg);font-weight:500;border:1.5px solid rgba(255,255,255,0.15);cursor:pointer;transition:opacity 0.15s;}
+.prev-btn:active{opacity:0.75;}
+.prev-btn.retake{background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.7);}
+.prev-btn.proceed{background:var(--accent);color:#fff;border-color:var(--accent);}
+.prev-btn.proceed:disabled{opacity:0.35;pointer-events:none;}
+
+/* Session expiry banner */
+#reauth-banner{
+  display:none;position:fixed;bottom:0;left:0;right:0;z-index:500;
+  background:var(--amber-bg);border-top:2px solid var(--amber);
+  padding:var(--sp-10) var(--sp-16);align-items:center;justify-content:space-between;gap:var(--sp-12);
+}
+#reauth-banner.on{display:flex;}
+#reauth-msg{font-size:var(--fs-sm);color:var(--amber);flex:1;}
+#reauth-btn{padding:0.5em 1em;border-radius:var(--r);border:1.5px solid var(--amber);background:transparent;color:var(--amber);font-family:var(--font);font-size:var(--fs-sm);font-weight:600;cursor:pointer;}
+#reauth-btn:active{background:var(--amber-bg);}
+
+/* FORM */
+#s-form{background:var(--bg);}
+.form-card{background:var(--bg2);border:1.5px solid var(--line);border-radius:var(--r);overflow:hidden;margin-bottom:var(--sp-12);}
+.form-card-hd{font-family:var(--mono);font-size:var(--fs-xs);font-weight:500;letter-spacing:0.1em;color:var(--text3);text-transform:uppercase;padding:var(--sp-8) var(--sp-16);border-bottom:1px solid var(--line);background:var(--bg3);}
+.form-field{padding:var(--sp-12) var(--sp-16);border-bottom:1px solid var(--line);}
+.form-field:last-child{border-bottom:none;}
+.f-lbl{font-size:var(--fs-sm);color:var(--text2);display:block;margin-bottom:var(--sp-6);font-weight:500;}
+.f-in{width:100%;background:var(--bg);border:1.5px solid var(--line2);border-radius:var(--r);color:var(--text);font-family:var(--mono);font-size:var(--fs-md);padding:0.6em 0.875em;outline:none;transition:border-color 0.2s;-webkit-user-select:text;user-select:text;-webkit-appearance:none;}
+.f-in:focus{border-color:var(--accent);}.f-in::placeholder{color:var(--text3);}
+input[type="date"].f-in{color-scheme:light dark;}
+select.f-in{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23888'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:2.5em;}
+.seg{display:flex;gap:var(--sp-8);}
+.seg-btn{flex:1;padding:0.625em 0;border-radius:var(--r);border:1.5px solid var(--line2);background:var(--bg);font-size:var(--fs-md);font-weight:500;color:var(--text2);cursor:pointer;text-align:center;transition:all 0.15s;}
+.seg-btn.on{background:var(--accent-bg);border-color:var(--accent);color:var(--accent);}
+.seg-btn:active{opacity:0.7;}
+.consent-wrap{background:var(--amber-bg);border:1.5px solid rgba(180,100,0,0.25);border-radius:var(--r);padding:var(--sp-14);margin-bottom:var(--sp-12);}
+.consent-row{display:flex;align-items:flex-start;gap:var(--sp-12);cursor:pointer;}
+.consent-box{width:1.375rem;height:1.375rem;min-width:1.375rem;border-radius:0.25rem;border:2px solid var(--line2);background:var(--bg);margin-top:2px;display:flex;align-items:center;justify-content:center;transition:all 0.15s;}
+.consent-box.on{background:var(--accent);border-color:var(--accent);}
+.consent-tick{color:#fff;font-size:var(--fs-sm);font-weight:700;opacity:0;transition:opacity 0.15s;}
+.consent-box.on .consent-tick{opacity:1;}
+.consent-txt{font-size:var(--fs-sm);color:var(--text2);line-height:1.7;-webkit-user-select:text;user-select:text;}
+.form-msg{font-family:var(--mono);font-size:var(--fs-sm);text-align:center;min-height:1.5em;padding:var(--sp-6) 0;}
+.form-msg.ok{color:var(--green);}.form-msg.err{color:var(--red);}
+/* UPLOAD QUEUE / OFFLINE */
+#upload-banner{
+  display:none;position:fixed;top:calc(var(--safe-t) + var(--hdr-h));left:0;right:0;z-index:400;
+  background:var(--amber-bg);border-bottom:2px solid var(--amber);
+  padding:var(--sp-6) var(--sp-16);align-items:center;justify-content:space-between;gap:var(--sp-8);
+}
+#upload-banner.on{display:flex;}
+#upload-banner-txt{font-size:var(--fs-sm);color:var(--amber);flex:1;}
+#upload-banner-btn{padding:0.3em 0.75em;border-radius:var(--r);border:1.5px solid var(--amber);background:transparent;color:var(--amber);font-family:var(--font);font-size:var(--fs-xs);font-weight:600;cursor:pointer;white-space:nowrap;}
+#upload-banner-btn:active{background:var(--amber-bg);}
+/* CONNECTIVITY DOT in header */
+#net-dot{width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0;transition:background 0.3s;}
+#net-dot.offline{background:var(--red);}
+/* OFFLINE MODE BADGE */
+#offline-badge{
+  display:none;position:fixed;bottom:calc(var(--safe-b) + 4px);left:50%;transform:translateX(-50%);
+  z-index:600;background:var(--red-bg);border:1.5px solid var(--red);border-radius:1.5rem;
+  padding:var(--sp-4) var(--sp-12);font-family:var(--mono);font-size:var(--fs-xs);color:var(--red);
+  white-space:nowrap;pointer-events:none;
+}
+#offline-badge.on{display:block;}
+/* AGE ERROR */
+.age-err{font-family:var(--mono);font-size:var(--fs-xs);color:var(--red);margin-top:var(--sp-4);display:none;}
+.age-err.on{display:block;}
+/* TRACKING INDICATOR on camera */
+#tracking-lbl{
+  position:absolute;top:var(--sp-8);left:50%;transform:translateX(-50%);z-index:10;
+  background:rgba(0,0,0,0.6);border:1px solid rgba(255,255,255,0.2);border-radius:1rem;
+  padding:var(--sp-4) var(--sp-10);font-family:var(--mono);font-size:var(--fs-xs);
+  color:rgba(255,255,255,0.8);pointer-events:none;display:none;white-space:nowrap;
+}
+#tracking-lbl.on{display:block;}
+/* PENDING UPLOADS modal */
+#queue-modal{
+  display:none;position:fixed;inset:0;z-index:800;background:rgba(0,0,0,0.7);
+  align-items:center;justify-content:center;padding:var(--sp-24);
+}
+#queue-modal.on{display:flex;}
+#queue-modal-box{
+  background:var(--bg2);border-radius:var(--r);padding:var(--sp-20);
+  max-width:380px;width:100%;display:flex;flex-direction:column;gap:var(--sp-16);
+  max-height:70vh;overflow-y:auto;
+}
+.qm-title{font-size:var(--fs-lg);font-weight:600;color:var(--text);}
+.qm-item{display:flex;align-items:center;gap:var(--sp-10);padding:var(--sp-10) 0;border-bottom:1px solid var(--line);}
+.qm-item:last-of-type{border-bottom:none;}
+.qm-uuid{font-family:var(--mono);font-size:var(--fs-xs);color:var(--text2);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.qm-status{font-family:var(--mono);font-size:var(--fs-xs);color:var(--text3);flex-shrink:0;}
+.qm-del{padding:0.25em 0.5em;border-radius:var(--r);border:1px solid var(--red);background:transparent;color:var(--red);font-size:var(--fs-xs);cursor:pointer;}
+.qm-retry{padding:0.25em 0.5em;border-radius:var(--r);border:1px solid var(--accent);background:transparent;color:var(--accent);font-size:var(--fs-xs);cursor:pointer;}
+/* MORBIDITY & APPETITE fields */
+.radio-group{display:flex;flex-direction:column;gap:var(--sp-6);}
+.radio-opt{display:flex;align-items:center;gap:var(--sp-10);cursor:pointer;padding:var(--sp-4) 0;}
+.radio-dot{width:1.125rem;height:1.125rem;min-width:1.125rem;border-radius:50%;border:2px solid var(--line2);background:var(--bg);display:flex;align-items:center;justify-content:center;transition:all 0.15s;flex-shrink:0;}
+.radio-dot.on{border-color:var(--accent);background:var(--accent);}
+.radio-dot.on::after{content:'';width:0.375rem;height:0.375rem;border-radius:50%;background:#fff;}
+.radio-lbl{font-size:var(--fs-sm);color:var(--text2);}
+/* LITERACY 5-level */
+.lit-select{display:flex;flex-direction:column;gap:var(--sp-4);}
+</style>
+
+<div id="dwall">
+  <div class="logo">AIMM</div>
+  <p>This app is designed for mobile devices only.</p>
+</div>
+
+<div id="app">
+  <div id="header">
+    <span class="h-logo">AIMM</span>
+    <div class="h-right">
+      <div id="net-dot" title="Online"></div>
+      <button class="h-btn hidden" id="h-reset">&#8634;</button>
+      <button class="h-btn hidden" id="h-signout">&#9167;</button>
+      <button id="lang-btn" onclick="toggleLang()">EN</button>
+      <button class="h-btn" id="h-theme">&#9680;</button>
     </div>
-
-    <!-- Custom sign-in button — triggers GIS popup with FedCM disabled -->
-    <button id="signInBtn" onclick="startSignIn()">
-      <svg width="18" height="18" viewBox="0 0 18 18">
-        <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/>
-        <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/>
-        <path fill="#FBBC05" d="M3.964 10.707A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.707V4.961H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.039l3.007-2.332z"/>
-        <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.961L3.964 6.293C4.672 4.166 6.656 3.58 9 3.58z"/>
-      </svg>
-      Sign in with Google
-    </button>
-
-    <div class="token-toggle" id="tokenToggle" style="display:none" onclick="toggleToken()">
-      <span class="chevron" id="chevron">›</span> view id token
-    </div>
-    <div id="tokenBox"></div>
   </div>
 
-  <!-- Request Builder -->
-  <div class="card">
-    <div class="card-title">// request</div>
-    <div style="margin-bottom:14px;">
-      <div class="field-label">endpoint</div>
-      <div class="method-url-row">
-        <select id="methodSelect" onchange="onMethodChange()">
-          <option value="GET">GET</option>
-          <option value="POST">POST</option>
-          <option value="PUT">PUT</option>
-          <option value="DELETE">DELETE</option>
-          <option value="PATCH">PATCH</option>
-        </select>
-        <input type="text" id="urlInput"
-               value="https://temp-450300910281.asia-south1.run.app/"
-               placeholder="https://..." />
-      </div>
+  <!-- UPLOAD PENDING BANNER -->
+  <div id="upload-banner">
+    <span id="upload-banner-txt">0 uploads pending</span>
+    <button id="upload-banner-btn" onclick="showQueueModal()">View</button>
+  </div>
+  <!-- OFFLINE BADGE -->
+  <div id="offline-badge">OFFLINE</div>
+  <!-- QUEUE MODAL -->
+  <div id="queue-modal">
+    <div id="queue-modal-box">
+      <div class="qm-title" id="qm-title">Pending Uploads</div>
+      <div id="qm-list"></div>
+      <button class="btn btn-ghost" onclick="hideQueueModal()">Close</button>
     </div>
-    <div id="bodyField" style="margin-bottom:14px;">
-      <div class="field-label">body (json)</div>
-      <textarea id="bodyInput" placeholder='{ "key": "value" }'></textarea>
-    </div>
-    <button id="sendBtn" onclick="sendRequest()" disabled>
-      <div class="btn-inner">
-        <div class="spinner" id="spinner"></div>
-        <span id="btnLabel">SEND REQUEST</span>
+  </div>
+  <!-- SETUP -->
+  <div class="screen on" id="s-setup">
+    <div class="sp">
+      <div class="setup-hd">AIMM</div>
+      <div class="step-list">
+        <div class="step-row" id="st-cam">
+          <div class="step-ico" id="st-cam-ico">1</div>
+          <div class="step-body"><div class="step-name">Camera</div><div class="step-msg" id="st-cam-msg">Waiting&hellip;</div></div>
+        </div>
+        <div class="step-row" id="st-loc">
+          <div class="step-ico" id="st-loc-ico">2</div>
+          <div class="step-body"><div class="step-name">Location</div><div class="step-msg" id="st-loc-msg">Waiting&hellip;</div></div>
+        </div>
+        <div class="step-row" id="st-auth">
+          <div class="step-ico" id="st-auth-ico">3</div>
+          <div class="step-body"><div class="step-name">Sign in</div><div class="step-msg" id="st-auth-msg">Waiting&hellip;</div></div>
+        </div>
+        <div class="step-row" id="st-model">
+          <div class="step-ico" id="st-model-ico">4</div>
+          <div class="step-body">
+            <div class="step-name" id="st-model-name">Holistic Model</div>
+            <div class="step-msg" id="st-model-msg">Waiting&hellip;</div>
+            <div class="step-bar" id="st-model-bar"><div class="step-bar-fill" id="st-model-fill"></div></div>
+          </div>
+        </div>
+        <div class="step-row" id="st-seg">
+          <div class="step-ico" id="st-seg-ico">5</div>
+          <div class="step-body">
+            <div class="step-name" id="st-seg-name">Segmenter Model</div>
+            <div class="step-msg" id="st-seg-msg">Waiting&hellip;</div>
+          </div>
+        </div>
       </div>
-    </button>
+      <div>
+        <div class="prog-track"><div class="prog-fill" id="prog-fill"></div></div>
+        <div class="prog-lbl" id="prog-lbl">Starting&hellip;</div>
+      </div>
+      <div class="err-box" id="err-box">
+        <div class="err-box-title" id="err-title">Error</div>
+        <div class="err-box-msg" id="err-msg"></div>
+      </div>
+      <button class="g-btn" id="g-signin" style="display:none" onclick="triggerSignIn()">
+        <svg width="20" height="20" viewBox="0 0 18 18">
+          <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/>
+          <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/>
+          <path fill="#FBBC05" d="M3.964 10.707A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.707V4.961H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.039l3.007-2.332z"/>
+          <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.961L3.964 6.293C4.672 4.166 6.656 3.58 9 3.58z"/>
+        </svg>
+        Sign in with Google
+      </button>
+      <div class="spacer"></div>
+    </div>
   </div>
 
-  <!-- Response -->
-  <div class="card" id="responseCard">
-    <div class="card-title">// response</div>
-    <div class="response-meta">
-      <div class="status-badge" id="statusBadge"></div>
-      <div class="response-time" id="responseTime"></div>
+  <!-- SESSION -->
+  <div class="screen" id="s-session">
+    <div class="sp">
+      <div class="card">
+        <div class="card-label" data-t="lbl_sessid">Session ID</div>
+        <div class="card-body"><div class="uuid-val" id="sess-uuid">&mdash;</div></div>
+      </div>
+      <div class="card">
+        <div class="card-label" data-t="lbl_location">Location</div>
+        <div class="card-body">
+          <div class="loc-row">
+            <div class="loc-dot ld" id="loc-dot"></div>
+            <div class="loc-val" id="loc-val">Acquiring&hellip;</div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-label" data-t="lbl_camh">Camera Height</div>
+        <div class="card-body">
+          <div class="field-row">
+            <span class="field-lbl" data-t="lbl_hfromground">Height from ground</span>
+            <input class="field-in" type="number" id="camh-input" min="10" max="300" placeholder="70">
+            <span class="field-unit">cm</span>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-label" data-t="lbl_child_dob">Child Date of Birth</div>
+        <div class="card-body">
+          <input class="f-in" type="date" id="sess-dob" style="-webkit-user-select:text;user-select:text;">
+          <div class="age-err" id="sess-age-err" data-t="err_age_over5">Child must be 0–5 years old for this study.</div>
+          <div id="sess-age-ok" style="font-family:var(--mono);font-size:var(--fs-xs);color:var(--green);margin-top:var(--sp-4);display:none;"></div>
+        </div>
+      </div>
+      <div class="consent-wrap" id="sess-consent-wrap">
+        <div class="consent-row" id="sess-consent-row">
+          <div class="consent-box" id="sess-consent-box"><span class="consent-tick">&#10003;</span></div>
+          <span class="consent-txt" id="sess-consent-txt">By checking this box, I confirm consent.</span>
+        </div>
+      </div>
+      <div class="spacer"></div>
+      <button class="btn btn-primary" id="sess-go" data-t="btn_begincapture" disabled>Begin Capture &rarr;</button>
     </div>
-    <pre id="responseOutput"></pre>
   </div>
 
+  <!-- CAMERA -->
+  <div class="screen" id="s-camera">
+    <div id="cam-viewport">
+      <video id="vid" autoplay playsinline muted></video>
+      <canvas id="c-mask"></canvas>
+      <canvas id="c-pose"></canvas>
+      <div id="pose-card"><svg id="pose-sil" viewBox="0 0 60 80" fill="none" xmlns="http://www.w3.org/2000/svg"></svg></div>
+      <div id="tracking-lbl"></div>
+      <div id="c-flash"></div>
+    </div>
+    <div id="cam-panel">
+      <div id="no-pose-bar"><span id="no-pose-txt">POSE DETECTION UNAVAILABLE &mdash; WARN MODE ACTIVE</span></div>
+      <div id="cam-topbar">
+        <span class="cam-phase" id="cam-phase-lbl">FRONT VIEW</span>
+        <div class="cam-topright">
+          <button id="cam-lang-btn" onclick="toggleLang()" style="padding:0 8px;border-radius:16px;border:1.5px solid var(--line2);background:transparent;color:var(--text2);font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:1px;cursor:pointer;height:32px;">EN</button>
+          <button class="cam-btn" id="cam-reset">&#8634;</button>
+          <button class="cam-btn" id="cam-signout">&#9167;</button>
+          <button class="cam-btn" id="cam-theme">&#9680;</button>
+        </div>
+      </div>
+      <div id="h-display">
+        <div class="h-box">
+          <div class="h-lbl">Height</div>
+          <div class="h-val dim" id="hval-cur">&mdash;</div>
+        </div>
+        <div class="h-box">
+          <div class="h-lbl">&beta;</div>
+          <div class="h-val dim" id="hval-beta">&mdash;</div>
+        </div>
+        <div class="h-box">
+          <div class="h-lbl">&gamma;</div>
+          <div class="h-val dim" id="hval-gamma">&mdash;</div>
+        </div>
+      </div>
+      <div id="chips-row">
+        <div class="chip" id="ch-light" data-chip="light"><div class="chip-dot"></div><span class="chip-lbl" data-t="chip_light">LIGHT</span></div>
+        <div class="chip" id="ch-steady" data-chip="steady"><div class="chip-dot"></div><span class="chip-lbl" data-t="chip_steady">STEADY</span></div>
+        <div class="chip" id="ch-level" data-chip="level"><div class="chip-dot"></div><span class="chip-lbl" data-t="chip_level">LEVEL</span></div>
+        <div class="chip" id="ch-body" data-chip="body"><div class="chip-dot"></div><span class="chip-lbl" data-t="chip_body">BODY</span></div>
+        <div class="chip" id="ch-dist" data-chip="dist"><div class="chip-dot"></div><span class="chip-lbl" data-t="chip_dist">DIST</span></div>
+        <div class="chip" id="ch-pose" data-chip="pose"><div class="chip-dot"></div><span class="chip-lbl" data-t="chip_pose">POSE</span></div>
+        <div class="chip dis" id="ch-sleeve" data-chip="sleeve"><div class="chip-dot"></div><span class="chip-lbl" data-t="chip_sleeve">SLEEVE</span></div>
+      </div>
+      <div id="guide-txt">Initialising&hellip;</div>
+      <div id="shutter-row"><button id="shutter" class="off"></button></div>
+    </div>
+  </div>
+
+  <!-- FORM -->
+  <div class="screen" id="s-form">
+    <div class="sp">
+      <div class="form-card">
+        <div class="form-card-hd" data-t="fhd_biometric">Biometric</div>
+        <div class="form-field">
+          <label class="f-lbl" data-t="lbl_gender">Gender</label>
+          <div class="seg"><button class="seg-btn" id="g-male" data-v="Male" data-t="opt_male">Male</button><button class="seg-btn" id="g-female" data-v="Female" data-t="opt_female">Female</button></div>
+        </div>
+        <div class="form-field"><label class="f-lbl" for="f-weight" data-t="lbl_weight">Weight (g)</label><input class="f-in" type="number" id="f-weight" placeholder="e.g. 65000" min="0"></div>
+        <div class="form-field"><label class="f-lbl" for="f-height" data-t="lbl_height_sr">Height (cm) &mdash; Self-reported</label><input class="f-in" type="number" id="f-height" placeholder="e.g. 165" min="0"></div>
+        <div class="form-field"><label class="f-lbl" for="f-muac" data-t="lbl_muac">MUAC (mm)</label><input class="f-in" type="number" id="f-muac" placeholder="e.g. 240" min="0"></div>
+      </div>
+      <div class="form-card">
+        <div class="form-card-hd" data-t="fhd_measurements">Measurements</div>
+        <div class="form-field"><label class="f-lbl" data-t="lbl_hfront">Front Height Est. (cm)</label><input class="f-in" type="number" id="f-h-front" placeholder="&mdash;" readonly></div>
+        <div class="form-field"><label class="f-lbl" data-t="lbl_hside">Side Height Est. (cm)</label><input class="f-in" type="number" id="f-h-side" placeholder="&mdash;" readonly></div>
+      </div>
+      <div class="form-card">
+        <div class="form-card-hd" data-t="fhd_household">Household</div>
+        <div class="form-field">
+          <label class="f-lbl" data-t="lbl_literacy">Mother's Literacy (DHS scale)</label>
+          <div class="lit-select" id="lit-group">
+            <div class="radio-opt" data-v="cannot_read"><div class="radio-dot"></div><span class="radio-lbl" data-t="lit_0">Cannot read at all</span></div>
+            <div class="radio-opt" data-v="reads_part"><div class="radio-dot"></div><span class="radio-lbl" data-t="lit_1">Can read parts of a sentence</span></div>
+            <div class="radio-opt" data-v="reads_full"><div class="radio-dot"></div><span class="radio-lbl" data-t="lit_2">Can read a full sentence</span></div>
+            <div class="radio-opt" data-v="writes_name"><div class="radio-dot"></div><span class="radio-lbl" data-t="lit_3">Can read and write her name</span></div>
+            <div class="radio-opt" data-v="writes_full"><div class="radio-dot"></div><span class="radio-lbl" data-t="lit_4">Can read and write sentences</span></div>
+          </div>
+        </div>
+        <div class="form-field">
+          <label class="f-lbl" for="f-caste" data-t="lbl_socialgroup">Social Group</label>
+          <select class="f-in" id="f-caste">
+            <option value="" data-t="opt_select">&mdash; Select &mdash;</option>
+            <option value="Scheduled Caste" data-t="opt_sc">Scheduled Caste</option>
+            <option value="Scheduled Tribe" data-t="opt_st">Scheduled Tribe</option>
+            <option value="Other Backward Class" data-t="opt_obc">Other Backward Class</option>
+            <option value="General" data-t="opt_gen">General</option>
+            <option value="Prefer not to answer" data-t="opt_pnta">Prefer not to answer</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-card" id="health-card">
+        <div class="form-card-hd" data-t="fhd_health">Child Health — Past 2 Weeks</div>
+        <!-- Morbidity: DHS standard (fever, diarrhoea, cough/ARI) -->
+        <div class="form-field">
+          <label class="f-lbl" data-t="lbl_fever">Had fever?</label>
+          <div class="seg">
+            <button class="seg-btn" id="h-fever-y" data-v="yes" data-t="opt_yes">Yes</button>
+            <button class="seg-btn" id="h-fever-n" data-v="no" data-t="opt_no">No</button>
+          </div>
+        </div>
+        <div class="form-field">
+          <label class="f-lbl" data-t="lbl_diarr">Had diarrhoea (≥3 loose stools/day)?</label>
+          <div class="seg">
+            <button class="seg-btn" id="h-diarr-y" data-v="yes" data-t="opt_yes">Yes</button>
+            <button class="seg-btn" id="h-diarr-n" data-v="no" data-t="opt_no">No</button>
+          </div>
+        </div>
+        <div class="form-field">
+          <label class="f-lbl" data-t="lbl_cough">Had cough or difficult breathing?</label>
+          <div class="seg">
+            <button class="seg-btn" id="h-cough-y" data-v="yes" data-t="opt_yes">Yes</button>
+            <button class="seg-btn" id="h-cough-n" data-v="no" data-t="opt_no">No</button>
+          </div>
+        </div>
+        <!-- Appetite: WHO SAM protocol simplified -->
+        <div class="form-card-hd" data-t="fhd_appetite" style="margin-top:0;">Appetite — Past Week</div>
+        <div class="form-field">
+          <label class="f-lbl" data-t="lbl_ate_less">Ate less than usual?</label>
+          <div class="seg">
+            <button class="seg-btn" id="ap-less-y" data-v="yes" data-t="opt_yes">Yes</button>
+            <button class="seg-btn" id="ap-less-n" data-v="no" data-t="opt_no">No</button>
+            <button class="seg-btn" id="ap-less-s" data-v="same" data-t="opt_same">Same</button>
+          </div>
+        </div>
+        <div class="form-field">
+          <label class="f-lbl" data-t="lbl_refused">Refused food at mealtimes?</label>
+          <div class="seg" style="flex-wrap:wrap;">
+            <button class="seg-btn" id="ap-ref-nv" data-v="never" data-t="opt_never" style="flex:1 0 40%;">Never</button>
+            <button class="seg-btn" id="ap-ref-so" data-v="sometimes" data-t="opt_sometimes" style="flex:1 0 40%;">Sometimes</button>
+            <button class="seg-btn" id="ap-ref-of" data-v="often" data-t="opt_often" style="flex:1 0 40%;">Often</button>
+            <button class="seg-btn" id="ap-ref-al" data-v="always" data-t="opt_always" style="flex:1 0 40%;">Always</button>
+          </div>
+        </div>
+        <!-- Breastfed: shown only for age <= 24 months, set dynamically -->
+        <div class="form-field" id="bf-field" style="display:none;">
+          <label class="f-lbl" data-t="lbl_breastfed">Currently breastfed?</label>
+          <div class="seg">
+            <button class="seg-btn" id="ap-bf-y" data-v="yes" data-t="opt_yes">Yes</button>
+            <button class="seg-btn" id="ap-bf-n" data-v="no" data-t="opt_no">No</button>
+          </div>
+        </div>
+      </div>
+      <div class="consent-wrap">
+        <div class="consent-row" id="consent-row">
+          <div class="consent-box" id="consent-box"><span class="consent-tick">&#10003;</span></div>
+          <span class="consent-txt" id="consent-txt">By checking this box, I confirm that I have read or been read the information about this study, that I understand the purpose of the research and what participation involves, and that we voluntarily agree to participate. I understand that our participation is voluntary and that we may withdraw at any time without any negative consequences. We consent to the collection and use of my responses and images for research purposes.</span>
+        </div>
+      </div>
+      <button class="btn btn-primary" id="form-submit" disabled data-t="btn_submit">Submit</button>
+      <div class="form-msg" id="form-msg"></div>
+    </div>
+  </div>
+
+  <!-- PREVIEW -->
+  <div id="preview">
+    <div class="prev-lbl" id="prev-lbl" data-t="prev_front">FRONT VIEW</div>
+    <div class="prev-img-wrap"><img id="prev-img" src="" alt=""><div class="prev-status" id="prev-status"></div></div>
+    <div class="prev-btns">
+      <button class="prev-btn retake" id="prev-retake">&#8617; Retake</button>
+      <button class="prev-btn proceed" id="prev-next">Next &rarr;</button>
+    </div>
+  </div>
+  <!-- Session expiry banner — shown mid-session, non-blocking -->
+  <div id="reauth-banner">
+    <span id="reauth-msg">Session expiring &mdash; sign in again</span>
+    <button id="reauth-btn" onclick="triggerReauth()" data-t="ra_signin">Sign in</button>
+  </div>
 </div>
 <script>
-  const CLIENT_ID = "450300910281-c42g9vc3q8f27la48e2j5vc6428nk7sj.apps.googleusercontent.com";
-  const STORAGE_KEY = "fc_session";
+(function(){
+'use strict';
 
-  let idToken = null;
-  let tokenExpiry = null;
-  let refreshTimer = null;
-  let gisReady = false;
+/* ── helpers first so all top-level wiring can use them ── */
+function g(id){return document.getElementById(id);}
 
-  // ── Storage ────────────────────────────────────────────
-  function saveSession(token, expiry, email) {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ token, expiry, email })); } catch(e) {}
+/* ── CONFIG ── */
+const C={
+  API:          'https://aimm-450300910281.asia-south1.run.app',
+  GID:          '450300910281-c42g9vc3q8f27la48e2j5vc6428nk7sj.apps.googleusercontent.com',
+  // tasks-vision CDN (no version pin = always latest)
+  TV_CDN:       'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision',
+  TV_WASM:      'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision/wasm',
+  MODEL_URL:    'https://storage.googleapis.com/mediapipe-models/holistic_landmarker/holistic_landmarker/float16/latest/holistic_landmarker.task',
+  MODEL_CACHE:  'aimm-holistic',
+  CAM_H_DEFAULT:70,
+  CAM_H_KEY:    'aimm.camh',
+  TOKEN_KEY:    'aimm.token',
+  EXPIRY_KEY:   'aimm.expiry',
+  EMAIL_KEY:    'aimm.email',
+  THEME_KEY:    'aimm.theme',
+  REFRESH_AHEAD:5*60*1000,
+  ARM_RAISE_DEG:45,
+  BODY_MIN:     0.60,  // min nose-to-ankle span fraction (person must fill ≥60% of frame height)
+  BODY_MAX:     0.96,  // max span fraction (only fails if person edge-to-edge)
+  BODY_SPAN_MIN:0.40,  // min span for checkBody landmark visibility test
+  BRIGHT_MIN:   50,
+  SHAKE_RMS:    2.45,
+  SHAKE_SETTLE: 500,
+  TILT_BETA:    10,
+  TILT_GAMMA:   75,
+  GEO_TIMEOUT:  5000,
+  // mask scan: threshold and min consecutive fg pixels per row
+  MASK_THR:     0.4,  // MPMask foreground threshold [0-1]
+  SCAN_MIN_W:   3,    // min consecutive fg pixels per row (works for newborn side-on)
+  // selfie multiclass segmenter
+  SEG_MODEL_URL:'https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_multiclass_256x256/float32/latest/selfie_multiclass_256x256.tflite',
+  // persistence keys
+  LANG_KEY:     'aimm.lang',
+  CHIP_KEY:     'aimm.chipblock',
+  // MUAC sleeve check: fraction of mid-upper-arm pixels that must be skin (class 2)
+  SLEEVE_THR:0.60,
+  IDB_NAME:     'aimm_queue',
+  IDB_VER:      1,
+  IDB_STORE:    'sessions',
+  OPFS_THRESH:  40*1024*1024,   // 40MB — switch blob storage to OPFS above this
+  OFFLINE_KEY:  'aimm.offline', // localStorage flag for forced offline mode
+  SESS_DOB_KEY: 'aimm.sess_dob' // session DOB persisted across reloads
+};
+
+/* ── STATE ── */
+const S={
+  token:null, expiry:null, email:null, refreshTimer:null, authResolve:null,
+  uuid:null, location:null, camH:C.CAM_H_DEFAULT,
+  phase:'front',
+  frontBlob:null, sideBlob:null,
+  frontDone:false, sideDone:false,
+  frontErr:null, sideErr:null,
+  holistic:null, mpReady:false,
+  segmenter:null, segReady:false,
+  _lastSegU8:null, _lastSegW:0, _lastSegH:0, // last multiclass uint8 mask
+  _lastSegT:0,   // timestamp of last segmenter run
+  camStream:null, camRunning:false, lastVideoTime:-1,
+  checks:{light:false,steady:false,level:false,body:false,dist:false,pose:false,sleeve:true},
+  chipBlock:{light:true,steady:true,level:true,body:true,dist:true,pose:true,sleeve:true},
+  lastPose:null, lastFace:null,
+  shakeOk:true, shakeTmr:null, lastAcc:{x:0,y:0,z:0},
+  sensorFired:false,
+  popupMode:'front-normal',
+  consentOn:false, genderVal:null, litVal:null,
+  setupPhase:'idle',
+  // height data (from mask pixel scan)
+  frontHeight:null, frontPpNorm:null, frontPcNorm:null,
+  sideHeight:null,  sidePpNorm:null,  sidePcNorm:null,
+  _lastHcm:null, _lastPpNorm:null, _lastPcNorm:null,
+  _lastTopRow:null, _lastBotRow:null, _lastMH:null, // in mask-native row coords (0..mH)
+  _lastBeta:null, _lastGamma:null, // live orientation from onOrientation
+  frontBeta:null, frontGamma:null, // snapshotted at front capture
+  sideBeta:null,  sideGamma:null,  // snapshotted at side capture
+  _reauthScreen:null,
+  _pollSideCount:0,
+  _sleeveLeft:true, _sleeveRight:true,
+  // offline & queue
+  offlineMode:false,            // true when no network or file:// protocol
+  _db:null,                     // IndexedDB instance
+  _queueCount:0,                // pending uploads
+  _uploadRunning:false,         // background upload in progress
+  // capture background task cancellation
+  _captureCancel:false,
+  // session page
+  sessDob:null, sessConsentOn:false, sessAgeOk:false,
+  // health module
+  hFever:null, hDiarr:null, hCough:null,
+  apLess:null, apRefused:null, apBreastfed:null,
+};
+
+/* ── THEME ── */
+let dark=localStorage.getItem(C.THEME_KEY)==='dark'||
+  (!localStorage.getItem(C.THEME_KEY)&&matchMedia('(prefers-color-scheme:dark)').matches);
+function applyTheme(){dark?document.documentElement.setAttribute('data-dark',''):document.documentElement.removeAttribute('data-dark');localStorage.setItem(C.THEME_KEY,dark?'dark':'light');}
+applyTheme();
+function toggleTheme(){dark=!dark;applyTheme();}
+g('h-theme').addEventListener('click',toggleTheme);
+g('cam-theme').addEventListener('click',toggleTheme);
+
+/* ── OFFLINE & QUEUE ── */
+// Detect file:// protocol or forced offline — bypass all auth and API
+const IS_FILE = location.protocol === 'file:';
+
+// ── IndexedDB / OPFS helper ──────────────────────────────────────────────────
+async function openDB(){
+  return new Promise((res,rej)=>{
+    const req=indexedDB.open(C.IDB_NAME, C.IDB_VER);
+    req.onupgradeneeded=e=>{
+      const db=e.target.result;
+      if(!db.objectStoreNames.contains(C.IDB_STORE)){
+        const s=db.createObjectStore(C.IDB_STORE,{keyPath:'uuid'});
+        s.createIndex('status','status',{unique:false});
+      }
+    };
+    req.onsuccess=e=>res(e.target.result);
+    req.onerror=e=>rej(e.target.error);
+  });
+}
+async function dbGet(uuid){
+  return new Promise((res,rej)=>{
+    const tx=S._db.transaction(C.IDB_STORE,'readonly');
+    const req=tx.objectStore(C.IDB_STORE).get(uuid);
+    req.onsuccess=e=>res(e.target.result||null);
+    req.onerror=e=>rej(e.target.error);
+  });
+}
+async function dbPut(record){
+  return new Promise((res,rej)=>{
+    const tx=S._db.transaction(C.IDB_STORE,'readwrite');
+    const req=tx.objectStore(C.IDB_STORE).put(record);
+    req.onsuccess=()=>res();
+    req.onerror=e=>rej(e.target.error);
+  });
+}
+async function dbDel(uuid){
+  return new Promise((res,rej)=>{
+    const tx=S._db.transaction(C.IDB_STORE,'readwrite');
+    const req=tx.objectStore(C.IDB_STORE).delete(uuid);
+    req.onsuccess=()=>res();
+    req.onerror=e=>rej(e.target.error);
+  });
+}
+async function dbAll(){
+  return new Promise((res,rej)=>{
+    const tx=S._db.transaction(C.IDB_STORE,'readonly');
+    const req=tx.objectStore(C.IDB_STORE).getAll();
+    req.onsuccess=e=>res(e.target.result||[]);
+    req.onerror=e=>rej(e.target.error);
+  });
+}
+async function dbPending(){
+  return new Promise((res,rej)=>{
+    const tx=S._db.transaction(C.IDB_STORE,'readonly');
+    const idx=tx.objectStore(C.IDB_STORE).index('status');
+    const req=idx.getAll('pending');
+    req.onsuccess=e=>res(e.target.result||[]);
+    req.onerror=e=>rej(e.target.error);
+  });
+}
+
+// ── OPFS blob storage (fallback when IDB gets large) ────────────────────────
+async function checkStorageAndUseOPFS(){
+  try{
+    if(!navigator.storage||!navigator.storage.estimate)return false;
+    const {usage}=await navigator.storage.estimate();
+    return usage>C.OPFS_THRESH;
+  }catch(e){return false;}
+}
+async function opfsWrite(name, blob){
+  const root=await navigator.storage.getDirectory();
+  const fh=await root.getFileHandle(name,{create:true});
+  const writable=await fh.createWritable();
+  await writable.write(blob);await writable.close();
+}
+async function opfsRead(name){
+  try{
+    const root=await navigator.storage.getDirectory();
+    const fh=await root.getFileHandle(name);
+    return await fh.getFile();
+  }catch(e){return null;}
+}
+async function opfsDel(name){
+  try{const root=await navigator.storage.getDirectory();await root.removeEntry(name);}catch(e){}
+}
+
+// ── Save a capture session to queue ─────────────────────────────────────────
+async function enqueueSession(uuid, frontBlob, sideBlob, payload){
+  const useOPFS=await checkStorageAndUseOPFS();
+  let record={uuid, status:'pending', ts:Date.now(), payload, retries:0,
+               frontInOPFS:false, sideInOPFS:false};
+  if(useOPFS){
+    await opfsWrite(uuid+'_front.jpg', frontBlob);
+    await opfsWrite(uuid+'_side.jpg', sideBlob);
+    record.frontInOPFS=true; record.sideInOPFS=true;
+  }else{
+    record.frontBlob=frontBlob;
+    record.sideBlob=sideBlob;
   }
-  function loadSession() {
-    try { return JSON.parse(localStorage.getItem(STORAGE_KEY)); } catch(e) { return null; }
-  }
-  function clearSession() {
-    try { localStorage.removeItem(STORAGE_KEY); } catch(e) {}
-  }
+  await dbPut(record);
+  await refreshQueueCount();
+}
 
-  // ── GIS init — FedCM explicitly disabled ───────────────
-  function initGIS() {
-    google.accounts.id.initialize({
-      client_id: CLIENT_ID,
-      callback: handleCredentialResponse,
-      use_fedcm_for_prompt: false,   // ← disables FedCM entirely
-      auto_select: true,             // silent re-auth if Google session alive
-    });
-    gisReady = true;
-
-    // Try silent restore first
-    const session = loadSession();
-    if (session && session.token && session.expiry - Date.now() > 2 * 60 * 1000) {
-      // Token still valid — restore immediately, no network call
-      idToken = session.token;
-      tokenExpiry = session.expiry;
-      updateSignedInUI(session.email);
-      scheduleRefresh(tokenExpiry);
-    } else if (session) {
-      // Had a session but token expired — try silent GIS re-auth
-      clearSession();
-      showRestoring();
-      attemptSilentAuth();
+// ── Upload queue drainer ──────────────────────────────────────────────────────
+async function drainQueue(){
+  if(S._uploadRunning||S.offlineMode)return;
+  if(!S.token&&!IS_FILE)return;
+  S._uploadRunning=true;
+  try{
+    const items=await dbPending();
+    for(const item of items){
+      if(S.offlineMode)break;
+      try{
+        // resolve blobs
+        let frontBlob=item.frontBlob, sideBlob=item.sideBlob;
+        if(item.frontInOPFS)frontBlob=await opfsRead(item.uuid+'_front.jpg');
+        if(item.sideInOPFS)sideBlob=await opfsRead(item.uuid+'_side.jpg');
+        if(!frontBlob||!sideBlob){await dbDel(item.uuid);continue;}
+        // upload front
+        await uploadBlobQueued(frontBlob, item.uuid+'_front.jpg');
+        // upload side
+        await uploadBlobQueued(sideBlob, item.uuid+'_side.jpg');
+        // upload json
+        const r=await apiFetch('/data','POST',item.payload,false);
+        if(!r.ok)throw new Error('HTTP '+r.status);
+        // success — clean up
+        await dbDel(item.uuid);
+        if(item.frontInOPFS)await opfsDel(item.uuid+'_front.jpg');
+        if(item.sideInOPFS)await opfsDel(item.uuid+'_side.jpg');
+      }catch(e){
+        item.retries=(item.retries||0)+1;
+        item.lastErr=e.message;
+        item.status=item.retries>=5?'failed':'pending';
+        await dbPut(item);
+      }
     }
-    // else: no session, just show sign-in button (already default state)
+  }finally{
+    S._uploadRunning=false;
+    await refreshQueueCount();
   }
+}
+async function uploadBlobQueued(blob, filename){
+  const fd=new FormData();fd.append('file',blob,filename);
+  const hdrs={'Authorization':'Bearer '+S.token};
+  const r=await fetchWithTimeout(C.API+'/file',{method:'POST',headers:hdrs,body:fd},30000);
+  if(!r.ok)throw new Error('HTTP '+r.status);
+}
 
-  // Called once GIS script loads
-  window.onGoogleLibraryLoad = initGIS;
-  // Fallback if callback doesn't fire (some browsers)
-  setTimeout(() => { if (!gisReady && window.google) initGIS(); }, 2000);
-
-  // ── Silent auth attempt on load ────────────────────────
-  let restoreTimer = null;
-
-  function showRestoring() {
-    document.getElementById('statusText').textContent = 'restoring…';
-    document.getElementById('statusPill').classList.add('refreshing');
-    // Timeout: if GIS doesn't respond in 4s, give up
-    restoreTimer = setTimeout(() => {
-      document.getElementById('statusPill').classList.remove('refreshing');
-      document.getElementById('statusText').textContent = 'not signed in';
-    }, 4000);
+// ── Queue count + banner ──────────────────────────────────────────────────────
+async function refreshQueueCount(){
+  if(!S._db)return;
+  const all=await dbAll();
+  const pending=all.filter(r=>r.status!=='done');
+  S._queueCount=pending.length;
+  const bn=g('upload-banner'), bt=g('upload-banner-txt');
+  if(S._queueCount>0){
+    bn.classList.add('on');
+    bt.textContent=T('uploads_pending').replace('%n',S._queueCount);
+  }else{
+    bn.classList.remove('on');
   }
+  updateBeforeUnload();
+}
+function updateBeforeUnload(){
+  if(S._queueCount>0){
+    window.onbeforeunload=e=>{
+      const msg=T('keep_open').replace('%n',S._queueCount);
+      e.preventDefault();e.returnValue=msg;return msg;
+    };
+  }else{
+    window.onbeforeunload=null;
+  }
+}
 
-  function attemptSilentAuth() {
-    google.accounts.id.prompt((notification) => {
-      clearTimeout(restoreTimer);
-      if (notification.isSkippedMoment() || notification.isDismissedMoment()) {
-        document.getElementById('statusPill').classList.remove('refreshing');
-        document.getElementById('statusText').textContent = 'not signed in';
-      }
-      // success → handleCredentialResponse fires automatically
+// ── Queue modal ───────────────────────────────────────────────────────────────
+window.showQueueModal=async function(){
+  const list=g('qm-list');list.innerHTML='';
+  g('qm-title').textContent=T('queue_title');
+  const all=await dbAll();
+  if(all.length===0){
+    list.innerHTML='<p style="color:var(--text3);font-size:var(--fs-sm);padding:var(--sp-8) 0">'+T('queue_empty')+'</p>';
+  }else{
+    all.forEach(function(item){
+      const d=document.createElement('div');d.className='qm-item';
+      const short=item.uuid.slice(0,16)+'...';
+      const ts=new Date(item.ts).toLocaleTimeString();
+      const statusColor=item.status==='failed'?'var(--red)':item.status==='pending'?'var(--amber)':'var(--green)';
+      const uuidSpan=document.createElement('span');uuidSpan.className='qm-uuid';uuidSpan.title=item.uuid;
+      uuidSpan.innerHTML=short+'<br><span style="color:var(--text3);font-size:0.75em">'+ts+'</span>';
+      const statusSpan=document.createElement('span');statusSpan.className='qm-status';statusSpan.style.color=statusColor;
+      statusSpan.textContent=item.status+(item.retries?'×'+item.retries:'');
+      const retryBtn=document.createElement('button');retryBtn.className='qm-retry';retryBtn.textContent=T('retry');
+      retryBtn.addEventListener('click',function(){retryQueueItem(item.uuid);});
+      const delBtn=document.createElement('button');delBtn.className='qm-del';delBtn.textContent=T('delete_record');
+      delBtn.addEventListener('click',function(){deleteQueueItem(item.uuid);});
+      d.appendChild(uuidSpan);d.appendChild(statusSpan);d.appendChild(retryBtn);d.appendChild(delBtn);
+      list.appendChild(d);
     });
   }
+  g('queue-modal').classList.add('on');
+};
+window.hideQueueModal=function(){g('queue-modal').classList.remove('on');};
+window.retryQueueItem=async function(uuid){
+  const item=await dbGet(uuid);
+  if(!item)return;
+  item.status='pending';item.retries=0;
+  await dbPut(item);
+  hideQueueModal();
+  drainQueue();
+};
+window.deleteQueueItem=async function(uuid){
+  const item=await dbGet(uuid);
+  if(item){
+    if(item.frontInOPFS)await opfsDel(uuid+'_front.jpg');
+    if(item.sideInOPFS)await opfsDel(uuid+'_side.jpg');
+  }
+  await dbDel(uuid);
+  showQueueModal();
+  refreshQueueCount();
+};
 
-  // ── User clicks sign-in button ─────────────────────────
-  function startSignIn() {
-    if (!gisReady) return;
-    const btn = document.getElementById('signInBtn');
-    btn.disabled = true;
-    btn.lastChild.textContent = ' Signing in…';
+// ── Network connectivity ──────────────────────────────────────────────────────
+function setOnline(online){
+  S.offlineMode=!online;
+  const dot=g('net-dot'), badge=g('offline-badge');
+  dot.classList.toggle('offline',!online);
+  dot.title=online?'Online':'Offline';
+  badge.classList.toggle('on',!online);
+  if(online&&S._db)drainQueue();
+}
+window.addEventListener('online',()=>setOnline(true));
+window.addEventListener('offline',()=>setOnline(false));
+// Initialise from navigator.onLine, but also run a real probe
+function probeConnectivity(){
+  if(!navigator.onLine){setOnline(false);return;}
+  fetch(C.API+'/',{method:'HEAD',mode:'no-cors',cache:'no-store'})
+    .then(()=>setOnline(true))
+    .catch(()=>setOnline(!IS_FILE&&navigator.onLine));
+}
 
-    // prompt() shows the Google account chooser (one-tap or popup)
-    // with FedCM disabled this is a standard popup, not FedCM overlay
-    google.accounts.id.prompt((notification) => {
-      if (notification.isSkippedMoment() || notification.isDismissedMoment()) {
-        btn.disabled = false;
-        btn.lastChild.textContent = ' Sign in with Google';
-      }
-    });
+// ── Page visibility: drain queue when tab becomes visible ────────────────────
+document.addEventListener('visibilitychange',()=>{
+  if(!document.hidden&&S._db)drainQueue();
+});
+
+/* ── LANGUAGE ── */
+const CONSENT_EN='By checking this box, I confirm that I have read or been read the information about this study, that I understand the purpose of the research and what participation involves, and that we voluntarily agree to participate. I understand that our participation is voluntary and that we may withdraw at any time without any negative consequences. We consent to the collection and use of my responses and images for research purposes.';
+const CONSENT_MR='हे चेकबॉक्स चेक करून, मी पुष्टी करतो/करते की मी या अध्ययनाच्या माहिती वाचली अथवा वाचून दाखवली आहे, संशोधनाचा उद्देश आणि सहभागाचा अर्थ समजतो/समजते, आणि आम्ही स्वेच्छेने सहभागी होण्यास संमती देतो/देते. सहभाग ऐच्छिक आहे आणि कोणत्याही नकारात्मक परिणामाशिवाय आम्ही केव्हाही माघार घेउ शकतो. आम्ही संशोधन उद्देशांसाठी आमच्या प्रतिक्रिया आणि छायाचित्रांचा वापर करण्यास संमती देतो/देते.';
+
+const LANG={
+en:{
+  // setup
+  st_cam:'Camera', st_loc:'Location', st_auth:'Sign in', st_model:'Holistic Model', st_seg:'Segmenter Model',
+  // session
+  lbl_sessid:'Session ID', lbl_location:'Location', lbl_camh:'Camera Height',
+  lbl_hfromground:'Height from ground', btn_begincapture:'Begin Capture →',
+  // form headers
+  fhd_biometric:'Biometric', fhd_measurements:'Measurements', fhd_household:'Household',
+  // form labels
+  lbl_dob:'Date of Birth', lbl_gender:'Gender', lbl_weight:'Weight (g)',
+  lbl_height_sr:'Height (cm) — Self-reported', lbl_muac:'MUAC (mm)',
+  lbl_hfront:'Front Height Est. (cm)', lbl_hside:'Side Height Est. (cm)',
+  lbl_literacy:'Female Literacy', lbl_socialgroup:'Social Group',
+  // options
+  opt_male:'Male', opt_female:'Female', opt_yes:'Yes', opt_no:'No',
+  opt_select:'— Select —',
+  opt_sc:'Scheduled Caste', opt_st:'Scheduled Tribe', opt_obc:'Other Backward Class',
+  opt_gen:'General', opt_pnta:'Prefer not to answer',
+  // buttons
+  btn_submit:'Submit',
+  // chips
+  chip_light:'LIGHT', chip_steady:'STEADY', chip_level:'LEVEL',
+  chip_body:'BODY', chip_dist:'DIST', chip_pose:'POSE', chip_sleeve:'SLEEVE',
+  // camera
+  front_view:'FRONT VIEW', side_view:'SIDE VIEW',
+  no_pose:'POSE DETECTION UNAVAILABLE — WARN MODE ACTIVE',
+  // guide
+  g_light_blk:'Improve lighting — too dark', g_light_wrn:'Low light warning',
+  g_steady_blk:'Hold phone steady', g_steady_wrn:'Phone is moving',
+  g_level_blk:'Hold phone vertically upright', g_level_wrn:'Phone is tilted',
+  g_body_blk:'Full body must be in frame', g_body_wrn:'Body partially out of frame',
+  g_dist_far:'Step back from camera', g_dist_near:'Move closer', g_dist_none:'No person detected',
+  g_pose_front_blk:'Raise both arms to sides', g_pose_front_wrn:'Arms need to be raised more',
+  g_pose_side_blk:'Turn sideways for profile view', g_pose_side_wrn:'Not quite side-on',
+  g_sleeve_both:'Roll up sleeves for measurement',
+  g_sleeve_left:'Expose left upper arm', g_sleeve_right:'Expose right upper arm',
+  g_front_ok:'Arms raised — tap shutter to capture',
+  g_side_ok:'Side view ready — tap shutter to capture',
+  // preview
+  prev_front:'FRONT VIEW', prev_side:'SIDE VIEW', prev_next:'Next →',
+  prev_retake:'↰ Retake', prev_uploading:'Uploading…',
+  prev_upload_fail:'Upload failed: ', prev_retry:'Retry ↻',
+  // form msgs
+  form_submitting:'Submitting…', form_ok:'Submitted successfully.',
+  // setup flow
+  setup_cam_req:'Requesting camera access…',
+  setup_cam_done:'Camera access granted',
+  setup_loc:'Acquiring GPS…',
+  setup_loc_fail:'Location required',
+  setup_auth_check:'Checking saved session…',
+  setup_auth_prompt:'Sign in to continue',
+  setup_auth_verify:'Verifying…',
+  setup_auth_fail:'Server verification failed',
+  setup_auth_resume:'Sign in to resume session',
+  setup_model:'Loading (cached after first load)…',
+  setup_model_cpu:'Holistic (CPU)…',
+  setup_model_done:'Holistic ready',
+  setup_seg:'Loading segmenter…',
+  setup_seg_done:'Segmenter ready',
+  setup_seg_fail:'Segmenter unavailable (degraded)',
+  setup_ready:'Ready',
+  setup_starting:'Starting…',
+  setup_cam_prog:'Requesting camera…',
+  setup_loc_prog:'Acquiring location…',
+  setup_auth_prog:'Waiting for sign-in…',
+  setup_model_prog:'Loading holistic model…',
+  setup_models_done:'Models loaded',
+  setup_cache:'Preparing cache…',
+  // misc
+  retry:'Retry',
+  loc_unavailable:'Location unavailable',
+  cam_unavailable:'Camera unavailable',
+  failed:'Failed: ',
+  loc_acquiring:'Acquiring…',
+  // error titles
+  err_cam_title:'Camera required',
+  err_loc_title:'Location required',
+  err_verified:'Verification failed',
+  err_check_net:'Check network and retry.',
+  err_model_fail:'Model failed',
+  err_signin_dismissed:'Sign-in dismissed',
+  err_try_again:'Please try again.',
+  err_not_auth:'Not authenticated',
+  err_auth_error:'Auth error',
+  // session
+  lbl_child_dob:'Child Date of Birth',
+  err_age_over5:'Child must be 0–5 years for this study.',
+  err_dob_future:'Date of birth cannot be in the future.',
+  err_dob_required:'Please enter date of birth.',
+  lbl_age_years:'yrs', lbl_age_months:'mo',
+  // literacy
+  lit_0:'Cannot read at all',
+  lit_1:'Can read parts of a sentence',
+  lit_2:'Can read a full sentence',
+  lit_3:'Can read and write her name',
+  lit_4:'Can read and write sentences',
+  // health
+  fhd_health:'Child Health — Past 2 Weeks',
+  fhd_appetite:'Appetite — Past Week',
+  lbl_fever:'Had fever?',
+  lbl_diarr:'Had diarrhoea (≥3 loose stools/day)?',
+  lbl_cough:'Had cough or difficult breathing?',
+  lbl_ate_less:'Ate less than usual?',
+  lbl_refused:'Refused food at mealtimes?',
+  lbl_breastfed:'Currently breastfed?',
+  opt_same:'Same', opt_never:'Never', opt_sometimes:'Sometimes',
+  opt_often:'Often', opt_always:'Always',
+  // offline / queue
+  offline_mode:'OFFLINE MODE',
+  uploads_pending:'%n upload(s) pending',
+  upload_ok:'All uploads complete',
+  queue_title:'Pending Uploads',
+  queue_empty:'No pending uploads.',
+  close:'Close',
+  retry:'Retry',
+  delete_record:'Delete',
+  keep_open:'%n upload(s) pending — keep app open',
+  err_upload_timeout:'Upload timed out — check network',
+  // consent
+  consent:CONSENT_EN,
+  // reauth
+  ra_expiring:'Session expiring — sign in again',
+  ra_expired:'Session expired — sign in to continue',
+  ra_signin:'Sign in'
+},
+mr:{
+  st_cam:'कॅमेरा', st_loc:'स्थान', st_auth:'साइन इन', st_model:'होलिस्टिक मॉडेल', st_seg:'सेगमेंटर मॉडेल',
+  lbl_sessid:'सेशन ID', lbl_location:'स्थान', lbl_camh:'कॅमेरा उंची',
+  lbl_hfromground:'जमिनीपासून उंची', btn_begincapture:'चित्रण सुरू करा →',
+  fhd_biometric:'जैवमापीय', fhd_measurements:'मापने', fhd_household:'घरगुती',
+  lbl_dob:'जन्मतारीख', lbl_gender:'लिंग', lbl_weight:'वजन (g)',
+  lbl_height_sr:'उंची (cm) — स्वयंघोषित', lbl_muac:'MUAC (mm)',
+  lbl_hfront:'समोरची उंची अंदाज (cm)', lbl_hside:'बाजूची उंची अंदाज (cm)',
+  lbl_literacy:'महिला साक्षरता', lbl_socialgroup:'सामाजिक गट',
+  opt_male:'पुरुष', opt_female:'स्त्री', opt_yes:'होय', opt_no:'नाही',
+  opt_select:'— निवडा करा —',
+  opt_sc:'अनुसूचित जाती', opt_st:'अनुसूचित जमाती', opt_obc:'इतर मागास वर्ग',
+  opt_gen:'साधारण', opt_pnta:'सांगणे नको',
+  btn_submit:'सादर करा',
+  chip_light:'प्रकाश', chip_steady:'स्थिर', chip_level:'समतल',
+  chip_body:'शरीर', chip_dist:'अंतर', chip_pose:'मुद्रा', chip_sleeve:'बाही',
+  front_view:'समोरील दृश्य', side_view:'बाजूचे दृश्य',
+  no_pose:'मुद्रा शोध उपलब्ध नाही — सूचना मोड',
+  g_light_blk:'प्रकाश सुधारा — खूप अंधार', g_light_wrn:'कमी प्रकाशाची सूचना',
+  g_steady_blk:'फोन स्थिर ठेवा', g_steady_wrn:'फोन हलवत आहे',
+  g_level_blk:'फोन उभा ठेवा', g_level_wrn:'फोन वाकडे आहे',
+  g_body_blk:'संपूर्ण शरीर चौकटात हवे', g_body_wrn:'शरीर अंशतः बाहेर',
+  g_dist_far:'कॅमेर्यापासून दूर जा', g_dist_near:'जवळ या', g_dist_none:'व्यक्ती आढळली नाही',
+  g_pose_front_blk:'दोन्ही हात बाजूला उचला', g_pose_front_wrn:'हात आणखी उचलणे आवश्यक',
+  g_pose_side_blk:'प्रोफाइल दृश्यासाठी बाजूला उभे रहा', g_pose_side_wrn:'पूर्ण बाजू नाही',
+  g_sleeve_both:'मापनासाठी बाह्या वर करा', g_sleeve_left:'डावा दंड उघडा करा', g_sleeve_right:'उजवा दंड उघडा करा',
+  g_front_ok:'हात उचललेले — शटर दाबा', g_side_ok:'बाजूचे दृश्य तयार — शटर दाबा',
+  prev_front:'समोरील दृश्य', prev_side:'बाजूचे दृश्य',
+  prev_next:'पुढे →', prev_retake:'↰ पुन्हा घ्या', prev_uploading:'अपलोड होत आहे…',
+  prev_upload_fail:'अपलोड अयशस्वी: ', prev_retry:'पुन्हा प्रयत्न करा ↻',
+  form_submitting:'सादर करत आहे…', form_ok:'यशस्वीरित्या सादर केले.',
+  // setup flow
+  setup_cam_req:'कॅमेरा परवानगी विनंती…',
+  setup_cam_done:'कॅमेरा परवानगी मिळाली',
+  setup_loc:'गुगल लोकेशन मिळवत आहे…',
+  setup_loc_fail:'स्थान आवश्यक',
+  setup_auth_check:'सेशन तपासत आहे…',
+  setup_auth_prompt:'पुढे जाण्यासाठी साइन इन करा',
+  setup_auth_verify:'पडताळणी होत आहे…',
+  setup_auth_fail:'सर्वर पडताळणी अयशस्वी',
+  setup_auth_resume:'सेशन चालू ठेवण्यास साइन इन करा',
+  setup_model:'लोड होत आहे (प्रथम लोड नंतर कॅश)…',
+  setup_model_cpu:'होलिस्टिक (CPU)…',
+  setup_model_done:'होलिस्टिक तयार',
+  setup_seg:'सेगमेंटर लोड होत आहे…',
+  setup_seg_done:'सेगमेंटर तयार',
+  setup_seg_fail:'सेगमेंटर उपलब्ध नाही',
+  setup_ready:'तयार',
+  setup_starting:'सुरु होत आहे…',
+  setup_cam_prog:'कॅमेरा विनंती…',
+  setup_loc_prog:'स्थान मिळवत आहे…',
+  setup_auth_prog:'साइन इन वाट पहात आहे…',
+  setup_model_prog:'होलिस्टिक मॉडेल लोड होत आहे…',
+  setup_models_done:'मॉडेल तयार',
+  setup_cache:'कॅश तयार करत आहे…',
+  // misc
+  retry:'पुन्हा प्रयत्न करा',
+  loc_unavailable:'स्थान उपलब्ध नाही',
+  cam_unavailable:'कॅमेरा उपलब्ध नाही',
+  failed:'अयशस्वी: ',
+  loc_acquiring:'स्थान मिळवत आहे…',
+  err_cam_title:'कॅमेरा आवश्यक',
+  err_loc_title:'स्थान आवश्यक',
+  err_verified:'पडताळणी अयशस्वी',
+  err_check_net:'नेटवर्क तपासा आणि पुन्हा प्रयत्न करा.',
+  err_model_fail:'मॉडेल अयशस्वी',
+  err_signin_dismissed:'साइन इन रद्द',
+  err_try_again:'पुन्हा प्रयत्न करा.',
+  err_not_auth:'प्रमाणीकरण नाही',
+  err_auth_error:'साइन इन त्रुटी',
+  lbl_child_dob:'मुलाची जन्मतारीख',
+  err_age_over5:'मुल 0-5 वर्षाचे असावे.',
+  err_dob_future:'जन्मतारीख भविष्यात असू शकत नाही.',
+  err_dob_required:'कृपया जन्मतारीख नमूद करा.',
+  lbl_age_years:'वर्षे', lbl_age_months:'महिने',
+  lit_0:'वाचता येत नाही',
+  lit_1:'वाक्याचा काही भाग वाचता येतो',
+  lit_2:'संपूर्ण वाक्य वाचता येतो',
+  lit_3:'नाव वाचता आणि लिहू शकतो',
+  lit_4:'वाक्ये वाचता आणि लिहू शकतो',
+  fhd_health:'मुलाची आरोग्य — मागील 2 आठवडे',
+  fhd_appetite:'भूक — मागील आठवडा',
+  lbl_fever:'ताप आला होता?',
+  lbl_diarr:'अतिसार झाला होता?',
+  lbl_cough:'खोकला किंवा श्वासोच्छ्वास त्रास होता?',
+  lbl_ate_less:'नेहमीपेक्षा कमी जेवले?',
+  lbl_refused:'जेवणाच्या वेळी नकार दिला?',
+  lbl_breastfed:'सध्या स्तनपान सुरू आहे?',
+  opt_same:'सारखेच', opt_never:'कधीच नाही',
+  opt_sometimes:'कधीकधी', opt_often:'अनेकदा',
+  opt_always:'नेहमी',
+  offline_mode:'ऑफलाइन मोड',
+  uploads_pending:'%n अपलोड पेंडिंग',
+  upload_ok:'सर्व अपलोड पूर्ण',
+  queue_title:'पेंडिंग अपलोड',
+  queue_empty:'कोणतेही पेंडिंग नाही.',
+  close:'बंद करा',
+  retry:'पुन्हा प्रयत्न',
+  delete_record:'डिलीट',
+  keep_open:'%n अपलोड पेंडिंग — अॅप चालू ठेवा',
+  err_upload_timeout:'अपलोड वेळ संपली — नेटवर्क तपासा',
+  consent:CONSENT_MR,
+  ra_expiring:'सेशन संपत आहे — पुन्हा साइन इन करा',
+  ra_expired:'सेशन संपले — पुढे साइन इन करा',
+  ra_signin:'साइन इन'
+}};
+
+let _lang=localStorage.getItem(C.LANG_KEY)||'en';
+function T(k){return(LANG[_lang]&&LANG[_lang][k])||LANG.en[k]||k;}
+function toggleLang(){_lang=_lang==='en'?'mr':'en';localStorage.setItem(C.LANG_KEY,_lang);applyLang();
+  // re-apply dynamic strings currently on screen
+  if(S.camRunning){g('cam-phase-lbl').textContent=S.phase==='front'?T('front_view'):T('side_view');}}
+window.toggleLang=toggleLang;
+function applyLang(){
+  const btn=g('lang-btn');if(btn)btn.textContent=_lang==='en'?'EN':'MR';
+  // update all elements with data-t attribute
+  document.querySelectorAll('[data-t]').forEach(el=>{
+    const k=el.getAttribute('data-t');
+    const v=T(k);
+    if(el.tagName==='OPTION')el.textContent=v;
+    else if(el.tagName==='INPUT')el.placeholder=v;
+    else el.textContent=v;
+  });
+  // consent text (special — long string)
+  const ct=g('consent-txt');if(ct)ct.textContent=T('consent');
+  // no-pose bar
+  const np=g('no-pose-txt');if(np)np.textContent=T('no_pose');
+  // reauth banner
+  const rm=g('reauth-msg');if(rm&&rm.dataset.key)rm.textContent=T(rm.dataset.key);
+  // cam-lang-btn mirrors header lang-btn
+  const clb=g('cam-lang-btn');if(clb)clb.textContent=_lang==='en'?'EN':'MR';
+  const sc=g('sess-consent-txt');if(sc)sc.textContent=T('consent');
+  // cam phase label
+  const cpl=g('cam-phase-lbl');if(cpl)cpl.textContent=S.phase==='front'?T('front_view'):T('side_view');
+  // refresh guide text and chip labels if camera is running
+  if(typeof updateUI==='function')updateUI();
+}
+
+/* ── DEVICE CHECK ── */
+function chkDev(){const mob=/Android|iPhone|iPad|iPod|Mobile|Tablet/i.test(navigator.userAgent);if(!mob&&innerWidth>=1024){g('dwall').style.display='flex';g('app').style.display='none';}}
+chkDev();addEventListener('resize',chkDev);
+
+/* ── SCREEN / HELPERS ── */
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
+  g(id).classList.add('on');
+  const isCam=id==='s-camera',isSess=id==='s-session';
+  g('header').style.display=isCam?'none':'flex';
+  g('h-signout').classList.toggle('hidden',!isSess&&id!=='s-form');
+  g('h-reset').classList.toggle('hidden',id!=='s-form');
+}
+function setStep(id,state,msg){
+  const row=g(id),ico=g(id+'-ico'),msgEl=g(id+'-msg');
+  row.className='step-row '+(state||'');
+  if(msg!==undefined&&msgEl)msgEl.textContent=msg;
+  if(!ico)return;
+  const nums={'st-cam':'1','st-loc':'2','st-auth':'3','st-model':'4'};
+  if(state==='active')ico.innerHTML='<div class="spin"></div>';
+  else if(state==='done')ico.textContent='\u2713';
+  else if(state==='err')ico.textContent='\u2717';
+  else ico.textContent=nums[id]||'?';
+}
+function setProg(pct,lbl){if(pct!==null)g('prog-fill').style.width=pct+'%';if(lbl)g('prog-lbl').textContent=lbl;}
+function showErr(title,msg){g('err-box').classList.add('on');g('err-title').textContent=title;g('err-msg').textContent=msg;}
+function clearErr(){g('err-box').classList.remove('on');}
+
+/* ── SETUP FLOW ── */
+async function runSetup(){
+  clearErr();g('g-signin').style.display='none';
+  if(_retryBtn){_retryBtn.remove();_retryBtn=null;}
+
+  /* 1 — Camera permission */
+  S.setupPhase='cam';
+  setStep('st-cam','active','Requesting camera access\u2026');setProg(5,'Requesting camera\u2026');
+  try{
+    let stream=null;
+    for(const c of[
+      {video:{facingMode:{exact:'environment'}},audio:false},
+      {video:{facingMode:'environment'},audio:false}
+    ]){try{stream=await navigator.mediaDevices.getUserMedia(c);break;}catch(e){}}
+    if(!stream)throw new Error('No rear camera found');
+    stream.getTracks().forEach(t=>t.stop());
+    setStep('st-cam','done',T('setup_cam_done'));
+  }catch(e){
+    setStep('st-cam','err',e.message);showErr(T('err_cam_title'),e.message);
+    showRetryBtn('cam');return;
   }
 
-  // ── Token received ─────────────────────────────────────
-  function handleCredentialResponse(response) {
-    if (restoreTimer) { clearTimeout(restoreTimer); restoreTimer = null; }
-
-    const token = response.credential;
-    const payload = JSON.parse(atob(token.split('.')[1]));
-
-    idToken = token;
-    tokenExpiry = payload.exp * 1000;
-    saveSession(token, tokenExpiry, payload.email);
-    updateSignedInUI(payload.email);
-    scheduleRefresh(tokenExpiry);
+  /* Sensors — request permission, fallback after 3s */
+  S.sensorFired=false;
+  let sensorTimeout=null;
+  function onSensorFired(){
+    if(S.sensorFired)return;S.sensorFired=true;
+    if(sensorTimeout)clearTimeout(sensorTimeout);
   }
+  if(typeof DeviceOrientationEvent!=='undefined'){
+    if(typeof DeviceOrientationEvent.requestPermission==='function')try{await DeviceOrientationEvent.requestPermission();}catch(e){}
+    addEventListener('deviceorientation',e=>{onSensorFired();onOrientation(e);});
+  }else{S.checks.level=true;S.sensorFired=true;}
+  if(typeof DeviceMotionEvent!=='undefined'){
+    if(typeof DeviceMotionEvent.requestPermission==='function')try{await DeviceMotionEvent.requestPermission();}catch(e){}
+    addEventListener('devicemotion',e=>{onSensorFired();onMotion(e);});
+  }else{S.checks.steady=true;}
+  // If no event fires within 3s, degrade gracefully
+  sensorTimeout=setTimeout(()=>{if(!S.sensorFired){S.checks.level=true;S.checks.steady=true;}},3000);
 
-  // ── UI helpers ─────────────────────────────────────────
-  function updateSignedInUI(email) {
-    document.getElementById('userEmail').textContent = email;
-    document.getElementById('userInfo').style.display = 'block';
-    document.getElementById('authActions').style.display = 'flex';
-    document.getElementById('signInBtn').style.display = 'none';
-    document.getElementById('tokenToggle').style.display = 'flex';
-    document.getElementById('tokenBox').textContent = idToken;
-    document.getElementById('sessionBadge').classList.add('show');
+  /* 2 — Location */
+  S.setupPhase='loc';
+  setStep('st-loc','active','Acquiring GPS\u2026');setProg(25,'Acquiring location\u2026');
+  const locOk=await getLocation();
+  if(!locOk){setStep('st-loc','err','Location required');showErr(T('err_loc_title'),T('err_loc_title'));showRetryBtn('loc');return;}
 
-    const pill = document.getElementById('statusPill');
-    pill.classList.remove('refreshing');
-    pill.classList.add('signed-in');
-    document.getElementById('statusText').textContent = 'authenticated';
-    document.getElementById('sendBtn').disabled = false;
-  }
+  /* 3 — Auth */
+  S.setupPhase='auth';setProg(45,'Waiting for sign-in\u2026');
+  const authOk=await doAuth();
+  if(!authOk)return;
 
-  // ── Token refresh ──────────────────────────────────────
-  function scheduleRefresh(expiry) {
-    if (refreshTimer) clearTimeout(refreshTimer);
-    const ms = (expiry - Date.now()) - 5 * 60 * 1000;
-    refreshTimer = setTimeout(silentRefresh, Math.max(0, ms));
-  }
+  /* 4 — Model */
+  S.setupPhase='model';setProg(60,'Loading holistic model\u2026');
+  const modelOk=await loadModel();
+  if(!modelOk)return;
 
-  function silentRefresh() {
-    const pill = document.getElementById('statusPill');
-    pill.classList.remove('signed-in');
-    pill.classList.add('refreshing');
-    document.getElementById('statusText').textContent = 'refreshing…';
+  S.setupPhase='done';setProg(100,T('setup_ready'));
+  setTimeout(()=>goSession(),350);
+}
 
-    google.accounts.id.prompt((notification) => {
-      if (notification.isSkippedMoment() || notification.isDismissedMoment()) {
-        // Silent refresh failed — show sign-in button
-        pill.classList.remove('refreshing');
-        document.getElementById('statusText').textContent = 'session expired';
-        document.getElementById('sendBtn').disabled = true;
-        document.getElementById('signInBtn').style.display = 'flex';
-        document.getElementById('authActions').style.display = 'none';
-        document.getElementById('sessionBadge').classList.remove('show');
-        clearSession();
-      }
-    });
-  }
+let _retryBtn=null;
+function showRetryBtn(){
+  if(_retryBtn)_retryBtn.remove();
+  const b=document.createElement('button');
+  b.className='btn btn-ghost';b.textContent=T('retry');
+  b.onclick=()=>{b.remove();_retryBtn=null;S.setupPhase='idle';runSetup();};
+  _retryBtn=b;
+  g('s-setup').querySelector('.sp').appendChild(b);
+}
 
-  // ── Sign out ───────────────────────────────────────────
-  function signOut() {
-    if (refreshTimer) clearTimeout(refreshTimer);
-    const email = document.getElementById('userEmail').textContent;
-    idToken = null; tokenExpiry = null;
-    clearSession();
+/* ── LOCATION ── */
+function getLocation(){
+  return new Promise(resolve=>{
+    if(!navigator.geolocation){resolve(false);return;}
+    let bestAcc=Infinity,settled=false,watchId=null;
+    function done(loc,ok){
+      if(settled)return;settled=true;
+      if(watchId!==null)navigator.geolocation.clearWatch(watchId);
+      if(ok){S.location=loc;setStep('st-loc','done',`${loc.lat.toFixed(5)}, ${loc.lon.toFixed(5)} \u00b1${loc.acc.toFixed(0)}m`);}
+      resolve(ok);
+    }
+    watchId=navigator.geolocation.watchPosition(
+      pos=>{
+        const acc=pos.coords.accuracy;
+        if(acc<bestAcc){
+          bestAcc=acc;
+          const loc={lat:pos.coords.latitude,lon:pos.coords.longitude,acc};
+          setStep('st-loc','active',`${loc.lat.toFixed(5)}, ${loc.lon.toFixed(5)} \u00b1${acc.toFixed(0)}m`);
+          S.location=loc;
+          if(acc<=15)done(loc,true);
+        }
+      },
+      err=>{done(null,false);},
+      {enableHighAccuracy:true,timeout:C.GEO_TIMEOUT,maximumAge:0}
+    );
+    setTimeout(()=>{if(settled)return;if(S.location)done(S.location,true);else done(null,false);},C.GEO_TIMEOUT+500);
+  });
+}
 
-    google.accounts.id.disableAutoSelect();
-    try { google.accounts.id.revoke(email, () => {}); } catch(e) {}
-
-    document.getElementById('userInfo').style.display = 'none';
-    document.getElementById('authActions').style.display = 'none';
-    document.getElementById('signInBtn').style.display = 'flex';
-    document.getElementById('signInBtn').disabled = false;
-    document.getElementById('signInBtn').lastChild.textContent = ' Sign in with Google';
-    document.getElementById('tokenToggle').style.display = 'none';
-    document.getElementById('tokenBox').style.display = 'none';
-    document.getElementById('sessionBadge').classList.remove('show');
-
-    const pill = document.getElementById('statusPill');
-    pill.classList.remove('signed-in', 'refreshing');
-    document.getElementById('statusText').textContent = 'not signed in';
-    document.getElementById('sendBtn').disabled = true;
-  }
-
-  // ── Token viewer ───────────────────────────────────────
-  function toggleToken() {
-    const box = document.getElementById('tokenBox');
-    const chevron = document.getElementById('chevron');
-    const isOpen = box.style.display === 'block';
-    box.style.display = isOpen ? 'none' : 'block';
-    chevron.classList.toggle('open', !isOpen);
-  }
-
-  // ── Method change ──────────────────────────────────────
-  function onMethodChange() {
-    const method = document.getElementById('methodSelect').value;
-    document.getElementById('bodyField').style.display =
-      ['POST', 'PUT', 'PATCH'].includes(method) ? 'block' : 'none';
-  }
-
-  // ── Send request ───────────────────────────────────────
-  async function sendRequest() {
-    if (!idToken) return;
-    if (Date.now() >= tokenExpiry) {
-      silentRefresh();
-      showResponse(0, 'Token expired — refreshing silently, please try again in a moment.', 0);
+/* ── AUTH ── */
+function doAuth(){
+  return new Promise(resolve=>{
+    if(IS_FILE||S.offlineMode){setStep('st-auth','done','Offline — no auth');return resolve(true);}
+    setStep('st-auth','active','Checking saved session\u2026');
+    const tk=localStorage.getItem(C.TOKEN_KEY),ex=parseInt(localStorage.getItem(C.EXPIRY_KEY)||'0',10),em=localStorage.getItem(C.EMAIL_KEY)||'';
+    if(tk&&ex>Date.now()+60000&&em){
+      S.token=tk;S.expiry=ex;S.email=em;scheduleRefresh(ex);
+      verifyServer().then(ok=>{if(ok){setStep('st-auth','done',em);resolve(true);}else{clearStoredAuth();promptSignIn(resolve);}});
       return;
     }
+    clearStoredAuth();promptSignIn(resolve);
+  });
+}
+function promptSignIn(resolve){
+  setStep('st-auth','active',T('setup_auth_prompt'));
+  waitForGIS(()=>{
+    google.accounts.id.initialize({client_id:C.GID,callback:cred=>handleCredential(cred,resolve),auto_select:true});
+    google.accounts.id.prompt(n=>{if(n.isSkippedMoment()||n.isDismissedMoment()){g('g-signin').style.display='flex';g('g-signin').disabled=false;S.authResolve=resolve;}});
+  });
+}
+window.triggerSignIn=function(){
+  g('g-signin').disabled=true;
+  waitForGIS(()=>{google.accounts.id.prompt(n=>{if(n.isSkippedMoment()||n.isDismissedMoment()){g('g-signin').disabled=false;showErr(T('err_signin_dismissed'),T('err_try_again'));}});});
+};
+function handleCredential(cred,resolve){
+  g('g-signin').style.display='none';clearErr();
+  hideReauthBanner();
+  try{
+    const p=JSON.parse(atob(cred.credential.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
+    S.token=cred.credential;S.expiry=p.exp*1000;S.email=p.email||'';
+    localStorage.setItem(C.TOKEN_KEY,S.token);localStorage.setItem(C.EXPIRY_KEY,String(S.expiry));localStorage.setItem(C.EMAIL_KEY,S.email);
+    scheduleRefresh(S.expiry);
+    // If this was a mid-session reauth, continue from where we were
+    if(S._reauthScreen){
+      const scr=S._reauthScreen;S._reauthScreen=null;
+      showScreen(scr);
+      // If camera was active, restart cam
+      if(scr==='s-camera')startCam();
+      return;
+    }
+    setStep('st-auth','active','Verifying\u2026');
+    verifyServer().then(ok=>{
+      if(ok){setStep('st-auth','done',S.email);const res=resolve||S.authResolve;S.authResolve=null;if(res)res(true);}
+      else{setStep('st-auth','err',T('setup_auth_fail'));showErr(T('err_verified'),T('err_check_net'));showRetryBtn();}
+    });
+  }catch(e){setStep('st-auth','err',e.message);showErr(T('err_auth_error'),e.message);showRetryBtn();}
+}
+async function verifyServer(){try{const r=await fetchWithTimeout(C.API+'/',{method:'GET',headers:{'Authorization':'Bearer '+S.token}},10000);return r.ok;}catch(e){return false;}}
+function clearStoredAuth(){localStorage.removeItem(C.TOKEN_KEY);localStorage.removeItem(C.EXPIRY_KEY);localStorage.removeItem(C.EMAIL_KEY);}
+function scheduleRefresh(exp){if(S.refreshTimer)clearTimeout(S.refreshTimer);S.refreshTimer=setTimeout(silentRefresh,Math.max(0,exp-Date.now()-C.REFRESH_AHEAD));}
 
-    const method = document.getElementById('methodSelect').value;
-    const url = document.getElementById('urlInput').value.trim();
-    const bodyRaw = document.getElementById('bodyInput').value.trim();
-    if (!url) { alert('Please enter a URL.'); return; }
+// silentRefresh replaced with modal-based reauth
+function silentRefresh(){showReauthBanner('ra_expiring');}
 
-    const btn = document.getElementById('sendBtn');
-    const spinner = document.getElementById('spinner');
-    const label = document.getElementById('btnLabel');
-    btn.disabled = true; spinner.style.display = 'block'; label.textContent = 'SENDING…';
+function showReauthBanner(key){
+  const el=g('reauth-msg');if(el){el.textContent=T(key);el.dataset.key=key;}
+  g('reauth-banner').classList.add('on');
+}
+function hideReauthBanner(){
+  g('reauth-banner').classList.remove('on');
+}
 
-    const t0 = Date.now();
-    try {
-      const options = {
-        method,
-        headers: { 'Authorization': `Bearer ${idToken}`, 'Content-Type': 'application/json' }
-      };
-      if (['POST','PUT','PATCH'].includes(method) && bodyRaw) options.body = bodyRaw;
+// Called when user taps "Sign in" on the reauth banner mid-session
+window.triggerReauth=function(){
+  // remember which screen we're on so we can return after reauth
+  const currentScreen=document.querySelector('.screen.on');
+  S._reauthScreen=currentScreen?currentScreen.id:null;
+  waitForGIS(()=>{
+    google.accounts.id.initialize({client_id:C.GID,callback:cred=>handleCredential(cred,null),auto_select:false});
+    google.accounts.id.prompt(n=>{
+      if(n.isSkippedMoment()||n.isDismissedMoment()){
+        // One Tap didn't work — show full sign-in button overlay
+        g('g-signin').style.display='flex';g('g-signin').disabled=false;
+        S.authResolve=null;
+        // temporarily show setup screen sign-in area
+        showScreen('s-setup');
+        setStep('st-auth','active',T('setup_auth_resume'));
+      }
+    });
+  });
+};
 
-      const res = await fetch(url, options);
-      const elapsed = Date.now() - t0;
-      const ct = res.headers.get('content-type') || '';
-      const text = ct.includes('application/json')
-        ? JSON.stringify(await res.json(), null, 2)
-        : await res.text();
-      showResponse(res.status, text, elapsed);
-    } catch (err) {
-      showResponse(0, `Network / CORS error:\n${err.message}`, Date.now() - t0);
-    } finally {
-      btn.disabled = false; spinner.style.display = 'none'; label.textContent = 'SEND REQUEST';
+function waitForGIS(cb){if(window.google&&window.google.accounts&&window.google.accounts.id){cb();return;}const t=setInterval(()=>{if(window.google&&window.google.accounts&&window.google.accounts.id){clearInterval(t);cb();}},100);}
+
+function doSignOut(){
+  if(S.refreshTimer)clearTimeout(S.refreshTimer);
+  const em=S.email;S.token=null;S.expiry=null;S.email=null;clearStoredAuth();
+  waitForGIS(()=>{google.accounts.id.disableAutoSelect();if(em)try{google.accounts.id.revoke(em,()=>{});}catch(e){}});
+  stopCam();S.setupPhase='idle';S._reauthScreen=null;
+  ['st-cam','st-loc','st-auth','st-model'].forEach(id=>setStep(id,'','Waiting\u2026'));
+  setProg(0,'Starting\u2026');clearErr();g('g-signin').style.display='none';
+  hideReauthBanner();
+  showScreen('s-setup');runSetup();
+}
+g('h-signout').addEventListener('click',doSignOut);
+g('cam-signout').addEventListener('click',doSignOut);
+
+/* apiFetch: auto-retry once after silent token refresh on 401 */
+async function apiFetch(path,method,body,isForm,_retry){
+  if(IS_FILE||S.offlineMode)throw new Error('offline');
+  if(!S.token)throw new Error('Not authenticated');
+  const hdrs={'Authorization':'Bearer '+S.token};
+  if(!isForm)hdrs['Content-Type']='application/json';
+  const opts={method,headers:hdrs};if(body)opts.body=isForm?body:JSON.stringify(body);
+  const resp=await fetchWithTimeout(C.API+path,opts,30000);
+  if(resp.status===401&&!_retry){
+    // Token rejected — attempt one silent refresh then retry
+    await new Promise(res=>{
+      waitForGIS(()=>{
+        google.accounts.id.initialize({client_id:C.GID,callback:cred=>{handleCredential(cred,null);res();},auto_select:true});
+        google.accounts.id.prompt(n=>{if(n.isSkippedMoment()||n.isDismissedMoment()){showReauthBanner('ra_expired');res();}});
+      });
+    });
+    return apiFetch(path,method,body,isForm,true);
+  }
+  return resp;
+}
+
+/* ── MODEL — tasks-vision HolisticLandmarker ── */
+let _cachingInstalled=false;
+
+async function installCachingFetch(){
+  if(_cachingInstalled||!('caches' in window))return;
+  _cachingInstalled=true;
+  const CACHE=C.MODEL_CACHE;
+  const PREFIXES=[
+    'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision',
+    'https://storage.googleapis.com/mediapipe-models/'
+  ];
+  const _orig=window.fetch.bind(window);
+  window.fetch=async function(input,...args){
+    const url=typeof input==='string'?input:(input&&input.url)||'';
+    if(!PREFIXES.some(p=>url.startsWith(p)))return _orig(input,...args);
+    try{
+      const cache=await caches.open(CACHE);
+      const hit=await cache.match(url);
+      if(hit)return hit;
+      const resp=await _orig(input,...args);
+      if(resp&&resp.ok)cache.put(url,resp.clone());
+      return resp;
+    }catch(e){return _orig(input,...args);}
+  };
+}
+
+async function loadModel(){
+  return new Promise(async resolve=>{
+    setStep('st-model','active','Preparing cache\u2026');
+    g('st-model-bar').style.display='block';
+    await installCachingFetch();
+    let pct=0;
+    const anim=setInterval(()=>{pct=Math.min(pct+1.2,62);g('st-model-fill').style.width=pct+'%';},200);
+    setStep('st-model','active','Loading (cached after first load)\u2026');
+    try{
+      const tv=await import(C.TV_CDN+'/vision_bundle.mjs');
+      const {HolisticLandmarker,ImageSegmenter,FilesetResolver}=tv;
+      const vision=await FilesetResolver.forVisionTasks(C.TV_WASM);
+      const makeHL=async delegate=>{
+        return HolisticLandmarker.createFromOptions(vision,{
+          baseOptions:{modelAssetPath:C.MODEL_URL,delegate},
+          runningMode:'VIDEO',outputPoseSegmentationMasks:true,outputFaceBlendshapes:false,
+          minFaceDetectionConfidence:0.5,minFaceSuppressionThreshold:0.3,minFacePresenceConfidence:0.5,
+          minPoseDetectionConfidence:0.5,minPoseSuppressionThreshold:0.3,minPosePresenceConfidence:0.5,
+          minHandLandmarksConfidence:0.5
+        });
+      }
+      let hl;
+      try{hl=await makeHL('GPU');}catch(_eg){hl=await makeHL('CPU');setStep('st-model','active','Holistic (CPU)\u2026');}
+      clearInterval(anim);g('st-model-fill').style.width='65%';
+      S.holistic=hl;S.mpReady=true;
+      window._HL=HolisticLandmarker;
+      setStep('st-model','done',T('setup_model_done'));
+      // load ImageSegmenter (selfie multiclass)
+      setStep('st-seg','active','Loading segmenter\u2026');
+      let pct2=65;
+      const anim2=setInterval(()=>{pct2=Math.min(pct2+1,95);g('st-model-fill').style.width=pct2+'%';},200);
+      try{
+        const makeSeg=async delegate=>{
+          return ImageSegmenter.createFromOptions(vision,{
+            baseOptions:{modelAssetPath:C.SEG_MODEL_URL,delegate},
+            runningMode:'VIDEO',outputCategoryMask:true,outputConfidenceMasks:false
+          });
+        }
+        let seg;
+        try{seg=await makeSeg('GPU');}catch(_eg2){seg=await makeSeg('CPU');}
+        clearInterval(anim2);g('st-model-fill').style.width='100%';
+        S.segmenter=seg;S.segReady=true;
+        setStep('st-seg','done',T('setup_seg_done'));
+      }catch(e2){
+        clearInterval(anim2);g('st-model-fill').style.width='100%';
+        setStep('st-seg','err',T('setup_seg_fail'));
+        console.warn('Segmenter failed:',e2);
+      }
+      setProg(95,T('setup_models_done'));
+      resolve(true);
+    }catch(e){
+      clearInterval(anim);
+      setStep('st-model','err',e.message.slice(0,80));
+      showErr(T('err_model_fail'),e.message+'\n\n'+T('err_check_net'));
+      showRetryBtn();resolve(false);
+    }
+  });
+}
+window.skipModel=function(){};// model is mandatory
+
+/* ── SESSION ── */
+function validateSessDob(){
+  const val=g('sess-dob').value;
+  const errEl=g('sess-age-err'),okEl=g('sess-age-ok');
+  if(!val){errEl.classList.remove('on');okEl.style.display='none';S.sessAgeOk=false;updateSessGo();return;}
+  const dob=new Date(val),now=new Date();
+  if(dob>now){
+    errEl.textContent=T('err_dob_future');errEl.classList.add('on');
+    okEl.style.display='none';S.sessAgeOk=false;S.sessDob=null;
+  }else{
+    const ageMs=now-dob,ageYears=ageMs/(1000*60*60*24*365.25),ageMonths=Math.floor(ageMs/(1000*60*60*24*30.44));
+    if(ageYears>5){
+      errEl.textContent=T('err_age_over5');errEl.classList.add('on');
+      okEl.style.display='none';S.sessAgeOk=false;S.sessDob=null;
+    }else{
+      errEl.classList.remove('on');
+      const y=Math.floor(ageYears),m=ageMonths%12;
+      okEl.textContent=y+T('lbl_age_years')+' '+m+T('lbl_age_months');okEl.style.display='block';
+      S.sessAgeOk=true;
+      const p=val.split('-');S.sessDob=p[2]+'/'+p[1]+'/'+p[0];
+      localStorage.setItem(C.SESS_DOB_KEY,val);
     }
   }
+  updateSessGo();
+}
+function updateSessGo(){
+  g('sess-go').disabled=!(S.sessAgeOk&&S.sessConsentOn);
+}
+g('sess-dob').addEventListener('input',validateSessDob);
+g('sess-consent-row').addEventListener('click',function(){
+  S.sessConsentOn=!S.sessConsentOn;
+  g('sess-consent-box').classList.toggle('on',S.sessConsentOn);
+  updateSessGo();
+});
+function goSession(){
+  S.uuid=genUUID();
+  S.frontBlob=null;S.sideBlob=null;S.frontDone=false;S.sideDone=false;S.frontErr=null;S.sideErr=null;
+  S.frontHeight=null;S.frontPpNorm=null;S.frontPcNorm=null;S.frontBeta=null;S.frontGamma=null;
+  S.sideHeight=null;S.sidePpNorm=null;S.sidePcNorm=null;S.sideBeta=null;S.sideGamma=null;
+  S._sleeveLeft=true;S._sleeveRight=true;
+  S.hFever=null;S.hDiarr=null;S.hCough=null;S.apLess=null;S.apRefused=null;S.apBreastfed=null;
+  S.phase='front';
+  g('sess-uuid').textContent=S.uuid;
+  const dot=g('loc-dot'),val=g('loc-val');
+  if(S.location){dot.className='loc-dot ok';val.textContent=`${S.location.lat.toFixed(5)}, ${S.location.lon.toFixed(5)} \u00b1${S.location.acc.toFixed(0)}m`;}
+  else{dot.className='loc-dot err';val.textContent=T('loc_unavailable');}
+  const saved=parseFloat(localStorage.getItem(C.CAM_H_KEY));
+  S.camH=isNaN(saved)?C.CAM_H_DEFAULT:saved;
+  g('camh-input').value=S.camH;
+  g('h-signout').classList.remove('hidden');
+  const savedDob=localStorage.getItem(C.SESS_DOB_KEY)||'';
+  g('sess-dob').value=savedDob;
+  S.sessConsentOn=false;g('sess-consent-box').classList.remove('on');
+  showScreen('s-session');
+  applyLang();
+  if(savedDob)validateSessDob();
+  updateSessGo();
+  if(S._db)setTimeout(drainQueue,500);
+}
+function genUUID(){const ch='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789',a=new Uint8Array(32);crypto.getRandomValues(a);return Array.from(a,b=>ch[b%ch.length]).join('');}
+g('camh-input').addEventListener('input',function(){const v=parseFloat(this.value);if(!isNaN(v)&&v>0){S.camH=v;localStorage.setItem(C.CAM_H_KEY,v);}});
+g('sess-go').addEventListener('click',()=>{const v=parseFloat(g('camh-input').value);if(!isNaN(v)&&v>0)S.camH=v;beginCapture('front');});
+function newSession(){stopCam();goSession();}
+g('h-reset').addEventListener('click',newSession);
+g('cam-reset').addEventListener('click',newSession);
 
-  function showResponse(status, body, elapsed) {
-    const card = document.getElementById('responseCard');
-    card.style.display = 'block';
-    card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    const labels = {200:'OK',201:'Created',204:'No Content',400:'Bad Request',401:'Unauthorized',403:'Forbidden',404:'Not Found',500:'Internal Server Error',503:'Service Unavailable'};
-    const badge = document.getElementById('statusBadge');
-    badge.textContent = status === 0 ? 'ERROR' : `${status} ${labels[status]||''}`;
-    badge.className = `status-badge ${status >= 200 && status < 300 ? 'ok' : 'err'}`;
-    document.getElementById('responseTime').textContent = elapsed ? `${elapsed}ms` : '';
-    document.getElementById('responseOutput').textContent = body || '(empty response)';
+/* ── CAMERA ── */
+const vid=g('vid');
+const mCvs=g('c-mask');
+const pCvs=g('c-pose');
+const mCtx=mCvs.getContext('2d');
+const pCtx=pCvs.getContext('2d');
+// brightness sampling canvas (persistent)
+const bCvs=document.createElement('canvas');bCvs.width=32;bCvs.height=32;
+const bCtx=bCvs.getContext('2d',{willReadFrequently:true});
+// mask compositing canvas (persistent, self-sizes to mask native resolution each frame)
+const maskTmp=document.createElement('canvas');
+
+function syncCanvasSize(){
+  // canvases must match the video element's rendered size exactly
+  const w=vid.offsetWidth||vid.clientWidth||1;
+  const h=vid.offsetHeight||vid.clientHeight||1;
+  if(mCvs.width!==w||mCvs.height!==h){mCvs.width=w;mCvs.height=h;}
+  if(pCvs.width!==w||pCvs.height!==h){pCvs.width=w;pCvs.height=h;}
+  // position canvases on top of video (video height = auto, need explicit pixel size)
+  mCvs.style.width=w+'px';mCvs.style.height=h+'px';
+  pCvs.style.width=w+'px';pCvs.style.height=h+'px';
+  // cam-viewport height = video natural height
+  g('cam-viewport').style.height=h+'px';
+}
+if(window.ResizeObserver){new ResizeObserver(()=>{if(S.camRunning)syncCanvasSize();}).observe(vid);}
+
+function beginCapture(phase){
+  S.phase=phase;
+  updatePoseSil();
+  g('cam-phase-lbl').textContent=phase==='front'?T('front_view'):T('side_view');
+  // reset realtime displays
+  g('hval-cur').textContent='\u2014';g('hval-cur').className='h-val dim';
+  if(!S.mpReady)activateNoPose();
+  showScreen('s-camera');
+  startCam();
+}
+
+function startCam(){
+  stopCam();S.camRunning=false;
+  // Request portrait video — no size constraints, let device choose native 3:4
+  const tryList=[
+    {video:{facingMode:{exact:'environment'}},audio:false},
+    {video:{facingMode:'environment'},audio:false},
+    {video:true,audio:false}
+  ];
+  async function tryNext(i){
+    if(i>=tryList.length){g('guide-txt').textContent=T('cam_unavailable');return;}
+    try{
+      const stream=await navigator.mediaDevices.getUserMedia(tryList[i]);
+      S.camStream=stream;vid.srcObject=stream;
+      vid.onloadeddata=()=>{
+        S.camRunning=true;S.lastVideoTime=-1;
+        syncCanvasSize();
+        requestAnimationFrame(camTick);
+      };
+      vid.onerror=()=>tryNext(i+1);
+    }catch(e){tryNext(i+1);}
   }
+  tryNext(0);
+}
+
+function stopCam(){
+  S.camRunning=false;
+  if(S.camStream){S.camStream.getTracks().forEach(t=>t.stop());S.camStream=null;}
+  mCtx.clearRect(0,0,mCvs.width,mCvs.height);
+  pCtx.clearRect(0,0,pCvs.width,pCvs.height);
+}
+
+let _lastDetectT=0;
+function camTick(){
+  if(!S.camRunning)return;
+  syncCanvasSize();
+  sampleBright();
+  const now=performance.now();
+  if(S.mpReady&&S.holistic&&vid.readyState>=2){
+    if(now-_lastDetectT>=60){
+      _lastDetectT=now;
+      // run segmenter at ~180ms intervals (every 3rd holistic frame)
+      if(S.segReady&&S.segmenter&&(now-S._lastSegT)>=180){
+        S._lastSegT=now;
+        try{
+          const sr=S.segmenter.segmentForVideo(vid,now);
+          const cm=sr&&sr.categoryMask;
+          if(cm){
+            try{
+              const u8=cm.getAsUint8Array();
+              S._lastSegU8=u8;S._lastSegW=cm.width;S._lastSegH=cm.height;
+            }finally{try{cm.close();}catch(ce){}}
+          }
+        }catch(e){console.warn('segForVideo:',e);}
+      }
+      try{
+        const result=S.holistic.detectForVideo(vid,now);
+        drawResults(result);
+      }catch(e){
+        console.warn('detectForVideo:',e);
+        mCtx.clearRect(0,0,mCvs.width,mCvs.height);
+        pCtx.clearRect(0,0,pCvs.width,pCvs.height);
+        updateHBadge(null);updateUI();
+      }
+    }
+  }else if(!S.mpReady){
+    mCtx.clearRect(0,0,mCvs.width,mCvs.height);
+    pCtx.clearRect(0,0,pCvs.width,pCvs.height);
+    updateUI();
+  }
+  requestAnimationFrame(camTick);
+}
+/* ── OVERLAY DRAWING — mirrors ar.html approach exactly ──────────────────
+   Uses raw canvas 2D API (no DrawingUtils dependency).
+   Face index arrays hardcoded from MediaPipe face mesh map.
+   Pose/hand connections from HolisticLandmarker static properties.
+   drawResults() is called with the SYNC result object from detectForVideo.
+────────────────────────────────────────────────────────────────────────── */
+
+// Face mesh index arrays (same as ar.html)
+const FOVAL=[10,338,297,332,284,251,389,356,454,323,361,288,397,365,379,378,400,377,152,148,176,149,150,136,172,58,132,93,234,127,162,21,54,103,67,109];
+const FLEYE=[33,7,163,144,145,153,154,155,133,173,157,158,159,160,161,246];
+const FREYE=[362,382,381,380,374,373,390,249,263,466,388,387,386,385,384,398];
+const FLIPS=[61,185,40,39,37,0,267,269,270,409,291,375,321,405,314,17,84,181,91,146];
+
+// lx/ly: landmark normalised coords → canvas pixels (no crop needed with height:auto video)
+function lx(lm,W){return lm.x*W;}
+function ly(lm,H){return lm.y*H;}
+
+function drawResults(result){
+  if(!S.camRunning)return;
+  const W=mCvs.width,H=mCvs.height;
+
+  // Extract landmarks up-front — needed for height calculation AND overlay drawing
+  const pose=result.poseLandmarks&&result.poseLandmarks[0];
+  const face=result.faceLandmarks&&result.faceLandmarks[0];
+  const lhand=result.leftHandLandmarks&&result.leftHandLandmarks[0];
+  const rhand=result.rightHandLandmarks&&result.rightHandLandmarks[0];
+
+  /* ── CANVAS 1: segmentation mask (mCvs) ── */
+  mCtx.clearRect(0,0,W,H);
+  const mask=result.poseSegmentationMasks&&result.poseSegmentationMasks[0];
+  if(mask){
+    try{
+      const mW=mask.width,mH=mask.height;
+      const f32=mask.getAsFloat32Array();
+
+      // Draw multiclass colour mask if available (180ms cadence), else teal fallback
+      if(S._lastSegU8&&S._lastSegW===mW&&S._lastSegH===mH){
+        // multiclass mask — 6 classes with distinct colours
+        // 0=bg(skip) 1=hair(violet) 2=skin(peach) 3=face-skin(salmon) 4=clothes(blue) 5=acc(yellow)
+        const SEG_RGBA=[[0,0,0,0],[200,130,255,165],[255,180,100,140],[255,120,80,153],[60,140,255,140],[255,220,40,153]];
+        if(maskTmp.width!==mW||maskTmp.height!==mH){maskTmp.width=mW;maskTmp.height=mH;}
+        const tc=maskTmp.getContext('2d');
+        const id=tc.createImageData(mW,mH);
+        const u8=S._lastSegU8;
+        for(let i=0;i<mW*mH;i++){
+          const cls=u8[i];
+          if(cls===0)continue;
+          const c=SEG_RGBA[cls];
+          const r=i*4;
+          // modulate alpha by holistic fg confidence so edges are clean
+          const conf=f32[i];
+          id.data[r]=c[0];id.data[r+1]=c[1];id.data[r+2]=c[2];
+          id.data[r+3]=Math.round(c[3]*Math.min(1,conf*2));
+        }
+        tc.putImageData(id,0,0);
+        mCtx.drawImage(maskTmp,0,0,W,H);
+      }else{
+        // fallback: single teal mask from holistic pose segmentation
+        if(maskTmp.width!==mW||maskTmp.height!==mH){maskTmp.width=mW;maskTmp.height=mH;}
+        const tc=maskTmp.getContext('2d');
+        const id=tc.createImageData(mW,mH);
+        for(let i=0;i<mW*mH;i++){
+          const v=f32[i],r=i*4;
+          if(v>0.4){id.data[r]=0;id.data[r+1]=220;id.data[r+2]=180;id.data[r+3]=Math.round(v*68);}
+        }
+        tc.putImageData(id,0,0);
+        mCtx.drawImage(maskTmp,0,0,W,H);
+      }
+      computeHeightFromMask(f32,mW,mH,W,H,pose,face);
+    }catch(e){updateHBadge(null);console.warn('mask:',e);}
+    finally{try{mask.close();}catch(e){}}
+  }else{
+    updateHBadge(null);
+  }
+
+  const tl=g('tracking-lbl');
+  if(tl){if(pose&&pose.length>=2){const nose=pose[0],hip=pose[23]||pose[24];const hFrac=(hip&&nose)?Math.abs(hip.y-nose.y):0;tl.textContent=hFrac<0.22?'● Tracking: may be adult':'● Tracking: subject';tl.classList.add('on');}else{tl.classList.remove('on');}}
+  /* ── CANVAS 2: landmarks overlay (pCvs) ── */
+  pCtx.clearRect(0,0,W,H);
+
+  /* Face mesh fill + contours */
+  if(face){
+    // Face oval filled — blue
+    pCtx.beginPath();
+    FOVAL.forEach((i,j)=>{
+      if(!face[i])return;
+      j===0?pCtx.moveTo(lx(face[i],W),ly(face[i],H)):pCtx.lineTo(lx(face[i],W),ly(face[i],H));
+    });
+    pCtx.closePath();
+    pCtx.fillStyle='rgba(72,130,255,0.18)';pCtx.fill();
+    pCtx.strokeStyle='rgba(72,130,255,0.60)';pCtx.lineWidth=1.2;pCtx.stroke();
+    // Eye contours — cyan
+    const contour=(pts,col,lw)=>{
+      pCtx.beginPath();
+      pts.forEach((i,j)=>{if(!face[i])return;j===0?pCtx.moveTo(lx(face[i],W),ly(face[i],H)):pCtx.lineTo(lx(face[i],W),ly(face[i],H));});
+      pCtx.strokeStyle=col;pCtx.lineWidth=lw||1;pCtx.stroke();
+    };
+    contour(FLEYE,'rgba(0,220,175,0.75)',1.2);
+    contour(FREYE,'rgba(0,220,175,0.75)',1.2);
+    contour(FLIPS,'rgba(245,80,90,0.60)',1.4);
+    // Face landmark dots — tiny white
+    pCtx.fillStyle='rgba(255,255,255,0.25)';
+    face.forEach(lm=>{
+      if(!lm)return;
+      pCtx.beginPath();pCtx.arc(lx(lm,W),ly(lm,H),0.8,0,Math.PI*2);pCtx.fill();
+    });
+  }
+
+  /* Pose skeleton — green */
+  if(pose){
+    S.lastPose=pose;S.lastFace=face||null;
+    const PC=window._HL&&window._HL.POSE_CONNECTIONS;
+    const lw=Math.max(2,W*0.004);
+    pCtx.strokeStyle='rgba(0,220,175,0.85)';pCtx.lineWidth=lw;
+    if(PC){
+      PC.forEach(conn=>{
+        const a=conn.start??conn[0],b=conn.end??conn[1];
+        const la=pose[a],lb=pose[b];
+        if(!la||!lb)return;
+        if((la.visibility??1)<0.3||(lb.visibility??1)<0.3)return;
+        pCtx.beginPath();pCtx.moveTo(lx(la,W),ly(la,H));pCtx.lineTo(lx(lb,W),ly(lb,H));pCtx.stroke();
+      });
+    }
+    pose.forEach(lm=>{
+      if(!lm||(lm.visibility??1)<0.25)return;
+      pCtx.beginPath();pCtx.arc(lx(lm,W),ly(lm,H),3.5,0,Math.PI*2);
+      pCtx.fillStyle='rgba(0,232,184,1)';pCtx.fill();
+    });
+    runChecks(pose);
+  }else{
+    S.lastPose=null;
+    S.checks.body=false;S.checks.dist=false;S.checks.pose=false;
+  }
+
+  /* Hands — left=amber, right=purple */
+  const HC=window._HL&&window._HL.HAND_CONNECTIONS;
+  function drawHand(lms,col,fill){
+    if(!lms||!lms.length)return;
+    pCtx.beginPath();
+    [0,1,5,9,13,17,0].forEach((i,j)=>{
+      if(!lms[i])return;
+      j===0?pCtx.moveTo(lx(lms[i],W),ly(lms[i],H)):pCtx.lineTo(lx(lms[i],W),ly(lms[i],H));
+    });
+    pCtx.fillStyle=fill;pCtx.fill();
+    if(HC){
+      pCtx.strokeStyle=col;pCtx.lineWidth=1.8;
+      HC.forEach(conn=>{
+        const a=conn.start??conn[0],b=conn.end??conn[1];
+        if(!lms[a]||!lms[b])return;
+        pCtx.beginPath();pCtx.moveTo(lx(lms[a],W),ly(lms[a],H));pCtx.lineTo(lx(lms[b],W),ly(lms[b],H));pCtx.stroke();
+      });
+    }
+    pCtx.fillStyle=col;
+    lms.forEach(lm=>{
+      if(!lm)return;
+      pCtx.beginPath();pCtx.arc(lx(lm,W),ly(lm,H),2.5,0,Math.PI*2);pCtx.fill();
+    });
+  }
+  drawHand(lhand,'rgba(240,185,50,0.9)','rgba(240,185,50,0.12)');
+  drawHand(rhand,'rgba(176,96,240,0.9)','rgba(176,96,240,0.12)');
+
+  // × marker at top of measured height span
+  drawHeightOverlay();
+  updateUI();
+}
+
+/* ── HEIGHT CALCULATION ────────────────────────────────────────────────────
+   Pp = top-of-head to sole-of-foot in display pixels
+   Pc = sole-of-foot to image centre (camera optical axis) in display pixels
+   H  = camH_cm × Pp / Pc
+
+   BOTTOM (botRow): always a full-width mask scan bottom-to-top — reliable
+   for feet regardless of view direction or arm position.
+
+   TOP (topRow): view-dependent, arm-safe:
+
+   FRONT VIEW — uses nose X as anchor for the head column:
+     1. noseCol = round(nose.x × mW), band = noseCol ± 5 columns
+     2. maskHeadRow: first row (top→down) in that band with any fg pixel > MASK_THR
+     3. faceHeadRow: round(min(face[*].y) × mH)  — topmost face mesh point
+     4. topRow = min(maskHeadRow, faceHeadRow)     — whichever is higher in frame
+     Fallback (no nose/face): full-width mask scan (current behaviour)
+
+   SIDE VIEW — ear X + shoulder X give head column candidates:
+     1. Collect candidate X positions: both ear landmarks (93,132,361,389 in face mesh)
+        + dominant shoulder (higher visibility of lm[11]/lm[12])
+     2. For each candidate: scan a ±5 column band in the mask top→down, take first fg row
+     3. faceHeadRow = round(min(face[*].y) × mH)
+     4. topRow = min of all candidate rows (highest point found)
+     Fallback (no face/pose): full-width mask scan
+──────────────────────────────────────────────────────────────────────────── */
+function computeHeightFromMask(f32,mW,mH,dispW,dispH,pose,face){
+  if(!f32||!mW||!mH||dispH===0){updateHBadge(null);return;}
+  const THR=C.MASK_THR;
+  const BAND=5; // ± columns around anchor for head scan
+
+  /* ── helper: scan top→down in column band [colLo..colHi], return first fg row ── */
+  function scanTopInBand(colLo,colHi){
+    colLo=Math.max(0,colLo);colHi=Math.min(mW-1,colHi);
+    for(let row=0;row<mH;row++){
+      for(let col=colLo;col<=colHi;col++){
+        if(f32[row*mW+col]>THR)return row;
+      }
+    }
+    return -1;
+  }
+
+  /* ── full-width mask scan for top (fallback) ── */
+  function scanTopFull(){
+    const MIN_W=C.SCAN_MIN_W;
+    outer:
+    for(let row=0;row<mH;row++){
+      let run=0;
+      for(let col=0;col<mW;col++){
+        if(f32[row*mW+col]>THR){run++;}else{run=0;}
+        if(run>=MIN_W){return row;}
+      }
+    }
+    return -1;
+  }
+
+  /* ── bottom: full-width scan bottom→top (unchanged, arm-safe for feet) ── */
+  let botRow=-1;
+  {
+    const MIN_W=C.SCAN_MIN_W;
+    outer_bot:
+    for(let row=mH-1;row>=0;row--){
+      let run=0;
+      for(let col=0;col<mW;col++){
+        if(f32[row*mW+col]>THR){run++;}else{run=0;}
+        if(run>=MIN_W){botRow=row;break outer_bot;}
+      }
+    }
+  }
+  if(botRow<0){updateHBadge(null);return;}
+
+  /* ── top: view-dependent head-column approach ── */
+  let topRow=-1;
+
+  if(S.phase==='front'){
+    /* FRONT: anchor on nose X ± 5 cols, then take min with face mesh min-Y */
+    const nose=pose&&pose[0];
+    if(nose){
+      const noseCol=Math.round(nose.x*mW);
+      const maskHeadRow=scanTopInBand(noseCol-BAND,noseCol+BAND);
+      // face mesh minimum Y → topmost head point
+      let faceHeadRow=mH; // pessimistic default
+      if(face&&face.length){
+        let minY=1;
+        for(let i=0;i<face.length;i++){if(face[i]&&face[i].y<minY)minY=face[i].y;}
+        faceHeadRow=Math.round(minY*mH);
+      }
+      // take the higher point (smaller row index)
+      if(maskHeadRow>=0)topRow=Math.min(maskHeadRow,faceHeadRow);
+      else if(faceHeadRow<mH)topRow=faceHeadRow;
+    }
+    // fallback: full-width scan
+    if(topRow<0)topRow=scanTopFull();
+
+  }else{
+    /* SIDE: multiple column anchors — ears + dominant shoulder + face mesh min-Y */
+    const candidates=[];
+
+    // Face mesh ear landmarks (tragus region — reliable in side view)
+    // Left ear: 93,132  Right ear: 361,389
+    if(face&&face.length){
+      [93,132,361,389].forEach(i=>{
+        if(face[i]){
+          const col=Math.round(face[i].x*mW);
+          const row=scanTopInBand(col-BAND,col+BAND);
+          if(row>=0)candidates.push(row);
+        }
+      });
+      // face mesh min-Y (topmost skull point regardless of orientation)
+      let minY=1;
+      for(let i=0;i<face.length;i++){if(face[i]&&face[i].y<minY)minY=face[i].y;}
+      const faceHeadRow=Math.round(minY*mH);
+      if(faceHeadRow<mH)candidates.push(faceHeadRow);
+    }
+
+    // Dominant shoulder (higher visibility)
+    if(pose){
+      const lv=(pose[11]&&pose[11].visibility)||0;
+      const rv=(pose[12]&&pose[12].visibility)||0;
+      const domShoulder=lv>=rv?pose[11]:pose[12];
+      if(domShoulder){
+        const col=Math.round(domShoulder.x*mW);
+        const row=scanTopInBand(col-BAND,col+BAND);
+        if(row>=0)candidates.push(row);
+      }
+    }
+
+    // Take the highest (smallest row index) among all candidates
+    if(candidates.length>0)topRow=Math.min(...candidates);
+    // fallback: full-width scan
+    if(topRow<0)topRow=scanTopFull();
+  }
+
+  if(topRow<0||botRow<=topRow){updateHBadge(null);return;}
+
+  /* ── geometry ── */
+  const topPx=(topRow/mH)*dispH;
+  const botPx=(botRow/mH)*dispH;
+  const midPx=dispH/2;
+
+  const Pp=botPx-topPx;
+  const Pc=botPx-midPx;
+
+  if(Pc<=0||Pp<=0){updateHBadge(null);return;}
+
+  const hcm=S.camH*Pp/Pc;
+  if(hcm<=0||hcm>350){updateHBadge(null);return;}
+
+  S._lastPpNorm=Pp/dispH;
+  S._lastPcNorm=Pc/dispH;
+  S._lastTopRow=topRow;
+  S._lastBotRow=botRow;
+  S._lastMH=mH;
+
+  updateHBadge(hcm);
+}
+
+function updateHBadge(hcm){
+  const el=g('hval-cur');
+  if(hcm===null){
+    el.textContent='\u2014';el.className='h-val dim';S._lastHcm=null;
+    // clear overlay state so stale × doesn't persist
+    S._lastTopRow=null;S._lastBotRow=null;S._lastMH=null;
+    S._lastPpNorm=null;S._lastPcNorm=null;
+  }else{
+    el.textContent=hcm.toFixed(1)+' cm';el.className='h-val';S._lastHcm=hcm;
+  }
+}
+
+/* Draw × at image centre (dispH/2) — the camera optical axis point, one end of Pc */
+function drawHeightOverlay(){
+  if(S._lastBotRow===null||S._lastMH===null)return;
+  const dispH=pCvs.height,dispW=pCvs.width;
+  const midPx=dispH/2;   // image centre = camera horizon = upper end of Pc
+  const cx=dispW/2;
+  const r=9;
+  pCtx.save();
+  pCtx.strokeStyle='rgba(255,210,50,0.95)';
+  pCtx.lineWidth=2.5;
+  pCtx.lineCap='round';
+  pCtx.beginPath();pCtx.moveTo(cx-r,midPx-r);pCtx.lineTo(cx+r,midPx+r);pCtx.stroke();
+  pCtx.beginPath();pCtx.moveTo(cx+r,midPx-r);pCtx.lineTo(cx-r,midPx+r);pCtx.stroke();
+  pCtx.restore();
+}
+
+/* ── BRIGHTNESS ── */
+function sampleBright(){
+  if(!vid.videoWidth)return;
+  try{bCtx.drawImage(vid,0,0,32,32);const d=bCtx.getImageData(0,0,32,32).data;let s=0;for(let i=0;i<d.length;i+=4)s+=d[i]*0.299+d[i+1]*0.587+d[i+2]*0.114;S.checks.light=(s/1024)>C.BRIGHT_MIN;}
+  catch(e){S.checks.light=true;}
+}
+
+/* ── SENSORS ── */
+function onOrientation(e){
+  const beta=e.beta||0, gamma=e.gamma||0;
+  const betaOk=Math.abs(beta-90)<C.TILT_BETA, gammaOk=Math.abs(gamma)<C.TILT_GAMMA;
+  S.checks.level=betaOk&&gammaOk;
+  S._lastBeta=beta; S._lastGamma=gamma;
+  // write live to display — normal colour when within constraint, dim when outside
+  const bEl=g('hval-beta'), gEl=g('hval-gamma');
+  if(bEl){bEl.textContent=(beta).toFixed(1)+'\u00b0';bEl.className='h-val'+(betaOk?'':' dim');}
+  if(gEl){gEl.textContent=(gamma).toFixed(1)+'\u00b0';gEl.className='h-val'+(gammaOk?'':' dim');}
+}
+function onMotion(e){
+  const a=e.accelerationIncludingGravity;if(!a){S.checks.steady=true;return;}
+  const dx=Math.abs((a.x||0)-S.lastAcc.x),dy=Math.abs((a.y||0)-S.lastAcc.y),dz=Math.abs((a.z||0)-S.lastAcc.z);
+  S.lastAcc={x:a.x||0,y:a.y||0,z:a.z||0};
+  if(Math.sqrt(dx*dx+dy*dy+dz*dz)>C.SHAKE_RMS){S.shakeOk=false;clearTimeout(S.shakeTmr);S.shakeTmr=setTimeout(()=>{S.shakeOk=true;},C.SHAKE_SETTLE);}
+  S.checks.steady=S.shakeOk;
+}
+if(typeof DeviceOrientationEvent!=='undefined'&&typeof DeviceOrientationEvent.requestPermission!=='function')addEventListener('deviceorientation',onOrientation);
+if(typeof DeviceMotionEvent!=='undefined'&&typeof DeviceMotionEvent.requestPermission!=='function')addEventListener('devicemotion',onMotion);
+
+/* ── POSE CHECKS ── */
+function vis(lm,i,vt){
+  vt=vt||0.30;const p=lm[i];if(!p)return false;
+  return(p.visibility!==undefined?p.visibility:1)>=vt;
+}
+function runChecks(lm){
+  const nose=vis(lm,0,0.3)?lm[0]:null;
+  let ankleY=0;
+  [[27,0.3],[28,0.3],[29,0.25],[30,0.25]].forEach(function(x){if(vis(lm,x[0],x[1]))ankleY=Math.max(ankleY,lm[x[0]].y);});
+  const span=(nose&&ankleY>0)?ankleY-nose.y:0;
+  S.checks.dist=span>=C.BODY_MIN&&span<=C.BODY_MAX;
+  S.checks.body=checkBody(lm,span);
+  S.checks.pose=S.phase==='front'?checkFront(lm):checkSide(lm);
+  // Sleeve check — front view only, requires segmenter
+  if(S.phase==='front'&&S.segReady&&S._lastSegU8){
+    S.checks.sleeve=checkSleeve(lm);
+  }else{
+    S.checks.sleeve=true; // not checked in side view or without segmenter
+  }
+}
+function checkBody(lm,span){
+  if(span<C.BODY_SPAN_MIN)return false;
+  if(S.phase==='front'){
+    if(![0,11,12,23,24].every(i=>vis(lm,i,0.35)))return false;
+    return[13,14,25,26,27,28].filter(i=>vis(lm,i,0.25)).length>=3;
+  }
+  const lv=(lm[11]&&lm[11].visibility)||0,rv=(lm[12]&&lm[12].visibility)||0;
+  const arr=lv>=rv?[11,13,23,25,27]:[12,14,24,26,28];
+  if(!vis(lm,0,0.3)||!vis(lm,arr[0],0.35)||!vis(lm,arr[2],0.35))return false;
+  return[arr[1],arr[3],arr[4]].filter(i=>vis(lm,i,0.25)).length>=2;
+}
+function checkFront(lm){
+  if(![11,12,13,14,23,24].every(i=>vis(lm,i,0.25)))return false;
+  const ls=lm[11],rs=lm[12],le=lm[13],re=lm[14],lh=lm[23],rh=lm[24];
+  if(Math.abs(rs.x-ls.x)<0.08)return false;
+  const tx=((ls.x+rs.x)/2)-((lh.x+rh.x)/2),ty=((ls.y+rs.y)/2)-((lh.y+rh.y)/2),tl=Math.sqrt(tx*tx+ty*ty);
+  if(tl<0.05)return false;
+  function ang(sh,el){const ax=el.x-sh.x,ay=el.y-sh.y,al=Math.sqrt(ax*ax+ay*ay);if(al<0.02)return 0;const a=Math.acos(Math.max(-1,Math.min(1,(ax*tx+ay*ty)/(al*tl))))*180/Math.PI;return a>90?180-a:a;}
+  return ang(ls,le)>=C.ARM_RAISE_DEG&&ang(rs,re)>=C.ARM_RAISE_DEG;
+}
+function checkSide(lm){
+  if(![11,12,23,24].every(i=>vis(lm,i,0.30)))return false;
+  const ls=lm[11],rs=lm[12],lh=lm[23],rh=lm[24];
+  const sMy=(ls.y+rs.y)/2,hMy=(lh.y+rh.y)/2,tH=Math.max(hMy-sMy,0.05);
+  if(Math.abs(rs.x-ls.x)/tH>0.35)return false;
+  if(Math.abs(rh.x-lh.x)/tH>0.32)return false;
+  const eI=((lm[11]&&lm[11].visibility)||0)>=((lm[12]&&lm[12].visibility)||0)?13:14;
+  if(vis(lm,eI,0.25)&&lm[eI].y<sMy-tH*0.2)return false;
+  return true;
+}
+
+/* ── SLEEVE CHECK ──────────────────────────────────────────────────────
+   Samples pixels along shoulder→elbow for both arms in the multiclass mask.
+   Class 2 = body-skin, class 4 = clothes.
+   Checks the mid-upper-arm region (midpoint ± spread) specifically.
+   Returns true if both mid-upper-arms are ≥ SLEEVE_THR fraction skin.
+────────────────────────────────────────────────────────────────────────── */
+function checkSleeve(pose){
+  if(!pose||!S._lastSegU8)return true;
+  const u8=S._lastSegU8,mW=S._lastSegW,mH=S._lastSegH;
+  if(!mW||!mH)return true;
+  // pose landmark indices: L shoulder=11, L elbow=13, R shoulder=12, R elbow=14
+  function armExposed(shIdx,elIdx){
+    const sh=pose[shIdx],el=pose[elIdx];
+    if(!sh||!el||(sh.visibility??1)<0.3||(el.visibility??1)<0.3)return true;// can't tell, pass
+    // mid upper arm = midpoint between shoulder and elbow
+    const mx=(sh.x+el.x)/2, my=(sh.y+el.y)/2;
+    // sample a 7-pixel cross at mid-upper-arm in mask coords
+    const mc=Math.round(mx*mW), mr=Math.round(my*mH);
+    let skinPx=0,totalPx=0;
+    const spread=3;
+    for(let dr=-spread;dr<=spread;dr++){
+      for(let dc=-spread;dc<=spread;dc++){
+        const r=mr+dr,c=mc+dc;
+        if(r<0||r>=mH||c<0||c>=mW)continue;
+        const cls=u8[r*mW+c];
+        totalPx++;
+        if(cls===2)skinPx++; // body-skin
+      }
+    }
+    if(totalPx===0)return true;
+    return(skinPx/totalPx)>=C.SLEEVE_THR;
+  }
+  const leftOk=armExposed(11,13);
+  const rightOk=armExposed(12,14);
+  // store for guide message
+  S._sleeveLeft=leftOk;S._sleeveRight=rightOk;
+  return leftOk&&rightOk;
+}
+
+/* ── UI ── */
+function activateNoPose(){
+  S.checks.body=true;S.checks.dist=true;S.checks.pose=true;
+  S.chipBlock.body=false;S.chipBlock.dist=false;S.chipBlock.pose=false;S.chipBlock.sleeve=false;
+  g('no-pose-bar').classList.add('on');
+  ['ch-body','ch-dist','ch-pose','ch-sleeve'].forEach(id=>{const e=g(id);if(e)e.className='chip dis';});
+  saveChipBlock();
+}
+function allOk(){
+  return(S.mpReady?['light','steady','level','body','dist','pose']:['light','steady','level']).every(k=>S.checks[k]);
+}
+const CHIPS={light:'ch-light',steady:'ch-steady',level:'ch-level',body:'ch-body',dist:'ch-dist',pose:'ch-pose',sleeve:'ch-sleeve'};
+function updateUI(){
+  const allKeys=S.mpReady?['light','steady','level','body','dist','pose','sleeve']:['light','steady','level'];
+  const blockedFails=allKeys.filter(k=>S.chipBlock[k]&&!S.checks[k]);
+  const warnFails=allKeys.filter(k=>!S.chipBlock[k]&&!S.checks[k]);
+  const canShoot=blockedFails.length===0;
+  const allPass=blockedFails.length===0&&warnFails.length===0;
+  const sh=g('shutter');
+  if(!S.camRunning)sh.className='off';
+  else if(canShoot)sh.className=allPass?'ok':'warn';
+  else sh.className='off';
+  Object.keys(CHIPS).forEach(k=>{
+    const el=g(CHIPS[k]);if(!el)return;
+    const isDisabled=(!S.mpReady&&['body','dist','pose','sleeve'].indexOf(k)>=0)||(!S.segReady&&k==='sleeve');
+    // sleeve chip is hidden (dis) on side view — not relevant for side photo
+    const isSideView=S.phase==='side'&&k==='sleeve';
+    if(isDisabled||isSideView){el.className='chip dis';return;}
+    if(S.checks[k])el.className='chip ok';
+    else if(S.chipBlock[k])el.className='chip bad';
+    else el.className='chip soft';
+  });
+  const gt=g('guide-txt');
+  function sleeveMsg(){
+    if(!S._sleeveLeft&&!S._sleeveRight)return T('g_sleeve_both');
+    if(!S._sleeveLeft)return T('g_sleeve_left');
+    return T('g_sleeve_right');
+  }
+  function getMsg(k,isBlocked){
+    switch(k){
+      case 'light':  return T(isBlocked?'g_light_blk':'g_light_wrn');
+      case 'steady': return T(isBlocked?'g_steady_blk':'g_steady_wrn');
+      case 'level':  return T(isBlocked?'g_level_blk':'g_level_wrn');
+      case 'body':   return T(isBlocked?'g_body_blk':'g_body_wrn');
+      case 'dist':
+        if(!S.lastPose)return T('g_dist_none');
+        return(S.lastPose[0]&&S.lastPose[0].y>0.6)?T('g_dist_far'):T('g_dist_near');
+      case 'pose':
+        if(S.phase==='front')return T(isBlocked?'g_pose_front_blk':'g_pose_front_wrn')+' (\u2265'+C.ARM_RAISE_DEG+'\u00b0)';
+        return T(isBlocked?'g_pose_side_blk':'g_pose_side_wrn');
+      case 'sleeve': return sleeveMsg();
+    }
+    return k;
+  }
+  if(blockedFails.length){
+    gt.textContent=getMsg(blockedFails[0],true);gt.className='guide-txt bad';
+  }else if(warnFails.length){
+    gt.textContent=getMsg(warnFails[0],false);gt.className='guide-txt warn';
+  }else{
+    gt.textContent=S.phase==='front'?T('g_front_ok'):T('g_side_ok');gt.className='guide-txt ok';
+  }
+}
+// Per-chip block toggle — click chip to toggle between blocking and warn-only
+function loadChipBlock(){
+  try{
+    const saved=localStorage.getItem(C.CHIP_KEY);
+    if(saved){const obj=JSON.parse(saved);Object.keys(obj).forEach(k=>{if(k in S.chipBlock)S.chipBlock[k]=obj[k];});}
+  }catch(e){}
+}
+function saveChipBlock(){
+  try{localStorage.setItem(C.CHIP_KEY,JSON.stringify(S.chipBlock));}catch(e){}
+}
+document.querySelectorAll('[data-chip]').forEach(el=>{
+  el.addEventListener('click',function(){
+    const k=this.getAttribute('data-chip');
+    if(!(k in S.chipBlock))return;
+    if(this.classList.contains('dis'))return;
+    S.chipBlock[k]=!S.chipBlock[k];
+    saveChipBlock();
+    updateUI();
+  });
+});
+/* ── SILHOUETTES ── */
+const SIL_FRONT='<ellipse cx="30" cy="7" rx="5" ry="6" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="1.2"/><path d="M26 12 Q30 10 34 12 L33 30 Q30 32 27 30 Z" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="1.2"/><path d="M26 15 L18 24" stroke="rgba(255,255,255,.45)" stroke-width="2.5" stroke-linecap="round"/><path d="M18 24 L14 22" stroke="rgba(255,255,255,.35)" stroke-width="2" stroke-linecap="round"/><path d="M34 15 L42 24" stroke="rgba(255,255,255,.45)" stroke-width="2.5" stroke-linecap="round"/><path d="M42 24 L46 22" stroke="rgba(255,255,255,.35)" stroke-width="2" stroke-linecap="round"/><path d="M28 30 L26 52" stroke="rgba(255,255,255,.45)" stroke-width="3" stroke-linecap="round"/><path d="M26 52 L24 72" stroke="rgba(255,255,255,.38)" stroke-width="2.5" stroke-linecap="round"/><path d="M32 30 L33 52" stroke="rgba(255,255,255,.45)" stroke-width="3" stroke-linecap="round"/><path d="M33 52 L34 72" stroke="rgba(255,255,255,.38)" stroke-width="2.5" stroke-linecap="round"/>';
+const SIL_SIDE='<ellipse cx="32" cy="7" rx="5" ry="6" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="1.2"/><path d="M30 12 Q34 10 36 12 L35 30 Q32 32 29 30 Z" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="1.2"/><path d="M30 16 L28 34" stroke="rgba(255,255,255,.45)" stroke-width="2.5" stroke-linecap="round"/><path d="M28 34 L27 46" stroke="rgba(255,255,255,.35)" stroke-width="2" stroke-linecap="round"/><path d="M34 16 L34 28" stroke="rgba(255,255,255,.15)" stroke-width="2" stroke-linecap="round" stroke-dasharray="4 3"/><path d="M30 30 L29 52" stroke="rgba(255,255,255,.45)" stroke-width="3" stroke-linecap="round"/><path d="M29 52 L28 72" stroke="rgba(255,255,255,.38)" stroke-width="2.5" stroke-linecap="round"/><path d="M33 30 L34 52" stroke="rgba(255,255,255,.15)" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="5 4"/>';
+function updatePoseSil(){g('pose-sil').innerHTML=S.phase==='front'?SIL_FRONT:SIL_SIDE;}
+
+/* ── SHUTTER + CAPTURE ── */
+g('shutter').addEventListener('click',()=>{
+  const sh=g('shutter');
+  if(sh.classList.contains('off'))return;
+  sh.className='off'; // disable immediately — re-enabled via preview retake or next session
+  doCapture();
+});
+function doCapture(){
+  if(S.phase==='front'){
+    S.frontHeight=S._lastHcm||null;S.frontPpNorm=S._lastPpNorm||null;S.frontPcNorm=S._lastPcNorm||null;
+    S.frontBeta=S._lastBeta;S.frontGamma=S._lastGamma;
+  }else{
+    S.sideHeight=S._lastHcm||null;S.sidePpNorm=S._lastPpNorm||null;S.sidePcNorm=S._lastPcNorm||null;
+    S.sideBeta=S._lastBeta;S.sideGamma=S._lastGamma;
+  }
+  const fl=g('c-flash');fl.classList.add('on');
+  requestAnimationFrame(()=>requestAnimationFrame(()=>fl.classList.remove('on')));
+  const vw=vid.videoWidth,vh=vid.videoHeight;
+  if(!vw||!vh)return;
+
+  // Compute subject-centred crop (3:4 aspect) from pose landmarks
+  let cSx,cSy,cSw,cSh;
+  const pose=S.lastPose;
+  if(pose&&pose.length>=2){
+    let mnX=1,mxX=0,mnY=1,mxY=0,hit=false;
+    pose.forEach(lm=>{if((lm.visibility||1)<0.3)return;mnX=Math.min(mnX,lm.x);mxX=Math.max(mxX,lm.x);mnY=Math.min(mnY,lm.y);mxY=Math.max(mxY,lm.y);hit=true;});
+    if(hit){
+      const px=(mxX-mnX)*0.15,py=(mxY-mnY)*0.10;
+      mnX=Math.max(0,mnX-px);mxX=Math.min(1,mxX+px);mnY=Math.max(0,mnY-py);mxY=Math.min(1,mxY+py);
+      let cw=(mxX-mnX)*vw,ch=(mxY-mnY)*vh;
+      const TR=3/4;if(cw/ch<TR)cw=ch*TR;else ch=cw/TR;
+      const midX=(mnX+mxX)/2*vw,midY=(mnY+mxY)/2*vh;
+      cSx=Math.max(0,Math.round(midX-cw/2));cSy=Math.max(0,Math.round(midY-ch/2));
+      cSw=Math.min(vw-cSx,Math.round(cw));cSh=Math.min(vh-cSy,Math.round(ch));
+      if(Math.abs(cSw/cSh-TR)>0.01){cSh=Math.round(cSw/TR);if(cSy+cSh>vh)cSy=Math.max(0,vh-cSh);}
+    }
+  }
+  if(!cSw||!cSh){
+    const TR=3/4,SR=vw/vh;
+    if(SR>TR){cSh=vh;cSw=Math.round(vh*TR);cSx=Math.round((vw-cSw)/2);cSy=0;}
+    else{cSw=vw;cSh=Math.round(vw/TR);cSx=0;cSy=Math.round((vh-cSh)/2);}
+  }
+
+  // Step 1: instant preview at display resolution
+  S._captureCancel=false;
+  const pW=Math.min(cSw,1080),pH=Math.round(pW*4/3);
+  const pCvs=document.createElement('canvas');pCvs.width=pW;pCvs.height=pH;
+  pCvs.getContext('2d').drawImage(vid,cSx,cSy,cSw,cSh,0,0,pW,pH);
+  showPreview(pCvs.toDataURL('image/jpeg',0.82));
+
+  // Step 2: background encode at native crop resolution with face mask
+  const captPhase=S.phase,lastFace=S.lastFace;
+  setTimeout(function(){
+    if(S._captureCancel)return;
+    const cap=document.createElement('canvas');cap.width=cSw;cap.height=cSh;
+    const octx=cap.getContext('2d');
+    octx.drawImage(vid,cSx,cSy,cSw,cSh,0,0,cSw,cSh);
+    if(S._captureCancel)return;
+    if(lastFace&&lastFace.length){
+      octx.beginPath();
+      FOVAL.forEach((i,j)=>{
+        const lm=lastFace[i];if(!lm)return;
+        const cx=(lm.x*vw-cSx)/cSw*cSw;
+        const cy=(lm.y*vh-cSy)/cSh*cSh;
+        j===0?octx.moveTo(cx,cy):octx.lineTo(cx,cy);
+      });
+      octx.closePath();octx.fillStyle='#1a1a1a';octx.fill();
+    }
+    if(S._captureCancel)return;
+    cap.toBlob(function(blob){
+      if(S._captureCancel||!blob)return;
+      if(captPhase==='front')S.frontBlob=blob;else S.sideBlob=blob;
+    },'image/jpeg',0.93);
+  },0);
+}
+
+/* ── PREVIEW ── */
+function showPreview(dataUrl){
+  g('prev-img').src=dataUrl;
+  g('prev-lbl').textContent=S.phase==='front'?T('prev_front'):T('prev_side');
+  g('prev-status').textContent='';g('prev-status').className='prev-status';
+  const nb=g('prev-next');nb.textContent=T('prev_next');nb.disabled=false;
+  g('prev-retake').textContent=T('prev_retake');
+  S.popupMode=S.phase==='front'?'front-normal':'side-normal';
+  g('preview').classList.add('on');
+}
+function hidePreview(){g('preview').classList.remove('on');}
+
+g('prev-retake').addEventListener('click',()=>{
+  S._captureCancel=true;
+  if(S.popupMode.indexOf('front')===0){S.frontBlob=null;S.frontHeight=null;S.frontPpNorm=null;S.frontPcNorm=null;}
+  else{S.sideBlob=null;S.sideHeight=null;S.sidePpNorm=null;S.sidePcNorm=null;}
+  hidePreview();
+});
+g('prev-next').addEventListener('click',()=>{
+  const nb=g('prev-next');nb.disabled=true;
+  if(S.popupMode==='front-normal'){
+    hidePreview();
+    S.phase='side';updatePoseSil();
+    g('cam-phase-lbl').textContent=T('side_view');
+    g('hval-cur').textContent='—';g('hval-cur').className='h-val dim';
+  }else{
+    hidePreview();goForm();
+  }
+});
+function fetchWithTimeout(input,opts,ms){
+  const ctrl=new AbortController();
+  const id=setTimeout(()=>ctrl.abort(),ms);
+  return fetch(input,{...opts,signal:ctrl.signal}).finally(()=>clearTimeout(id));
+}
+
+/* ── FORM ── */
+function goForm(){
+  stopCam();
+  S.genderVal=null;S.litVal=null;
+  ['f-weight','f-height','f-muac'].forEach(id=>g(id).value='');
+  g('f-caste').value='';
+  g('f-h-front').value=S.frontHeight?S.frontHeight.toFixed(1):'';
+  g('f-h-side').value=S.sideHeight?S.sideHeight.toFixed(1):'';
+  g('form-submit').disabled=false;
+  g('form-msg').textContent='';g('form-msg').className='form-msg';
+  document.querySelectorAll('.seg-btn').forEach(b=>b.classList.remove('on'));
+  document.querySelectorAll('#lit-group .radio-dot').forEach(d=>d.classList.remove('on'));
+  const bfField=g('bf-field');
+  if(bfField){
+    const dobVal=localStorage.getItem(C.SESS_DOB_KEY)||'';
+    let showBf=false;
+    if(dobVal){const ageMs=Date.now()-new Date(dobVal).getTime();showBf=(ageMs/(1000*60*60*24*30.44))<=24;}
+    bfField.style.display=showBf?'':'none';
+  }
+  showScreen('s-form');
+}
+document.querySelectorAll('#g-male,#g-female').forEach(function(b){b.addEventListener('click',function(){S.genderVal=b.dataset.v;document.querySelectorAll('#g-male,#g-female').forEach(x=>x.classList.remove('on'));b.classList.add('on');});});
+// 5-level literacy radio
+document.querySelectorAll('#lit-group .radio-opt').forEach(function(row){
+  row.addEventListener('click',function(){
+    document.querySelectorAll('#lit-group .radio-opt').forEach(r=>{r.querySelector('.radio-dot').classList.remove('on');});
+    row.querySelector('.radio-dot').classList.add('on');
+    S.litVal=row.dataset.v;
+  });
+});
+function wireSegGroup(ids,key){
+  ids.forEach(function(id){const btn=g(id);if(!btn)return;btn.addEventListener('click',function(){ids.forEach(function(i){const b=g(i);if(b)b.classList.remove('on');});btn.classList.add('on');S[key]=btn.dataset.v;});});
+}
+wireSegGroup(['h-fever-y','h-fever-n'],'hFever');
+wireSegGroup(['h-diarr-y','h-diarr-n'],'hDiarr');
+wireSegGroup(['h-cough-y','h-cough-n'],'hCough');
+wireSegGroup(['ap-less-y','ap-less-n','ap-less-s'],'apLess');
+wireSegGroup(['ap-ref-nv','ap-ref-so','ap-ref-of','ap-ref-al'],'apRefused');
+wireSegGroup(['ap-bf-y','ap-bf-n'],'apBreastfed');
+document.querySelectorAll('#lit-yes,#lit-no').forEach(function(b){b.addEventListener('click',function(){S.litVal=b.dataset.v;document.querySelectorAll('#lit-yes,#lit-no').forEach(x=>x.classList.remove('on'));b.classList.add('on');});});
+// consent handled on session page
+g('form-submit').addEventListener('click',async function(){
+  if(!S.consentOn)return;
+  const sb=g('form-submit'),msg=g('form-msg');
+  sb.disabled=true;msg.textContent=T('form_submitting');msg.className='form-msg';
+  // DOB from session page
+  const payload={
+    uuid:S.uuid,
+    timestamp:new Date(Date.now()+330*60000).toISOString().replace('Z','+05:30'),
+    consent:true,language:_lang,
+    lat:S.location?S.location.lat:null,
+    lon:S.location?S.location.lon:null,
+    location_accuracy_m:S.location?S.location.acc:null,
+    date_of_birth:S.sessDob||null,
+    gender:S.genderVal||null,
+    weight_g:(v=>isNaN(v)||v<=0?null:v)(parseFloat(g('f-weight').value)),
+    height_cm_self_reported:(v=>isNaN(v)||v<=0?null:v)(parseFloat(g('f-height').value)),
+    height_cm_front_estimate:S.frontHeight?parseFloat(S.frontHeight.toFixed(1)):null,
+    height_cm_side_estimate:S.sideHeight?parseFloat(S.sideHeight.toFixed(1)):null,
+    Pp_norm_front:S.frontPpNorm?parseFloat(S.frontPpNorm.toFixed(5)):null,
+    Pc_norm_front:S.frontPcNorm?parseFloat(S.frontPcNorm.toFixed(5)):null,
+    beta_front:S.frontBeta!==null?parseFloat(S.frontBeta.toFixed(2)):null,
+    gamma_front:S.frontGamma!==null?parseFloat(S.frontGamma.toFixed(2)):null,
+    Pp_norm_side:S.sidePpNorm?parseFloat(S.sidePpNorm.toFixed(5)):null,
+    Pc_norm_side:S.sidePcNorm?parseFloat(S.sidePcNorm.toFixed(5)):null,
+    beta_side:S.sideBeta!==null?parseFloat(S.sideBeta.toFixed(2)):null,
+    gamma_side:S.sideGamma!==null?parseFloat(S.sideGamma.toFixed(2)):null,
+    muac_mm:(v=>isNaN(v)||v<=0?null:v)(parseFloat(g('f-muac').value)),
+    female_literacy:S.litVal||null,
+    social_group:g('f-caste').value||null,
+    health_fever:S.hFever||null,health_diarrhoea:S.hDiarr||null,health_cough_ari:S.hCough||null,
+    appetite_ate_less:S.apLess||null,appetite_refused:S.apRefused||null,breastfed:S.apBreastfed||null
+  };
+  try{
+    if(!S.frontBlob||!S.sideBlob){
+      let waited=0;
+      while((!S.frontBlob||!S.sideBlob)&&waited<3000){await new Promise(r=>setTimeout(r,100));waited+=100;}
+    }
+    if(!S.frontBlob||!S.sideBlob)throw new Error('Image capture incomplete — please retake photos.');
+    await enqueueSession(S.uuid,S.frontBlob,S.sideBlob,payload);
+    msg.textContent=T('form_ok');msg.className='form-msg ok';
+    drainQueue();
+    setTimeout(()=>goSession(),1200);
+  }catch(e){msg.textContent=T('failed')+e.message;msg.className='form-msg err';sb.disabled=false;}
+});
+g('h-reset').addEventListener('click',()=>goSession());
+
+/* ── BOOT ── */
+applyLang();
+loadChipBlock();
+openDB().then(db=>{S._db=db;refreshQueueCount();setTimeout(drainQueue,1000);}).catch(e=>console.warn('IDB:',e));
+if(IS_FILE){setOnline(false);}else{probeConnectivity();}
+showScreen('s-setup');
+runSetup();
+
+})();
 </script>
 </body>
 </html>

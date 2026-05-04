@@ -727,6 +727,7 @@ const S={
   segmenter:null, segReady:false,
   _lastSegU8:null, _lastSegW:0, _lastSegH:0, // last multiclass uint8 mask
   _lastSegT:0,   // timestamp of last segmenter run
+  _lastSegRenderT:0, // timestamp when mask was last rendered to canvas
   camStream:null, camRunning:false, lastVideoTime:-1,
   checks:{light:false,steady:false,level:false,body:false,dist:false,pose:false,sleeve:true},
   chipBlock:{light:true,steady:true,level:true,body:true,dist:true,pose:true,sleeve:true},
@@ -1475,22 +1476,13 @@ function hideReauthBanner(){
 
 // Called when user taps "Sign in" on the reauth banner mid-session
 window.triggerReauth=function(){
-  // remember which screen we're on so we can return after reauth
+  // Drop One Tap (unreliable on shared/returning devices) — go straight to button
   const currentScreen=document.querySelector('.screen.on');
   S._reauthScreen=currentScreen?currentScreen.id:null;
-  waitForGIS(()=>{
-    google.accounts.id.initialize({client_id:C.GID,callback:cred=>handleCredential(cred,null),auto_select:false});
-    google.accounts.id.prompt(n=>{
-      if(n.isSkippedMoment()||n.isDismissedMoment()){
-        // One Tap didn't work — show full sign-in button overlay
-        g('g-signin').style.display='flex';g('g-signin').disabled=false;
-        S.authResolve=null;
-        // temporarily show setup screen sign-in area
-        showScreen('s-setup');
-        setStep('st-auth','active',T('setup_auth_resume'));
-      }
-    });
-  });
+  g('g-signin').style.display='flex';g('g-signin').disabled=false;
+  S.authResolve=null;
+  showScreen('s-setup');
+  setStep('st-auth','active',T('setup_auth_resume'));
 };
 
 function waitForGIS(cb){if(window.google&&window.google.accounts&&window.google.accounts.id){cb();return;}const t=setInterval(()=>{if(window.google&&window.google.accounts&&window.google.accounts.id){clearInterval(t);cb();}},100);}
@@ -1517,14 +1509,9 @@ async function apiFetch(path,method,body,isForm,_retry){
   const opts={method,headers:hdrs};if(body)opts.body=isForm?body:JSON.stringify(body);
   const resp=await fetchWithTimeout(C.API+path,opts,30000);
   if(resp.status===401&&!_retry){
-    // Token rejected — attempt one silent refresh then retry
-    await new Promise(res=>{
-      waitForGIS(()=>{
-        google.accounts.id.initialize({client_id:C.GID,callback:cred=>{handleCredential(cred,null);res();},auto_select:true});
-        google.accounts.id.prompt(n=>{if(n.isSkippedMoment()||n.isDismissedMoment()){showReauthBanner('ra_expired');res();}});
-      });
-    });
-    return apiFetch(path,method,body,isForm,true);
+    // Token rejected — show reauth banner and fail; worker will sign in via button
+    showReauthBanner('ra_expired');
+    throw new Error('Session expired');
   }
   return resp;
 }
@@ -1825,7 +1812,8 @@ function drawResults(result){
       const f32=mask.getAsFloat32Array();
 
       // Draw multiclass colour mask if available (180ms cadence), else teal fallback
-      if(S._lastSegU8&&S._lastSegW===mW&&S._lastSegH===mH){
+      if(S._lastSegU8&&S._lastSegW===mW&&S._lastSegH===mH&&S._lastSegT!==S._lastSegRenderT){
+        S._lastSegRenderT=S._lastSegT;
         // multiclass mask — 6 classes with distinct colours
         // 0=bg(skip) 1=hair(violet) 2=skin(peach) 3=face-skin(salmon) 4=clothes(blue) 5=acc(yellow)
         const SEG_RGBA=[[0,0,0,0],[200,130,255,165],[255,180,100,140],[255,120,80,153],[60,140,255,140],[255,220,40,153]];
@@ -2147,15 +2135,16 @@ function sampleBright(){
 }
 
 /* ── SENSORS ── */
+let _lastUIUpdate=0;
 function onOrientation(e){
   const beta=e.beta||0, gamma=e.gamma||0;
   const betaOk=Math.abs(beta-90)<C.TILT_BETA, gammaOk=Math.abs(gamma)<C.TILT_GAMMA;
   S.checks.level=betaOk&&gammaOk;
   S._lastBeta=beta; S._lastGamma=gamma;
-  // write live to display — normal colour when within constraint, dim when outside
-  const bEl=g('hval-beta'), gEl=g('hval-gamma');
-  if(bEl){bEl.textContent=(beta).toFixed(1)+'\u00b0';bEl.className='h-val'+(betaOk?'':' dim');}
-  if(gEl){gEl.textContent=(gamma).toFixed(1)+'\u00b0';gEl.className='h-val'+(gammaOk?'':' dim');}
+  const bEl=g('hval-beta'),gEl=g('hval-gamma');
+  if(bEl){bEl.textContent=beta.toFixed(1)+'°';bEl.className='h-val'+(betaOk?'':' dim');}
+  if(gEl){gEl.textContent=gamma.toFixed(1)+'°';gEl.className='h-val'+(gammaOk?'':' dim');}
+  const _now2=performance.now();if(_now2-_lastUIUpdate>100){_lastUIUpdate=_now2;if(S.camRunning)updateUI();}
 }
 function onMotion(e){
   const a=e.accelerationIncludingGravity;if(!a){S.checks.steady=true;return;}
@@ -2403,11 +2392,12 @@ function doCapture(){
     octx.drawImage(vid,cSx,cSy,cSw,cSh,0,0,cSw,cSh);
     if(S._captureCancel)return;
     if(lastFace&&lastFace.length){
+      // landmark coords are normalised to full video frame; map to crop canvas coords
       octx.beginPath();
       FOVAL.forEach((i,j)=>{
         const lm=lastFace[i];if(!lm)return;
-        const cx=(lm.x*vw-cSx)/cSw*cSw;
-        const cy=(lm.y*vh-cSy)/cSh*cSh;
+        const cx=(lm.x*vw-cSx);   // position within crop in px
+        const cy=(lm.y*vh-cSy);
         j===0?octx.moveTo(cx,cy):octx.lineTo(cx,cy);
       });
       octx.closePath();octx.fillStyle='#1a1a1a';octx.fill();
@@ -2500,7 +2490,6 @@ g('form-submit').addEventListener('click',async function(){
   if(!S.consentOn)return;
   const sb=g('form-submit'),msg=g('form-msg');
   sb.disabled=true;msg.textContent=T('form_submitting');msg.className='form-msg';
-  // DOB from session page
   const payload={
     uuid:S.uuid,
     timestamp:new Date(Date.now()+330*60000).toISOString().replace('Z','+05:30'),
@@ -2525,20 +2514,23 @@ g('form-submit').addEventListener('click',async function(){
     muac_mm:(v=>isNaN(v)||v<=0?null:v)(parseFloat(g('f-muac').value)),
     female_literacy:S.litVal||null,
     social_group:g('f-caste').value||null,
-    health_fever:S.hFever||null,health_diarrhoea:S.hDiarr||null,health_cough_ari:S.hCough||null,
-    appetite_ate_less:S.apLess||null,appetite_refused:S.apRefused||null,breastfed:S.apBreastfed||null
+    fever_2wk:S.hFever||null,
+    diarrhoea_2wk:S.hDiarr||null,
+    cough_ari_2wk:S.hCough||null,
+    appetite_less_1wk:S.apLess||null,
+    food_refusal_1wk:S.apRefused||null,
+    breastfed:S.apBreastfed||null
   };
   try{
-    if(!S.frontBlob||!S.sideBlob){
-      let waited=0;
-      while((!S.frontBlob||!S.sideBlob)&&waited<3000){await new Promise(r=>setTimeout(r,100));waited+=100;}
-    }
-    if(!S.frontBlob||!S.sideBlob)throw new Error('Image capture incomplete — please retake photos.');
-    await enqueueSession(S.uuid,S.frontBlob,S.sideBlob,payload);
+    await queueSession(S.uuid,S.frontBlob,S.sideBlob,payload);
     msg.textContent=T('form_ok');msg.className='form-msg ok';
-    drainQueue();
-    setTimeout(()=>goSession(),1200);
-  }catch(e){msg.textContent=T('failed')+e.message;msg.className='form-msg err';sb.disabled=false;}
+    refreshQueueCount();
+    setTimeout(drainQueue,500);
+    setTimeout(()=>goSession(),2200);
+  }catch(e){
+    sb.disabled=false;
+    msg.textContent=T('failed')+e.message;msg.className='form-msg err';
+  }
 });
 g('h-reset').addEventListener('click',()=>goSession());
 
@@ -2546,7 +2538,14 @@ g('h-reset').addEventListener('click',()=>goSession());
 applyLang();
 loadChipBlock();
 openDB().then(db=>{S._db=db;refreshQueueCount();setTimeout(drainQueue,1000);}).catch(e=>console.warn('IDB:',e));
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&S._db)setTimeout(drainQueue,500);});
+window.addEventListener('online',()=>{setOnline(true);setTimeout(drainQueue,1000);});
+window.addEventListener('offline',()=>setOnline(false));
 if(IS_FILE){setOnline(false);}else{probeConnectivity();}
+// Warn before leaving if uploads are pending (best-effort — mobile may ignore)
+window.addEventListener('beforeunload',e=>{
+  if(S._pendingCount>0){e.preventDefault();e.returnValue='';}
+});
 showScreen('s-setup');
 runSetup();
 

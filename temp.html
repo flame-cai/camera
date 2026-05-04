@@ -304,26 +304,11 @@ select.f-in{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns
 .form-msg{font-family:var(--mono);font-size:var(--fs-sm);text-align:center;min-height:1.5em;padding:var(--sp-6) 0;}
 .form-msg.ok{color:var(--green);}.form-msg.err{color:var(--red);}
 /* UPLOAD QUEUE / OFFLINE */
-#upload-banner{
-  display:none;position:fixed;top:calc(var(--safe-t) + var(--hdr-h));left:0;right:0;z-index:400;
-  background:var(--amber-bg);border-bottom:2px solid var(--amber);
-  padding:var(--sp-6) var(--sp-16);align-items:center;justify-content:space-between;gap:var(--sp-8);
-}
-#upload-banner.on{display:flex;}
-#upload-banner-txt{font-size:var(--fs-sm);color:var(--amber);flex:1;}
-#upload-banner-btn{padding:0.3em 0.75em;border-radius:var(--r);border:1.5px solid var(--amber);background:transparent;color:var(--amber);font-family:var(--font);font-size:var(--fs-xs);font-weight:600;cursor:pointer;white-space:nowrap;}
-#upload-banner-btn:active{background:var(--amber-bg);}
 /* CONNECTIVITY DOT in header */
-#net-dot{width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0;transition:background 0.3s;}
+#net-dot{position:relative;width:1.5rem;height:1.5rem;border-radius:50%;background:var(--green);flex-shrink:0;transition:background 0.3s;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;}
 #net-dot.offline{background:var(--red);}
-/* OFFLINE MODE BADGE */
-#offline-badge{
-  display:none;position:fixed;bottom:calc(var(--safe-b) + 4px);left:50%;transform:translateX(-50%);
-  z-index:600;background:var(--red-bg);border:1.5px solid var(--red);border-radius:1.5rem;
-  padding:var(--sp-4) var(--sp-12);font-family:var(--mono);font-size:var(--fs-xs);color:var(--red);
-  white-space:nowrap;pointer-events:none;
-}
-#offline-badge.on{display:block;}
+#net-dot:active{opacity:0.75;}
+#net-count{position:absolute;top:-4px;right:-4px;background:var(--amber);color:#fff;font-family:var(--mono);font-size:0.5rem;font-weight:700;border-radius:1rem;padding:1px 4px;min-width:14px;text-align:center;line-height:1.4;}
 /* AGE ERROR */
 .age-err{font-family:var(--mono);font-size:var(--fs-xs);color:var(--red);margin-top:var(--sp-4);display:none;}
 .age-err.on{display:block;}
@@ -337,8 +322,8 @@ select.f-in{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns
 #tracking-lbl.on{display:block;}
 /* PENDING UPLOADS modal */
 #queue-modal{
-  display:none;position:fixed;inset:0;z-index:800;background:rgba(0,0,0,0.7);
-  align-items:center;justify-content:center;padding:var(--sp-24);
+  display:none;position:fixed;inset:0;z-index:800;background:var(--bg);
+  flex-direction:column;
 }
 #queue-modal.on{display:flex;}
 #queue-modal-box{
@@ -373,7 +358,7 @@ select.f-in{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns
   <div id="header">
     <span class="h-logo">AIMM</span>
     <div class="h-right">
-      <div id="net-dot" title="Online"></div>
+      <button id="net-dot" title="Online" onclick="showQueueModal()"><span id="net-count" style="display:none;"></span></button>
       <button class="h-btn hidden" id="h-reset">&#8634;</button>
       <button class="h-btn hidden" id="h-signout">&#9167;</button>
       <button id="lang-btn" onclick="toggleLang()">EN</button>
@@ -381,19 +366,19 @@ select.f-in{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns
     </div>
   </div>
 
-  <!-- UPLOAD PENDING BANNER -->
-  <div id="upload-banner">
-    <span id="upload-banner-txt">0 uploads pending</span>
-    <button id="upload-banner-btn" onclick="showQueueModal()">View</button>
-  </div>
-  <!-- OFFLINE BADGE -->
-  <div id="offline-badge">OFFLINE</div>
   <!-- QUEUE MODAL -->
   <div id="queue-modal">
     <div id="queue-modal-box">
-      <div class="qm-title" id="qm-title">Pending Uploads</div>
+      <div class="qm-header">
+        <div class="qm-title" id="qm-title">Uploads</div>
+        <button class="h-btn" onclick="hideQueueModal()">&#10005;</button>
+      </div>
       <div id="qm-list"></div>
-      <button class="btn btn-ghost" onclick="hideQueueModal()">Close</button>
+      <div id="qm-empty" style="display:none;text-align:center;padding:var(--sp-24);color:var(--text3);">All uploads complete</div>
+      <div style="margin-top:var(--sp-16);display:flex;gap:var(--sp-8);">
+        <button class="btn btn-primary" onclick="retryAllQueue()">Upload All</button>
+        <button class="btn btn-ghost" onclick="hideQueueModal()">Close</button>
+      </div>
     </div>
   </div>
   <!-- SETUP -->
@@ -638,13 +623,7 @@ select.f-in{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns
           </div>
         </div>
       </div>
-      <div class="consent-wrap">
-        <div class="consent-row" id="consent-row">
-          <div class="consent-box" id="consent-box"><span class="consent-tick">&#10003;</span></div>
-          <span class="consent-txt" id="consent-txt">By checking this box, I confirm that I have read or been read the information about this study, that I understand the purpose of the research and what participation involves, and that we voluntarily agree to participate. I understand that our participation is voluntary and that we may withdraw at any time without any negative consequences. We consent to the collection and use of my responses and images for research purposes.</span>
-        </div>
-      </div>
-      <button class="btn btn-primary" id="form-submit" disabled data-t="btn_submit">Submit</button>
+            <button class="btn btn-primary" id="form-submit" disabled data-t="btn_submit">Submit</button>
       <div class="form-msg" id="form-msg"></div>
     </div>
   </div>
@@ -925,13 +904,8 @@ async function refreshQueueCount(){
   const all=await dbAll();
   const pending=all.filter(r=>r.status!=='done');
   S._queueCount=pending.length;
-  const bn=g('upload-banner'), bt=g('upload-banner-txt');
-  if(S._queueCount>0){
-    bn.classList.add('on');
-    bt.textContent=T('uploads_pending').replace('%n',S._queueCount);
-  }else{
-    bn.classList.remove('on');
-  }
+  const nc=g('net-count');
+  if(nc){if(S._queueCount>0){nc.textContent=S._queueCount;nc.style.display='block';}else{nc.style.display='none';}}
   updateBeforeUnload();
 }
 function updateBeforeUnload(){
@@ -973,6 +947,12 @@ window.showQueueModal=async function(){
   g('queue-modal').classList.add('on');
 };
 window.hideQueueModal=function(){g('queue-modal').classList.remove('on');};
+window.retryAllQueue=async function(){
+  if(!S._db)return;
+  const items=await dbAll();
+  for(const item of items){if(item.status==='failed'||item.status==='pending'){item.status='pending';await dbPut(item);}}
+  drainQueue();showQueueModal();
+};
 window.retryQueueItem=async function(uuid){
   const item=await dbGet(uuid);
   if(!item)return;
@@ -995,10 +975,9 @@ window.deleteQueueItem=async function(uuid){
 // ── Network connectivity ──────────────────────────────────────────────────────
 function setOnline(online){
   S.offlineMode=!online;
-  const dot=g('net-dot'), badge=g('offline-badge');
+  const dot=g('net-dot');
   dot.classList.toggle('offline',!online);
   dot.title=online?'Online':'Offline';
-  badge.classList.toggle('on',!online);
   if(online&&S._db)drainQueue();
 }
 window.addEventListener('online',()=>setOnline(true));
@@ -1104,6 +1083,9 @@ en:{
   err_signin_dismissed:'Sign-in dismissed',
   err_try_again:'Please try again.',
   err_not_auth:'Not authenticated',
+  err_required:'Required',
+  uploads_pending:'%n uploads pending',
+  queue_title:'Uploads',
   err_auth_error:'Auth error',
   // session
   lbl_child_dob:'Child Date of Birth',
@@ -1215,6 +1197,9 @@ mr:{
   err_signin_dismissed:'साइन इन रद्द',
   err_try_again:'पुन्हा प्रयत्न करा.',
   err_not_auth:'प्रमाणीकरण नाही',
+  err_required:'आवश्यक',
+  uploads_pending:'%n अपलोड बाकी',
+  queue_title:'अपलोड',
   err_auth_error:'साइन इन त्रुटी',
   lbl_child_dob:'मुलाची जन्मतारीख',
   err_age_over5:'मुल 0-5 वर्षाचे असावे.',
@@ -1354,9 +1339,13 @@ async function runSetup(){
 
   /* 2 — Location */
   S.setupPhase='loc';
-  setStep('st-loc','active','Acquiring GPS\u2026');setProg(25,'Acquiring location\u2026');
-  const locOk=await getLocation();
-  if(!locOk){setStep('st-loc','err','Location required');showErr(T('err_loc_title'),T('err_loc_title'));showRetryBtn('loc');return;}
+  setStep('st-loc','active',T('setup_loc'));setProg(25,T('setup_loc_prog'));
+  if(IS_FILE||S.offlineMode){
+    setStep('st-loc','done','Offline — location skipped');
+  }else{
+    const locOk=await getLocation();
+    if(!locOk){setStep('st-loc','err',T('setup_loc_fail'));showErr(T('err_loc_title'),T('err_check_net'));showRetryBtn('loc');return;}
+  }
 
   /* 3 — Auth */
   S.setupPhase='auth';setProg(45,'Waiting for sign-in\u2026');
@@ -2459,6 +2448,7 @@ function goForm(){
   g('f-h-side').value=S.sideHeight?S.sideHeight.toFixed(1):'';
   g('form-submit').disabled=false;
   g('form-msg').textContent='';g('form-msg').className='form-msg';
+  S.hFever=null;S.hDiarr=null;S.hCough=null;S.apLess=null;S.apRefused=null;S.apBreastfed=null;
   document.querySelectorAll('.seg-btn').forEach(b=>b.classList.remove('on'));
   document.querySelectorAll('#lit-group .radio-dot').forEach(d=>d.classList.remove('on'));
   const bfField=g('bf-field');
@@ -2491,7 +2481,19 @@ wireSegGroup(['ap-bf-y','ap-bf-n'],'apBreastfed');
 document.querySelectorAll('#lit-yes,#lit-no').forEach(function(b){b.addEventListener('click',function(){S.litVal=b.dataset.v;document.querySelectorAll('#lit-yes,#lit-no').forEach(x=>x.classList.remove('on'));b.classList.add('on');});});
 // consent handled on session page
 g('form-submit').addEventListener('click',async function(){
-  if(!S.consentOn)return;
+  if(!S.sessConsentOn)return;
+  const missing=[];
+  if(!S.genderVal)missing.push(T('lbl_gender'));
+  if(!g('f-weight').value)missing.push(T('lbl_weight'));
+  if(!S.litVal)missing.push(T('lbl_literacy'));
+  if(!g('f-caste').value)missing.push(T('lbl_socialgroup'));
+  if(!S.hFever)missing.push(T('lbl_fever'));
+  if(!S.hDiarr)missing.push(T('lbl_diarr'));
+  if(!S.hCough)missing.push(T('lbl_cough'));
+  if(!S.apLess)missing.push(T('lbl_ate_less'));
+  if(!S.apRefused)missing.push(T('lbl_refused'));
+  if(g('bf-field').style.display!=='none'&&!S.apBreastfed)missing.push(T('lbl_breastfed'));
+  if(missing.length){g('form-msg').textContent=T('err_required')+': '+missing.join(', ');g('form-msg').className='form-msg err';return;}
   const sb=g('form-submit'),msg=g('form-msg');
   sb.disabled=true;msg.textContent=T('form_submitting');msg.className='form-msg';
   const payload={

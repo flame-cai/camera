@@ -2,11 +2,15 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>AIMM</title>
+  <!-- BUILD: 2026-05-04 15:43 UTC -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -189,14 +193,6 @@ body{
   pointer-events:none;
 }
 #c-mask{z-index:1;}#c-pose{z-index:2;}
-#pose-card{
-  position:absolute;bottom:var(--sp-8);left:var(--sp-8);z-index:10;
-  width:clamp(52px,14vw,72px);height:clamp(70px,19vw,96px);border-radius:var(--r);
-  background:rgba(0,0,0,0.55);border:1px solid rgba(255,255,255,0.15);
-  overflow:hidden;display:flex;align-items:center;justify-content:center;
-  pointer-events:none;
-}
-#pose-card svg{width:85%;height:85%;}
 #c-flash{position:absolute;inset:0;z-index:50;background:#fff;opacity:0;pointer-events:none;transition:opacity 0.05s;}
 #c-flash.on{opacity:0.9;}
 #cam-panel{flex:1;background:var(--bg);overflow:hidden;display:flex;flex-direction:column;min-height:0;}
@@ -305,21 +301,14 @@ select.f-in{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns
 .form-msg.ok{color:var(--green);}.form-msg.err{color:var(--red);}
 /* UPLOAD QUEUE / OFFLINE */
 /* CONNECTIVITY DOT in header */
-#net-dot{position:relative;width:1.5rem;height:1.5rem;border-radius:50%;background:var(--green);flex-shrink:0;transition:background 0.3s;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;}
+#net-dot{position:relative;width:var(--tap);height:var(--tap);border-radius:50%;background:var(--green);flex-shrink:0;transition:background 0.3s;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;}
 #net-dot.offline{background:var(--red);}
 #net-dot:active{opacity:0.75;}
 #net-count{position:absolute;top:-4px;right:-4px;background:var(--amber);color:#fff;font-family:var(--mono);font-size:0.5rem;font-weight:700;border-radius:1rem;padding:1px 4px;min-width:14px;text-align:center;line-height:1.4;}
 /* AGE ERROR */
 .age-err{font-family:var(--mono);font-size:var(--fs-xs);color:var(--red);margin-top:var(--sp-4);display:none;}
 .age-err.on{display:block;}
-/* TRACKING INDICATOR on camera */
-#tracking-lbl{
-  position:absolute;top:var(--sp-8);left:50%;transform:translateX(-50%);z-index:10;
-  background:rgba(0,0,0,0.6);border:1px solid rgba(255,255,255,0.2);border-radius:1rem;
-  padding:var(--sp-4) var(--sp-10);font-family:var(--mono);font-size:var(--fs-xs);
-  color:rgba(255,255,255,0.8);pointer-events:none;display:none;white-space:nowrap;
-}
-#tracking-lbl.on{display:block;}
+
 /* PENDING UPLOADS modal */
 #queue-modal{
   display:none;position:fixed;inset:0;z-index:800;background:var(--bg);
@@ -332,6 +321,16 @@ select.f-in{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns
   max-height:70vh;overflow-y:auto;
 }
 .qm-title{font-size:var(--fs-lg);font-weight:600;color:var(--text);}
+.qm-status-badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:1rem;font-family:var(--mono);font-size:var(--fs-xs);font-weight:700;flex-shrink:0;}
+.qm-status-badge.pending{background:var(--amber-bg);color:var(--amber);}
+.qm-status-badge.failed{background:var(--red-bg);color:var(--red);}
+.qm-status-badge.uploading{background:var(--accent-bg);color:var(--accent);}
+.qm-uuid{font-family:var(--mono);font-size:var(--fs-xs);color:var(--text2);flex:1;min-width:0;overflow:hidden;}
+.qm-uuid small{display:block;color:var(--text3);font-size:0.8em;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.qm-actions{display:flex;gap:var(--sp-6);flex-shrink:0;}
+.qm-retry,.qm-del{padding:var(--sp-4) var(--sp-8);border-radius:var(--r);background:transparent;font-size:var(--fs-xs);font-weight:600;cursor:pointer;}
+.qm-retry{border:1.5px solid var(--accent);color:var(--accent);}
+.qm-del{border:1.5px solid var(--red);color:var(--red);}
 #qm-list{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;min-height:0;}
 .qm-item{display:flex;align-items:center;gap:var(--sp-10);padding:var(--sp-10) 0;border-bottom:1px solid var(--line);}
 .qm-item:last-of-type{border-bottom:none;}
@@ -478,6 +477,8 @@ select.f-in{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns
       </div>
       <div class="spacer"></div>
       <button class="btn btn-primary" id="sess-go" data-t="btn_begincapture" disabled>Begin Capture &rarr;</button>
+      <button class="btn btn-ghost" id="offline-ready-btn" onclick="downloadOfflinePackage()" style="margin-top:var(--sp-8);">&#8659; Download Offline Package</button>
+      <div id="offline-dl-status" style="font-family:var(--mono);font-size:var(--fs-xs);color:var(--text3);text-align:center;min-height:1.2em;padding:var(--sp-4) 0;"></div>
     </div>
   </div>
 
@@ -486,47 +487,48 @@ select.f-in{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns
     <div id="cam-viewport">
       <video id="vid" autoplay playsinline muted></video>
       <canvas id="c-mask"></canvas>
-      <canvas id="c-pose"></canvas>
-      <div id="pose-card"><svg id="pose-sil" viewBox="0 0 60 80" fill="none" xmlns="http://www.w3.org/2000/svg"></svg></div>
-      <div id="tracking-lbl"></div>
+      <canvas id="c-pose"><
       <div id="c-flash"></div>
+      <div id="cam-panel">
+        <div id="no-pose-bar"><span id="no-pose-txt">POSE DETECTION UNAVAILABLE — WARN MODE ACTIVE</span></div>
+        <div id="cam-topbar">
+          <div class="cam-phase" id="cam-phase-lbl">FRONT VIEW</div>
+          <div class="cam-topright">
+            <button id="cam-lang-btn" onclick="toggleLang()" style="padding:0 8px;border-radius:16px;border:1.5px solid var(--line2);background:transparent;color:var(--text2);font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:1px;cursor:pointer;height:32px;">EN</button>
+            <button class="cam-btn" id="cam-reset">&#8634;</button>
+            <button class="cam-btn" id="cam-signout">&#9167;</button>
+            <button class="cam-btn" id="cam-theme">&#9680;</button>
+          </div>
+        </div>
+        <div id="h-display">
+          <div class="h-box"><div class="h-lbl">Height</div><div class="h-val dim" id="hval-cur">&mdash;</div></div>
+          <div class="h-box"><div class="h-lbl">&beta;</div><div class="h-val dim" id="hval-beta">&mdash;</div></div>
+          <div class="h-box"><div class="h-lbl">&gamma;</div><div class="h-val dim" id="hval-gamma">&mdash;</div></div>
+        </div>
+        <div id="chips-row">
+          <div class="chip" id="ch-light" data-chip="light"><div class="chip-dot"></div><span class="chip-lbl" data-t="chip_light">LIGHT</span></div>
+          <div class="chip" id="ch-steady" data-chip="steady"><div class="chip-dot"></div><span class="chip-lbl" data-t="chip_steady">STEADY</span></div>
+          <div class="chip" id="ch-level" data-chip="level"><div class="chip-dot"></div><span class="chip-lbl" data-t="chip_level">LEVEL</span></div>
+          <div class="chip" id="ch-body" data-chip="body"><div class="chip-dot"></div><span class="chip-lbl" data-t="chip_body">BODY</span></div>
+          <div class="chip" id="ch-dist" data-chip="dist"><div class="chip-dot"></div><span class="chip-lbl" data-t="chip_dist">DIST</span></div>
+          <div class="chip" id="ch-pose" data-chip="pose"><div class="chip-dot"></div><span class="chip-lbl" data-t="chip_pose">POSE</span></div>
+          <div class="chip dis" id="ch-sleeve" data-chip="sleeve"><div class="chip-dot"></div><span class="chip-lbl" data-t="chip_sleeve">SLEEVE</span></div>
+        </div>
+        <div id="guide-txt" class="guide-txt"></div>
+        <div id="shutter-row">
+          <div id="shutter" class="off"></div>
+        </div>
+      </div>
     </div>
-    <div id="cam-panel">
-      <div id="no-pose-bar"><span id="no-pose-txt">POSE DETECTION UNAVAILABLE &mdash; WARN MODE ACTIVE</span></div>
-      <div id="cam-topbar">
-        <span class="cam-phase" id="cam-phase-lbl">FRONT VIEW</span>
-        <div class="cam-topright">
-          <button id="cam-lang-btn" onclick="toggleLang()" style="padding:0 8px;border-radius:16px;border:1.5px solid var(--line2);background:transparent;color:var(--text2);font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:1px;cursor:pointer;height:32px;">EN</button>
-          <button class="cam-btn" id="cam-reset">&#8634;</button>
-          <button class="cam-btn" id="cam-signout">&#9167;</button>
-          <button class="cam-btn" id="cam-theme">&#9680;</button>
-        </div>
-      </div>
-      <div id="h-display">
-        <div class="h-box">
-          <div class="h-lbl">Height</div>
-          <div class="h-val dim" id="hval-cur">&mdash;</div>
-        </div>
-        <div class="h-box">
-          <div class="h-lbl">&beta;</div>
-          <div class="h-val dim" id="hval-beta">&mdash;</div>
-        </div>
-        <div class="h-box">
-          <div class="h-lbl">&gamma;</div>
-          <div class="h-val dim" id="hval-gamma">&mdash;</div>
-        </div>
-      </div>
-      <div id="chips-row">
-        <div class="chip" id="ch-light" data-chip="light"><div class="chip-dot"></div><span class="chip-lbl" data-t="chip_light">LIGHT</span></div>
-        <div class="chip" id="ch-steady" data-chip="steady"><div class="chip-dot"></div><span class="chip-lbl" data-t="chip_steady">STEADY</span></div>
-        <div class="chip" id="ch-level" data-chip="level"><div class="chip-dot"></div><span class="chip-lbl" data-t="chip_level">LEVEL</span></div>
-        <div class="chip" id="ch-body" data-chip="body"><div class="chip-dot"></div><span class="chip-lbl" data-t="chip_body">BODY</span></div>
-        <div class="chip" id="ch-dist" data-chip="dist"><div class="chip-dot"></div><span class="chip-lbl" data-t="chip_dist">DIST</span></div>
-        <div class="chip" id="ch-pose" data-chip="pose"><div class="chip-dot"></div><span class="chip-lbl" data-t="chip_pose">POSE</span></div>
-        <div class="chip dis" id="ch-sleeve" data-chip="sleeve"><div class="chip-dot"></div><span class="chip-lbl" data-t="chip_sleeve">SLEEVE</span></div>
-      </div>
-      <div id="guide-txt">Initialising&hellip;</div>
-      <div id="shutter-row"><button id="shutter" class="off"></button></div>
+  </div>
+
+  <!-- PREVIEW -->
+  <div id="preview">
+    <div class="prev-lbl" id="prev-lbl" data-t="prev_front">FRONT VIEW</div>
+    <div class="prev-img-wrap"><img id="prev-img" src="" alt=""><div class="prev-status" id="prev-status"></div></div>
+    <div class="prev-btns">
+      <button class="prev-btn retake" id="prev-retake">&#8624; Retake</button>
+      <button class="prev-btn proceed" id="prev-next">Next &rarr;</button>
     </div>
   </div>
 
@@ -539,9 +541,9 @@ select.f-in{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns
           <label class="f-lbl" data-t="lbl_gender">Gender</label>
           <div class="seg"><button class="seg-btn" id="g-male" data-v="Male" data-t="opt_male">Male</button><button class="seg-btn" id="g-female" data-v="Female" data-t="opt_female">Female</button></div>
         </div>
-        <div class="form-field"><label class="f-lbl" for="f-weight" data-t="lbl_weight">Weight (g)</label><input class="f-in" type="number" id="f-weight" placeholder="e.g. 65000" min="0"></div>
-        <div class="form-field"><label class="f-lbl" for="f-height" data-t="lbl_height_sr">Height (cm) &mdash; Self-reported</label><input class="f-in" type="number" id="f-height" placeholder="e.g. 165" min="0"></div>
-        <div class="form-field"><label class="f-lbl" for="f-muac" data-t="lbl_muac">MUAC (mm)</label><input class="f-in" type="number" id="f-muac" placeholder="e.g. 240" min="0"></div>
+        <div class="form-field"><label class="f-lbl" for="f-weight" data-t="lbl_weight">Weight (g)</label><input class="f-in" type="number" id="f-weight" placeholder="e.g. 8500" min="0"></div>
+        <div class="form-field"><label class="f-lbl" for="f-height" data-t="lbl_height_sr">Height (cm) &mdash; Self-reported</label><input class="f-in" type="number" id="f-height" placeholder="e.g. 75" min="0"></div>
+        <div class="form-field"><label class="f-lbl" for="f-muac" data-t="lbl_muac">MUAC (mm)</label><input class="f-in" type="number" id="f-muac" placeholder="e.g. 140" min="0"></div>
       </div>
       <div class="form-card">
         <div class="form-card-hd" data-t="fhd_measurements">Measurements</div>
@@ -564,8 +566,8 @@ select.f-in{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns
           <label class="f-lbl" for="f-caste" data-t="lbl_socialgroup">Social Group</label>
           <select class="f-in" id="f-caste">
             <option value="" data-t="opt_select">&mdash; Select &mdash;</option>
-            <option value="Scheduled Caste" data-t="opt_sc">Scheduled Caste</option>
             <option value="Scheduled Tribe" data-t="opt_st">Scheduled Tribe</option>
+            <option value="Scheduled Caste" data-t="opt_sc">Scheduled Caste</option>
             <option value="Other Backward Class" data-t="opt_obc">Other Backward Class</option>
             <option value="General" data-t="opt_gen">General</option>
             <option value="Prefer not to answer" data-t="opt_pnta">Prefer not to answer</option>
@@ -573,8 +575,7 @@ select.f-in{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns
         </div>
       </div>
       <div class="form-card" id="health-card">
-        <div class="form-card-hd" data-t="fhd_health">Child Health — Past 2 Weeks</div>
-        <!-- Morbidity: DHS standard (fever, diarrhoea, cough/ARI) -->
+        <div class="form-card-hd" data-t="fhd_health">Child Health &mdash; Past 2 Weeks</div>
         <div class="form-field">
           <label class="f-lbl" data-t="lbl_fever">Had fever?</label>
           <div class="seg">
@@ -583,7 +584,7 @@ select.f-in{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns
           </div>
         </div>
         <div class="form-field">
-          <label class="f-lbl" data-t="lbl_diarr">Had diarrhoea (≥3 loose stools/day)?</label>
+          <label class="f-lbl" data-t="lbl_diarr">Had diarrhoea (&ge;3 loose stools/day)?</label>
           <div class="seg">
             <button class="seg-btn" id="h-diarr-y" data-v="yes" data-t="opt_yes">Yes</button>
             <button class="seg-btn" id="h-diarr-n" data-v="no" data-t="opt_no">No</button>
@@ -596,14 +597,12 @@ select.f-in{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns
             <button class="seg-btn" id="h-cough-n" data-v="no" data-t="opt_no">No</button>
           </div>
         </div>
-        <!-- Appetite: WHO SAM protocol simplified -->
-        <div class="form-card-hd" data-t="fhd_appetite" style="margin-top:0;">Appetite — Past Week</div>
+        <div class="form-card-hd" data-t="fhd_appetite" style="border-top:1px solid var(--line);">Appetite &mdash; Past Week</div>
         <div class="form-field">
           <label class="f-lbl" data-t="lbl_ate_less">Ate less than usual?</label>
           <div class="seg">
             <button class="seg-btn" id="ap-less-y" data-v="yes" data-t="opt_yes">Yes</button>
             <button class="seg-btn" id="ap-less-n" data-v="no" data-t="opt_no">No</button>
-            <button class="seg-btn" id="ap-less-s" data-v="same" data-t="opt_same">Same</button>
           </div>
         </div>
         <div class="form-field">
@@ -615,7 +614,6 @@ select.f-in{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns
             <button class="seg-btn" id="ap-ref-al" data-v="always" data-t="opt_always" style="flex:1 0 40%;">Always</button>
           </div>
         </div>
-        <!-- Breastfed: shown only for age <= 24 months, set dynamically -->
         <div class="form-field" id="bf-field" style="display:none;">
           <label class="f-lbl" data-t="lbl_breastfed">Currently breastfed?</label>
           <div class="seg">
@@ -624,26 +622,33 @@ select.f-in{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns
           </div>
         </div>
       </div>
-            <button class="btn btn-primary" id="form-submit" disabled data-t="btn_submit">Submit</button>
+      <button class="btn btn-primary" id="form-submit" disabled data-t="btn_submit">Submit</button>
       <div class="form-msg" id="form-msg"></div>
     </div>
   </div>
 
-  <!-- PREVIEW -->
-  <div id="preview">
-    <div class="prev-lbl" id="prev-lbl" data-t="prev_front">FRONT VIEW</div>
-    <div class="prev-img-wrap"><img id="prev-img" src="" alt=""><div class="prev-status" id="prev-status"></div></div>
-    <div class="prev-btns">
-      <button class="prev-btn retake" id="prev-retake">&#8617; Retake</button>
-      <button class="prev-btn proceed" id="prev-next">Next &rarr;</button>
+  <!-- QUEUE MODAL -->
+  <div id="queue-modal">
+    <div id="queue-modal-box">
+      <div class="qm-header">
+        <div class="qm-title" id="qm-title">Uploads</div>
+        <button class="h-btn" onclick="hideQueueModal()">&#10005;</button>
+      </div>
+      <div id="qm-list"></div>
+      <div id="qm-empty" style="display:none;text-align:center;padding:var(--sp-24);color:var(--text3);">All uploads complete</div>
+      <div style="margin-top:var(--sp-16);display:flex;gap:var(--sp-8);">
+        <button class="btn btn-primary" onclick="retryAllQueue()">Upload All</button>
+        <button class="btn btn-ghost" onclick="hideQueueModal()">Close</button>
+      </div>
     </div>
   </div>
-  <!-- Session expiry banner — shown mid-session, non-blocking -->
+
+  <!-- REAUTH BANNER -->
   <div id="reauth-banner">
-    <span id="reauth-msg">Session expiring &mdash; sign in again</span>
-    <button id="reauth-btn" onclick="triggerReauth()" data-t="ra_signin">Sign in</button>
+    <span id="reauth-msg"></span>
+    <button id="reauth-btn" data-t="ra_signin" onclick="triggerReauth()">Sign in</button>
   </div>
-</div>
+
 <script>
 (function(){
 'use strict';
@@ -813,30 +818,38 @@ async function dbPending(){
 }
 
 // ── OPFS blob storage (fallback when IDB gets large) ────────────────────────
+// ── Storage tier: IDB (primary) → OPFS (fallback above 40MB) ────────────
+async function opfsAvailable(){
+  return !!(navigator.storage&&navigator.storage.getDirectory);
+}
 async function checkStorageAndUseOPFS(){
   try{
-    if(!navigator.storage||!navigator.storage.estimate)return false;
-    const {usage}=await navigator.storage.estimate();
+    if(!await opfsAvailable())return false;
+    const {usage=0}=await navigator.storage.estimate();
     return usage>C.OPFS_THRESH;
   }catch(e){return false;}
 }
-async function opfsWrite(name, blob){
-  if(!navigator.storage||!navigator.storage.getDirectory)throw new Error('OPFS not available');
+async function opfsWrite(name,blob){
+  if(!await opfsAvailable())throw new Error('OPFS unavailable on this browser');
   const root=await navigator.storage.getDirectory();
   const fh=await root.getFileHandle(name,{create:true});
-  const writable=await fh.createWritable();
-  await writable.write(blob);await writable.close();
+  const w=await fh.createWritable();
+  await w.write(blob);await w.close();
 }
 async function opfsRead(name){
   try{
-    if(!navigator.storage||!navigator.storage.getDirectory)return null;
+    if(!await opfsAvailable())return null;
     const root=await navigator.storage.getDirectory();
-    const fh=await root.getFileHandle(name);
+    const fh=await root.getFileHandle(name,{create:false});
     return await fh.getFile();
   }catch(e){return null;}
 }
 async function opfsDel(name){
-  try{const root=await navigator.storage.getDirectory();await root.removeEntry(name);}catch(e){}
+  try{
+    if(!await opfsAvailable())return;
+    const root=await navigator.storage.getDirectory();
+    await root.removeEntry(name);
+  }catch(e){}
 }
 
 // ── Save a capture session to queue ─────────────────────────────────────────
@@ -912,6 +925,7 @@ async function refreshQueueCount(){
   const nc=g('net-count');
   if(nc){if(S._queueCount>0){nc.textContent=S._queueCount;nc.style.display='block';}else{nc.style.display='none';}}
   updateBeforeUnload();
+  try{const qm=g('queue-modal');if(qm&&qm.classList.contains('on'))window.showQueueModal();}catch(e){}
 }
 function updateBeforeUnload(){
   if(S._queueCount>0){
@@ -936,16 +950,18 @@ window.showQueueModal=async function(){
       const d=document.createElement('div');d.className='qm-item';
       const short=item.uuid.slice(0,16)+'...';
       const ts=new Date(item.ts).toLocaleTimeString();
-      const statusColor=item.status==='failed'?'var(--red)':item.status==='pending'?'var(--amber)':'var(--green)';
-      const uuidSpan=document.createElement('span');uuidSpan.className='qm-uuid';uuidSpan.title=item.uuid;
-      uuidSpan.innerHTML=short+'<br><span style="color:var(--text3);font-size:0.75em">'+ts+'</span>';
-      const statusSpan=document.createElement('span');statusSpan.className='qm-status';statusSpan.style.color=statusColor;
-      statusSpan.textContent=item.status+(item.retries?'×'+item.retries:'');
+      const scls=item.status==='failed'?'failed':item.status==='pending'?'pending':item.status==='uploading'?'uploading':'done';
+      const uuidSpan=document.createElement('span');uuidSpan.className='qm-uuid';
+      uuidSpan.innerHTML='<strong>'+item.uuid.slice(0,8)+'…</strong><small>'+new Date(item.ts).toLocaleString()+(item.lastErr?' — '+item.lastErr.slice(0,50):'')+'</small>';
+      const statusSpan=document.createElement('span');statusSpan.className='qm-status-badge '+scls;
+      statusSpan.textContent=item.status+(item.retries?' ×'+item.retries:'');
+      const actDiv=document.createElement('div');actDiv.className='qm-actions';
       const retryBtn=document.createElement('button');retryBtn.className='qm-retry';retryBtn.textContent=T('retry');
       retryBtn.addEventListener('click',function(){retryQueueItem(item.uuid);});
       const delBtn=document.createElement('button');delBtn.className='qm-del';delBtn.textContent=T('delete_record');
       delBtn.addEventListener('click',function(){deleteQueueItem(item.uuid);});
-      d.appendChild(uuidSpan);d.appendChild(statusSpan);d.appendChild(retryBtn);d.appendChild(delBtn);
+      actDiv.appendChild(retryBtn);actDiv.appendChild(delBtn);
+      d.appendChild(uuidSpan);d.appendChild(statusSpan);d.appendChild(actDiv);
       list.appendChild(d);
     });
   }
@@ -991,7 +1007,7 @@ window.addEventListener('offline',()=>setOnline(false));
 function probeConnectivity(){
   if(!navigator.onLine){setOnline(false);return;}
   fetch(C.API+'/',{method:'HEAD',mode:'no-cors',cache:'no-store'})
-    .then(()=>setOnline(true))
+    .then(()=>{setOnline(true);if(S._db)drainQueue();})
     .catch(()=>setOnline(!IS_FILE&&navigator.onLine));
 }
 
@@ -1339,12 +1355,13 @@ async function runSetup(){
   /* 2 — Location */
   S.setupPhase='loc';
   setStep('st-loc','active',T('setup_loc'));setProg(25,T('setup_loc_prog'));
-  if(IS_FILE||S.offlineMode){
-    setStep('st-loc','done','Offline — location skipped');
-  }else{
-    const locOk=await getLocation();
-    if(!locOk){setStep('st-loc','err',T('setup_loc_fail'));showErr(T('err_loc_title'),T('err_check_net'));showRetryBtn('loc');return;}
-  }
+  if(navigator.geolocation){
+    getLocation().then(function(ok){
+      if(ok&&S.location)setStep('st-loc','done',S.location.lat.toFixed(5)+', '+S.location.lon.toFixed(5)+' ±'+S.location.acc.toFixed(0)+'m');
+      else setStep('st-loc','err',T('loc_unavailable')+' (optional)');
+    }).catch(function(){setStep('st-loc','err',T('loc_unavailable')+' (optional)');});
+  }else{setStep('st-loc','err','GPS unavailable (optional)');}
+  // non-blocking: continue to auth
 
   /* 3 — Auth */
   S.setupPhase='auth';setProg(45,'Waiting for sign-in\u2026');
@@ -1842,8 +1859,7 @@ function drawResults(result){
     updateHBadge(null);
   }
 
-  const tl=g('tracking-lbl');
-  if(tl){if(pose&&pose.length>=2){const nose=pose[0],hip=pose[23]||pose[24];const hFrac=(hip&&nose)?Math.abs(hip.y-nose.y):0;tl.textContent=hFrac<0.22?'● Tracking: may be adult':'● Tracking: subject';tl.classList.add('on');}else{tl.classList.remove('on');}}
+
   /* ── CANVAS 2: landmarks overlay (pCvs) ── */
   pCtx.clearRect(0,0,W,H);
 
@@ -2261,9 +2277,9 @@ function updateUI(){
   else sh.className='off';
   Object.keys(CHIPS).forEach(k=>{
     const el=g(CHIPS[k]);if(!el)return;
-    const isDisabled=(!S.mpReady&&['body','dist','pose','sleeve'].indexOf(k)>=0)||(!S.segReady&&k==='sleeve');
-    // sleeve chip is hidden (dis) on side view — not relevant for side photo
+    // sleeve: dis only when mpReady=false or side view; bad (red) when segReady=false (unknown=assume covered)
     const isSideView=S.phase==='side'&&k==='sleeve';
+    const isDisabled=(!S.mpReady&&['body','dist','pose','sleeve'].indexOf(k)>=0);
     if(isDisabled||isSideView){el.className='chip dis';return;}
     if(S.checks[k])el.className='chip ok';
     else if(S.chipBlock[k])el.className='chip bad';
@@ -2351,8 +2367,10 @@ function doCapture(){
     let mnX=1,mxX=0,mnY=1,mxY=0,hit=false;
     pose.forEach(lm=>{if((lm.visibility||1)<0.3)return;mnX=Math.min(mnX,lm.x);mxX=Math.max(mxX,lm.x);mnY=Math.min(mnY,lm.y);mxY=Math.max(mxY,lm.y);hit=true;});
     if(hit){
-      const px=(mxX-mnX)*0.15,py=(mxY-mnY)*0.10;
-      mnX=Math.max(0,mnX-px);mxX=Math.min(1,mxX+px);mnY=Math.max(0,mnY-py);mxY=Math.min(1,mxY+py);
+      const bboxH=mxY-mnY,bboxW=mxX-mnX;
+      const padTop=bboxH*0.30,padSide=bboxW*0.20,padBot=bboxH*0.15;
+      mnX=Math.max(0,mnX-padSide);mxX=Math.min(1,mxX+padSide);
+      mnY=Math.max(0,mnY-padTop);mxY=Math.min(1,mxY+padBot);
       let cw=(mxX-mnX)*vw,ch=(mxY-mnY)*vh;
       const TR=3/4;if(cw/ch<TR)cw=ch*TR;else ch=cw/TR;
       const midX=(mnX+mxX)/2*vw,midY=(mnY+mxY)/2*vh;
@@ -2473,7 +2491,7 @@ function wireSegGroup(ids,key){
 wireSegGroup(['h-fever-y','h-fever-n'],'hFever');
 wireSegGroup(['h-diarr-y','h-diarr-n'],'hDiarr');
 wireSegGroup(['h-cough-y','h-cough-n'],'hCough');
-wireSegGroup(['ap-less-y','ap-less-n','ap-less-s'],'apLess');
+wireSegGroup(['ap-less-y','ap-less-n'],'apLess');
 wireSegGroup(['ap-ref-nv','ap-ref-so','ap-ref-of','ap-ref-al'],'apRefused');
 wireSegGroup(['ap-bf-y','ap-bf-n'],'apBreastfed');
 document.querySelectorAll('#lit-yes,#lit-no').forEach(function(b){b.addEventListener('click',function(){S.litVal=b.dataset.v;document.querySelectorAll('#lit-yes,#lit-no').forEach(x=>x.classList.remove('on'));b.classList.add('on');});});
@@ -2538,14 +2556,87 @@ g('form-submit').addEventListener('click',async function(){
 });
 g('h-reset').addEventListener('click',()=>goSession());
 
+
+// ── Offline Package Download ─────────────────────────────────────────────
+// Downloads a self-contained HTML with both ML models embedded as base64
+// so the app runs entirely offline from the local file
+async function downloadOfflinePackage(){
+  const btn=g('offline-ready-btn'),st=g('offline-dl-status');
+  btn.disabled=true;
+  function prog(msg){if(st)st.textContent=msg;}
+  prog('Preparing\u2026');
+  try{
+    async function fetchBuf(url,label){
+      prog('Downloading '+label+'\u2026');
+      const resp=await fetch(url);
+      if(!resp.ok)throw new Error('HTTP '+resp.status);
+      const total=parseInt(resp.headers.get('Content-Length')||'0');
+      const reader=resp.body.getReader();
+      const chunks=[];let received=0;
+      while(true){
+        const {done,value}=await reader.read();
+        if(done)break;
+        chunks.push(value);received+=value.length;
+        if(total>0)prog('Downloading '+label+': '+Math.round(received/total*100)+'%');
+        else prog('Downloading '+label+': '+Math.round(received/1048576*10)/10+'MB');
+      }
+      const out=new Uint8Array(received);let off=0;
+      for(const c of chunks){out.set(c,off);off+=c.length;}
+      return out;
+    }
+    prog('Downloading holistic model (~14MB)\u2026');
+    const hlBuf=await fetchBuf(C.MODEL_URL,'Holistic');
+    prog('Downloading segmenter model (~16MB)\u2026');
+    const segBuf=await fetchBuf(C.SEG_MODEL_URL,'Segmenter');
+    prog('Embedding models (may take a moment)\u2026');
+    function toB64URL(buf){
+      let s='';const b=new Uint8Array(buf);
+      // Process in chunks to avoid stack overflow on large buffers
+      const CHUNK=8192;
+      for(let i=0;i<b.length;i+=CHUNK)s+=String.fromCharCode.apply(null,b.subarray(i,i+CHUNK));
+      return 'data:application/octet-stream;base64,'+btoa(s);
+    }
+    const hlURL=toB64URL(hlBuf);
+    const segURL=toB64URL(segBuf);
+    prog('Creating offline HTML\u2026');
+    // Escape model URLs for use in regex
+    function escRE(s){return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');}
+    let html=document.documentElement.outerHTML;
+    html=html.replace(new RegExp(escRE(C.MODEL_URL),'g'),hlURL);
+    html=html.replace(new RegExp(escRE(C.SEG_MODEL_URL),'g'),segURL);
+    html=html.replace('<!-- BUILD:','<!-- OFFLINE BUILD:');
+    html=html.replace('<!-- OFFLINE BUILD: OFFLINE','<!-- OFFLINE BUILD:'); // idempotent
+    const blob=new Blob(['<!DOCTYPE html>\n',html],{type:'text/html;charset=utf-8'});
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download='aimm-offline.html';
+    document.body.appendChild(a);a.click();document.body.removeChild(a);
+    setTimeout(()=>URL.revokeObjectURL(a.href),60000);
+    prog('\u2713 aimm-offline.html downloaded! Open it anytime, even without internet.');
+  }catch(e){
+    prog('\u2717 Failed: '+e.message);
+    console.error('Offline package:',e);
+  }
+  btn.disabled=false;
+}
+window.downloadOfflinePackage=downloadOfflinePackage;
+
 /* ── BOOT ── */
+// Sanity check: ensure queue functions are defined (catches stale cached JS)
+if(typeof enqueueSession === 'undefined'){
+  console.error('AIMM: stale cached JS detected. Please hard-refresh (Ctrl+Shift+R / Cmd+Shift+R).');
+  document.body.innerHTML='<div style="padding:40px;font-family:monospace;color:red;font-size:18px">Stale cache detected.<br><br>Please hard-refresh:<br>Android: tap ⋮ → Reload<br>iOS: hold reload button → Empty Caches and Reload</div>';
+  throw new Error('Stale cache');
+}
 applyLang();
 loadChipBlock();
-// Request persistent storage so IDB/OPFS data survives browser cleanup
+// Request persistent storage — critical for offline field use
 if(navigator.storage&&navigator.storage.persist){
-  navigator.storage.persist().catch(()=>{});
+  navigator.storage.persist().then(g=>{
+    if(!g)console.warn('AIMM: persistent storage denied — data may be evicted under pressure');
+  }).catch(()=>{});
 }
-openDB().then(db=>{S._db=db;refreshQueueCount();setTimeout(drainQueue,1000);}).catch(e=>console.warn('IDB:',e));
+openDB().then(async db=>{S._db=db;await refreshQueueCount();if(!S.offlineMode)drainQueue();}).catch(e=>console.warn('IDB:',e));
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&S._db)setTimeout(drainQueue,500);});
 window.addEventListener('online',()=>{setOnline(true);setTimeout(drainQueue,1000);});
 window.addEventListener('offline',()=>setOnline(false));

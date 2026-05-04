@@ -398,6 +398,13 @@ select.f-in{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns
           <div class="step-ico" id="st-auth-ico">3</div>
           <div class="step-body"><div class="step-name">Sign in</div><div class="step-msg" id="st-auth-msg">Waiting&hellip;</div></div>
         </div>
+        <div class="step-row" id="st-store">
+          <div class="step-ico" id="st-store-ico">4</div>
+          <div class="step-body">
+            <div class="step-name">Storage</div>
+            <div class="step-msg" id="st-store-msg">Waiting&hellip;</div>
+          </div>
+        </div>
         <div class="step-row" id="st-model">
           <div class="step-ico" id="st-model-ico">4</div>
           <div class="step-body">
@@ -477,8 +484,7 @@ select.f-in{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns
       </div>
       <div class="spacer"></div>
       <button class="btn btn-primary" id="sess-go" data-t="btn_begincapture" disabled>Begin Capture &rarr;</button>
-      <button class="btn btn-ghost" id="offline-ready-btn" onclick="downloadOfflinePackage()" style="margin-top:var(--sp-8);">&#8659; Download Offline Package</button>
-      <div id="offline-dl-status" style="font-family:var(--mono);font-size:var(--fs-xs);color:var(--text3);text-align:center;min-height:1.2em;padding:var(--sp-4) 0;"></div>
+      <div style="font-family:var(--mono);font-size:var(--fs-xs);color:var(--text3);text-align:center;padding:var(--sp-4) 0;" id="sess-go-hint">Enter date of birth and accept consent to proceed</div>
     </div>
   </div>
 
@@ -1355,21 +1361,32 @@ async function runSetup(){
   /* 2 — Location */
   S.setupPhase='loc';
   setStep('st-loc','active',T('setup_loc'));setProg(25,T('setup_loc_prog'));
-  if(navigator.geolocation){
-    getLocation().then(function(ok){
-      if(ok&&S.location)setStep('st-loc','done',S.location.lat.toFixed(5)+', '+S.location.lon.toFixed(5)+' ±'+S.location.acc.toFixed(0)+'m');
-      else setStep('st-loc','err',T('loc_unavailable')+' (optional)');
-    }).catch(function(){setStep('st-loc','err',T('loc_unavailable')+' (optional)');});
-  }else{setStep('st-loc','err','GPS unavailable (optional)');}
-  // non-blocking: continue to auth
+  const locOk=await getLocation();
+  if(locOk&&S.location){
+    setStep('st-loc','done',S.location.lat.toFixed(5)+', '+S.location.lon.toFixed(5)+' ±'+S.location.acc.toFixed(0)+'m');
+  }else{
+    setStep('st-loc','err',T('loc_unavailable'));
+    // Non-fatal: record null location, proceed
+  }
 
   /* 3 — Auth */
   S.setupPhase='auth';setProg(45,'Waiting for sign-in\u2026');
   const authOk=await doAuth();
   if(!authOk)return;
 
-  /* 4 — Model */
-  S.setupPhase='model';setProg(60,'Loading holistic model\u2026');
+  /* 4 — Storage permission */
+  S.setupPhase='store';
+  setStep('st-store','active','Requesting persistent storage…');setProg(58,'Requesting storage…');
+  try{
+    if(navigator.storage&&navigator.storage.persist){
+      const granted=await navigator.storage.persist();
+      if(granted){setStep('st-store','done','Persistent storage granted — data is safe');}
+      else{setStep('st-store','done','Storage ready (limited persistence on this device)');}
+    }else{setStep('st-store','done','Storage ready');}
+  }catch(e){setStep('st-store','err','Storage: '+e.message.slice(0,60));}
+
+  /* 5 — Model */
+  S.setupPhase='model';setProg(60,'Loading holistic model…');
   const modelOk=await loadModel();
   if(!modelOk)return;
 
@@ -2557,69 +2574,7 @@ g('form-submit').addEventListener('click',async function(){
 g('h-reset').addEventListener('click',()=>goSession());
 
 
-// ── Offline Package Download ─────────────────────────────────────────────
-// Downloads a self-contained HTML with both ML models embedded as base64
-// so the app runs entirely offline from the local file
-async function downloadOfflinePackage(){
-  const btn=g('offline-ready-btn'),st=g('offline-dl-status');
-  btn.disabled=true;
-  function prog(msg){if(st)st.textContent=msg;}
-  prog('Preparing\u2026');
-  try{
-    async function fetchBuf(url,label){
-      prog('Downloading '+label+'\u2026');
-      const resp=await fetch(url);
-      if(!resp.ok)throw new Error('HTTP '+resp.status);
-      const total=parseInt(resp.headers.get('Content-Length')||'0');
-      const reader=resp.body.getReader();
-      const chunks=[];let received=0;
-      while(true){
-        const {done,value}=await reader.read();
-        if(done)break;
-        chunks.push(value);received+=value.length;
-        if(total>0)prog('Downloading '+label+': '+Math.round(received/total*100)+'%');
-        else prog('Downloading '+label+': '+Math.round(received/1048576*10)/10+'MB');
-      }
-      const out=new Uint8Array(received);let off=0;
-      for(const c of chunks){out.set(c,off);off+=c.length;}
-      return out;
-    }
-    prog('Downloading holistic model (~14MB)\u2026');
-    const hlBuf=await fetchBuf(C.MODEL_URL,'Holistic');
-    prog('Downloading segmenter model (~16MB)\u2026');
-    const segBuf=await fetchBuf(C.SEG_MODEL_URL,'Segmenter');
-    prog('Embedding models (may take a moment)\u2026');
-    function toB64URL(buf){
-      let s='';const b=new Uint8Array(buf);
-      // Process in chunks to avoid stack overflow on large buffers
-      const CHUNK=8192;
-      for(let i=0;i<b.length;i+=CHUNK)s+=String.fromCharCode.apply(null,b.subarray(i,i+CHUNK));
-      return 'data:application/octet-stream;base64,'+btoa(s);
-    }
-    const hlURL=toB64URL(hlBuf);
-    const segURL=toB64URL(segBuf);
-    prog('Creating offline HTML\u2026');
-    // Escape model URLs for use in regex
-    function escRE(s){return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');}
-    let html=document.documentElement.outerHTML;
-    html=html.replace(new RegExp(escRE(C.MODEL_URL),'g'),hlURL);
-    html=html.replace(new RegExp(escRE(C.SEG_MODEL_URL),'g'),segURL);
-    html=html.replace('<!-- BUILD:','<!-- OFFLINE BUILD:');
-    html=html.replace('<!-- OFFLINE BUILD: OFFLINE','<!-- OFFLINE BUILD:'); // idempotent
-    const blob=new Blob(['<!DOCTYPE html>\n',html],{type:'text/html;charset=utf-8'});
-    const a=document.createElement('a');
-    a.href=URL.createObjectURL(blob);
-    a.download='aimm-offline.html';
-    document.body.appendChild(a);a.click();document.body.removeChild(a);
-    setTimeout(()=>URL.revokeObjectURL(a.href),60000);
-    prog('\u2713 aimm-offline.html downloaded! Open it anytime, even without internet.');
-  }catch(e){
-    prog('\u2717 Failed: '+e.message);
-    console.error('Offline package:',e);
-  }
-  btn.disabled=false;
-}
-window.downloadOfflinePackage=downloadOfflinePackage;
+
 
 /* ── BOOT ── */
 // Sanity check: ensure queue functions are defined (catches stale cached JS)
@@ -2630,12 +2585,7 @@ if(typeof enqueueSession === 'undefined'){
 }
 applyLang();
 loadChipBlock();
-// Request persistent storage — critical for offline field use
-if(navigator.storage&&navigator.storage.persist){
-  navigator.storage.persist().then(g=>{
-    if(!g)console.warn('AIMM: persistent storage denied — data may be evicted under pressure');
-  }).catch(()=>{});
-}
+// Storage permission is requested in setup step (st-store)
 openDB().then(async db=>{S._db=db;await refreshQueueCount();if(!S.offlineMode)drainQueue();}).catch(e=>console.warn('IDB:',e));
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&S._db)setTimeout(drainQueue,500);});
 window.addEventListener('online',()=>{setOnline(true);setTimeout(drainQueue,1000);});

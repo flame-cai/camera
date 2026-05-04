@@ -332,6 +332,7 @@ select.f-in{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns
   max-height:70vh;overflow-y:auto;
 }
 .qm-title{font-size:var(--fs-lg);font-weight:600;color:var(--text);}
+#qm-list{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;min-height:0;}
 .qm-item{display:flex;align-items:center;gap:var(--sp-10);padding:var(--sp-10) 0;border-bottom:1px solid var(--line);}
 .qm-item:last-of-type{border-bottom:none;}
 .qm-uuid{font-family:var(--mono);font-size:var(--fs-xs);color:var(--text2);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
@@ -820,6 +821,7 @@ async function checkStorageAndUseOPFS(){
   }catch(e){return false;}
 }
 async function opfsWrite(name, blob){
+  if(!navigator.storage||!navigator.storage.getDirectory)throw new Error('OPFS not available');
   const root=await navigator.storage.getDirectory();
   const fh=await root.getFileHandle(name,{create:true});
   const writable=await fh.createWritable();
@@ -827,6 +829,7 @@ async function opfsWrite(name, blob){
 }
 async function opfsRead(name){
   try{
+    if(!navigator.storage||!navigator.storage.getDirectory)return null;
     const root=await navigator.storage.getDirectory();
     const fh=await root.getFileHandle(name);
     return await fh.getFile();
@@ -838,6 +841,7 @@ async function opfsDel(name){
 
 // ── Save a capture session to queue ─────────────────────────────────────────
 async function enqueueSession(uuid, frontBlob, sideBlob, payload){
+  if(!S._db)throw new Error('Database not ready');
   const useOPFS=await checkStorageAndUseOPFS();
   let record={uuid, status:'pending', ts:Date.now(), payload, retries:0,
                frontInOPFS:false, sideInOPFS:false};
@@ -856,6 +860,7 @@ async function enqueueSession(uuid, frontBlob, sideBlob, payload){
 // ── Upload queue drainer ──────────────────────────────────────────────────────
 async function drainQueue(){
   if(S._uploadRunning||S.offlineMode)return;
+  if(!S._db)return;
   if(!S.token&&!IS_FILE)return;
   S._uploadRunning=true;
   try{
@@ -1069,7 +1074,6 @@ en:{
   setup_models_done:'Models loaded',
   setup_cache:'Preparing cache…',
   // misc
-  retry:'Retry',
   loc_unavailable:'Location unavailable',
   cam_unavailable:'Camera unavailable',
   failed:'Failed: ',
@@ -1084,8 +1088,6 @@ en:{
   err_try_again:'Please try again.',
   err_not_auth:'Not authenticated',
   err_required:'Required',
-  uploads_pending:'%n uploads pending',
-  queue_title:'Uploads',
   err_auth_error:'Auth error',
   // session
   lbl_child_dob:'Child Date of Birth',
@@ -1184,7 +1186,6 @@ mr:{
   setup_models_done:'मॉडेल तयार',
   setup_cache:'कॅश तयार करत आहे…',
   // misc
-  retry:'पुन्हा प्रयत्न करा',
   loc_unavailable:'स्थान उपलब्ध नाही',
   cam_unavailable:'कॅमेरा उपलब्ध नाही',
   failed:'अयशस्वी: ',
@@ -1198,8 +1199,6 @@ mr:{
   err_try_again:'पुन्हा प्रयत्न करा.',
   err_not_auth:'प्रमाणीकरण नाही',
   err_required:'आवश्यक',
-  uploads_pending:'%n अपलोड बाकी',
-  queue_title:'अपलोड',
   err_auth_error:'साइन इन त्रुटी',
   lbl_child_dob:'मुलाची जन्मतारीख',
   err_age_over5:'मुल 0-5 वर्षाचे असावे.',
@@ -1453,11 +1452,10 @@ function clearStoredAuth(){localStorage.removeItem(C.TOKEN_KEY);localStorage.rem
 function scheduleRefresh(exp){if(S.refreshTimer)clearTimeout(S.refreshTimer);S.refreshTimer=setTimeout(silentRefresh,Math.max(0,exp-Date.now()-C.REFRESH_AHEAD));}
 
 // silentRefresh replaced with modal-based reauth
-function silentRefresh(){showReauthBanner('ra_expiring');}
-
-function showReauthBanner(key){
-  const el=g('reauth-msg');if(el){el.textContent=T(key);el.dataset.key=key;}
-  g('reauth-banner').classList.add('on');
+async function silentRefresh(){
+  // Silent refresh removed: One Tap unreliable on shared devices
+  // Just show the reauth banner; worker taps the button to re-auth
+  showReauthBanner('ra_expiring');
 }
 function hideReauthBanner(){
   g('reauth-banner').classList.remove('on');
@@ -2528,7 +2526,7 @@ g('form-submit').addEventListener('click',async function(){
     breastfed:S.apBreastfed||null
   };
   try{
-    await queueSession(S.uuid,S.frontBlob,S.sideBlob,payload);
+    await enqueueSession(S.uuid,S.frontBlob,S.sideBlob,payload);
     msg.textContent=T('form_ok');msg.className='form-msg ok';
     refreshQueueCount();
     setTimeout(drainQueue,500);
@@ -2543,6 +2541,10 @@ g('h-reset').addEventListener('click',()=>goSession());
 /* ── BOOT ── */
 applyLang();
 loadChipBlock();
+// Request persistent storage so IDB/OPFS data survives browser cleanup
+if(navigator.storage&&navigator.storage.persist){
+  navigator.storage.persist().catch(()=>{});
+}
 openDB().then(db=>{S._db=db;refreshQueueCount();setTimeout(drainQueue,1000);}).catch(e=>console.warn('IDB:',e));
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&S._db)setTimeout(drainQueue,500);});
 window.addEventListener('online',()=>{setOnline(true);setTimeout(drainQueue,1000);});

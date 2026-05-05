@@ -323,6 +323,15 @@ select.f-in{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns
 .radio-opt.on .radio-dot::after{opacity:1;}
 .radio-lbl{font-size:1rem;color:var(--text2);}
 .radio-opt.on .radio-lbl{color:var(--accent);font-weight:500;}
+
+#pose-card{
+  position:absolute;bottom:8px;left:8px;z-index:10;
+  width:52px;height:70px;border-radius:8px;
+  background:rgba(0,0,0,0.55);border:1px solid rgba(255,255,255,0.15);
+  overflow:hidden;display:flex;align-items:center;justify-content:center;
+  pointer-events:none;
+}
+#pose-card svg{width:85%;height:85%;}
 </style>
 
 <div id="dwall">
@@ -472,6 +481,7 @@ select.f-in{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns
       <video id="vid" autoplay playsinline muted></video>
       <canvas id="c-mask"></canvas>
       <canvas id="c-pose"></canvas>
+      <div id="pose-card"><svg id="pose-sil" viewBox="0 0 60 80" fill="none" xmlns="http://www.w3.org/2000/svg"></svg></div>
       <div id="c-flash"></div>
     </div>
     <div id="cam-panel">
@@ -2550,7 +2560,7 @@ function goForm(){
   stopCam();
   S.genderVal=null;S.litVal=null;
   ['f-weight','f-height','f-muac'].forEach(id=>g(id).value='');
-  g('f-caste').value='';
+  // f-caste replaced by MCQ — socialVal reset below
   g('f-h-front').value=S.frontHeight?S.frontHeight.toFixed(1):'';
   g('f-h-side').value=S.sideHeight?S.sideHeight.toFixed(1):'';
   g('form-submit').disabled=false;
@@ -2598,7 +2608,7 @@ g('form-submit').addEventListener('click',async function(){
   if(!S.genderVal)missing.push(T('lbl_gender'));
   if(!g('f-weight').value)missing.push(T('lbl_weight'));
   if(!S.litVal)missing.push(T('lbl_literacy'));
-  if(!g('f-caste').value)missing.push(T('lbl_socialgroup'));
+  if(!S.socialVal)missing.push(T('lbl_socialgroup'));
   if(!S.hFever)missing.push(T('lbl_fever'));
   if(!S.hDiarr)missing.push(T('lbl_diarr'));
   if(!S.hCough)missing.push(T('lbl_cough'));

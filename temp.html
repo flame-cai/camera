@@ -231,7 +231,7 @@ body{
   padding:0 var(--sp-8);border-radius:1.25rem;border:1.5px solid var(--line2);
   background:transparent;color:var(--text2);font-family:var(--mono);
   font-size:var(--fs-xs);font-weight:600;letter-spacing:0.05em;cursor:pointer;
-  height:var(--tap-sm);transition:all 0.15s;display:flex;align-items:center;
+  height:var(--tap);min-width:var(--tap);transition:all 0.15s;display:flex;align-items:center;justify-content:center;
 }
 #lang-btn:active{background:var(--bg3);}
 #guide-txt{padding:var(--sp-6) var(--sp-16);font-size:var(--fs-md);color:var(--text2);border-bottom:1px solid var(--line);min-height:2.5em;display:flex;align-items:center;flex-shrink:0;line-height:1.4;}
@@ -316,11 +316,11 @@ select.f-in{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns
 }
 #queue-modal.on{display:flex;}
 #queue-modal-box{
-  flex:1;width:100%;display:flex;flex-direction:column;gap:var(--sp-16);
+  flex:1;width:100%;display:flex;flex-direction:column;gap:0;
   padding:calc(var(--safe-t) + var(--hdr-h) + var(--sp-16)) var(--sp-20) calc(var(--safe-b) + var(--sp-16));
   overflow:hidden;
 }
-.qm-title{font-size:var(--fs-lg);font-weight:600;color:var(--text);}
+.qm-title{font-size:var(--fs-lg);font-weight:600;color:var(--text);font-family:var(--font);margin-bottom:var(--sp-12);}
 .qm-status-badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:1rem;font-family:var(--mono);font-size:var(--fs-xs);font-weight:700;flex-shrink:0;}
 .qm-status-badge.pending{background:var(--amber-bg);color:var(--amber);}
 .qm-status-badge.failed{background:var(--red-bg);color:var(--red);}
@@ -332,7 +332,7 @@ select.f-in{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns
 .qm-retry{border:1.5px solid var(--accent);color:var(--accent);}
 .qm-del{border:1.5px solid var(--red);color:var(--red);}
 #qm-list{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;min-height:0;}
-.qm-item{display:flex;align-items:center;gap:var(--sp-10);padding:var(--sp-10) 0;border-bottom:1px solid var(--line);}
+.qm-item{display:flex;align-items:center;gap:var(--sp-10);padding:var(--sp-12) 0;border-bottom:1px solid var(--line);}
 .qm-item:last-of-type{border-bottom:none;}
 .qm-uuid{font-family:var(--mono);font-size:var(--fs-xs);color:var(--text2);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .qm-status{font-family:var(--mono);font-size:var(--fs-xs);color:var(--text3);flex-shrink:0;}
@@ -371,11 +371,10 @@ select.f-in{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns
     <div id="queue-modal-box">
       <div class="qm-header">
         <div class="qm-title" id="qm-title">Uploads</div>
-        <button class="h-btn" onclick="hideQueueModal()">&#10005;</button>
       </div>
       <div id="qm-list"></div>
-      <div id="qm-empty" style="display:none;text-align:center;padding:var(--sp-24);color:var(--text3);">All uploads complete</div>
-      <div style="margin-top:var(--sp-16);display:flex;gap:var(--sp-8);flex-shrink:0;">
+      <div id="qm-empty" style="display:none;text-align:center;padding:var(--sp-24);color:var(--text3);font-size:var(--fs-md);font-family:var(--font);">All uploads complete</div>
+      <div style="margin-top:var(--sp-16);display:flex;gap:var(--sp-8);flex-shrink:0;padding-top:var(--sp-12);border-top:1px solid var(--line);">
         <button class="btn btn-primary" id="qm-upload-all" onclick="retryAllQueue()">&#8679; Upload All Now</button>
         <button class="btn btn-ghost" onclick="hideQueueModal()">Close</button>
       </div>
@@ -483,8 +482,8 @@ select.f-in{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns
         </div>
       </div>
       <div class="spacer"></div>
+      <div style="font-family:var(--mono);font-size:var(--fs-xs);color:var(--text3);text-align:center;padding:var(--sp-4) 0;min-height:1.4em;" id="sess-go-hint">Enter date of birth and accept consent to proceed</div>
       <button class="btn btn-primary" id="sess-go" data-t="btn_begincapture" disabled>Begin Capture &rarr;</button>
-      <div style="font-family:var(--mono);font-size:var(--fs-xs);color:var(--text3);text-align:center;padding:var(--sp-4) 0;" id="sess-go-hint">Enter date of birth and accept consent to proceed</div>
     </div>
   </div>
 
@@ -629,26 +628,12 @@ select.f-in{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns
           </div>
         </div>
       </div>
-      <button class="btn btn-primary" id="form-submit" disabled data-t="btn_submit">Submit</button>
       <div class="form-msg" id="form-msg"></div>
+      <button class="btn btn-primary" id="form-submit" disabled data-t="btn_submit">Submit</button>
     </div>
   </div>
 
   <!-- QUEUE MODAL -->
-  <div id="queue-modal">
-    <div id="queue-modal-box">
-      <div class="qm-header">
-        <div class="qm-title" id="qm-title">Uploads</div>
-        <button class="h-btn" onclick="hideQueueModal()">&#10005;</button>
-      </div>
-      <div id="qm-list"></div>
-      <div id="qm-empty" style="display:none;text-align:center;padding:var(--sp-24);color:var(--text3);">All uploads complete</div>
-      <div style="margin-top:var(--sp-16);display:flex;gap:var(--sp-8);">
-        <button class="btn btn-primary" onclick="retryAllQueue()">Upload All</button>
-        <button class="btn btn-ghost" onclick="hideQueueModal()">Close</button>
-      </div>
-    </div>
-  </div>
 
   <!-- REAUTH BANNER -->
   <div id="reauth-banner">
@@ -2507,6 +2492,7 @@ function goForm(){
     bfField.style.display=showBf?'':'none';
   }
   showScreen('s-form');
+  g('header').style.display='flex';
 }
 document.querySelectorAll('#g-male,#g-female').forEach(function(b){b.addEventListener('click',function(){S.genderVal=b.dataset.v;document.querySelectorAll('#g-male,#g-female').forEach(x=>x.classList.remove('on'));b.classList.add('on');});});
 // 5-level literacy radio

@@ -1110,6 +1110,9 @@ en:{
   err_try_again:'Please try again.',
   err_not_auth:'Not authenticated',
   err_required:'Required',
+  hint_dob_consent:'Enter child\'s date of birth and check consent to begin',
+  hint_dob:'Enter child\'s date of birth to begin',
+  hint_consent:'Check the consent box to begin',
   err_auth_error:'Auth error',
   // session
   lbl_child_dob:'Child Date of Birth',
@@ -1221,6 +1224,9 @@ mr:{
   err_try_again:'पुन्हा प्रयत्न करा.',
   err_not_auth:'प्रमाणीकरण नाही',
   err_required:'आवश्यक',
+  hint_dob_consent:'मुलाची जन्मतारीख आणि संमती द्या',
+  hint_dob:'जन्मतारीख आवश्यक',
+  hint_consent:'संमती चेकबॉक्स तपासा',
   err_auth_error:'साइन इन त्रुटी',
   lbl_child_dob:'मुलाची जन्मतारीख',
   err_age_over5:'मुल 0-5 वर्षाचे असावे.',
@@ -1652,7 +1658,15 @@ function validateSessDob(){
   updateSessGo();
 }
 function updateSessGo(){
-  g('sess-go').disabled=!(S.sessAgeOk&&S.sessConsentOn);
+  const ok=S.sessAgeOk&&S.sessConsentOn;
+  g('sess-go').disabled=!ok;
+  const hint=g('sess-go-hint');
+  if(hint){
+    if(!S.sessAgeOk&&!S.sessConsentOn)hint.textContent=T('hint_dob_consent');
+    else if(!S.sessAgeOk)hint.textContent=T('hint_dob');
+    else if(!S.sessConsentOn)hint.textContent=T('hint_consent');
+    else hint.textContent='';
+  }
 }
 g('sess-dob').addEventListener('input',validateSessDob);
 g('sess-consent-row').addEventListener('click',function(){

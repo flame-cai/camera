@@ -116,7 +116,7 @@ body{
 .sp{padding:var(--sp-24) var(--sp-20);flex:1;display:flex;flex-direction:column;gap:var(--sp-20);}
 
 /* SETUP */
-#s-setup{background:var(--bg);}
+#s-setup{background:var(--bg);padding-top:calc(max(env(safe-area-inset-top,0px),14px) + 52px)!important;}
 .setup-hd{font-size:var(--fs-xl);font-weight:600;color:var(--text);}
 .step-list{display:flex;flex-direction:column;}
 .step-row{display:flex;align-items:flex-start;gap:var(--sp-16);padding:var(--sp-14) 0;border-bottom:1px solid var(--line);}
@@ -276,7 +276,7 @@ body{
 #reauth-btn:active{background:var(--amber-bg);}
 
 /* FORM */
-#s-form{background:var(--bg);}
+#s-form{background:var(--bg);padding-top:calc(max(env(safe-area-inset-top,0px),14px) + 52px)!important;}
 .form-card{background:var(--bg2);border:1.5px solid var(--line);border-radius:var(--r);overflow:hidden;margin-bottom:var(--sp-12);}
 .form-card-hd{font-family:var(--mono);font-size:var(--fs-xs);font-weight:500;letter-spacing:0.1em;color:var(--text3);text-transform:uppercase;padding:var(--sp-8) var(--sp-16);border-bottom:1px solid var(--line);background:var(--bg3);}
 .form-field{padding:var(--sp-12) var(--sp-16);border-bottom:1px solid var(--line);}
@@ -1424,6 +1424,26 @@ function getLocation(){
     setTimeout(()=>{if(settled)return;if(S.location)done(S.location,true);else done(null,false);},C.GEO_TIMEOUT+500);
   });
 }
+// Continuous GPS watch on session page
+let _gpsWatchId=null;
+function startGpsWatch(){
+  if(!navigator.geolocation)return;
+  stopGpsWatch();
+  _gpsWatchId=navigator.geolocation.watchPosition(
+    pos=>{
+      S.location={lat:pos.coords.latitude,lon:pos.coords.longitude,acc:pos.coords.accuracy};
+      const dot=g('loc-dot'),val=g('loc-val');
+      if(dot)dot.className='loc-dot ok';
+      if(val)val.textContent=S.location.lat+', '+S.location.lon+' ±'+S.location.acc.toFixed(1)+'m';
+    },
+    err=>{const dot=g('loc-dot'),val=g('loc-val');if(dot)dot.className='loc-dot err';if(val)val.textContent='GPS unavailable';},
+    {enableHighAccuracy:true,maximumAge:5000,timeout:C.GEO_TIMEOUT}
+  );
+}
+function stopGpsWatch(){
+  if(_gpsWatchId!==null){navigator.geolocation.clearWatch(_gpsWatchId);_gpsWatchId=null;}
+}
+
 
 /* ── AUTH ── */
 function doAuth(){
@@ -1680,6 +1700,7 @@ function goSession(){
   g('sess-dob').value=savedDob;
   S.sessConsentOn=false;g('sess-consent-box').classList.remove('on');
   showScreen('s-session');
+  startGpsWatch(); // continuous GPS refresh on session page
   applyLang();
   if(savedDob)validateSessDob();
   updateSessGo();
@@ -1719,6 +1740,7 @@ function syncCanvasSize(){
 if(window.ResizeObserver){new ResizeObserver(()=>{if(S.camRunning)syncCanvasSize();}).observe(vid);}
 
 function beginCapture(phase){
+  stopGpsWatch(); // stop GPS when leaving session page
   S.phase=phase;
   updatePoseSil();
   g('cam-phase-lbl').textContent=phase==='front'?T('front_view'):T('side_view');

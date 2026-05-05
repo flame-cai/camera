@@ -2,368 +2,956 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>AIMM</title>
+<!-- BUILD: 2026-05-04 15:43 UTC -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://accounts.google.com/gsi/client" async defer></script>
+<style>
+/* ════════════════════════════════════════════════════════
+   DESIGN TOKENS — Clinical precision, field-ready utility
+   ════════════════════════════════════════════════════════ */
+:root {
+  /* Base palette */
+  --bg:         #F5F4F2;
+  --bg2:        #FFFFFF;
+  --bg3:        #EEECE9;
+  --bg4:        #E5E2DD;
+  --line:       #D8D4CE;
+  --line2:      #C4BFB8;
+
+  /* Text */
+  --text:       #1A1714;
+  --text2:      #4A4540;
+  --text3:      #8C8480;
+  --text4:      #B0ABA6;
+
+  /* Accent — a deep teal-indigo */
+  --accent:         #2563EB;
+  --accent2:        #1D4ED8;
+  --accent-soft:    rgba(37,99,235,0.08);
+  --accent-border:  rgba(37,99,235,0.25);
+
+  /* Semantic */
+  --green:      #059669;
+  --green-bg:   rgba(5,150,105,0.08);
+  --green-bdr:  rgba(5,150,105,0.25);
+  --red:        #DC2626;
+  --red-bg:     rgba(220,38,38,0.08);
+  --red-bdr:    rgba(220,38,38,0.25);
+  --amber:      #D97706;
+  --amber-bg:   rgba(217,119,6,0.08);
+  --amber-bdr:  rgba(217,119,6,0.25);
+
+  /* Typography */
+  --font:       'IBM Plex Sans', system-ui, sans-serif;
+  --mono:       'IBM Plex Mono', 'Courier New', monospace;
+
+  /* Layout */
+  --r-sm:       6px;
+  --r:          10px;
+  --r-lg:       14px;
+  --r-xl:       20px;
+  --safe-t:     max(env(safe-area-inset-top, 0px), 16px);
+  --safe-b:     max(env(safe-area-inset-bottom, 0px), 20px);
+  --header-h:   52px;
+  --header-total: calc(var(--safe-t) + var(--header-h));
+
+  /* Shadows */
+  --shadow-sm:  0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow:     0 2px 8px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.05);
+  --shadow-lg:  0 8px 24px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.06);
+}
+
+[data-dark] {
+  --bg:         #0F0E0D;
+  --bg2:        #1A1916;
+  --bg3:        #232119;
+  --bg4:        #2C2A24;
+  --line:       #2E2C26;
+  --line2:      #3D3A32;
+  --text:       #F0EDE8;
+  --text2:      #B8B3AC;
+  --text3:      #6B6660;
+  --text4:      #4A4540;
+  --accent:         #3B82F6;
+  --accent2:        #2563EB;
+  --accent-soft:    rgba(59,130,246,0.10);
+  --accent-border:  rgba(59,130,246,0.25);
+  --green:      #10B981;
+  --green-bg:   rgba(16,185,129,0.10);
+  --green-bdr:  rgba(16,185,129,0.25);
+  --red:        #F87171;
+  --red-bg:     rgba(248,113,113,0.10);
+  --red-bdr:    rgba(248,113,113,0.25);
+  --amber:      #FBBF24;
+  --amber-bg:   rgba(251,191,36,0.10);
+  --amber-bdr:  rgba(251,191,36,0.25);
+  --shadow-sm:  0 1px 3px rgba(0,0,0,0.20);
+  --shadow:     0 2px 8px rgba(0,0,0,0.25);
+  --shadow-lg:  0 8px 24px rgba(0,0,0,0.35);
+}
+
+/* ════════════════ RESET ════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { font-size: 15px; }
+
+body {
+  width: 100%; height: 100%; overflow: hidden;
+  background: var(--bg); color: var(--text);
+  font-family: var(--font); font-size: 1rem; line-height: 1.5;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  -webkit-user-select: none; user-select: none;
+  overscroll-behavior: none;
+}
+
+/* ════════════════ DESKTOP WALL ════════════════ */
+#dwall {
+  display: none; position: fixed; inset: 0; z-index: 9999;
+  background: var(--bg);
+  flex-direction: column; align-items: center; justify-content: center;
+  gap: 20px; text-align: center; padding: 48px;
+}
+#dwall .dw-logo {
+  font-family: var(--mono); font-size: 13px; font-weight: 600;
+  letter-spacing: 6px; color: var(--text3); text-transform: uppercase;
+}
+#dwall .dw-name {
+  font-size: 40px; font-weight: 300; color: var(--text);
+  letter-spacing: -1px; line-height: 1;
+}
+#dwall .dw-name span { color: var(--accent); }
+#dwall p { color: var(--text3); font-size: 0.9rem; max-width: 260px; line-height: 1.7; }
+@media (min-width: 1024px) { #dwall { display: flex; } #app { display: none !important; } }
+
+/* ════════════════ APP SHELL ════════════════ */
+#app { position: fixed; inset: 0; background: var(--bg); }
+
+/* ════════════════ HEADER ════════════════ */
+#header {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 9000;
+  height: var(--header-total);
+  padding-top: var(--safe-t);
+  display: flex; align-items: center;
+  padding-left: 16px; padding-right: 10px;
+  gap: 8px;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--line);
+  box-shadow: var(--shadow-sm);
+}
+
+.h-logo {
+  font-family: var(--mono); font-size: 0.8rem; font-weight: 600;
+  letter-spacing: 5px; color: var(--text3); text-transform: uppercase;
+  flex-shrink: 0;
+}
+.h-accent-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--accent); flex-shrink: 0;
+  margin-right: 4px;
+}
+
+#cam-phase-lbl {
+  display: none;
+  font-family: var(--mono); font-size: 0.73rem; font-weight: 600;
+  letter-spacing: 3px; color: var(--accent); text-transform: uppercase;
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-border);
+  border-radius: var(--r-sm); padding: 3px 8px;
+  flex-shrink: 0;
+}
+
+.h-spacer { flex: 1; }
+
+.h-right { display: flex; gap: 4px; align-items: center; }
+
+.h-btn {
+  width: 36px; height: 36px; border-radius: var(--r-sm);
+  border: 1px solid var(--line2); background: transparent;
+  color: var(--text3); font-size: 0.8rem; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  font-family: var(--font); font-weight: 500;
+  flex-shrink: 0;
+}
+.h-btn:active { background: var(--bg3); }
+.h-btn.hidden { display: none; }
+
+#lang-btn {
+  height: 36px; padding: 0 10px;
+  border-radius: var(--r-sm); border: 1px solid var(--line2);
+  background: transparent; color: var(--text3);
+  font-family: var(--mono); font-size: 0.73rem; font-weight: 600;
+  letter-spacing: 1px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s;
+}
+#lang-btn:active { background: var(--bg3); }
+
+/* Net status dot */
+#net-dot {
+  position: relative; width: 36px; height: 36px; border-radius: var(--r-sm);
+  background: var(--green-bg); border: 1px solid var(--green-bdr);
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: background 0.3s, border-color 0.3s;
+  flex-shrink: 0;
+}
+#net-dot::after {
+  content: ''; width: 8px; height: 8px; border-radius: 50%;
+  background: var(--green); transition: background 0.3s;
+}
+#net-dot.offline { background: var(--red-bg); border-color: var(--red-bdr); }
+#net-dot.offline::after { background: var(--red); }
+#net-dot:active { opacity: 0.75; }
+#net-count {
+  position: absolute; top: -5px; right: -5px;
+  background: var(--amber); color: #fff;
+  font-family: var(--mono); font-size: 0.6rem; font-weight: 600;
+  border-radius: 8px; padding: 1px 4px;
+  min-width: 15px; text-align: center; line-height: 1.5;
+  display: none;
+}
+
+/* ════════════════ SCREENS ════════════════ */
+.screen {
+  position: fixed; inset: 0;
+  padding-top: var(--header-total);
+  padding-bottom: var(--safe-b);
+  display: none; flex-direction: column;
+  overflow-y: auto; -webkit-overflow-scrolling: touch;
+}
+.screen.on { display: flex; }
+
+/* ════════════════ SETUP SCREEN ════════════════ */
+#s-setup { background: var(--bg); }
+
+.setup-wrap { padding: 20px 16px; flex: 1; display: flex; flex-direction: column; gap: 20px; }
+
+.setup-intro {
+  padding: 20px 16px;
+  background: var(--bg2); border-radius: var(--r-lg);
+  border: 1px solid var(--line);
+}
+.setup-intro-label {
+  font-family: var(--mono); font-size: 0.7rem; font-weight: 600;
+  letter-spacing: 3px; color: var(--text4); text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.setup-intro-title {
+  font-size: 1.4rem; font-weight: 300; color: var(--text);
+  letter-spacing: -0.3px; line-height: 1.2;
+}
+.setup-intro-title strong { font-weight: 600; color: var(--accent); }
+
+/* Step list */
+.step-list { display: flex; flex-direction: column; gap: 0; }
+
+.step-row {
+  display: flex; align-items: flex-start; gap: 14px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+  transition: opacity 0.2s;
+}
+.step-row:first-child { padding-top: 4px; }
+.step-row:last-child { border-bottom: none; }
+
+.step-num {
+  width: 28px; height: 28px; border-radius: 50%;
+  flex-shrink: 0; margin-top: 1px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--mono); font-size: 0.73rem; font-weight: 600;
+  border: 1.5px solid var(--line2);
+  background: var(--bg3); color: var(--text3);
+  transition: all 0.25s;
+}
+.step-row.active .step-num {
+  border-color: var(--accent); color: var(--accent);
+  background: var(--accent-soft);
+}
+.step-row.done .step-num {
+  border-color: var(--green); color: #fff;
+  background: var(--green);
+}
+.step-row.err .step-num {
+  border-color: var(--red); color: #fff;
+  background: var(--red);
+}
+
+.step-body { flex: 1; min-width: 0; }
+.step-name {
+  font-size: 0.9rem; font-weight: 500; color: var(--text3);
+  transition: color 0.2s;
+}
+.step-row.active .step-name,
+.step-row.done .step-name { color: var(--text); }
+.step-row.err .step-name { color: var(--red); }
+
+.step-msg {
+  font-family: var(--mono); font-size: 0.73rem; color: var(--text4);
+  margin-top: 2px; line-height: 1.5; word-break: break-word;
+  transition: color 0.2s;
+}
+.step-row.active .step-msg { color: var(--text3); }
+.step-row.err .step-msg { color: var(--red); opacity: 0.8; }
+
+.step-bar { margin-top: 8px; height: 2px; background: var(--line); border-radius: 2px; overflow: hidden; display: none; }
+.step-bar-fill { height: 100%; background: var(--accent); border-radius: 2px; width: 0; transition: width 0.3s linear; }
+
+/* Spinner */
+.spin {
+  width: 14px; height: 14px; border-radius: 50%;
+  border: 2px solid var(--accent-soft); border-top-color: var(--accent);
+  animation: spin 0.7s linear infinite; flex-shrink: 0;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Overall progress */
+.prog-section { display: flex; flex-direction: column; gap: 6px; }
+.prog-track { height: 3px; background: var(--line); border-radius: 3px; overflow: hidden; }
+.prog-fill { height: 100%; background: var(--accent); border-radius: 3px; width: 0; transition: width 0.4s ease; }
+.prog-lbl { font-family: var(--mono); font-size: 0.7rem; color: var(--text4); }
+
+/* Error box */
+.err-box {
+  display: none; background: var(--red-bg);
+  border: 1px solid var(--red-bdr); border-radius: var(--r);
+  padding: 14px 16px; animation: fadeUp 0.2s ease;
+}
+.err-box.on { display: block; }
+.err-box-title { font-size: 0.85rem; font-weight: 600; color: var(--red); margin-bottom: 4px; }
+.err-box-msg {
+  font-family: var(--mono); font-size: 0.72rem; color: var(--red);
+  opacity: 0.85; line-height: 1.5;
+  word-break: break-all; white-space: pre-wrap;
+  max-height: 5rem; overflow-y: auto;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Google sign-in button */
+.g-btn {
+  width: 100%; display: flex; align-items: center; justify-content: center;
+  gap: 12px; padding: 0 0; height: 48px;
+  background: #fff; border: 1.5px solid #dadce0;
+  border-radius: var(--r);
+  font-family: var(--font); font-size: 0.9rem; font-weight: 500; color: #3c4043;
+  cursor: pointer; transition: opacity 0.15s, box-shadow 0.15s;
+  box-shadow: var(--shadow-sm);
+}
+.g-btn:active { opacity: 0.8; }
+.g-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.g-btn svg { flex-shrink: 0; }
+
+/* ════════════════ BUTTONS (shared) ════════════════ */
+.btn {
+  display: flex; align-items: center; justify-content: center;
+  width: 100%; height: 48px;
+  border-radius: var(--r); border: none;
+  font-family: var(--font); font-size: 0.9rem; font-weight: 600;
+  cursor: pointer; transition: opacity 0.15s, transform 0.1s;
+  letter-spacing: 0.01em;
+}
+.btn:active { opacity: 0.85; transform: scale(0.99); }
+.btn:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
+
+.btn-primary { background: var(--accent); color: #fff; box-shadow: 0 2px 8px rgba(37,99,235,0.25); }
+.btn-ghost { background: transparent; color: var(--text2); border: 1px solid var(--line2); }
+.btn-ghost:active { background: var(--bg3); }
+.btn-danger { background: var(--red-bg); color: var(--red); border: 1px solid var(--red-bdr); }
+
+/* ════════════════ SESSION SCREEN ════════════════ */
+#s-session { background: var(--bg); }
+
+.sp { padding: 16px; flex: 1; display: flex; flex-direction: column; gap: 12px; }
+
+/* Card */
+.card {
+  background: var(--bg2); border: 1px solid var(--line);
+  border-radius: var(--r-lg); overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+.card-header {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--line);
+  background: var(--bg3);
+}
+.card-label {
+  font-family: var(--mono); font-size: 0.7rem; font-weight: 600;
+  letter-spacing: 2px; color: var(--text3); text-transform: uppercase;
+  flex: 1;
+}
+.card-body { padding: 14px; }
+
+.uuid-val {
+  font-family: var(--mono); font-size: 0.73rem; color: var(--accent);
+  letter-spacing: 0.05em; word-break: break-all; line-height: 1.8;
+}
+
+/* Location */
+.loc-row { display: flex; align-items: center; gap: 10px; }
+.loc-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text3); flex-shrink: 0; }
+.loc-dot.ok { background: var(--green); }
+.loc-dot.err { background: var(--red); }
+.loc-dot.ld { background: var(--accent); animation: locPulse 1.2s ease-in-out infinite; }
+@keyframes locPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.3; transform: scale(0.8); }
+}
+.loc-val { font-family: var(--mono); font-size: 0.73rem; color: var(--text2); flex: 1; line-height: 1.4; }
+
+/* Fields */
+.field-group { display: flex; align-items: center; gap: 10px; }
+.field-label { font-size: 0.85rem; color: var(--text2); flex-shrink: 0; }
+.field-in {
+  flex: 1; min-width: 0;
+  background: var(--bg); border: 1.5px solid var(--line2);
+  border-radius: var(--r-sm); color: var(--text);
+  font-family: var(--mono); font-size: 0.9rem; font-weight: 500;
+  padding: 9px 12px; outline: none;
+  transition: border-color 0.2s;
+  -webkit-user-select: text; user-select: text;
+  -webkit-appearance: none;
+}
+.field-in:focus { border-color: var(--accent); }
+.field-unit { font-family: var(--mono); font-size: 0.8rem; color: var(--text3); flex-shrink: 0; }
+
+/* DOB / consent */
+.f-in {
+  width: 100%; background: var(--bg);
+  border: 1.5px solid var(--line2); border-radius: var(--r-sm);
+  color: var(--text); font-family: var(--mono); font-size: 0.9rem;
+  padding: 9px 12px; outline: none;
+  transition: border-color 0.2s;
+  -webkit-user-select: text; user-select: text;
+  -webkit-appearance: none;
+}
+.f-in:focus { border-color: var(--accent); }
+input[type="date"].f-in { color-scheme: light dark; }
+
+.age-err {
+  font-family: var(--mono); font-size: 0.72rem; color: var(--red);
+  margin-top: 6px; display: none;
+}
+.age-err.on { display: block; }
+.age-ok {
+  font-family: var(--mono); font-size: 0.72rem; color: var(--green);
+  margin-top: 6px; display: none;
+}
+
+/* Consent */
+.consent-card {
+  background: var(--amber-bg); border: 1px solid var(--amber-bdr);
+  border-radius: var(--r-lg); padding: 14px;
+}
+.consent-row { display: flex; align-items: flex-start; gap: 12px; cursor: pointer; }
+.consent-box {
+  width: 20px; height: 20px; min-width: 20px; border-radius: 5px;
+  border: 1.5px solid var(--line2); background: var(--bg2); margin-top: 1px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s; flex-shrink: 0;
+}
+.consent-box.on { background: var(--accent); border-color: var(--accent); }
+.consent-tick { color: #fff; font-size: 0.75rem; font-weight: 700; opacity: 0; transition: opacity 0.15s; }
+.consent-box.on .consent-tick { opacity: 1; }
+.consent-txt { font-size: 0.8rem; color: var(--text2); line-height: 1.7; -webkit-user-select: text; user-select: text; }
+
+.sess-hint {
+  font-family: var(--mono); font-size: 0.72rem; color: var(--text4);
+  text-align: center; padding: 4px 0; min-height: 1.4em;
+}
+
+/* ════════════════ CAMERA SCREEN ════════════════ */
+#s-camera {
+  background: #000;
+  padding-top: var(--header-total) !important;
+  overflow: hidden; flex-direction: column;
+}
+
+#cam-viewport {
+  position: relative; width: 100%; flex: 0 0 auto;
+  background: #000; touch-action: none; overflow: hidden;
+}
+#vid { display: block; width: 100%; height: auto; }
+#c-mask, #c-pose {
+  position: absolute; top: 0; left: 0; pointer-events: none;
+}
+#c-mask { z-index: 1; } #c-pose { z-index: 2; }
+#c-flash {
+  position: absolute; inset: 0; z-index: 50;
+  background: #fff; opacity: 0; pointer-events: none;
+  transition: opacity 0.05s;
+}
+#c-flash.on { opacity: 0.9; }
+
+#cam-panel {
+  flex: 1; background: var(--bg);
+  overflow: hidden; display: flex; flex-direction: column; min-height: 0;
+}
+
+/* No-pose bar */
+#no-pose-bar {
+  display: none; background: var(--amber-bg);
+  border-bottom: 1px solid var(--amber-bdr);
+  padding: 8px 14px;
+  font-family: var(--mono); font-size: 0.72rem; color: var(--amber);
+  flex-shrink: 0;
+}
+#no-pose-bar.on { display: block; }
+
+/* Height readout bar */
+#h-display {
+  display: flex; gap: 0;
+  border-bottom: 1px solid var(--line);
+  flex-shrink: 0; background: var(--bg2);
+}
+.h-box {
+  flex: 1; padding: 8px 10px;
+  display: flex; flex-direction: column; gap: 2px;
+  border-right: 1px solid var(--line);
+}
+.h-box:last-child { border-right: none; }
+.h-lbl { font-family: var(--mono); font-size: 0.62rem; letter-spacing: 1.5px; color: var(--text3); text-transform: uppercase; }
+.h-val { font-size: 0.85rem; font-weight: 600; color: var(--text); font-family: var(--mono); }
+.h-val.dim { color: var(--text4); font-weight: 400; }
+
+/* Chips */
+#chips-row {
+  display: flex; gap: 6px; padding: 8px 12px;
+  overflow-x: auto; -webkit-overflow-scrolling: touch;
+  border-bottom: 1px solid var(--line);
+  scrollbar-width: none; flex-shrink: 0;
+}
+#chips-row::-webkit-scrollbar { display: none; }
+
+.chip {
+  display: flex; align-items: center; gap: 5px;
+  flex-shrink: 0; cursor: pointer;
+  border-radius: 20px; padding: 5px 10px;
+  background: var(--bg3); border: 1px solid var(--line2);
+  transition: all 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.chip-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text3); flex-shrink: 0; }
+.chip-lbl { font-family: var(--mono); font-size: 0.68rem; font-weight: 600; letter-spacing: 0.5px; color: var(--text3); }
+
+.chip.ok { border-color: var(--green-bdr); background: var(--green-bg); }
+.chip.ok .chip-dot { background: var(--green); }
+.chip.ok .chip-lbl { color: var(--green); }
+
+.chip.bad { border-color: var(--red-bdr); background: var(--red-bg); }
+.chip.bad .chip-dot { background: var(--red); }
+.chip.bad .chip-lbl { color: var(--red); }
+
+.chip.warn { border-color: var(--amber-bdr); background: var(--amber-bg); }
+.chip.warn .chip-dot { background: var(--amber); }
+.chip.warn .chip-lbl { color: var(--amber); }
+
+.chip.soft { border-color: var(--amber-bdr); background: var(--amber-bg); opacity: 0.6; }
+.chip.soft .chip-dot { background: var(--amber); }
+.chip.soft .chip-lbl { color: var(--amber); }
+
+.chip.dis { opacity: 0.28; cursor: default; }
+
+/* Guide text */
+#guide-txt {
+  padding: 10px 14px;
+  font-size: 0.85rem; color: var(--text2);
+  border-bottom: 1px solid var(--line);
+  min-height: 42px; display: flex; align-items: center;
+  flex-shrink: 0; line-height: 1.4;
+}
+#guide-txt.ok { color: var(--green); }
+#guide-txt.bad { color: var(--red); }
+#guide-txt.warn { color: var(--amber); }
+
+/* Shutter */
+#shutter-row {
+  flex: 1; display: flex; align-items: center; justify-content: center;
+  padding: 8px 0; min-height: 0;
+}
+#shutter {
+  width: 72px; height: 72px; border-radius: 50%;
+  border: 3px solid var(--line2); background: var(--bg2);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: all 0.15s; position: relative;
+}
+#shutter::after {
+  content: ''; width: 76%; height: 76%; border-radius: 50%;
+  background: var(--bg4); transition: all 0.15s;
+}
+#shutter:active::after { transform: scale(0.88); }
+#shutter.ok { border-color: var(--green); }
+#shutter.ok::after { background: var(--green); }
+#shutter.warn { border-color: var(--amber); }
+#shutter.warn::after { background: var(--amber); }
+#shutter.off { opacity: 0.3; cursor: not-allowed; }
+
+/* Pose card overlay */
+#pose-card {
+  position: absolute; bottom: 10px; left: 10px; z-index: 10;
+  width: 72px; height: 128px; border-radius: 8px;
+  background: rgba(0,0,0,0.50); border: 1px solid rgba(255,255,255,0.12);
+  overflow: hidden; display: flex; align-items: center; justify-content: center;
+  pointer-events: none; backdrop-filter: blur(4px);
+}
+#pose-card svg { width: 82%; height: 82%; }
+
+/* ════════════════ PREVIEW ════════════════ */
+#preview {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,0.96); display: none;
+  flex-direction: column; align-items: center; justify-content: center;
+  gap: 16px; padding: 20px;
+}
+#preview.on { display: flex; }
+
+.prev-lbl {
+  font-family: var(--mono); font-size: 0.72rem; font-weight: 600;
+  letter-spacing: 3px; color: rgba(255,255,255,0.4); flex-shrink: 0;
+  text-transform: uppercase;
+}
+.prev-img-wrap {
+  position: relative; border-radius: var(--r-lg); overflow: hidden;
+  width: min(78vw, calc((100svh - 10rem) * 0.75));
+  height: min(calc(78vw * 4 / 3), calc(100svh - 10rem));
+  background: #111; flex-shrink: 1; min-height: 0;
+  box-shadow: 0 16px 48px rgba(0,0,0,0.5);
+}
+.prev-img-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.prev-status {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  padding: 8px 10px;
+  font-family: var(--mono); font-size: 0.72rem; text-align: center;
+  background: rgba(0,0,0,0.85); display: none; backdrop-filter: blur(4px);
+}
+.prev-status.on { display: block; }
+.prev-status.uploading { color: #fdd663; }
+.prev-status.err { color: #f87171; }
+.prev-btns {
+  display: flex; gap: 10px;
+  width: min(78vw, calc((100svh - 10rem) * 0.75));
+  flex-shrink: 0;
+}
+.prev-btn {
+  flex: 1; height: 48px; border-radius: var(--r);
+  font-family: var(--font); font-size: 0.9rem; font-weight: 600;
+  border: 1px solid rgba(255,255,255,0.12); cursor: pointer;
+  transition: opacity 0.15s;
+}
+.prev-btn:active { opacity: 0.75; }
+.prev-btn.retake { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.65); }
+.prev-btn.proceed { background: var(--accent); color: #fff; border-color: var(--accent); }
+.prev-btn.proceed:disabled { opacity: 0.35; pointer-events: none; }
+
+/* ════════════════ FORM SCREEN ════════════════ */
+#s-form { background: var(--bg); }
+
+.form-section { display: flex; flex-direction: column; gap: 2px; }
+.form-section-title {
+  font-family: var(--mono); font-size: 0.68rem; font-weight: 600;
+  letter-spacing: 2.5px; color: var(--text3); text-transform: uppercase;
+  padding: 16px 0 6px;
+}
+.form-section-title:first-child { padding-top: 0; }
+
+.form-card {
+  background: var(--bg2); border: 1px solid var(--line);
+  border-radius: var(--r-lg); overflow: hidden;
+  box-shadow: var(--shadow-sm); margin-bottom: 10px;
+}
+.form-card-hd {
+  font-family: var(--mono); font-size: 0.68rem; font-weight: 600;
+  letter-spacing: 2px; color: var(--text3); text-transform: uppercase;
+  padding: 10px 14px; border-bottom: 1px solid var(--line);
+  background: var(--bg3);
+}
+.form-field {
+  padding: 12px 14px; border-bottom: 1px solid var(--line);
+}
+.form-field:last-child { border-bottom: none; }
+.f-lbl { font-size: 0.8rem; color: var(--text2); display: block; margin-bottom: 8px; font-weight: 500; }
+
+.f-in-form {
+  width: 100%; background: var(--bg); border: 1.5px solid var(--line2);
+  border-radius: var(--r-sm); color: var(--text);
+  font-family: var(--mono); font-size: 0.9rem;
+  padding: 9px 12px; outline: none;
+  transition: border-color 0.2s;
+  -webkit-user-select: text; user-select: text;
+  -webkit-appearance: none;
+}
+.f-in-form:focus { border-color: var(--accent); }
+.f-in-form::placeholder { color: var(--text4); }
+.f-in-form[readonly] { color: var(--text3); cursor: default; }
+
+/* Segmented control */
+.seg { display: flex; gap: 6px; }
+.seg-btn {
+  flex: 1; height: 40px; border-radius: var(--r-sm);
+  border: 1.5px solid var(--line2); background: var(--bg);
+  font-family: var(--font); font-size: 0.85rem; font-weight: 500;
+  color: var(--text2); cursor: pointer; text-align: center;
+  transition: all 0.15s;
+}
+.seg-btn.on {
+  background: var(--accent-soft); border-color: var(--accent);
+  color: var(--accent); font-weight: 600;
+}
+.seg-btn:active { opacity: 0.7; }
+
+/* Radio options */
+.radio-group { display: flex; flex-direction: column; gap: 4px; }
+.radio-opt {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px; border-radius: var(--r-sm); cursor: pointer;
+  transition: background 0.12s;
+  border: 1.5px solid var(--line); background: var(--bg);
+}
+.radio-opt:active { background: var(--bg3); }
+.radio-opt.on { background: var(--accent-soft); border-color: var(--accent); }
+.radio-dot {
+  width: 18px; height: 18px; min-width: 18px; border-radius: 50%;
+  border: 2px solid var(--line2); background: var(--bg2);
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s; flex-shrink: 0;
+}
+.radio-opt.on .radio-dot { border-color: var(--accent); background: var(--accent); }
+.radio-dot::after {
+  content: ''; width: 6px; height: 6px; border-radius: 50%;
+  background: #fff; opacity: 0; transition: opacity 0.15s;
+}
+.radio-opt.on .radio-dot::after { opacity: 1; }
+.radio-lbl { font-size: 0.85rem; color: var(--text2); }
+.radio-opt.on .radio-lbl { color: var(--accent); font-weight: 500; }
+
+.lit-select { display: flex; flex-direction: column; gap: 4px; }
+
+.form-msg {
+  font-family: var(--mono); font-size: 0.75rem;
+  text-align: center; min-height: 1.5em; padding: 6px 0;
+}
+.form-msg.ok { color: var(--green); }
+.form-msg.err { color: var(--red); }
+
+/* ════════════════ QUEUE MODAL ════════════════ */
+#queue-modal {
+  display: none; position: fixed; inset: 0; z-index: 1000;
+  background: var(--bg); flex-direction: column;
+}
+#queue-modal.on { display: flex; }
+#queue-modal-box {
+  flex: 1; display: flex; flex-direction: column;
+  padding: calc(var(--header-total) + 16px) 16px calc(var(--safe-b) + 16px);
+  overflow: hidden;
+}
+.qm-title { font-size: 1.1rem; font-weight: 600; color: var(--text); margin-bottom: 12px; }
+#qm-list { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; min-height: 0; }
+.qm-item {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 12px 0; border-bottom: 1px solid var(--line);
+}
+.qm-item:last-of-type { border-bottom: none; }
+.qm-uuid {
+  font-family: var(--mono); font-size: 0.73rem; color: var(--text2);
+  flex: 1; overflow: hidden; min-width: 0;
+}
+.qm-uuid strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text); }
+.qm-uuid small { font-size: 0.65rem; color: var(--text3); display: block; margin-top: 2px; }
+.qm-status-badge {
+  display: inline-flex; align-items: center;
+  padding: 2px 8px; border-radius: 20px;
+  font-family: var(--mono); font-size: 0.65rem; font-weight: 700;
+  flex-shrink: 0; white-space: nowrap;
+}
+.qm-status-badge.pending { background: var(--amber-bg); color: var(--amber); border: 1px solid var(--amber-bdr); }
+.qm-status-badge.failed  { background: var(--red-bg);   color: var(--red);   border: 1px solid var(--red-bdr); }
+.qm-status-badge.uploading { background: var(--accent-soft); color: var(--accent); border: 1px solid var(--accent-border); }
+.qm-actions { display: flex; gap: 6px; flex-shrink: 0; }
+.qm-retry, .qm-del {
+  height: 32px; padding: 0 10px; border-radius: var(--r-sm);
+  font-family: var(--font); font-size: 0.78rem; font-weight: 600;
+  cursor: pointer; transition: opacity 0.15s;
+}
+.qm-retry { border: 1px solid var(--accent); background: var(--accent-soft); color: var(--accent); }
+.qm-del   { border: 1px solid var(--red-bdr); background: var(--red-bg); color: var(--red); }
+.qm-retry:active, .qm-del:active { opacity: 0.7; }
+.qm-footer { margin-top: 14px; display: flex; gap: 8px; flex-shrink: 0; padding-top: 12px; border-top: 1px solid var(--line); }
+
+/* ════════════════ REAUTH BANNER ════════════════ */
+#reauth-banner {
+  display: none; position: fixed; bottom: 0; left: 0; right: 0; z-index: 500;
+  background: var(--amber-bg); border-top: 1px solid var(--amber-bdr);
+  padding: 12px 16px; align-items: center; justify-content: space-between; gap: 12px;
+  padding-bottom: calc(12px + var(--safe-b));
+  backdrop-filter: blur(8px);
+}
+#reauth-banner.on { display: flex; }
+#reauth-msg { font-size: 0.8rem; color: var(--amber); flex: 1; font-family: var(--mono); }
+#reauth-btn {
+  height: 36px; padding: 0 14px; border-radius: var(--r-sm);
+  border: 1px solid var(--amber-bdr); background: transparent;
+  color: var(--amber); font-family: var(--font);
+  font-size: 0.8rem; font-weight: 600; cursor: pointer;
+}
+#reauth-btn:active { background: var(--amber-bg); }
+
+/* ════════════════ MODE PILL (cam top) ════════════════ */
+.mode-pill {
+  display: flex; align-items: center;
+  background: var(--bg3); border: 1px solid var(--line2);
+  border-radius: 20px; padding: 2px; gap: 2px;
+}
+.mpb {
+  padding: 4px 10px; border-radius: 16px; border: none;
+  font-family: var(--mono); font-size: 0.68rem; font-weight: 600;
+  letter-spacing: 0.5px; cursor: pointer;
+  background: transparent; color: var(--text3); transition: all 0.15s;
+}
+.mpb.on { background: var(--accent); color: #fff; }
+
+/* ════════════════ SPACER ════════════════ */
+.spacer { flex: 1; }
+
+/* ════════════════ SCROLLBAR STYLING ════════════════ */
+* { scrollbar-width: thin; scrollbar-color: var(--line2) transparent; }
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--line2); border-radius: 4px; }
+
+</style>
 </head>
 <body>
-<style>
-:root{
-  --bg:#f8f8f8;--bg2:#ffffff;--bg3:#eeeeee;
-  --line:#e2e2e2;--line2:#cccccc;
-  --text:#0d0d0d;--text2:#444444;--text3:#888888;
-  --accent:#1a73e8;--accent-bg:#e8f0fe;
-  --green:#188038;--green-bg:#e6f4ea;
-  --red:#c5221f;--red-bg:#fce8e6;
-  --amber:#b06000;--amber-bg:#fff3e0;
-  --font:'DM Sans',system-ui,sans-serif;
-  --mono:'DM Mono',monospace;
-  --r:clamp(6px,2vw,12px);
-  --safe-t:max(env(safe-area-inset-top,0px),14px);
-  --safe-b:max(env(safe-area-inset-bottom,0px),20px);
 
-  /* ── Viewport-relative size tokens ── */
-  /* Font sizes: clamp(min, vw-based, max) */
-  --fs-xs:   clamp(0.6rem,  2.2vw, 0.75rem);   /* 10-12px — labels, mono tags */
-  --fs-sm:   clamp(0.688rem,2.6vw, 0.875rem);   /* 11-14px — secondary text */
-  --fs-md:   clamp(0.813rem,3.2vw, 1rem);       /* 13-16px — body / inputs */
-  --fs-lg:   clamp(0.938rem,3.8vw, 1.125rem);   /* 15-18px — primary UI text */
-  --fs-xl:   clamp(1.25rem, 5.5vw, 1.75rem);    /* 20-28px — headings */
-
-  /* Spacing: clamp(min, vw-based, max) */
-  --sp-2:  clamp(3px,  0.8vw, 6px);
-  --sp-4:  clamp(4px,  1.2vw, 8px);
-  --sp-6:  clamp(5px,  1.5vw, 10px);
-  --sp-8:  clamp(6px,  2vw,   12px);
-  --sp-10: clamp(8px,  2.5vw, 14px);
-  --sp-12: clamp(9px,  3vw,   16px);
-  --sp-14: clamp(10px, 3.5vw, 18px);
-  --sp-16: clamp(12px, 4vw,   20px);
-  --sp-20: clamp(14px, 5vw,   24px);
-  --sp-24: clamp(16px, 6vw,   28px);
-
-  /* Touch targets */
-  --tap:     clamp(2rem, 9vw, 2.75rem);   /* 32-44px */
-  --tap-sm:  clamp(1.75rem,8vw,2.375rem); /* 28-38px */
-  --tap-lg:  clamp(3.25rem,13vw,4.5rem);  /* 52-72px shutter */
-
-  /* Header */
-  --hdr-h: clamp(44px, 12vw, 56px);
-}
-[data-dark]{
-  --bg:#0e0e0e;--bg2:#181818;--bg3:#222222;
-  --line:#2c2c2c;--line2:#3a3a3a;
-  --text:#f2f2f2;--text2:#aaaaaa;--text3:#555555;
-  --accent:#5ba8ff;--accent-bg:#1a2d45;
-  --green:#34a853;--green-bg:#0d2818;
-  --red:#f28b82;--red-bg:#2a1010;
-  --amber:#ffca28;--amber-bg:#2a1e00;
-}
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-html{font-size:100%;}
-body{
-  width:100%;height:100%;overflow:hidden;
-  background:var(--bg);color:var(--text);
-  font-family:var(--font);font-size:var(--fs-md);line-height:1.5;
-  -webkit-tap-highlight-color:transparent;
-  touch-action:manipulation;-webkit-user-select:none;user-select:none;
-  overscroll-behavior:none;
-}
-#dwall{
-  display:none;position:fixed;inset:0;z-index:9999;background:var(--bg);
-  flex-direction:column;align-items:center;justify-content:center;
-  gap:var(--sp-16);text-align:center;padding:var(--sp-24);
-}
-#dwall .logo{font-family:var(--mono);font-size:var(--fs-xl);letter-spacing:0.5em;color:var(--accent);}
-#dwall p{color:var(--text2);line-height:1.7;max-width:280px;font-size:var(--fs-lg);}
-@media(min-width:1024px){#dwall{display:flex}#app{display:none!important}}
-#app{position:fixed;inset:0;background:var(--bg);}
-#header{
-  position:fixed;top:0;left:0;right:0;z-index:300;
-  height:calc(var(--safe-t) + var(--hdr-h));
-  padding-top:var(--safe-t);
-  display:flex;align-items:center;justify-content:space-between;
-  padding-left:var(--sp-20);padding-right:var(--sp-12);
-  background:var(--bg2);border-bottom:1px solid var(--line);
-}
-.h-logo{font-family:var(--mono);font-size:var(--fs-lg);letter-spacing:0.3em;color:var(--text);font-weight:500;}
-.h-right{display:flex;gap:var(--sp-6);align-items:center;}
-.h-btn{
-  width:var(--tap);height:var(--tap);border-radius:50%;
-  border:1.5px solid var(--line2);background:transparent;
-  color:var(--text2);font-size:var(--fs-lg);cursor:pointer;
-  display:flex;align-items:center;justify-content:center;
-  transition:background 0.15s;font-family:var(--font);
-}
-.h-btn:active{background:var(--bg3);}
-.h-btn.hidden{display:none;}
-.screen{
-  position:fixed;inset:0;
-  padding-top:calc(var(--safe-t) + var(--hdr-h));
-  padding-bottom:var(--safe-b);display:none;flex-direction:column;
-  overflow-y:auto;-webkit-overflow-scrolling:touch;
-}
-.screen.on{display:flex;}
-.sp{padding:var(--sp-24) var(--sp-20);flex:1;display:flex;flex-direction:column;gap:var(--sp-20);}
-
-/* SETUP */
-#s-setup{background:var(--bg);}
-.setup-hd{font-size:var(--fs-xl);font-weight:600;color:var(--text);}
-.step-list{display:flex;flex-direction:column;}
-.step-row{display:flex;align-items:flex-start;gap:var(--sp-16);padding:var(--sp-14) 0;border-bottom:1px solid var(--line);}
-.step-row:last-child{border-bottom:none;}
-.step-ico{
-  width:var(--tap-sm);height:var(--tap-sm);border-radius:50%;flex-shrink:0;
-  border:2px solid var(--line2);background:var(--bg2);
-  display:flex;align-items:center;justify-content:center;
-  font-family:var(--mono);font-size:var(--fs-sm);color:var(--text3);
-  font-weight:500;transition:all 0.2s;margin-top:2px;
-}
-.step-row.active .step-ico{border-color:var(--accent);color:var(--accent);background:var(--accent-bg);}
-.step-row.done .step-ico{border-color:var(--green);color:var(--green);background:var(--green-bg);}
-.step-row.err .step-ico{border-color:var(--red);color:var(--red);background:var(--red-bg);}
-.step-body{flex:1;min-width:0;}
-.step-name{font-size:var(--fs-lg);font-weight:500;color:var(--text2);transition:color 0.2s;}
-.step-row.active .step-name,.step-row.done .step-name{color:var(--text);}
-.step-row.err .step-name{color:var(--red);}
-.step-msg{font-family:var(--mono);font-size:var(--fs-xs);color:var(--text3);line-height:1.5;margin-top:2px;word-break:break-word;}
-.step-row.active .step-msg{color:var(--text2);}
-.step-row.err .step-msg{color:var(--red);}
-.step-bar{margin-top:var(--sp-8);height:3px;background:var(--line);border-radius:2px;overflow:hidden;display:none;}
-.step-bar-fill{height:100%;background:var(--accent);border-radius:2px;width:0%;transition:width 0.3s linear;}
-.spin{width:var(--fs-lg);height:var(--fs-lg);border-radius:50%;border:2.5px solid var(--accent-bg);border-top-color:var(--accent);animation:spin 0.7s linear infinite;flex-shrink:0;}
-@keyframes spin{to{transform:rotate(360deg);}}
-.prog-track{height:4px;background:var(--line);border-radius:2px;overflow:hidden;}
-.prog-fill{height:100%;background:var(--accent);border-radius:2px;width:0%;transition:width 0.4s ease;}
-.prog-lbl{font-family:var(--mono);font-size:var(--fs-xs);color:var(--text3);margin-top:var(--sp-8);}
-.err-box{display:none;background:var(--red-bg);border:1.5px solid var(--red);border-radius:var(--r);padding:var(--sp-12) var(--sp-16);}
-.err-box.on{display:block;}
-.err-box-title{font-size:var(--fs-md);font-weight:600;color:var(--red);margin-bottom:var(--sp-4);}
-.err-box-msg{font-family:var(--mono);font-size:var(--fs-xs);color:var(--red);line-height:1.5;word-break:break-all;white-space:pre-wrap;max-height:5rem;overflow-y:auto;}
-.btn{width:100%;padding:0.875em 1.25em;border-radius:var(--r);border:none;font-family:var(--font);font-size:var(--fs-lg);font-weight:500;cursor:pointer;transition:opacity 0.15s,background 0.15s;text-align:center;}
-.btn-primary{background:var(--accent);color:#fff;}
-.btn-primary:active{opacity:0.85;}
-.btn-primary:disabled{opacity:0.35;cursor:not-allowed;}
-.btn-ghost{background:transparent;color:var(--text2);border:1.5px solid var(--line2);}
-.btn-ghost:active{background:var(--bg3);}
-.g-btn{
-  width:100%;display:flex;align-items:center;justify-content:center;
-  gap:var(--sp-10);padding:0.875em 1.25em;background:#fff;border:1.5px solid #dadce0;
-  border-radius:var(--r);font-family:var(--font);font-size:var(--fs-lg);font-weight:500;color:#3c4043;
-  cursor:pointer;transition:opacity 0.15s;
-}
-.g-btn:active{opacity:0.8;}.g-btn:disabled{opacity:0.4;cursor:not-allowed;}.g-btn svg{flex-shrink:0;}
-
-/* SESSION */
-.card{background:var(--bg2);border:1.5px solid var(--line);border-radius:var(--r);overflow:hidden;}
-.card-label{font-family:var(--mono);font-size:var(--fs-xs);font-weight:500;letter-spacing:0.1em;color:var(--text3);text-transform:uppercase;padding:var(--sp-10) var(--sp-16);border-bottom:1px solid var(--line);background:var(--bg3);}
-.card-body{padding:var(--sp-12) var(--sp-16);}
-.uuid-val{font-family:var(--mono);font-size:var(--fs-sm);color:var(--accent);letter-spacing:0.1em;word-break:break-all;line-height:2;}
-.loc-row{display:flex;align-items:center;gap:var(--sp-10);}
-.loc-dot{width:8px;height:8px;border-radius:50%;background:var(--text3);flex-shrink:0;}
-.loc-dot.ok{background:var(--green);}.loc-dot.err{background:var(--red);}
-.loc-dot.ld{background:var(--accent);animation:pulse 1s infinite;}
-@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.2;}}
-.loc-val{font-family:var(--mono);font-size:var(--fs-sm);color:var(--text2);flex:1;}
-.field-row{display:flex;align-items:center;gap:var(--sp-10);}
-.field-lbl{font-size:var(--fs-md);color:var(--text2);flex-shrink:0;}
-.field-in{flex:1;background:var(--bg);border:1.5px solid var(--line2);border-radius:var(--r);color:var(--text);font-family:var(--mono);font-size:var(--fs-md);font-weight:500;padding:0.6em 0.875em;outline:none;transition:border-color 0.2s;-webkit-user-select:text;user-select:text;-webkit-appearance:none;}
-.field-in:focus{border-color:var(--accent);}
-.field-unit{font-family:var(--mono);font-size:var(--fs-sm);color:var(--text3);flex-shrink:0;}
-.spacer{flex:1;}
-
-/* CAMERA */
-#s-camera{background:#000;padding:0!important;overflow:hidden;flex-direction:column;}
-#cam-viewport{
-  position:relative;width:100%;flex:0 0 auto;
-  background:#000;touch-action:none;overflow:hidden;
-}
-#vid{display:block;width:100%;height:auto;}
-#c-mask,#c-pose{
-  position:absolute;top:0;left:0;
-  pointer-events:none;
-}
-#c-mask{z-index:1;}#c-pose{z-index:2;}
-#pose-card{
-  position:absolute;bottom:var(--sp-8);left:var(--sp-8);z-index:10;
-  width:clamp(52px,14vw,72px);height:clamp(70px,19vw,96px);border-radius:var(--r);
-  background:rgba(0,0,0,0.55);border:1px solid rgba(255,255,255,0.15);
-  overflow:hidden;display:flex;align-items:center;justify-content:center;
-  pointer-events:none;
-}
-#pose-card svg{width:85%;height:85%;}
-#c-flash{position:absolute;inset:0;z-index:50;background:#fff;opacity:0;pointer-events:none;transition:opacity 0.05s;}
-#c-flash.on{opacity:0.9;}
-#cam-panel{flex:1;background:var(--bg);overflow:hidden;display:flex;flex-direction:column;min-height:0;}
-#no-pose-bar{display:none;background:var(--amber-bg);border-bottom:1.5px solid var(--amber);padding:var(--sp-6) var(--sp-16);font-family:var(--mono);font-size:var(--fs-xs);color:var(--amber);flex-shrink:0;}
-#no-pose-bar.on{display:block;}
-#cam-topbar{display:flex;align-items:center;justify-content:space-between;padding:var(--sp-8) var(--sp-16) var(--sp-6);border-bottom:1px solid var(--line);background:var(--bg2);flex-shrink:0;}
-.cam-phase{font-family:var(--mono);font-size:var(--fs-xs);letter-spacing:0.2em;color:var(--text3);}
-.cam-topright{display:flex;gap:var(--sp-6);align-items:center;}
-.cam-btn{width:var(--tap-sm);height:var(--tap-sm);border-radius:50%;border:1.5px solid var(--line2);background:transparent;color:var(--text2);font-size:var(--fs-md);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.15s;font-family:var(--font);}
-.cam-btn:active{background:var(--bg3);}
-.mode-pill{display:flex;align-items:center;background:var(--bg3);border:1.5px solid var(--line2);border-radius:1.25rem;padding:2px;gap:2px;}
-.mpb{padding:0.25em 0.75em;border-radius:1rem;border:none;font-family:var(--mono);font-size:var(--fs-xs);font-weight:500;letter-spacing:0.05em;cursor:pointer;background:transparent;color:var(--text3);transition:all 0.15s;}
-.mpb.on{background:var(--accent);color:#fff;}
-#h-display{display:flex;gap:0;border-bottom:1px solid var(--line);flex-shrink:0;}
-.h-box{flex:1;padding:var(--sp-6) var(--sp-8);display:flex;flex-direction:column;gap:2px;border-right:1px solid var(--line);}
-.h-box:last-child{border-right:none;}
-.h-lbl{font-family:var(--mono);font-size:var(--fs-xs);letter-spacing:0.1em;color:var(--text3);text-transform:uppercase;}
-.h-val{font-size:var(--fs-lg);font-weight:600;color:var(--text);font-family:var(--mono);}
-.h-val.dim{color:var(--text3);font-weight:400;}
-#chips-row{display:flex;gap:var(--sp-6);padding:var(--sp-6) var(--sp-12);overflow-x:auto;-webkit-overflow-scrolling:touch;border-bottom:1px solid var(--line);scrollbar-width:none;flex-shrink:0;}
-#chips-row::-webkit-scrollbar{display:none;}
-.chip{display:flex;align-items:center;gap:var(--sp-4);flex-shrink:0;background:var(--bg3);border:1.5px solid var(--line2);border-radius:1.25rem;padding:var(--sp-4) var(--sp-8);}
-.chip-dot{width:6px;height:6px;border-radius:50%;background:var(--text3);flex-shrink:0;}
-.chip-lbl{font-family:var(--mono);font-size:var(--fs-xs);color:var(--text3);font-weight:500;}
-.chip.ok{border-color:var(--green);background:var(--green-bg);}
-.chip.ok .chip-dot{background:var(--green);}.chip.ok .chip-lbl{color:var(--green);}
-.chip.bad{border-color:var(--red);background:var(--red-bg);}
-.chip.bad .chip-dot{background:var(--red);}.chip.bad .chip-lbl{color:var(--red);}
-.chip.warn{border-color:var(--amber);background:var(--amber-bg);}
-.chip.warn .chip-dot{background:var(--amber);}.chip.warn .chip-lbl{color:var(--amber);}
-.chip{cursor:pointer;-webkit-tap-highlight-color:transparent;}
-.chip.dis{opacity:0.3;cursor:default;}
-.chip.soft{border-color:var(--amber);background:var(--amber-bg);opacity:0.6;}
-.chip.soft .chip-dot{background:var(--amber);}.chip.soft .chip-lbl{color:var(--amber);}
-#lang-btn{
-  padding:0 var(--sp-8);border-radius:1.25rem;border:1.5px solid var(--line2);
-  background:transparent;color:var(--text2);font-family:var(--mono);
-  font-size:var(--fs-xs);font-weight:600;letter-spacing:0.05em;cursor:pointer;
-  height:var(--tap-sm);transition:all 0.15s;display:flex;align-items:center;
-}
-#lang-btn:active{background:var(--bg3);}
-#guide-txt{padding:var(--sp-6) var(--sp-16);font-size:var(--fs-md);color:var(--text2);border-bottom:1px solid var(--line);min-height:2.5em;display:flex;align-items:center;flex-shrink:0;line-height:1.4;}
-#guide-txt.ok{color:var(--green);}#guide-txt.bad{color:var(--red);}#guide-txt.warn{color:var(--amber);}
-#shutter-row{flex:1;display:flex;align-items:center;justify-content:center;padding:var(--sp-6) 0;min-height:0;}
-#shutter{width:var(--tap-lg);height:var(--tap-lg);border-radius:50%;border:3px solid var(--line2);background:var(--bg2);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.15s;position:relative;}
-#shutter::after{content:'';width:77%;height:77%;border-radius:50%;background:var(--bg3);transition:all 0.15s;}
-#shutter:active::after{transform:scale(0.88);}
-#shutter.ok{border-color:var(--green);}#shutter.ok::after{background:var(--green);}
-#shutter.warn{border-color:var(--amber);}#shutter.warn::after{background:var(--amber);}
-#shutter.off{opacity:0.3;cursor:not-allowed;}
-
-/* PREVIEW */
-#preview{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.97);display:none;flex-direction:column;align-items:center;justify-content:center;gap:var(--sp-12);padding:var(--sp-16);}
-#preview.on{display:flex;}
-.prev-lbl{font-family:var(--mono);font-size:var(--fs-xs);letter-spacing:0.15em;color:rgba(255,255,255,0.4);flex-shrink:0;}
-.prev-img-wrap{
-  position:relative;border-radius:var(--r);overflow:hidden;
-  width:min(75vw,calc((100svh - 8rem) * 0.75));
-  height:min(calc(75vw * 4 / 3),calc(100svh - 8rem));
-  background:#000;flex-shrink:1;min-height:0;
-}
-.prev-img-wrap img{width:100%;height:100%;object-fit:cover;display:block;}
-.prev-status{position:absolute;bottom:0;left:0;right:0;padding:var(--sp-6) var(--sp-8);font-family:var(--mono);font-size:var(--fs-xs);text-align:center;background:rgba(0,0,0,0.8);display:none;}
-.prev-status.on{display:block;}.prev-status.uploading{color:#fdd663;}.prev-status.err{color:#f28b82;}
-.prev-btns{display:flex;gap:var(--sp-10);width:min(75vw,calc((100svh - 8rem) * 0.75));flex-shrink:0;}
-.prev-btn{flex:1;padding:0.75em 0;border-radius:var(--r);font-family:var(--font);font-size:var(--fs-lg);font-weight:500;border:1.5px solid rgba(255,255,255,0.15);cursor:pointer;transition:opacity 0.15s;}
-.prev-btn:active{opacity:0.75;}
-.prev-btn.retake{background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.7);}
-.prev-btn.proceed{background:var(--accent);color:#fff;border-color:var(--accent);}
-.prev-btn.proceed:disabled{opacity:0.35;pointer-events:none;}
-
-/* Session expiry banner */
-#reauth-banner{
-  display:none;position:fixed;bottom:0;left:0;right:0;z-index:500;
-  background:var(--amber-bg);border-top:2px solid var(--amber);
-  padding:var(--sp-10) var(--sp-16);align-items:center;justify-content:space-between;gap:var(--sp-12);
-}
-#reauth-banner.on{display:flex;}
-#reauth-msg{font-size:var(--fs-sm);color:var(--amber);flex:1;}
-#reauth-btn{padding:0.5em 1em;border-radius:var(--r);border:1.5px solid var(--amber);background:transparent;color:var(--amber);font-family:var(--font);font-size:var(--fs-sm);font-weight:600;cursor:pointer;}
-#reauth-btn:active{background:var(--amber-bg);}
-
-/* FORM */
-#s-form{background:var(--bg);}
-.form-card{background:var(--bg2);border:1.5px solid var(--line);border-radius:var(--r);overflow:hidden;margin-bottom:var(--sp-12);}
-.form-card-hd{font-family:var(--mono);font-size:var(--fs-xs);font-weight:500;letter-spacing:0.1em;color:var(--text3);text-transform:uppercase;padding:var(--sp-8) var(--sp-16);border-bottom:1px solid var(--line);background:var(--bg3);}
-.form-field{padding:var(--sp-12) var(--sp-16);border-bottom:1px solid var(--line);}
-.form-field:last-child{border-bottom:none;}
-.f-lbl{font-size:var(--fs-sm);color:var(--text2);display:block;margin-bottom:var(--sp-6);font-weight:500;}
-.f-in{width:100%;background:var(--bg);border:1.5px solid var(--line2);border-radius:var(--r);color:var(--text);font-family:var(--mono);font-size:var(--fs-md);padding:0.6em 0.875em;outline:none;transition:border-color 0.2s;-webkit-user-select:text;user-select:text;-webkit-appearance:none;}
-.f-in:focus{border-color:var(--accent);}.f-in::placeholder{color:var(--text3);}
-input[type="date"].f-in{color-scheme:light dark;}
-select.f-in{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23888'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:2.5em;}
-.seg{display:flex;gap:var(--sp-8);}
-.seg-btn{flex:1;padding:0.625em 0;border-radius:var(--r);border:1.5px solid var(--line2);background:var(--bg);font-size:var(--fs-md);font-weight:500;color:var(--text2);cursor:pointer;text-align:center;transition:all 0.15s;}
-.seg-btn.on{background:var(--accent-bg);border-color:var(--accent);color:var(--accent);}
-.seg-btn:active{opacity:0.7;}
-.consent-wrap{background:var(--amber-bg);border:1.5px solid rgba(180,100,0,0.25);border-radius:var(--r);padding:var(--sp-14);margin-bottom:var(--sp-12);}
-.consent-row{display:flex;align-items:flex-start;gap:var(--sp-12);cursor:pointer;}
-.consent-box{width:1.375rem;height:1.375rem;min-width:1.375rem;border-radius:0.25rem;border:2px solid var(--line2);background:var(--bg);margin-top:2px;display:flex;align-items:center;justify-content:center;transition:all 0.15s;}
-.consent-box.on{background:var(--accent);border-color:var(--accent);}
-.consent-tick{color:#fff;font-size:var(--fs-sm);font-weight:700;opacity:0;transition:opacity 0.15s;}
-.consent-box.on .consent-tick{opacity:1;}
-.consent-txt{font-size:var(--fs-sm);color:var(--text2);line-height:1.7;-webkit-user-select:text;user-select:text;}
-.form-msg{font-family:var(--mono);font-size:var(--fs-sm);text-align:center;min-height:1.5em;padding:var(--sp-6) 0;}
-.form-msg.ok{color:var(--green);}.form-msg.err{color:var(--red);}
-</style>
-
+<!-- Desktop wall -->
 <div id="dwall">
-  <div class="logo">AIMM</div>
-  <p>This app is designed for mobile devices only.</p>
+  <div class="dw-logo">Field Research Tool</div>
+  <div class="dw-name">AI<span>MM</span></div>
+  <p>This application is designed for mobile devices. Please open it on your phone or tablet.</p>
 </div>
 
 <div id="app">
+
+  <!-- ═══════════════ HEADER ═══════════════ -->
   <div id="header">
     <span class="h-logo">AIMM</span>
+    <div class="h-accent-dot"></div>
+    <span id="cam-phase-lbl"></span>
+    <div class="h-spacer"></div>
     <div class="h-right">
-      <button class="h-btn hidden" id="h-reset">&#8634;</button>
-      <button class="h-btn hidden" id="h-signout">&#9167;</button>
+      <button id="net-dot" title="Pending uploads" onclick="showQueueModal()">
+        <span id="net-count"></span>
+      </button>
+      <button class="h-btn" id="h-font-dec" onclick="changeFontSize(-1)" title="Decrease text size" aria-label="Decrease text size">A<sup style="font-size:0.55rem">−</sup></button>
+      <button class="h-btn" id="h-font-inc" onclick="changeFontSize(1)"  title="Increase text size" aria-label="Increase text size">A<sup style="font-size:0.55rem">+</sup></button>
       <button id="lang-btn" onclick="toggleLang()">EN</button>
-      <button class="h-btn" id="h-theme">&#9680;</button>
+      <button class="h-btn" id="h-theme" title="Toggle theme" aria-label="Toggle theme">◑</button>
+      <button class="h-btn hidden" id="h-reset"   title="New session" aria-label="New session">↺</button>
+      <button class="h-btn hidden" id="h-signout" title="Sign out"    aria-label="Sign out">⏻</button>
     </div>
   </div>
 
-  <!-- SETUP -->
+  <!-- ═══════════════ QUEUE MODAL ═══════════════ -->
+  <div id="queue-modal">
+    <div id="queue-modal-box">
+      <div class="qm-title" id="qm-title">Uploads</div>
+      <div id="qm-list"></div>
+      <div id="qm-empty" style="display:none;text-align:center;padding:24px;color:var(--text3);font-size:0.85rem;font-family:var(--font);">All uploads complete</div>
+      <div class="qm-footer">
+        <button class="btn btn-primary" id="qm-upload-all" onclick="retryAllQueue()">↑ Upload All</button>
+        <button class="btn btn-ghost" onclick="hideQueueModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ SETUP SCREEN ═══════════════ -->
   <div class="screen on" id="s-setup">
-    <div class="sp">
-      <div class="setup-hd">AIMM</div>
-      <div class="step-list">
-        <div class="step-row" id="st-cam">
-          <div class="step-ico" id="st-cam-ico">1</div>
-          <div class="step-body"><div class="step-name">Camera</div><div class="step-msg" id="st-cam-msg">Waiting&hellip;</div></div>
+    <div class="setup-wrap">
+
+      <div class="setup-intro">
+        <div class="setup-intro-label">Initialising</div>
+        <div class="setup-intro-title">AI <strong>Malnutrition</strong> Monitor</div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-label">System Check</span>
         </div>
-        <div class="step-row" id="st-loc">
-          <div class="step-ico" id="st-loc-ico">2</div>
-          <div class="step-body"><div class="step-name">Location</div><div class="step-msg" id="st-loc-msg">Waiting&hellip;</div></div>
-        </div>
-        <div class="step-row" id="st-auth">
-          <div class="step-ico" id="st-auth-ico">3</div>
-          <div class="step-body"><div class="step-name">Sign in</div><div class="step-msg" id="st-auth-msg">Waiting&hellip;</div></div>
-        </div>
-        <div class="step-row" id="st-model">
-          <div class="step-ico" id="st-model-ico">4</div>
-          <div class="step-body">
-            <div class="step-name" id="st-model-name">Holistic Model</div>
-            <div class="step-msg" id="st-model-msg">Waiting&hellip;</div>
-            <div class="step-bar" id="st-model-bar"><div class="step-bar-fill" id="st-model-fill"></div></div>
-          </div>
-        </div>
-        <div class="step-row" id="st-seg">
-          <div class="step-ico" id="st-seg-ico">5</div>
-          <div class="step-body">
-            <div class="step-name" id="st-seg-name">Segmenter Model</div>
-            <div class="step-msg" id="st-seg-msg">Waiting&hellip;</div>
+        <div class="card-body">
+          <div class="step-list">
+            <div class="step-row" id="st-cam">
+              <div class="step-num" id="st-cam-ico">1</div>
+              <div class="step-body">
+                <div class="step-name">Camera</div>
+                <div class="step-msg" id="st-cam-msg">Waiting…</div>
+              </div>
+            </div>
+            <div class="step-row" id="st-loc">
+              <div class="step-num" id="st-loc-ico">2</div>
+              <div class="step-body">
+                <div class="step-name">Location</div>
+                <div class="step-msg" id="st-loc-msg">Waiting…</div>
+              </div>
+            </div>
+            <div class="step-row" id="st-auth">
+              <div class="step-num" id="st-auth-ico">3</div>
+              <div class="step-body">
+                <div class="step-name">Sign in</div>
+                <div class="step-msg" id="st-auth-msg">Waiting…</div>
+              </div>
+            </div>
+            <div class="step-row" id="st-store">
+              <div class="step-num" id="st-store-ico">4</div>
+              <div class="step-body">
+                <div class="step-name">Storage</div>
+                <div class="step-msg" id="st-store-msg">Waiting…</div>
+              </div>
+            </div>
+            <div class="step-row" id="st-model">
+              <div class="step-num" id="st-model-ico">5</div>
+              <div class="step-body">
+                <div class="step-name" id="st-model-name">Holistic Model</div>
+                <div class="step-msg" id="st-model-msg">Waiting…</div>
+                <div class="step-bar" id="st-model-bar">
+                  <div class="step-bar-fill" id="st-model-fill"></div>
+                </div>
+              </div>
+            </div>
+            <div class="step-row" id="st-seg">
+              <div class="step-num" id="st-seg-ico">6</div>
+              <div class="step-body">
+                <div class="step-name" id="st-seg-name">Segmenter Model</div>
+                <div class="step-msg" id="st-seg-msg">Waiting…</div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-      <div>
+
+      <div class="prog-section">
         <div class="prog-track"><div class="prog-fill" id="prog-fill"></div></div>
-        <div class="prog-lbl" id="prog-lbl">Starting&hellip;</div>
+        <div class="prog-lbl" id="prog-lbl">Starting…</div>
       </div>
+
       <div class="err-box" id="err-box">
         <div class="err-box-title" id="err-title">Error</div>
         <div class="err-box-msg" id="err-msg"></div>
       </div>
+
       <button class="g-btn" id="g-signin" style="display:none" onclick="triggerSignIn()">
-        <svg width="20" height="20" viewBox="0 0 18 18">
+        <svg width="18" height="18" viewBox="0 0 18 18">
           <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/>
           <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/>
           <path fill="#FBBC05" d="M3.964 10.707A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.707V4.961H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.039l3.007-2.332z"/>
@@ -371,166 +959,274 @@ select.f-in{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns
         </svg>
         Sign in with Google
       </button>
+
       <div class="spacer"></div>
     </div>
   </div>
 
-  <!-- SESSION -->
+  <!-- ═══════════════ SESSION SCREEN ═══════════════ -->
   <div class="screen" id="s-session">
     <div class="sp">
+
       <div class="card">
-        <div class="card-label" data-t="lbl_sessid">Session ID</div>
-        <div class="card-body"><div class="uuid-val" id="sess-uuid">&mdash;</div></div>
+        <div class="card-header">
+          <span class="card-label" data-t="lbl_sessid">Session ID</span>
+        </div>
+        <div class="card-body">
+          <div class="uuid-val" id="sess-uuid">—</div>
+        </div>
       </div>
+
       <div class="card">
-        <div class="card-label" data-t="lbl_location">Location</div>
+        <div class="card-header">
+          <span class="card-label" data-t="lbl_location">Location</span>
+        </div>
         <div class="card-body">
           <div class="loc-row">
             <div class="loc-dot ld" id="loc-dot"></div>
-            <div class="loc-val" id="loc-val">Acquiring&hellip;</div>
+            <div class="loc-val" id="loc-val">Acquiring…</div>
           </div>
         </div>
       </div>
+
       <div class="card">
-        <div class="card-label" data-t="lbl_camh">Camera Height</div>
+        <div class="card-header">
+          <span class="card-label" data-t="lbl_camh">Camera Height</span>
+        </div>
         <div class="card-body">
-          <div class="field-row">
-            <span class="field-lbl" data-t="lbl_hfromground">Height from ground</span>
+          <div class="field-group">
+            <span class="field-label" data-t="lbl_hfromground">Height from ground</span>
             <input class="field-in" type="number" id="camh-input" min="10" max="300" placeholder="70">
             <span class="field-unit">cm</span>
           </div>
         </div>
       </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-label" data-t="lbl_child_dob">Child Date of Birth</span>
+        </div>
+        <div class="card-body">
+          <input class="f-in" type="date" id="sess-dob" style="-webkit-user-select:text;user-select:text;">
+          <div class="age-err" id="sess-age-err" data-t="err_age_over5">Child must be 0–5 years old for this study.</div>
+          <div id="sess-age-ok" class="age-ok"></div>
+        </div>
+      </div>
+
+      <div class="consent-card" id="sess-consent-wrap">
+        <div class="consent-row" id="sess-consent-row">
+          <div class="consent-box" id="sess-consent-box">
+            <span class="consent-tick">✓</span>
+          </div>
+          <span class="consent-txt" id="sess-consent-txt">By checking this box, I confirm consent.</span>
+        </div>
+      </div>
+
       <div class="spacer"></div>
-      <button class="btn btn-primary" id="sess-go" data-t="btn_begincapture">Begin Capture &rarr;</button>
+
+      <div class="sess-hint" id="sess-go-hint">Enter date of birth and accept consent to proceed</div>
+      <button class="btn btn-primary" id="sess-go" data-t="btn_begincapture" disabled>
+        Begin Capture →
+      </button>
+
     </div>
   </div>
 
-  <!-- CAMERA -->
+  <!-- ═══════════════ CAMERA SCREEN ═══════════════ -->
   <div class="screen" id="s-camera">
     <div id="cam-viewport">
       <video id="vid" autoplay playsinline muted></video>
       <canvas id="c-mask"></canvas>
       <canvas id="c-pose"></canvas>
-      <div id="pose-card"><svg id="pose-sil" viewBox="0 0 60 80" fill="none" xmlns="http://www.w3.org/2000/svg"></svg></div>
+      <div id="pose-card">
+        <svg id="pose-sil" viewBox="0 0 60 80" fill="none" xmlns="http://www.w3.org/2000/svg"></svg>
+      </div>
       <div id="c-flash"></div>
     </div>
+
     <div id="cam-panel">
-      <div id="no-pose-bar"><span id="no-pose-txt">POSE DETECTION UNAVAILABLE &mdash; WARN MODE ACTIVE</span></div>
-      <div id="cam-topbar">
-        <span class="cam-phase" id="cam-phase-lbl">FRONT VIEW</span>
-        <div class="cam-topright">
-          <button id="cam-lang-btn" onclick="toggleLang()" style="padding:0 8px;border-radius:16px;border:1.5px solid var(--line2);background:transparent;color:var(--text2);font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:1px;cursor:pointer;height:32px;">EN</button>
-          <button class="cam-btn" id="cam-reset">&#8634;</button>
-          <button class="cam-btn" id="cam-signout">&#9167;</button>
-          <button class="cam-btn" id="cam-theme">&#9680;</button>
-        </div>
-      </div>
+      <div id="no-pose-bar"><span id="no-pose-txt">POSE DETECTION UNAVAILABLE — WARN MODE ACTIVE</span></div>
       <div id="h-display">
         <div class="h-box">
           <div class="h-lbl">Height</div>
-          <div class="h-val dim" id="hval-cur">&mdash;</div>
+          <div class="h-val dim" id="hval-cur">—</div>
         </div>
         <div class="h-box">
-          <div class="h-lbl">&beta;</div>
-          <div class="h-val dim" id="hval-beta">&mdash;</div>
+          <div class="h-lbl">β Tilt</div>
+          <div class="h-val dim" id="hval-beta">—</div>
         </div>
         <div class="h-box">
-          <div class="h-lbl">&gamma;</div>
-          <div class="h-val dim" id="hval-gamma">&mdash;</div>
+          <div class="h-lbl">γ Roll</div>
+          <div class="h-val dim" id="hval-gamma">—</div>
         </div>
       </div>
       <div id="chips-row">
-        <div class="chip" id="ch-light" data-chip="light"><div class="chip-dot"></div><span class="chip-lbl" data-t="chip_light">LIGHT</span></div>
-        <div class="chip" id="ch-steady" data-chip="steady"><div class="chip-dot"></div><span class="chip-lbl" data-t="chip_steady">STEADY</span></div>
-        <div class="chip" id="ch-level" data-chip="level"><div class="chip-dot"></div><span class="chip-lbl" data-t="chip_level">LEVEL</span></div>
-        <div class="chip" id="ch-body" data-chip="body"><div class="chip-dot"></div><span class="chip-lbl" data-t="chip_body">BODY</span></div>
-        <div class="chip" id="ch-dist" data-chip="dist"><div class="chip-dot"></div><span class="chip-lbl" data-t="chip_dist">DIST</span></div>
-        <div class="chip" id="ch-pose" data-chip="pose"><div class="chip-dot"></div><span class="chip-lbl" data-t="chip_pose">POSE</span></div>
+        <div class="chip" id="ch-light"  data-chip="light">  <div class="chip-dot"></div><span class="chip-lbl" data-t="chip_light">LIGHT</span></div>
+        <div class="chip" id="ch-steady" data-chip="steady"> <div class="chip-dot"></div><span class="chip-lbl" data-t="chip_steady">STEADY</span></div>
+        <div class="chip" id="ch-level"  data-chip="level">  <div class="chip-dot"></div><span class="chip-lbl" data-t="chip_level">LEVEL</span></div>
+        <div class="chip" id="ch-body"   data-chip="body">   <div class="chip-dot"></div><span class="chip-lbl" data-t="chip_body">BODY</span></div>
+        <div class="chip" id="ch-dist"   data-chip="dist">   <div class="chip-dot"></div><span class="chip-lbl" data-t="chip_dist">DIST</span></div>
+        <div class="chip" id="ch-pose"   data-chip="pose">   <div class="chip-dot"></div><span class="chip-lbl" data-t="chip_pose">POSE</span></div>
         <div class="chip dis" id="ch-sleeve" data-chip="sleeve"><div class="chip-dot"></div><span class="chip-lbl" data-t="chip_sleeve">SLEEVE</span></div>
       </div>
-      <div id="guide-txt">Initialising&hellip;</div>
-      <div id="shutter-row"><button id="shutter" class="off"></button></div>
+      <div id="guide-txt" class="guide-txt"></div>
+      <div id="shutter-row">
+        <div id="shutter" class="off"></div>
+      </div>
     </div>
   </div>
 
-  <!-- FORM -->
+  <!-- ═══════════════ PREVIEW ═══════════════ -->
+  <div id="preview">
+    <div class="prev-lbl" id="prev-lbl" data-t="prev_front">FRONT VIEW</div>
+    <div class="prev-img-wrap">
+      <img id="prev-img" src="" alt="">
+      <div class="prev-status" id="prev-status"></div>
+    </div>
+    <div class="prev-btns">
+      <button class="prev-btn retake" id="prev-retake">↰ Retake</button>
+      <button class="prev-btn proceed" id="prev-next">Next →</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════ FORM SCREEN ═══════════════ -->
   <div class="screen" id="s-form">
     <div class="sp">
+
       <div class="form-card">
         <div class="form-card-hd" data-t="fhd_biometric">Biometric</div>
-        <div class="form-field"><label class="f-lbl" for="f-dob" data-t="lbl_dob">Date of Birth</label><input class="f-in" type="date" id="f-dob"></div>
         <div class="form-field">
           <label class="f-lbl" data-t="lbl_gender">Gender</label>
-          <div class="seg"><button class="seg-btn" id="g-male" data-v="Male" data-t="opt_male">Male</button><button class="seg-btn" id="g-female" data-v="Female" data-t="opt_female">Female</button></div>
+          <div class="seg">
+            <button class="seg-btn" id="g-male"   data-v="Male"   data-t="opt_male">Male</button>
+            <button class="seg-btn" id="g-female" data-v="Female" data-t="opt_female">Female</button>
+          </div>
         </div>
-        <div class="form-field"><label class="f-lbl" for="f-weight" data-t="lbl_weight">Weight (g)</label><input class="f-in" type="number" id="f-weight" placeholder="e.g. 65000" min="0"></div>
-        <div class="form-field"><label class="f-lbl" for="f-height" data-t="lbl_height_sr">Height (cm) &mdash; Self-reported</label><input class="f-in" type="number" id="f-height" placeholder="e.g. 165" min="0"></div>
-        <div class="form-field"><label class="f-lbl" for="f-muac" data-t="lbl_muac">MUAC (mm)</label><input class="f-in" type="number" id="f-muac" placeholder="e.g. 240" min="0"></div>
+        <div class="form-field">
+          <label class="f-lbl" for="f-weight" data-t="lbl_weight">Weight (g)</label>
+          <input class="f-in-form" type="number" id="f-weight" placeholder="e.g. 8500" min="0">
+        </div>
+        <div class="form-field">
+          <label class="f-lbl" for="f-height" data-t="lbl_height_sr">Height (cm) — Self-reported</label>
+          <input class="f-in-form" type="number" id="f-height" placeholder="e.g. 75" min="0">
+        </div>
+        <div class="form-field">
+          <label class="f-lbl" for="f-muac" data-t="lbl_muac">MUAC (mm)</label>
+          <input class="f-in-form" type="number" id="f-muac" placeholder="e.g. 140" min="0">
+        </div>
       </div>
+
       <div class="form-card">
         <div class="form-card-hd" data-t="fhd_measurements">Measurements</div>
-        <div class="form-field"><label class="f-lbl" data-t="lbl_hfront">Front Height Est. (cm)</label><input class="f-in" type="number" id="f-h-front" placeholder="&mdash;" readonly></div>
-        <div class="form-field"><label class="f-lbl" data-t="lbl_hside">Side Height Est. (cm)</label><input class="f-in" type="number" id="f-h-side" placeholder="&mdash;" readonly></div>
+        <div class="form-field">
+          <label class="f-lbl" data-t="lbl_hfront">Front Height Est. (cm)</label>
+          <input class="f-in-form" type="number" id="f-h-front" placeholder="—" readonly>
+        </div>
+        <div class="form-field">
+          <label class="f-lbl" data-t="lbl_hside">Side Height Est. (cm)</label>
+          <input class="f-in-form" type="number" id="f-h-side" placeholder="—" readonly>
+        </div>
       </div>
+
       <div class="form-card">
         <div class="form-card-hd" data-t="fhd_household">Household</div>
         <div class="form-field">
-          <label class="f-lbl" data-t="lbl_literacy">Female Literacy</label>
-          <div class="seg"><button class="seg-btn" id="lit-yes" data-v="yes" data-t="opt_yes">Yes</button><button class="seg-btn" id="lit-no" data-v="no" data-t="opt_no">No</button></div>
+          <label class="f-lbl" data-t="lbl_literacy">Mother's Literacy (DHS scale)</label>
+          <div class="lit-select" id="lit-group">
+            <div class="radio-opt" data-v="cannot_read">  <div class="radio-dot"></div><span class="radio-lbl" data-t="lit_0">Cannot read at all</span></div>
+            <div class="radio-opt" data-v="reads_part">   <div class="radio-dot"></div><span class="radio-lbl" data-t="lit_1">Can read parts of a sentence</span></div>
+            <div class="radio-opt" data-v="reads_full">   <div class="radio-dot"></div><span class="radio-lbl" data-t="lit_2">Can read a full sentence</span></div>
+            <div class="radio-opt" data-v="writes_name">  <div class="radio-dot"></div><span class="radio-lbl" data-t="lit_3">Can read and write her name</span></div>
+            <div class="radio-opt" data-v="writes_full">  <div class="radio-dot"></div><span class="radio-lbl" data-t="lit_4">Can read and write sentences</span></div>
+          </div>
         </div>
         <div class="form-field">
-          <label class="f-lbl" for="f-caste" data-t="lbl_socialgroup">Social Group</label>
-          <select class="f-in" id="f-caste">
-            <option value="" data-t="opt_select">&mdash; Select &mdash;</option>
-            <option value="Scheduled Caste" data-t="opt_sc">Scheduled Caste</option>
-            <option value="Scheduled Tribe" data-t="opt_st">Scheduled Tribe</option>
-            <option value="Other Backward Class" data-t="opt_obc">Other Backward Class</option>
-            <option value="General" data-t="opt_gen">General</option>
-            <option value="Prefer not to answer" data-t="opt_pnta">Prefer not to answer</option>
-          </select>
+          <label class="f-lbl" data-t="lbl_socialgroup">Social Group</label>
+          <div id="social-group" class="radio-group">
+            <div class="radio-opt" data-v="Scheduled Tribe"        onclick="selectSocial(this)"><div class="radio-dot"></div><span class="radio-lbl" data-t="opt_st">Scheduled Tribe</span></div>
+            <div class="radio-opt" data-v="Scheduled Caste"        onclick="selectSocial(this)"><div class="radio-dot"></div><span class="radio-lbl" data-t="opt_sc">Scheduled Caste</span></div>
+            <div class="radio-opt" data-v="Other Backward Class"   onclick="selectSocial(this)"><div class="radio-dot"></div><span class="radio-lbl" data-t="opt_obc">Other Backward Class</span></div>
+            <div class="radio-opt" data-v="General"                onclick="selectSocial(this)"><div class="radio-dot"></div><span class="radio-lbl" data-t="opt_gen">General</span></div>
+            <div class="radio-opt" data-v="Prefer not to answer"   onclick="selectSocial(this)"><div class="radio-dot"></div><span class="radio-lbl" data-t="opt_pnta">Prefer not to answer</span></div>
+          </div>
         </div>
       </div>
-      <div class="consent-wrap">
-        <div class="consent-row" id="consent-row">
-          <div class="consent-box" id="consent-box"><span class="consent-tick">&#10003;</span></div>
-          <span class="consent-txt" id="consent-txt">By checking this box, I confirm that I have read or been read the information about this study, that I understand the purpose of the research and what participation involves, and that we voluntarily agree to participate. I understand that our participation is voluntary and that we may withdraw at any time without any negative consequences. We consent to the collection and use of my responses and images for research purposes.</span>
+
+      <div class="form-card" id="health-card">
+        <div class="form-card-hd" data-t="fhd_health">Child Health — Past 2 Weeks</div>
+        <div class="form-field">
+          <label class="f-lbl" data-t="lbl_fever">Had fever?</label>
+          <div class="seg">
+            <button class="seg-btn" id="h-fever-y" data-v="yes" data-t="opt_yes">Yes</button>
+            <button class="seg-btn" id="h-fever-n" data-v="no"  data-t="opt_no">No</button>
+          </div>
+        </div>
+        <div class="form-field">
+          <label class="f-lbl" data-t="lbl_diarr">Had diarrhoea (≥3 loose stools/day)?</label>
+          <div class="seg">
+            <button class="seg-btn" id="h-diarr-y" data-v="yes" data-t="opt_yes">Yes</button>
+            <button class="seg-btn" id="h-diarr-n" data-v="no"  data-t="opt_no">No</button>
+          </div>
+        </div>
+        <div class="form-field">
+          <label class="f-lbl" data-t="lbl_cough">Had cough or difficult breathing?</label>
+          <div class="seg">
+            <button class="seg-btn" id="h-cough-y" data-v="yes" data-t="opt_yes">Yes</button>
+            <button class="seg-btn" id="h-cough-n" data-v="no"  data-t="opt_no">No</button>
+          </div>
+        </div>
+        <div class="form-card-hd" data-t="fhd_appetite" style="border-top:1px solid var(--line)">Appetite — Past Week</div>
+        <div class="form-field">
+          <label class="f-lbl" data-t="lbl_ate_less">Ate less than usual?</label>
+          <div class="seg">
+            <button class="seg-btn" id="ap-less-y" data-v="yes" data-t="opt_yes">Yes</button>
+            <button class="seg-btn" id="ap-less-n" data-v="no"  data-t="opt_no">No</button>
+          </div>
+        </div>
+        <div class="form-field">
+          <label class="f-lbl" data-t="lbl_refused">Refused food at mealtimes?</label>
+          <div class="seg" style="flex-wrap:wrap;gap:6px">
+            <button class="seg-btn" id="ap-ref-nv" data-v="never"     data-t="opt_never"     style="flex:1 0 40%">Never</button>
+            <button class="seg-btn" id="ap-ref-so" data-v="sometimes" data-t="opt_sometimes" style="flex:1 0 40%">Sometimes</button>
+            <button class="seg-btn" id="ap-ref-of" data-v="often"     data-t="opt_often"     style="flex:1 0 40%">Often</button>
+            <button class="seg-btn" id="ap-ref-al" data-v="always"    data-t="opt_always"    style="flex:1 0 40%">Always</button>
+          </div>
+        </div>
+        <div class="form-field" id="bf-field" style="display:none">
+          <label class="f-lbl" data-t="lbl_breastfed">Currently breastfed?</label>
+          <div class="seg">
+            <button class="seg-btn" id="ap-bf-y" data-v="yes" data-t="opt_yes">Yes</button>
+            <button class="seg-btn" id="ap-bf-n" data-v="no"  data-t="opt_no">No</button>
+          </div>
         </div>
       </div>
-      <button class="btn btn-primary" id="form-submit" disabled data-t="btn_submit">Submit</button>
+
       <div class="form-msg" id="form-msg"></div>
+      <button class="btn btn-primary" id="form-submit" disabled data-t="btn_submit">Submit</button>
+
     </div>
   </div>
 
-  <!-- PREVIEW -->
-  <div id="preview">
-    <div class="prev-lbl" id="prev-lbl" data-t="prev_front">FRONT VIEW</div>
-    <div class="prev-img-wrap"><img id="prev-img" src="" alt=""><div class="prev-status" id="prev-status"></div></div>
-    <div class="prev-btns">
-      <button class="prev-btn retake" id="prev-retake">&#8617; Retake</button>
-      <button class="prev-btn proceed" id="prev-next">Next &rarr;</button>
-    </div>
-  </div>
-  <!-- Session expiry banner — shown mid-session, non-blocking -->
+  <!-- ═══════════════ REAUTH BANNER ═══════════════ -->
   <div id="reauth-banner">
-    <span id="reauth-msg">Session expiring &mdash; sign in again</span>
-    <button id="reauth-btn" onclick="triggerReauth()" data-t="ra_signin">Sign in</button>
+    <span id="reauth-msg"></span>
+    <button id="reauth-btn" data-t="ra_signin" onclick="triggerReauth()">Sign in</button>
   </div>
-</div>
+
+</div><!-- /#app -->
+
 <script>
 (function(){
 'use strict';
 
-/* ── helpers first so all top-level wiring can use them ── */
 function g(id){return document.getElementById(id);}
 
 /* ── CONFIG ── */
 const C={
   API:          'https://aimm-450300910281.asia-south1.run.app',
   GID:          '450300910281-c42g9vc3q8f27la48e2j5vc6428nk7sj.apps.googleusercontent.com',
-  // tasks-vision CDN (no version pin = always latest)
-  TV_CDN:       'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision',
-  TV_WASM:      'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision/wasm',
+  TV_CDN:       'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14',
+  TV_WASM:      'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm',
   MODEL_URL:    'https://storage.googleapis.com/mediapipe-models/holistic_landmarker/holistic_landmarker/float16/latest/holistic_landmarker.task',
   MODEL_CACHE:  'aimm-holistic',
   CAM_H_DEFAULT:70,
@@ -541,69 +1237,278 @@ const C={
   THEME_KEY:    'aimm.theme',
   REFRESH_AHEAD:5*60*1000,
   ARM_RAISE_DEG:45,
-  BODY_MIN:     0.60,  // min nose-to-ankle span fraction (person must fill ≥60% of frame height)
-  BODY_MAX:     0.96,  // max span fraction (only fails if person edge-to-edge)
-  BODY_SPAN_MIN:0.40,  // min span for checkBody landmark visibility test
+  BODY_MIN:     0.60,
+  BODY_MAX:     0.96,
+  BODY_SPAN_MIN:0.40,
   BRIGHT_MIN:   50,
   SHAKE_RMS:    2.45,
   SHAKE_SETTLE: 500,
   TILT_BETA:    10,
   TILT_GAMMA:   75,
-  GEO_TIMEOUT:  5000,
-  // mask scan: threshold and min consecutive fg pixels per row
-  MASK_THR:     0.4,  // MPMask foreground threshold [0-1]
-  SCAN_MIN_W:   3,    // min consecutive fg pixels per row (works for newborn side-on)
-  // selfie multiclass segmenter
+  GEO_TIMEOUT:  40000,
+  MASK_THR:     0.4,
+  SCAN_MIN_W:   3,
   SEG_MODEL_URL:'https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_multiclass_256x256/float32/latest/selfie_multiclass_256x256.tflite',
-  // persistence keys
   LANG_KEY:     'aimm.lang',
   CHIP_KEY:     'aimm.chipblock',
-  // MUAC sleeve check: fraction of mid-upper-arm pixels that must be skin (class 2)
-  SLEEVE_THR:0.60
+  SLEEVE_THR:   0.60,
+  IDB_NAME:     'aimm_queue',
+  IDB_VER:      1,
+  IDB_STORE:    'sessions',
+  OPFS_THRESH:  40*1024*1024,
+  OFFLINE_KEY:  'aimm.offline',
+  SESS_DOB_KEY: 'aimm.sess_dob'
 };
 
 /* ── STATE ── */
 const S={
-  token:null, expiry:null, email:null, refreshTimer:null, authResolve:null,
-  uuid:null, location:null, camH:C.CAM_H_DEFAULT,
+  token:null,expiry:null,email:null,refreshTimer:null,authResolve:null,
+  uuid:null,location:null,camH:C.CAM_H_DEFAULT,
   phase:'front',
-  frontBlob:null, sideBlob:null,
-  frontDone:false, sideDone:false,
-  frontErr:null, sideErr:null,
-  holistic:null, mpReady:false,
-  segmenter:null, segReady:false,
-  _lastSegU8:null, _lastSegW:0, _lastSegH:0, // last multiclass uint8 mask
-  _lastSegT:0,   // timestamp of last segmenter run
-  camStream:null, camRunning:false, lastVideoTime:-1,
+  frontBlob:null,sideBlob:null,
+  frontDone:false,sideDone:false,
+  frontErr:null,sideErr:null,
+  holistic:null,mpReady:false,
+  segmenter:null,segReady:false,
+  _lastSegU8:null,_lastSegW:0,_lastSegH:0,
+  _lastSegT:0,_lastSegRenderT:0,
+  camStream:null,camRunning:false,lastVideoTime:-1,
   checks:{light:false,steady:false,level:false,body:false,dist:false,pose:false,sleeve:true},
   chipBlock:{light:true,steady:true,level:true,body:true,dist:true,pose:true,sleeve:true},
-  lastPose:null, lastFace:null,
-  shakeOk:true, shakeTmr:null, lastAcc:{x:0,y:0,z:0},
+  lastPose:null,lastFace:null,
+  shakeOk:true,shakeTmr:null,lastAcc:{x:0,y:0,z:0},
   sensorFired:false,
   popupMode:'front-normal',
-  consentOn:false, genderVal:null, litVal:null,
+  consentOn:false,genderVal:null,litVal:null,
   setupPhase:'idle',
-  // height data (from mask pixel scan)
-  frontHeight:null, frontPpNorm:null, frontPcNorm:null,
-  sideHeight:null,  sidePpNorm:null,  sidePcNorm:null,
-  _lastHcm:null, _lastPpNorm:null, _lastPcNorm:null,
-  _lastTopRow:null, _lastBotRow:null, _lastMH:null, // in mask-native row coords (0..mH)
-  _lastBeta:null, _lastGamma:null, // live orientation from onOrientation
-  frontBeta:null, frontGamma:null, // snapshotted at front capture
-  sideBeta:null,  sideGamma:null,  // snapshotted at side capture
+  frontHeight:null,frontPpNorm:null,frontPcNorm:null,
+  sideHeight:null,sidePpNorm:null,sidePcNorm:null,
+  _lastHcm:null,_lastPpNorm:null,_lastPcNorm:null,
+  _lastTopRow:null,_lastBotRow:null,_lastMH:null,
+  _lastBeta:null,_lastGamma:null,
+  frontBeta:null,frontGamma:null,
+  sideBeta:null,sideGamma:null,
   _reauthScreen:null,
   _pollSideCount:0,
-  _sleeveLeft:true, _sleeveRight:true,
+  _sleeveLeft:true,_sleeveRight:true,
+  offlineMode:false,
+  _db:null,
+  _queueCount:0,
+  _uploadRunning:false,
+  _captureCancel:false,
+  sessDob:null,sessConsentOn:false,sessAgeOk:false,
+  hFever:null,hDiarr:null,hCough:null,
+  apLess:null,apRefused:null,apBreastfed:null,
+  socialVal:null
 };
 
 /* ── THEME ── */
 let dark=localStorage.getItem(C.THEME_KEY)==='dark'||
   (!localStorage.getItem(C.THEME_KEY)&&matchMedia('(prefers-color-scheme:dark)').matches);
-function applyTheme(){dark?document.documentElement.setAttribute('data-dark',''):document.documentElement.removeAttribute('data-dark');localStorage.setItem(C.THEME_KEY,dark?'dark':'light');}
+function applyTheme(){
+  dark?document.documentElement.setAttribute('data-dark',''):document.documentElement.removeAttribute('data-dark');
+  localStorage.setItem(C.THEME_KEY,dark?'dark':'light');
+}
 applyTheme();
 function toggleTheme(){dark=!dark;applyTheme();}
 g('h-theme').addEventListener('click',toggleTheme);
-g('cam-theme').addEventListener('click',toggleTheme);
+
+/* ── OFFLINE & QUEUE ── */
+const IS_FILE=location.protocol==='file:';
+
+async function openDB(){
+  return new Promise((res,rej)=>{
+    const req=indexedDB.open(C.IDB_NAME,C.IDB_VER);
+    req.onupgradeneeded=e=>{
+      const db=e.target.result;
+      if(!db.objectStoreNames.contains(C.IDB_STORE)){
+        const s=db.createObjectStore(C.IDB_STORE,{keyPath:'uuid'});
+        s.createIndex('status','status',{unique:false});
+      }
+    };
+    req.onsuccess=e=>res(e.target.result);
+    req.onerror=e=>rej(e.target.error);
+  });
+}
+async function dbGet(uuid){
+  return new Promise((res,rej)=>{
+    const tx=S._db.transaction(C.IDB_STORE,'readonly');
+    const req=tx.objectStore(C.IDB_STORE).get(uuid);
+    req.onsuccess=e=>res(e.target.result||null);
+    req.onerror=e=>rej(e.target.error);
+  });
+}
+async function dbPut(record){
+  return new Promise((res,rej)=>{
+    const tx=S._db.transaction(C.IDB_STORE,'readwrite');
+    const req=tx.objectStore(C.IDB_STORE).put(record);
+    req.onsuccess=()=>res();
+    req.onerror=e=>rej(e.target.error);
+  });
+}
+async function dbDel(uuid){
+  return new Promise((res,rej)=>{
+    const tx=S._db.transaction(C.IDB_STORE,'readwrite');
+    const req=tx.objectStore(C.IDB_STORE).delete(uuid);
+    req.onsuccess=()=>res();
+    req.onerror=e=>rej(e.target.error);
+  });
+}
+async function dbAll(){
+  return new Promise((res,rej)=>{
+    const tx=S._db.transaction(C.IDB_STORE,'readonly');
+    const req=tx.objectStore(C.IDB_STORE).getAll();
+    req.onsuccess=e=>res(e.target.result||[]);
+    req.onerror=e=>rej(e.target.error);
+  });
+}
+async function dbPending(){
+  return new Promise((res,rej)=>{
+    const tx=S._db.transaction(C.IDB_STORE,'readonly');
+    const idx=tx.objectStore(C.IDB_STORE).index('status');
+    const req=idx.getAll('pending');
+    req.onsuccess=e=>res(e.target.result||[]);
+    req.onerror=e=>rej(e.target.error);
+  });
+}
+
+async function opfsAvailable(){return !!(navigator.storage&&navigator.storage.getDirectory);}
+async function checkStorageAndUseOPFS(){
+  try{if(!await opfsAvailable())return false;const{usage=0}=await navigator.storage.estimate();return usage>C.OPFS_THRESH;}catch(e){return false;}
+}
+async function opfsWrite(name,blob){
+  if(!await opfsAvailable())throw new Error('OPFS unavailable');
+  const root=await navigator.storage.getDirectory();
+  const fh=await root.getFileHandle(name,{create:true});
+  const w=await fh.createWritable();await w.write(blob);await w.close();
+}
+async function opfsRead(name){
+  try{if(!await opfsAvailable())return null;const root=await navigator.storage.getDirectory();const fh=await root.getFileHandle(name,{create:false});return await fh.getFile();}catch(e){return null;}
+}
+async function opfsDel(name){
+  try{if(!await opfsAvailable())return;const root=await navigator.storage.getDirectory();await root.removeEntry(name);}catch(e){}
+}
+
+async function enqueueSession(uuid,frontBlob,sideBlob,payload){
+  if(!S._db)throw new Error('Database not ready');
+  const useOPFS=await checkStorageAndUseOPFS();
+  let record={uuid,status:'pending',ts:Date.now(),payload,retries:0,frontInOPFS:false,sideInOPFS:false};
+  if(useOPFS){await opfsWrite(uuid+'_front.jpg',frontBlob);await opfsWrite(uuid+'_side.jpg',sideBlob);record.frontInOPFS=true;record.sideInOPFS=true;}
+  else{record.frontBlob=frontBlob;record.sideBlob=sideBlob;}
+  await dbPut(record);await refreshQueueCount();
+}
+
+async function drainQueue(){
+  if(S._uploadRunning||S.offlineMode)return;
+  if(!S._db)return;
+  if(!S.token&&!IS_FILE)return;
+  S._uploadRunning=true;
+  try{
+    const items=await dbPending();
+    for(const item of items){
+      if(S.offlineMode)break;
+      try{
+        let frontBlob=item.frontBlob,sideBlob=item.sideBlob;
+        if(item.frontInOPFS)frontBlob=await opfsRead(item.uuid+'_front.jpg');
+        if(item.sideInOPFS)sideBlob=await opfsRead(item.uuid+'_side.jpg');
+        if(!frontBlob||!sideBlob){await dbDel(item.uuid);continue;}
+        await uploadBlobQueued(frontBlob,item.uuid+'_front.jpg');
+        await uploadBlobQueued(sideBlob,item.uuid+'_side.jpg');
+        const r=await apiFetch('/data','POST',item.payload,false);
+        if(!r.ok)throw new Error('HTTP '+r.status);
+        await dbDel(item.uuid);
+        if(item.frontInOPFS)await opfsDel(item.uuid+'_front.jpg');
+        if(item.sideInOPFS)await opfsDel(item.uuid+'_side.jpg');
+      }catch(e){
+        item.retries=(item.retries||0)+1;item.lastErr=e.message;
+        item.status=item.retries>=5?'failed':'pending';
+        await dbPut(item);
+      }
+    }
+  }finally{S._uploadRunning=false;await refreshQueueCount();}
+}
+async function uploadBlobQueued(blob,filename){
+  const fd=new FormData();fd.append('file',blob,filename);
+  const hdrs={'Authorization':'Bearer '+S.token};
+  const r=await fetchWithTimeout(C.API+'/file',{method:'POST',headers:hdrs,body:fd},30000);
+  if(!r.ok)throw new Error('HTTP '+r.status);
+}
+
+async function refreshQueueCount(){
+  if(!S._db)return;
+  const all=await dbAll();
+  const pending=all.filter(r=>r.status!=='done');
+  S._queueCount=pending.length;
+  const nc=g('net-count');
+  if(nc){if(S._queueCount>0){nc.textContent=S._queueCount;nc.style.display='block';}else{nc.style.display='none';}}
+  updateBeforeUnload();
+  try{const qm=g('queue-modal');if(qm&&qm.classList.contains('on'))window.showQueueModal();}catch(e){}
+}
+function updateBeforeUnload(){
+  if(S._queueCount>0){window.onbeforeunload=e=>{const msg=T('keep_open').replace('%n',S._queueCount);e.preventDefault();e.returnValue=msg;return msg;};}
+  else{window.onbeforeunload=null;}
+}
+
+window.showQueueModal=async function(){
+  const list=g('qm-list');list.innerHTML='';
+  g('qm-title').textContent=T('queue_title');
+  const all=await dbAll();
+  if(all.length===0){
+    list.innerHTML='<p style="color:var(--text3);font-size:0.85rem;padding:10px 0;font-family:var(--font)">'+T('queue_empty')+'</p>';
+  }else{
+    all.forEach(function(item){
+      const d=document.createElement('div');d.className='qm-item';
+      const uuidSpan=document.createElement('span');uuidSpan.className='qm-uuid';
+      uuidSpan.innerHTML='<strong>'+item.uuid+'</strong><small>'+new Date(item.ts).toLocaleString()+(item.lastErr?' — '+item.lastErr:'')+'</small>';
+      const scls=item.status==='failed'?'failed':item.status==='pending'?'pending':item.status==='uploading'?'uploading':'done';
+      const statusSpan=document.createElement('span');statusSpan.className='qm-status-badge '+scls;
+      statusSpan.textContent=item.status+(item.retries?' ×'+item.retries:'');
+      const actDiv=document.createElement('div');actDiv.className='qm-actions';
+      const retryBtn=document.createElement('button');retryBtn.className='qm-retry';retryBtn.textContent=T('retry');
+      retryBtn.addEventListener('click',function(){retryQueueItem(item.uuid);});
+      const delBtn=document.createElement('button');delBtn.className='qm-del';delBtn.textContent=T('delete_record');
+      delBtn.addEventListener('click',function(){deleteQueueItem(item.uuid);});
+      actDiv.appendChild(retryBtn);actDiv.appendChild(delBtn);
+      d.appendChild(uuidSpan);d.appendChild(statusSpan);d.appendChild(actDiv);
+      list.appendChild(d);
+    });
+  }
+  g('queue-modal').classList.add('on');
+};
+window.hideQueueModal=function(){g('queue-modal').classList.remove('on');};
+window.retryAllQueue=async function(){
+  if(!S._db)return;
+  const items=await dbAll();
+  for(const item of items){if(item.status==='failed'||item.status==='pending'){item.status='pending';await dbPut(item);}}
+  drainQueue();showQueueModal();
+};
+window.retryQueueItem=async function(uuid){
+  const item=await dbGet(uuid);if(!item)return;
+  item.status='pending';item.retries=0;await dbPut(item);
+  hideQueueModal();drainQueue();
+};
+window.deleteQueueItem=async function(uuid){
+  const item=await dbGet(uuid);
+  if(item){if(item.frontInOPFS)await opfsDel(uuid+'_front.jpg');if(item.sideInOPFS)await opfsDel(uuid+'_side.jpg');}
+  await dbDel(uuid);showQueueModal();refreshQueueCount();
+};
+
+function setOnline(online){
+  S.offlineMode=!online;
+  const dot=g('net-dot');
+  dot.classList.toggle('offline',!online);
+  dot.title=online?'Online — click to view uploads':'Offline';
+  if(online&&S._db)drainQueue();
+}
+window.addEventListener('online',()=>setOnline(true));
+window.addEventListener('offline',()=>setOnline(false));
+function probeConnectivity(){
+  if(!navigator.onLine){setOnline(false);return;}
+  fetch(C.API+'/',{method:'HEAD',mode:'no-cors',cache:'no-store'})
+    .then(()=>{setOnline(true);if(S._db)drainQueue();})
+    .catch(()=>setOnline(!IS_FILE&&navigator.onLine));
+}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&S._db)drainQueue();});
 
 /* ── LANGUAGE ── */
 const CONSENT_EN='By checking this box, I confirm that I have read or been read the information about this study, that I understand the purpose of the research and what participation involves, and that we voluntarily agree to participate. I understand that our participation is voluntary and that we may withdraw at any time without any negative consequences. We consent to the collection and use of my responses and images for research purposes.';
@@ -611,201 +1516,172 @@ const CONSENT_MR='हे चेकबॉक्स चेक करून, मी
 
 const LANG={
 en:{
-  // setup
-  st_cam:'Camera', st_loc:'Location', st_auth:'Sign in', st_model:'Holistic Model', st_seg:'Segmenter Model',
-  // session
-  lbl_sessid:'Session ID', lbl_location:'Location', lbl_camh:'Camera Height',
-  lbl_hfromground:'Height from ground', btn_begincapture:'Begin Capture →',
-  // form headers
-  fhd_biometric:'Biometric', fhd_measurements:'Measurements', fhd_household:'Household',
-  // form labels
-  lbl_dob:'Date of Birth', lbl_gender:'Gender', lbl_weight:'Weight (g)',
-  lbl_height_sr:'Height (cm) — Self-reported', lbl_muac:'MUAC (mm)',
-  lbl_hfront:'Front Height Est. (cm)', lbl_hside:'Side Height Est. (cm)',
-  lbl_literacy:'Female Literacy', lbl_socialgroup:'Social Group',
-  // options
-  opt_male:'Male', opt_female:'Female', opt_yes:'Yes', opt_no:'No',
-  opt_select:'— Select —',
-  opt_sc:'Scheduled Caste', opt_st:'Scheduled Tribe', opt_obc:'Other Backward Class',
-  opt_gen:'General', opt_pnta:'Prefer not to answer',
-  // buttons
+  st_cam:'Camera',st_loc:'Location',st_auth:'Sign in',st_model:'Holistic Model',st_seg:'Segmenter Model',
+  lbl_sessid:'Session ID',lbl_location:'Location',lbl_camh:'Camera Height',
+  lbl_hfromground:'Height from ground',btn_begincapture:'Begin Capture →',
+  fhd_biometric:'Biometric',fhd_measurements:'Measurements',fhd_household:'Household',
+  lbl_dob:'Date of Birth',lbl_gender:'Gender',lbl_weight:'Weight (g)',
+  lbl_height_sr:'Height (cm) — Self-reported',lbl_muac:'MUAC (mm)',
+  lbl_hfront:'Front Height Est. (cm)',lbl_hside:'Side Height Est. (cm)',
+  lbl_literacy:'Female Literacy',lbl_socialgroup:'Social Group',
+  opt_male:'Male',opt_female:'Female',opt_yes:'Yes',opt_no:'No',opt_select:'— Select —',
+  opt_sc:'Scheduled Caste',opt_st:'Scheduled Tribe',opt_obc:'Other Backward Class',
+  opt_gen:'General',opt_pnta:'Prefer not to answer',
   btn_submit:'Submit',
-  // chips
-  chip_light:'LIGHT', chip_steady:'STEADY', chip_level:'LEVEL',
-  chip_body:'BODY', chip_dist:'DIST', chip_pose:'POSE', chip_sleeve:'SLEEVE',
-  // camera
-  front_view:'FRONT VIEW', side_view:'SIDE VIEW',
+  chip_light:'LIGHT',chip_steady:'STEADY',chip_level:'LEVEL',
+  chip_body:'BODY',chip_dist:'DIST',chip_pose:'POSE',chip_sleeve:'SLEEVE',
+  front_view:'FRONT',side_view:'SIDE',
   no_pose:'POSE DETECTION UNAVAILABLE — WARN MODE ACTIVE',
-  // guide
-  g_light_blk:'Improve lighting — too dark', g_light_wrn:'Low light warning',
-  g_steady_blk:'Hold phone steady', g_steady_wrn:'Phone is moving',
-  g_level_blk:'Hold phone vertically upright', g_level_wrn:'Phone is tilted',
-  g_body_blk:'Full body must be in frame', g_body_wrn:'Body partially out of frame',
-  g_dist_far:'Step back from camera', g_dist_near:'Move closer', g_dist_none:'No person detected',
-  g_pose_front_blk:'Raise both arms to sides', g_pose_front_wrn:'Arms need to be raised more',
-  g_pose_side_blk:'Turn sideways for profile view', g_pose_side_wrn:'Not quite side-on',
+  g_light_blk:'Improve lighting — too dark',g_light_wrn:'Low light warning',
+  g_steady_blk:'Hold phone steady',g_steady_wrn:'Phone is moving',
+  g_level_blk:'Hold phone vertically upright',g_level_wrn:'Phone is tilted',
+  g_body_blk:'Full body must be in frame',g_body_wrn:'Body partially out of frame',
+  g_dist_far:'Step back from camera',g_dist_near:'Move closer',g_dist_none:'No person detected',
+  g_pose_front_blk:'Raise both arms to sides',g_pose_front_wrn:'Arms need to be raised more',
+  g_pose_side_blk:'Turn sideways for profile view',g_pose_side_wrn:'Not quite side-on',
   g_sleeve_both:'Roll up sleeves for measurement',
-  g_sleeve_left:'Expose left upper arm', g_sleeve_right:'Expose right upper arm',
+  g_sleeve_left:'Expose left upper arm',g_sleeve_right:'Expose right upper arm',
   g_front_ok:'Arms raised — tap shutter to capture',
   g_side_ok:'Side view ready — tap shutter to capture',
-  // preview
-  prev_front:'FRONT VIEW', prev_side:'SIDE VIEW', prev_next:'Next →',
-  prev_retake:'↰ Retake', prev_uploading:'Uploading…',
-  prev_upload_fail:'Upload failed: ', prev_retry:'Retry ↻',
-  // form msgs
-  form_submitting:'Submitting…', form_ok:'Submitted successfully.',
-  // setup flow
-  setup_cam_req:'Requesting camera access…',
-  setup_cam_done:'Camera access granted',
-  setup_loc:'Acquiring GPS…',
-  setup_loc_fail:'Location required',
-  setup_auth_check:'Checking saved session…',
-  setup_auth_prompt:'Sign in to continue',
-  setup_auth_verify:'Verifying…',
-  setup_auth_fail:'Server verification failed',
+  prev_front:'FRONT VIEW',prev_side:'SIDE VIEW',
+  prev_next:'Next →',prev_retake:'↰ Retake',prev_uploading:'Uploading…',
+  prev_upload_fail:'Upload failed: ',prev_retry:'Retry ↻',
+  form_submitting:'Submitting…',form_ok:'Submitted successfully.',
+  setup_cam_req:'Requesting camera access…',setup_cam_done:'Camera access granted',
+  setup_loc:'Acquiring GPS…',setup_loc_fail:'Location required',
+  setup_auth_check:'Checking saved session…',setup_auth_prompt:'Sign in to continue',
+  setup_auth_verify:'Verifying…',setup_auth_fail:'Server verification failed',
   setup_auth_resume:'Sign in to resume session',
-  setup_model:'Loading (cached after first load)…',
-  setup_model_cpu:'Holistic (CPU)…',
-  setup_model_done:'Holistic ready',
-  setup_seg:'Loading segmenter…',
-  setup_seg_done:'Segmenter ready',
-  setup_seg_fail:'Segmenter unavailable (degraded)',
-  setup_ready:'Ready',
-  setup_starting:'Starting…',
-  setup_cam_prog:'Requesting camera…',
-  setup_loc_prog:'Acquiring location…',
-  setup_auth_prog:'Waiting for sign-in…',
-  setup_model_prog:'Loading holistic model…',
-  setup_models_done:'Models loaded',
+  setup_model:'Loading (cached after first load)…',setup_model_cpu:'Holistic (CPU)…',
+  setup_model_done:'Holistic ready',setup_seg:'Loading segmenter…',
+  setup_seg_done:'Segmenter ready',setup_seg_fail:'Segmenter unavailable (degraded)',
+  setup_ready:'Ready',setup_starting:'Starting…',setup_cam_prog:'Requesting camera…',
+  setup_loc_prog:'Acquiring location…',setup_auth_prog:'Waiting for sign-in…',
+  setup_model_prog:'Loading holistic model…',setup_models_done:'Models loaded',
   setup_cache:'Preparing cache…',
-  // misc
-  retry:'Retry',
-  loc_unavailable:'Location unavailable',
-  cam_unavailable:'Camera unavailable',
-  failed:'Failed: ',
-  loc_acquiring:'Acquiring…',
-  // error titles
-  err_cam_title:'Camera required',
-  err_loc_title:'Location required',
-  err_verified:'Verification failed',
-  err_check_net:'Check network and retry.',
-  err_model_fail:'Model failed',
-  err_signin_dismissed:'Sign-in dismissed',
-  err_try_again:'Please try again.',
-  err_not_auth:'Not authenticated',
-  err_auth_error:'Auth error',
+  loc_unavailable:'Location unavailable',cam_unavailable:'Camera unavailable',
+  failed:'Failed: ',loc_acquiring:'Acquiring…',
+  err_cam_title:'Camera required',err_loc_title:'Location required',
+  err_verified:'Verification failed',err_check_net:'Check network and retry.',
+  err_model_fail:'Model failed',err_signin_dismissed:'Sign-in dismissed',
+  err_try_again:'Please try again.',err_not_auth:'Not authenticated',
+  err_required:'Required',
+  hint_dob_consent:'Enter child\'s date of birth and check consent to begin',
+  hint_dob:'Enter child\'s date of birth to begin',
+  hint_consent:'Check the consent box to begin',
+  err_auth_error:'Auth error',lbl_child_dob:'Child Date of Birth',
+  err_age_over5:'Child must be 0–5 years for this study.',
+  err_dob_future:'Date of birth cannot be in the future.',
+  err_dob_required:'Please enter date of birth.',
+  lbl_age_years:' yrs',lbl_age_months:' mo',
+  lit_0:'Cannot read at all',lit_1:'Can read parts of a sentence',
+  lit_2:'Can read a full sentence',lit_3:'Can read and write her name',
+  lit_4:'Can read and write sentences',
+  fhd_health:'Child Health — Past 2 Weeks',fhd_appetite:'Appetite — Past Week',
+  lbl_fever:'Had fever?',lbl_diarr:'Had diarrhoea (≥3 loose stools/day)?',
+  lbl_cough:'Had cough or difficult breathing?',lbl_ate_less:'Ate less than usual?',
+  lbl_refused:'Refused food at mealtimes?',lbl_breastfed:'Currently breastfed?',
+  opt_same:'Same',opt_never:'Never',opt_sometimes:'Sometimes',opt_often:'Often',opt_always:'Always',
+  offline_mode:'OFFLINE MODE',uploads_pending:'%n upload(s) pending',
+  upload_ok:'All uploads complete',queue_title:'Pending Uploads',
+  queue_empty:'No pending uploads.',close:'Close',retry:'Retry',delete_record:'Delete',
+  keep_open:'%n upload(s) pending — keep app open',
   err_upload_timeout:'Upload timed out — check network',
-  // consent
   consent:CONSENT_EN,
-  // reauth
   ra_expiring:'Session expiring — sign in again',
-  ra_expired:'Session expired — sign in to continue',
-  ra_signin:'Sign in'
+  ra_expired:'Session expired — sign in to continue',ra_signin:'Sign in'
 },
 mr:{
-  st_cam:'कॅमेरा', st_loc:'स्थान', st_auth:'साइन इन', st_model:'होलिस्टिक मॉडेल', st_seg:'सेगमेंटर मॉडेल',
-  lbl_sessid:'सेशन ID', lbl_location:'स्थान', lbl_camh:'कॅमेरा उंची',
-  lbl_hfromground:'जमिनीपासून उंची', btn_begincapture:'चित्रण सुरू करा →',
-  fhd_biometric:'जैवमापीय', fhd_measurements:'मापने', fhd_household:'घरगुती',
-  lbl_dob:'जन्मतारीख', lbl_gender:'लिंग', lbl_weight:'वजन (g)',
-  lbl_height_sr:'उंची (cm) — स्वयंघोषित', lbl_muac:'MUAC (mm)',
-  lbl_hfront:'समोरची उंची अंदाज (cm)', lbl_hside:'बाजूची उंची अंदाज (cm)',
-  lbl_literacy:'महिला साक्षरता', lbl_socialgroup:'सामाजिक गट',
-  opt_male:'पुरुष', opt_female:'स्त्री', opt_yes:'होय', opt_no:'नाही',
-  opt_select:'— निवडा करा —',
-  opt_sc:'अनुसूचित जाती', opt_st:'अनुसूचित जमाती', opt_obc:'इतर मागास वर्ग',
-  opt_gen:'साधारण', opt_pnta:'सांगणे नको',
+  st_cam:'कॅमेरा',st_loc:'स्थान',st_auth:'साइन इन',st_model:'होलिस्टिक मॉडेल',st_seg:'सेगमेंटर मॉडेल',
+  lbl_sessid:'सेशन ID',lbl_location:'स्थान',lbl_camh:'कॅमेरा उंची',
+  lbl_hfromground:'जमिनीपासून उंची',btn_begincapture:'चित्रण सुरू करा →',
+  fhd_biometric:'जैवमापीय',fhd_measurements:'मापने',fhd_household:'घरगुती',
+  lbl_dob:'जन्मतारीख',lbl_gender:'लिंग',lbl_weight:'वजन (g)',
+  lbl_height_sr:'उंची (cm) — स्वयंघोषित',lbl_muac:'MUAC (mm)',
+  lbl_hfront:'समोरची उंची अंदाज (cm)',lbl_hside:'बाजूची उंची अंदाज (cm)',
+  lbl_literacy:'महिला साक्षरता',lbl_socialgroup:'सामाजिक गट',
+  opt_male:'पुरुष',opt_female:'स्त्री',opt_yes:'होय',opt_no:'नाही',opt_select:'— निवडा —',
+  opt_sc:'अनुसूचित जाती',opt_st:'अनुसूचित जमाती',opt_obc:'इतर मागास वर्ग',
+  opt_gen:'साधारण',opt_pnta:'सांगणे नको',
   btn_submit:'सादर करा',
-  chip_light:'प्रकाश', chip_steady:'स्थिर', chip_level:'समतल',
-  chip_body:'शरीर', chip_dist:'अंतर', chip_pose:'मुद्रा', chip_sleeve:'बाही',
-  front_view:'समोरील दृश्य', side_view:'बाजूचे दृश्य',
+  chip_light:'प्रकाश',chip_steady:'स्थिर',chip_level:'समतल',
+  chip_body:'शरीर',chip_dist:'अंतर',chip_pose:'मुद्रा',chip_sleeve:'बाही',
+  front_view:'समोर',side_view:'बाजू',
   no_pose:'मुद्रा शोध उपलब्ध नाही — सूचना मोड',
-  g_light_blk:'प्रकाश सुधारा — खूप अंधार', g_light_wrn:'कमी प्रकाशाची सूचना',
-  g_steady_blk:'फोन स्थिर ठेवा', g_steady_wrn:'फोन हलवत आहे',
-  g_level_blk:'फोन उभा ठेवा', g_level_wrn:'फोन वाकडे आहे',
-  g_body_blk:'संपूर्ण शरीर चौकटात हवे', g_body_wrn:'शरीर अंशतः बाहेर',
-  g_dist_far:'कॅमेर्यापासून दूर जा', g_dist_near:'जवळ या', g_dist_none:'व्यक्ती आढळली नाही',
-  g_pose_front_blk:'दोन्ही हात बाजूला उचला', g_pose_front_wrn:'हात आणखी उचलणे आवश्यक',
-  g_pose_side_blk:'प्रोफाइल दृश्यासाठी बाजूला उभे रहा', g_pose_side_wrn:'पूर्ण बाजू नाही',
-  g_sleeve_both:'मापनासाठी बाह्या वर करा', g_sleeve_left:'डावा दंड उघडा करा', g_sleeve_right:'उजवा दंड उघडा करा',
-  g_front_ok:'हात उचललेले — शटर दाबा', g_side_ok:'बाजूचे दृश्य तयार — शटर दाबा',
-  prev_front:'समोरील दृश्य', prev_side:'बाजूचे दृश्य',
-  prev_next:'पुढे →', prev_retake:'↰ पुन्हा घ्या', prev_uploading:'अपलोड होत आहे…',
-  prev_upload_fail:'अपलोड अयशस्वी: ', prev_retry:'पुन्हा प्रयत्न करा ↻',
-  form_submitting:'सादर करत आहे…', form_ok:'यशस्वीरित्या सादर केले.',
-  // setup flow
-  setup_cam_req:'कॅमेरा परवानगी विनंती…',
-  setup_cam_done:'कॅमेरा परवानगी मिळाली',
-  setup_loc:'गुगल लोकेशन मिळवत आहे…',
-  setup_loc_fail:'स्थान आवश्यक',
-  setup_auth_check:'सेशन तपासत आहे…',
-  setup_auth_prompt:'पुढे जाण्यासाठी साइन इन करा',
-  setup_auth_verify:'पडताळणी होत आहे…',
-  setup_auth_fail:'सर्वर पडताळणी अयशस्वी',
+  g_light_blk:'प्रकाश सुधारा — खूप अंधार',g_light_wrn:'कमी प्रकाशाची सूचना',
+  g_steady_blk:'फोन स्थिर ठेवा',g_steady_wrn:'फोन हलवत आहे',
+  g_level_blk:'फोन उभा ठेवा',g_level_wrn:'फोन वाकडे आहे',
+  g_body_blk:'संपूर्ण शरीर चौकटात हवे',g_body_wrn:'शरीर अंशतः बाहेर',
+  g_dist_far:'कॅमेर्यापासून दूर जा',g_dist_near:'जवळ या',g_dist_none:'व्यक्ती आढळली नाही',
+  g_pose_front_blk:'दोन्ही हात बाजूला उचला',g_pose_front_wrn:'हात आणखी उचलणे आवश्यक',
+  g_pose_side_blk:'प्रोफाइल दृश्यासाठी बाजूला उभे रहा',g_pose_side_wrn:'पूर्ण बाजू नाही',
+  g_sleeve_both:'मापनासाठी बाह्या वर करा',g_sleeve_left:'डावा दंड उघडा करा',g_sleeve_right:'उजवा दंड उघडा करा',
+  g_front_ok:'हात उचललेले — शटर दाबा',g_side_ok:'बाजूचे दृश्य तयार — शटर दाबा',
+  prev_front:'समोरील दृश्य',prev_side:'बाजूचे दृश्य',
+  prev_next:'पुढे →',prev_retake:'↰ पुन्हा घ्या',prev_uploading:'अपलोड होत आहे…',
+  prev_upload_fail:'अपलोड अयशस्वी: ',prev_retry:'पुन्हा प्रयत्न करा ↻',
+  form_submitting:'सादर करत आहे…',form_ok:'यशस्वीरित्या सादर केले.',
+  setup_cam_req:'कॅमेरा परवानगी विनंती…',setup_cam_done:'कॅमेरा परवानगी मिळाली',
+  setup_loc:'गुगल लोकेशन मिळवत आहे…',setup_loc_fail:'स्थान आवश्यक',
+  setup_auth_check:'सेशन तपासत आहे…',setup_auth_prompt:'पुढे जाण्यासाठी साइन इन करा',
+  setup_auth_verify:'पडताळणी होत आहे…',setup_auth_fail:'सर्वर पडताळणी अयशस्वी',
   setup_auth_resume:'सेशन चालू ठेवण्यास साइन इन करा',
-  setup_model:'लोड होत आहे (प्रथम लोड नंतर कॅश)…',
-  setup_model_cpu:'होलिस्टिक (CPU)…',
-  setup_model_done:'होलिस्टिक तयार',
-  setup_seg:'सेगमेंटर लोड होत आहे…',
-  setup_seg_done:'सेगमेंटर तयार',
-  setup_seg_fail:'सेगमेंटर उपलब्ध नाही',
-  setup_ready:'तयार',
-  setup_starting:'सुरु होत आहे…',
-  setup_cam_prog:'कॅमेरा विनंती…',
-  setup_loc_prog:'स्थान मिळवत आहे…',
-  setup_auth_prog:'साइन इन वाट पहात आहे…',
-  setup_model_prog:'होलिस्टिक मॉडेल लोड होत आहे…',
-  setup_models_done:'मॉडेल तयार',
+  setup_model:'लोड होत आहे (प्रथम लोड नंतर कॅश)…',setup_model_cpu:'होलिस्टिक (CPU)…',
+  setup_model_done:'होलिस्टिक तयार',setup_seg:'सेगमेंटर लोड होत आहे…',
+  setup_seg_done:'सेगमेंटर तयार',setup_seg_fail:'सेगमेंटर उपलब्ध नाही',
+  setup_ready:'तयार',setup_starting:'सुरु होत आहे…',setup_cam_prog:'कॅमेरा विनंती…',
+  setup_loc_prog:'स्थान मिळवत आहे…',setup_auth_prog:'साइन इन वाट पहात आहे…',
+  setup_model_prog:'होलिस्टिक मॉडेल लोड होत आहे…',setup_models_done:'मॉडेल तयार',
   setup_cache:'कॅश तयार करत आहे…',
-  // misc
-  retry:'पुन्हा प्रयत्न करा',
-  loc_unavailable:'स्थान उपलब्ध नाही',
-  cam_unavailable:'कॅमेरा उपलब्ध नाही',
-  failed:'अयशस्वी: ',
-  loc_acquiring:'स्थान मिळवत आहे…',
-  err_cam_title:'कॅमेरा आवश्यक',
-  err_loc_title:'स्थान आवश्यक',
-  err_verified:'पडताळणी अयशस्वी',
-  err_check_net:'नेटवर्क तपासा आणि पुन्हा प्रयत्न करा.',
-  err_model_fail:'मॉडेल अयशस्वी',
-  err_signin_dismissed:'साइन इन रद्द',
-  err_try_again:'पुन्हा प्रयत्न करा.',
-  err_not_auth:'प्रमाणीकरण नाही',
-  err_auth_error:'साइन इन त्रुटी',
+  loc_unavailable:'स्थान उपलब्ध नाही',cam_unavailable:'कॅमेरा उपलब्ध नाही',
+  failed:'अयशस्वी: ',loc_acquiring:'स्थान मिळवत आहे…',
+  err_cam_title:'कॅमेरा आवश्यक',err_loc_title:'स्थान आवश्यक',
+  err_verified:'पडताळणी अयशस्वी',err_check_net:'नेटवर्क तपासा आणि पुन्हा प्रयत्न करा.',
+  err_model_fail:'मॉडेल अयशस्वी',err_signin_dismissed:'साइन इन रद्द',
+  err_try_again:'पुन्हा प्रयत्न करा.',err_not_auth:'प्रमाणीकरण नाही',
+  err_required:'आवश्यक',
+  hint_dob_consent:'मुलाची जन्मतारीख आणि संमती द्या',
+  hint_dob:'जन्मतारीख आवश्यक',hint_consent:'संमती चेकबॉक्स तपासा',
+  err_auth_error:'साइन इन त्रुटी',lbl_child_dob:'मुलाची जन्मतारीख',
+  err_age_over5:'मुल 0-5 वर्षाचे असावे.',
+  err_dob_future:'जन्मतारीख भविष्यात असू शकत नाही.',
+  err_dob_required:'कृपया जन्मतारीख नमूद करा.',
+  lbl_age_years:' वर्षे',lbl_age_months:' महिने',
+  lit_0:'वाचता येत नाही',lit_1:'वाक्याचा काही भाग वाचता येतो',
+  lit_2:'संपूर्ण वाक्य वाचता येतो',lit_3:'नाव वाचता आणि लिहू शकतो',
+  lit_4:'वाक्ये वाचता आणि लिहू शकतो',
+  fhd_health:'मुलाची आरोग्य — मागील 2 आठवडे',fhd_appetite:'भूक — मागील आठवडा',
+  lbl_fever:'ताप आला होता?',lbl_diarr:'अतिसार झाला होता?',
+  lbl_cough:'खोकला किंवा श्वासोच्छ्वास त्रास होता?',lbl_ate_less:'नेहमीपेक्षा कमी जेवले?',
+  lbl_refused:'जेवणाच्या वेळी नकार दिला?',lbl_breastfed:'सध्या स्तनपान सुरू आहे?',
+  opt_same:'सारखेच',opt_never:'कधीच नाही',opt_sometimes:'कधीकधी',opt_often:'अनेकदा',opt_always:'नेहमी',
+  offline_mode:'ऑफलाइन मोड',uploads_pending:'%n अपलोड पेंडिंग',
+  upload_ok:'सर्व अपलोड पूर्ण',queue_title:'पेंडिंग अपलोड',
+  queue_empty:'कोणतेही पेंडिंग नाही.',close:'बंद करा',retry:'पुन्हा प्रयत्न',delete_record:'डिलीट',
+  keep_open:'%n अपलोड पेंडिंग — अॅप चालू ठेवा',
   err_upload_timeout:'अपलोड वेळ संपली — नेटवर्क तपासा',
   consent:CONSENT_MR,
   ra_expiring:'सेशन संपत आहे — पुन्हा साइन इन करा',
-  ra_expired:'सेशन संपले — पुढे साइन इन करा',
-  ra_signin:'साइन इन'
+  ra_expired:'सेशन संपले — पुढे साइन इन करा',ra_signin:'साइन इन'
 }};
 
 let _lang=localStorage.getItem(C.LANG_KEY)||'en';
 function T(k){return(LANG[_lang]&&LANG[_lang][k])||LANG.en[k]||k;}
-function toggleLang(){_lang=_lang==='en'?'mr':'en';localStorage.setItem(C.LANG_KEY,_lang);applyLang();
-  // re-apply dynamic strings currently on screen
-  if(S.camRunning){g('cam-phase-lbl').textContent=S.phase==='front'?T('front_view'):T('side_view');}}
+function toggleLang(){_lang=_lang==='en'?'mr':'en';localStorage.setItem(C.LANG_KEY,_lang);applyLang();if(S.camRunning){g('cam-phase-lbl').textContent=S.phase==='front'?T('front_view'):T('side_view');}}
 window.toggleLang=toggleLang;
 function applyLang(){
   const btn=g('lang-btn');if(btn)btn.textContent=_lang==='en'?'EN':'MR';
-  // update all elements with data-t attribute
   document.querySelectorAll('[data-t]').forEach(el=>{
-    const k=el.getAttribute('data-t');
-    const v=T(k);
+    const k=el.getAttribute('data-t'),v=T(k);
     if(el.tagName==='OPTION')el.textContent=v;
     else if(el.tagName==='INPUT')el.placeholder=v;
     else el.textContent=v;
   });
-  // consent text (special — long string)
-  const ct=g('consent-txt');if(ct)ct.textContent=T('consent');
-  // no-pose bar
+  const ct=g('sess-consent-txt');if(ct)ct.textContent=T('consent');
   const np=g('no-pose-txt');if(np)np.textContent=T('no_pose');
-  // reauth banner
   const rm=g('reauth-msg');if(rm&&rm.dataset.key)rm.textContent=T(rm.dataset.key);
-  // cam-lang-btn mirrors header lang-btn
-  const clb=g('cam-lang-btn');if(clb)clb.textContent=_lang==='en'?'EN':'MR';
-  // cam phase label
+  const sc=g('sess-consent-txt');if(sc)sc.textContent=T('consent');
   const cpl=g('cam-phase-lbl');if(cpl)cpl.textContent=S.phase==='front'?T('front_view'):T('side_view');
-  // refresh guide text and chip labels if camera is running
   if(typeof updateUI==='function')updateUI();
 }
 
@@ -817,20 +1693,21 @@ chkDev();addEventListener('resize',chkDev);
 function showScreen(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
   g(id).classList.add('on');
-  const isCam=id==='s-camera',isSess=id==='s-session';
-  g('header').style.display=isCam?'none':'flex';
-  g('h-signout').classList.toggle('hidden',!isSess&&id!=='s-form');
-  g('h-reset').classList.toggle('hidden',id!=='s-form');
+  const isCam=id==='s-camera';
+  const cpl=g('cam-phase-lbl');if(cpl)cpl.style.display=isCam?'flex':'none';
+  g('h-signout').classList.toggle('hidden',id!=='s-session'&&id!=='s-form'&&!isCam);
+  g('h-reset').classList.toggle('hidden',id!=='s-form'&&!isCam);
 }
 function setStep(id,state,msg){
   const row=g(id),ico=g(id+'-ico'),msgEl=g(id+'-msg');
+  if(!row)return;
   row.className='step-row '+(state||'');
   if(msg!==undefined&&msgEl)msgEl.textContent=msg;
   if(!ico)return;
-  const nums={'st-cam':'1','st-loc':'2','st-auth':'3','st-model':'4'};
+  const nums={'st-cam':'1','st-loc':'2','st-auth':'3','st-store':'4','st-model':'5','st-seg':'6'};
   if(state==='active')ico.innerHTML='<div class="spin"></div>';
-  else if(state==='done')ico.textContent='\u2713';
-  else if(state==='err')ico.textContent='\u2717';
+  else if(state==='done')ico.textContent='✓';
+  else if(state==='err')ico.textContent='✕';
   else ico.textContent=nums[id]||'?';
 }
 function setProg(pct,lbl){if(pct!==null)g('prog-fill').style.width=pct+'%';if(lbl)g('prog-lbl').textContent=lbl;}
@@ -842,30 +1719,21 @@ async function runSetup(){
   clearErr();g('g-signin').style.display='none';
   if(_retryBtn){_retryBtn.remove();_retryBtn=null;}
 
-  /* 1 — Camera permission */
   S.setupPhase='cam';
-  setStep('st-cam','active','Requesting camera access\u2026');setProg(5,'Requesting camera\u2026');
+  setStep('st-cam','active','Requesting camera access…');setProg(5,'Requesting camera…');
   try{
     let stream=null;
-    for(const c of[
-      {video:{facingMode:{exact:'environment'}},audio:false},
-      {video:{facingMode:'environment'},audio:false}
-    ]){try{stream=await navigator.mediaDevices.getUserMedia(c);break;}catch(e){}}
+    for(const c of[{video:{facingMode:{exact:'environment'}},audio:false},{video:{facingMode:'environment'},audio:false}]){
+      try{stream=await navigator.mediaDevices.getUserMedia(c);break;}catch(e){}
+    }
     if(!stream)throw new Error('No rear camera found');
     stream.getTracks().forEach(t=>t.stop());
     setStep('st-cam','done',T('setup_cam_done'));
-  }catch(e){
-    setStep('st-cam','err',e.message);showErr(T('err_cam_title'),e.message);
-    showRetryBtn('cam');return;
-  }
+  }catch(e){setStep('st-cam','err',e.message);showErr(T('err_cam_title'),e.message);showRetryBtn('cam');return;}
 
-  /* Sensors — request permission, fallback after 3s */
   S.sensorFired=false;
   let sensorTimeout=null;
-  function onSensorFired(){
-    if(S.sensorFired)return;S.sensorFired=true;
-    if(sensorTimeout)clearTimeout(sensorTimeout);
-  }
+  function onSensorFired(){if(S.sensorFired)return;S.sensorFired=true;if(sensorTimeout)clearTimeout(sensorTimeout);}
   if(typeof DeviceOrientationEvent!=='undefined'){
     if(typeof DeviceOrientationEvent.requestPermission==='function')try{await DeviceOrientationEvent.requestPermission();}catch(e){}
     addEventListener('deviceorientation',e=>{onSensorFired();onOrientation(e);});
@@ -874,22 +1742,28 @@ async function runSetup(){
     if(typeof DeviceMotionEvent.requestPermission==='function')try{await DeviceMotionEvent.requestPermission();}catch(e){}
     addEventListener('devicemotion',e=>{onSensorFired();onMotion(e);});
   }else{S.checks.steady=true;}
-  // If no event fires within 3s, degrade gracefully
   sensorTimeout=setTimeout(()=>{if(!S.sensorFired){S.checks.level=true;S.checks.steady=true;}},3000);
 
-  /* 2 — Location */
   S.setupPhase='loc';
-  setStep('st-loc','active','Acquiring GPS\u2026');setProg(25,'Acquiring location\u2026');
+  setStep('st-loc','active',T('setup_loc'));setProg(25,T('setup_loc_prog'));
   const locOk=await getLocation();
-  if(!locOk){setStep('st-loc','err','Location required');showErr(T('err_loc_title'),T('err_loc_title'));showRetryBtn('loc');return;}
+  if(locOk&&S.location){setStep('st-loc','done',S.location.lat+', '+S.location.lon+' ±'+S.location.acc.toFixed(1)+'m');}
+  else{setStep('st-loc','err',T('loc_unavailable'));}
 
-  /* 3 — Auth */
-  S.setupPhase='auth';setProg(45,'Waiting for sign-in\u2026');
+  S.setupPhase='auth';setProg(45,'Waiting for sign-in…');
   const authOk=await doAuth();
   if(!authOk)return;
 
-  /* 4 — Model */
-  S.setupPhase='model';setProg(60,'Loading holistic model\u2026');
+  S.setupPhase='store';
+  setStep('st-store','active','Requesting persistent storage…');setProg(58,'Requesting storage…');
+  try{
+    if(navigator.storage&&navigator.storage.persist){
+      const granted=await navigator.storage.persist();
+      setStep('st-store','done',granted?'Persistent storage granted':'Storage ready (limited persistence)');
+    }else{setStep('st-store','done','Storage ready');}
+  }catch(e){setStep('st-store','err','Storage: '+e.message.slice(0,60));}
+
+  S.setupPhase='model';setProg(60,'Loading holistic model…');
   const modelOk=await loadModel();
   if(!modelOk)return;
 
@@ -904,7 +1778,7 @@ function showRetryBtn(){
   b.className='btn btn-ghost';b.textContent=T('retry');
   b.onclick=()=>{b.remove();_retryBtn=null;S.setupPhase='idle';runSetup();};
   _retryBtn=b;
-  g('s-setup').querySelector('.sp').appendChild(b);
+  g('s-setup').querySelector('.setup-wrap').appendChild(b);
 }
 
 /* ── LOCATION ── */
@@ -915,7 +1789,7 @@ function getLocation(){
     function done(loc,ok){
       if(settled)return;settled=true;
       if(watchId!==null)navigator.geolocation.clearWatch(watchId);
-      if(ok){S.location=loc;setStep('st-loc','done',`${loc.lat.toFixed(5)}, ${loc.lon.toFixed(5)} \u00b1${loc.acc.toFixed(0)}m`);}
+      if(ok){S.location=loc;setStep('st-loc','done',`${loc.lat}, ${loc.lon} ±${loc.acc.toFixed(1)}m`);}
       resolve(ok);
     }
     watchId=navigator.geolocation.watchPosition(
@@ -924,7 +1798,7 @@ function getLocation(){
         if(acc<bestAcc){
           bestAcc=acc;
           const loc={lat:pos.coords.latitude,lon:pos.coords.longitude,acc};
-          setStep('st-loc','active',`${loc.lat.toFixed(5)}, ${loc.lon.toFixed(5)} \u00b1${acc.toFixed(0)}m`);
+          setStep('st-loc','active',`${loc.lat}, ${loc.lon} ±${acc.toFixed(0)}m`);
           S.location=loc;
           if(acc<=15)done(loc,true);
         }
@@ -936,10 +1810,28 @@ function getLocation(){
   });
 }
 
+let _gpsWatchId=null;
+function startGpsWatch(){
+  if(!navigator.geolocation)return;
+  stopGpsWatch();
+  _gpsWatchId=navigator.geolocation.watchPosition(
+    pos=>{
+      S.location={lat:pos.coords.latitude,lon:pos.coords.longitude,acc:pos.coords.accuracy};
+      const dot=g('loc-dot'),val=g('loc-val');
+      if(dot)dot.className='loc-dot ok';
+      if(val)val.textContent=S.location.lat+', '+S.location.lon+' ±'+S.location.acc.toFixed(1)+'m';
+    },
+    err=>{const dot=g('loc-dot'),val=g('loc-val');if(dot)dot.className='loc-dot err';if(val)val.textContent='GPS unavailable';},
+    {enableHighAccuracy:true,maximumAge:5000,timeout:C.GEO_TIMEOUT}
+  );
+}
+function stopGpsWatch(){if(_gpsWatchId!==null){navigator.geolocation.clearWatch(_gpsWatchId);_gpsWatchId=null;}}
+
 /* ── AUTH ── */
 function doAuth(){
   return new Promise(resolve=>{
-    setStep('st-auth','active','Checking saved session\u2026');
+    if(IS_FILE||S.offlineMode){setStep('st-auth','done','Offline — no auth');return resolve(true);}
+    setStep('st-auth','active','Checking saved session…');
     const tk=localStorage.getItem(C.TOKEN_KEY),ex=parseInt(localStorage.getItem(C.EXPIRY_KEY)||'0',10),em=localStorage.getItem(C.EMAIL_KEY)||'';
     if(tk&&ex>Date.now()+60000&&em){
       S.token=tk;S.expiry=ex;S.email=em;scheduleRefresh(ex);
@@ -961,22 +1853,14 @@ window.triggerSignIn=function(){
   waitForGIS(()=>{google.accounts.id.prompt(n=>{if(n.isSkippedMoment()||n.isDismissedMoment()){g('g-signin').disabled=false;showErr(T('err_signin_dismissed'),T('err_try_again'));}});});
 };
 function handleCredential(cred,resolve){
-  g('g-signin').style.display='none';clearErr();
-  hideReauthBanner();
+  g('g-signin').style.display='none';clearErr();hideReauthBanner();
   try{
     const p=JSON.parse(atob(cred.credential.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
     S.token=cred.credential;S.expiry=p.exp*1000;S.email=p.email||'';
     localStorage.setItem(C.TOKEN_KEY,S.token);localStorage.setItem(C.EXPIRY_KEY,String(S.expiry));localStorage.setItem(C.EMAIL_KEY,S.email);
     scheduleRefresh(S.expiry);
-    // If this was a mid-session reauth, continue from where we were
-    if(S._reauthScreen){
-      const scr=S._reauthScreen;S._reauthScreen=null;
-      showScreen(scr);
-      // If camera was active, restart cam
-      if(scr==='s-camera')startCam();
-      return;
-    }
-    setStep('st-auth','active','Verifying\u2026');
+    if(S._reauthScreen){const scr=S._reauthScreen;S._reauthScreen=null;showScreen(scr);if(scr==='s-camera')startCam();return;}
+    setStep('st-auth','active','Verifying…');
     verifyServer().then(ok=>{
       if(ok){setStep('st-auth','done',S.email);const res=resolve||S.authResolve;S.authResolve=null;if(res)res(true);}
       else{setStep('st-auth','err',T('setup_auth_fail'));showErr(T('err_verified'),T('err_check_net'));showRetryBtn();}
@@ -986,58 +1870,15 @@ function handleCredential(cred,resolve){
 async function verifyServer(){try{const r=await fetchWithTimeout(C.API+'/',{method:'GET',headers:{'Authorization':'Bearer '+S.token}},10000);return r.ok;}catch(e){return false;}}
 function clearStoredAuth(){localStorage.removeItem(C.TOKEN_KEY);localStorage.removeItem(C.EXPIRY_KEY);localStorage.removeItem(C.EMAIL_KEY);}
 function scheduleRefresh(exp){if(S.refreshTimer)clearTimeout(S.refreshTimer);S.refreshTimer=setTimeout(silentRefresh,Math.max(0,exp-Date.now()-C.REFRESH_AHEAD));}
-
-let _silentRefreshAttempts=0;
-function silentRefresh(){
-  waitForGIS(()=>{
-    google.accounts.id.initialize({client_id:C.GID,callback:cred=>{
-      _silentRefreshAttempts=0;
-      handleCredential(cred,null);
-    },auto_select:true});
-    google.accounts.id.prompt(n=>{
-      if(n.isSkippedMoment()||n.isDismissedMoment()){
-        _silentRefreshAttempts++;
-        if(_silentRefreshAttempts<=2){
-          // retry once more after 60s
-          setTimeout(silentRefresh,60000);
-          showReauthBanner('ra_expiring');
-        }else{
-          // give up — show expiry banner but don't destroy session yet
-          showReauthBanner('ra_expired');
-        }
-      }
-    });
-  });
-}
-
-function showReauthBanner(key){
-  const el=g('reauth-msg');if(el){el.textContent=T(key);el.dataset.key=key;}
-  g('reauth-banner').classList.add('on');
-}
-function hideReauthBanner(){
-  g('reauth-banner').classList.remove('on');
-}
-
-// Called when user taps "Sign in" on the reauth banner mid-session
+async function silentRefresh(){showReauthBanner('ra_expiring');}
+function showReauthBanner(key){const rm=g('reauth-msg');if(rm){rm.textContent=T(key);rm.dataset.key=key;}g('reauth-banner').classList.add('on');}
+function hideReauthBanner(){g('reauth-banner').classList.remove('on');}
 window.triggerReauth=function(){
-  // remember which screen we're on so we can return after reauth
   const currentScreen=document.querySelector('.screen.on');
   S._reauthScreen=currentScreen?currentScreen.id:null;
-  waitForGIS(()=>{
-    google.accounts.id.initialize({client_id:C.GID,callback:cred=>handleCredential(cred,null),auto_select:false});
-    google.accounts.id.prompt(n=>{
-      if(n.isSkippedMoment()||n.isDismissedMoment()){
-        // One Tap didn't work — show full sign-in button overlay
-        g('g-signin').style.display='flex';g('g-signin').disabled=false;
-        S.authResolve=null;
-        // temporarily show setup screen sign-in area
-        showScreen('s-setup');
-        setStep('st-auth','active',T('setup_auth_resume'));
-      }
-    });
-  });
+  g('g-signin').style.display='flex';g('g-signin').disabled=false;S.authResolve=null;
+  showScreen('s-setup');setStep('st-auth','active',T('setup_auth_resume'));
 };
-
 function waitForGIS(cb){if(window.google&&window.google.accounts&&window.google.accounts.id){cb();return;}const t=setInterval(()=>{if(window.google&&window.google.accounts&&window.google.accounts.id){clearInterval(t);cb();}},100);}
 
 function doSignOut(){
@@ -1045,145 +1886,152 @@ function doSignOut(){
   const em=S.email;S.token=null;S.expiry=null;S.email=null;clearStoredAuth();
   waitForGIS(()=>{google.accounts.id.disableAutoSelect();if(em)try{google.accounts.id.revoke(em,()=>{});}catch(e){}});
   stopCam();S.setupPhase='idle';S._reauthScreen=null;
-  ['st-cam','st-loc','st-auth','st-model'].forEach(id=>setStep(id,'','Waiting\u2026'));
-  setProg(0,'Starting\u2026');clearErr();g('g-signin').style.display='none';
-  hideReauthBanner();
-  showScreen('s-setup');runSetup();
+  ['st-cam','st-loc','st-auth','st-store','st-model','st-seg'].forEach(id=>setStep(id,'','Waiting…'));
+  setProg(0,'Starting…');clearErr();g('g-signin').style.display='none';
+  hideReauthBanner();showScreen('s-setup');runSetup();
 }
 g('h-signout').addEventListener('click',doSignOut);
-g('cam-signout').addEventListener('click',doSignOut);
 
-/* apiFetch: auto-retry once after silent token refresh on 401 */
 async function apiFetch(path,method,body,isForm,_retry){
+  if(IS_FILE||S.offlineMode)throw new Error('offline');
   if(!S.token)throw new Error('Not authenticated');
   const hdrs={'Authorization':'Bearer '+S.token};
   if(!isForm)hdrs['Content-Type']='application/json';
   const opts={method,headers:hdrs};if(body)opts.body=isForm?body:JSON.stringify(body);
   const resp=await fetchWithTimeout(C.API+path,opts,30000);
-  if(resp.status===401&&!_retry){
-    // Token rejected — attempt one silent refresh then retry
-    await new Promise(res=>{
-      waitForGIS(()=>{
-        google.accounts.id.initialize({client_id:C.GID,callback:cred=>{handleCredential(cred,null);res();},auto_select:true});
-        google.accounts.id.prompt(n=>{if(n.isSkippedMoment()||n.isDismissedMoment()){showReauthBanner('ra_expired');res();}});
-      });
-    });
-    return apiFetch(path,method,body,isForm,true);
-  }
+  if(resp.status===401&&!_retry){showReauthBanner('ra_expired');throw new Error('Session expired');}
   return resp;
 }
 
-/* ── MODEL — tasks-vision HolisticLandmarker ── */
+/* ── MODEL ── */
 let _cachingInstalled=false;
-
 async function installCachingFetch(){
   if(_cachingInstalled||!('caches' in window))return;
   _cachingInstalled=true;
   const CACHE=C.MODEL_CACHE;
-  const PREFIXES=[
-    'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision',
-    'https://storage.googleapis.com/mediapipe-models/'
-  ];
+  const PREFIXES=['https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision','https://storage.googleapis.com/mediapipe-models/'];
   const _orig=window.fetch.bind(window);
   window.fetch=async function(input,...args){
     const url=typeof input==='string'?input:(input&&input.url)||'';
     if(!PREFIXES.some(p=>url.startsWith(p)))return _orig(input,...args);
     try{
       const cache=await caches.open(CACHE);
-      const hit=await cache.match(url);
-      if(hit)return hit;
-      const resp=await _orig(input,...args);
-      if(resp&&resp.ok)cache.put(url,resp.clone());
-      return resp;
+      const hit=await cache.match(url);if(hit)return hit.clone();
+      const resp=await _orig(input,...args);if(resp&&resp.ok)cache.put(url,resp.clone());return resp;
     }catch(e){return _orig(input,...args);}
   };
 }
 
 async function loadModel(){
   return new Promise(async resolve=>{
-    setStep('st-model','active','Preparing cache\u2026');
+    setStep('st-model','active','Preparing cache…');
     g('st-model-bar').style.display='block';
     await installCachingFetch();
     let pct=0;
     const anim=setInterval(()=>{pct=Math.min(pct+1.2,62);g('st-model-fill').style.width=pct+'%';},200);
-    setStep('st-model','active','Loading (cached after first load)\u2026');
+    setStep('st-model','active','Loading (cached after first load)…');
     try{
       const tv=await import(C.TV_CDN+'/vision_bundle.mjs');
-      const {HolisticLandmarker,ImageSegmenter,FilesetResolver}=tv;
+      const{HolisticLandmarker,ImageSegmenter,FilesetResolver}=tv;
       const vision=await FilesetResolver.forVisionTasks(C.TV_WASM);
-      const makeHL=async delegate=>{
-        return HolisticLandmarker.createFromOptions(vision,{
-          baseOptions:{modelAssetPath:C.MODEL_URL,delegate},
-          runningMode:'VIDEO',outputPoseSegmentationMasks:true,outputFaceBlendshapes:false,
-          minFaceDetectionConfidence:0.5,minFaceSuppressionThreshold:0.3,minFacePresenceConfidence:0.5,
-          minPoseDetectionConfidence:0.5,minPoseSuppressionThreshold:0.3,minPosePresenceConfidence:0.5,
-          minHandLandmarksConfidence:0.5
-        });
-      }
-      let hl;
-      try{hl=await makeHL('GPU');}catch(_eg){hl=await makeHL('CPU');setStep('st-model','active','Holistic (CPU)\u2026');}
+      const makeHL=async delegate=>HolisticLandmarker.createFromOptions(vision,{
+        baseOptions:{modelAssetPath:C.MODEL_URL,delegate},
+        runningMode:'VIDEO',outputPoseSegmentationMasks:true,outputFaceBlendshapes:false,
+        minFaceDetectionConfidence:0.5,minFaceSuppressionThreshold:0.3,minFacePresenceConfidence:0.5,
+        minPoseDetectionConfidence:0.5,minPoseSuppressionThreshold:0.3,minPosePresenceConfidence:0.5,
+        minHandLandmarksConfidence:0.5
+      });
+      let hl;try{hl=await makeHL('GPU');}catch(_eg){hl=await makeHL('CPU');setStep('st-model','active','Holistic (CPU)…');}
       clearInterval(anim);g('st-model-fill').style.width='65%';
-      S.holistic=hl;S.mpReady=true;
-      window._HL=HolisticLandmarker;
+      S.holistic=hl;S.mpReady=true;window._HL=HolisticLandmarker;
       setStep('st-model','done',T('setup_model_done'));
-      // load ImageSegmenter (selfie multiclass)
-      setStep('st-seg','active','Loading segmenter\u2026');
+      setStep('st-seg','active','Loading segmenter…');
       let pct2=65;
       const anim2=setInterval(()=>{pct2=Math.min(pct2+1,95);g('st-model-fill').style.width=pct2+'%';},200);
       try{
-        const makeSeg=async delegate=>{
-          return ImageSegmenter.createFromOptions(vision,{
-            baseOptions:{modelAssetPath:C.SEG_MODEL_URL,delegate},
-            runningMode:'VIDEO',outputCategoryMask:true,outputConfidenceMasks:false
-          });
-        }
-        let seg;
-        try{seg=await makeSeg('GPU');}catch(_eg2){seg=await makeSeg('CPU');}
+        const makeSeg=async delegate=>ImageSegmenter.createFromOptions(vision,{
+          baseOptions:{modelAssetPath:C.SEG_MODEL_URL,delegate},
+          runningMode:'VIDEO',outputCategoryMask:true,outputConfidenceMasks:false
+        });
+        let seg;try{seg=await makeSeg('GPU');}catch(_eg2){seg=await makeSeg('CPU');}
         clearInterval(anim2);g('st-model-fill').style.width='100%';
-        S.segmenter=seg;S.segReady=true;
-        setStep('st-seg','done',T('setup_seg_done'));
-      }catch(e2){
-        clearInterval(anim2);g('st-model-fill').style.width='100%';
-        setStep('st-seg','err',T('setup_seg_fail'));
-        console.warn('Segmenter failed:',e2);
-      }
-      setProg(95,T('setup_models_done'));
-      resolve(true);
+        S.segmenter=seg;S.segReady=true;setStep('st-seg','done',T('setup_seg_done'));
+      }catch(e2){clearInterval(anim2);g('st-model-fill').style.width='100%';setStep('st-seg','err',T('setup_seg_fail'));console.warn('Segmenter:',e2);}
+      setProg(95,T('setup_models_done'));resolve(true);
     }catch(e){
-      clearInterval(anim);
-      setStep('st-model','err',e.message.slice(0,80));
-      showErr(T('err_model_fail'),e.message+'\n\n'+T('err_check_net'));
-      showRetryBtn();resolve(false);
+      clearInterval(anim);setStep('st-model','err',e.message.slice(0,80));
+      showErr(T('err_model_fail'),e.message+'\n\n'+T('err_check_net'));showRetryBtn();resolve(false);
     }
   });
 }
-window.skipModel=function(){};// model is mandatory
 
 /* ── SESSION ── */
+function validateSessDob(){
+  const val=g('sess-dob').value;
+  const errEl=g('sess-age-err'),okEl=g('sess-age-ok');
+  if(!val){errEl.classList.remove('on');okEl.style.display='none';S.sessAgeOk=false;updateSessGo();return;}
+  const dob=new Date(val),now=new Date();
+  if(dob>now){
+    errEl.textContent=T('err_dob_future');errEl.classList.add('on');okEl.style.display='none';S.sessAgeOk=false;S.sessDob=null;
+  }else{
+    const ageMs=now-dob,ageYears=ageMs/(1000*60*60*24*365.25),ageMonths=Math.floor(ageMs/(1000*60*60*24*30.44));
+    if(ageYears>5){
+      errEl.textContent=T('err_age_over5');errEl.classList.add('on');okEl.style.display='none';S.sessAgeOk=false;S.sessDob=null;
+    }else{
+      errEl.classList.remove('on');
+      const y=Math.floor(ageYears),m=ageMonths%12;
+      okEl.textContent=y+T('lbl_age_years')+' '+m+T('lbl_age_months');okEl.style.display='block';
+      S.sessAgeOk=true;const p=val.split('-');S.sessDob=p[2]+'/'+p[1]+'/'+p[0];
+      localStorage.setItem(C.SESS_DOB_KEY,val);
+    }
+  }
+  updateSessGo();
+}
+function updateSessGo(){
+  const ok=S.sessAgeOk&&S.sessConsentOn;
+  g('sess-go').disabled=!ok;
+  const hint=g('sess-go-hint');
+  if(hint){
+    if(!S.sessAgeOk&&!S.sessConsentOn)hint.textContent=T('hint_dob_consent');
+    else if(!S.sessAgeOk)hint.textContent=T('hint_dob');
+    else if(!S.sessConsentOn)hint.textContent=T('hint_consent');
+    else hint.textContent='';
+  }
+}
+g('sess-dob').addEventListener('input',validateSessDob);
+g('sess-consent-row').addEventListener('click',function(){
+  S.sessConsentOn=!S.sessConsentOn;
+  g('sess-consent-box').classList.toggle('on',S.sessConsentOn);
+  updateSessGo();
+});
 function goSession(){
   S.uuid=genUUID();
   S.frontBlob=null;S.sideBlob=null;S.frontDone=false;S.sideDone=false;S.frontErr=null;S.sideErr=null;
   S.frontHeight=null;S.frontPpNorm=null;S.frontPcNorm=null;S.frontBeta=null;S.frontGamma=null;
   S.sideHeight=null;S.sidePpNorm=null;S.sidePcNorm=null;S.sideBeta=null;S.sideGamma=null;
   S._sleeveLeft=true;S._sleeveRight=true;
+  S.hFever=null;S.hDiarr=null;S.hCough=null;S.apLess=null;S.apRefused=null;S.apBreastfed=null;S.socialVal=null;
   S.phase='front';
   g('sess-uuid').textContent=S.uuid;
   const dot=g('loc-dot'),val=g('loc-val');
-  if(S.location){dot.className='loc-dot ok';val.textContent=`${S.location.lat.toFixed(5)}, ${S.location.lon.toFixed(5)} \u00b1${S.location.acc.toFixed(0)}m`;}
+  if(S.location){dot.className='loc-dot ok';val.textContent=`${S.location.lat}, ${S.location.lon} ±${S.location.acc.toFixed(1)}m`;}
   else{dot.className='loc-dot err';val.textContent=T('loc_unavailable');}
   const saved=parseFloat(localStorage.getItem(C.CAM_H_KEY));
-  S.camH=isNaN(saved)?C.CAM_H_DEFAULT:saved;
-  g('camh-input').value=S.camH;
+  S.camH=isNaN(saved)?C.CAM_H_DEFAULT:saved;g('camh-input').value=S.camH;
   g('h-signout').classList.remove('hidden');
-  showScreen('s-session');
-  applyLang();
+  const savedDob=localStorage.getItem(C.SESS_DOB_KEY)||'';
+  g('sess-dob').value=savedDob;
+  S.sessConsentOn=false;g('sess-consent-box').classList.remove('on');
+  showScreen('s-session');startGpsWatch();applyLang();
+  if(savedDob)validateSessDob();
+  updateSessGo();
+  if(S._db)setTimeout(drainQueue,500);
 }
 function genUUID(){const ch='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789',a=new Uint8Array(32);crypto.getRandomValues(a);return Array.from(a,b=>ch[b%ch.length]).join('');}
 g('camh-input').addEventListener('input',function(){const v=parseFloat(this.value);if(!isNaN(v)&&v>0){S.camH=v;localStorage.setItem(C.CAM_H_KEY,v);}});
 g('sess-go').addEventListener('click',()=>{const v=parseFloat(g('camh-input').value);if(!isNaN(v)&&v>0)S.camH=v;beginCapture('front');});
 function newSession(){stopCam();goSession();}
 g('h-reset').addEventListener('click',newSession);
-g('cam-reset').addEventListener('click',newSession);
 
 /* ── CAMERA ── */
 const vid=g('vid');
@@ -1191,55 +2039,39 @@ const mCvs=g('c-mask');
 const pCvs=g('c-pose');
 const mCtx=mCvs.getContext('2d');
 const pCtx=pCvs.getContext('2d');
-// brightness sampling canvas (persistent)
 const bCvs=document.createElement('canvas');bCvs.width=32;bCvs.height=32;
 const bCtx=bCvs.getContext('2d',{willReadFrequently:true});
-// mask compositing canvas (persistent, self-sizes to mask native resolution each frame)
 const maskTmp=document.createElement('canvas');
 
 function syncCanvasSize(){
-  // canvases must match the video element's rendered size exactly
-  const w=vid.offsetWidth||vid.clientWidth||1;
-  const h=vid.offsetHeight||vid.clientHeight||1;
+  const w=vid.offsetWidth||vid.clientWidth||1,h=vid.offsetHeight||vid.clientHeight||1;
   if(mCvs.width!==w||mCvs.height!==h){mCvs.width=w;mCvs.height=h;}
   if(pCvs.width!==w||pCvs.height!==h){pCvs.width=w;pCvs.height=h;}
-  // position canvases on top of video (video height = auto, need explicit pixel size)
   mCvs.style.width=w+'px';mCvs.style.height=h+'px';
   pCvs.style.width=w+'px';pCvs.style.height=h+'px';
-  // cam-viewport height = video natural height
   g('cam-viewport').style.height=h+'px';
 }
 if(window.ResizeObserver){new ResizeObserver(()=>{if(S.camRunning)syncCanvasSize();}).observe(vid);}
 
 function beginCapture(phase){
-  S.phase=phase;
+  stopGpsWatch();S.phase=phase;
+  const cpl=g('cam-phase-lbl');if(cpl)cpl.style.display='flex';
   updatePoseSil();
   g('cam-phase-lbl').textContent=phase==='front'?T('front_view'):T('side_view');
-  // reset realtime displays
-  g('hval-cur').textContent='\u2014';g('hval-cur').className='h-val dim';
+  g('hval-cur').textContent='—';g('hval-cur').className='h-val dim';
   if(!S.mpReady)activateNoPose();
-  showScreen('s-camera');
-  startCam();
+  showScreen('s-camera');startCam();
 }
 
 function startCam(){
   stopCam();S.camRunning=false;
-  // Request portrait video — no size constraints, let device choose native 3:4
-  const tryList=[
-    {video:{facingMode:{exact:'environment'}},audio:false},
-    {video:{facingMode:'environment'},audio:false},
-    {video:true,audio:false}
-  ];
+  const tryList=[{video:{facingMode:{exact:'environment'}},audio:false},{video:{facingMode:'environment'},audio:false},{video:true,audio:false}];
   async function tryNext(i){
     if(i>=tryList.length){g('guide-txt').textContent=T('cam_unavailable');return;}
     try{
       const stream=await navigator.mediaDevices.getUserMedia(tryList[i]);
       S.camStream=stream;vid.srcObject=stream;
-      vid.onloadeddata=()=>{
-        S.camRunning=true;S.lastVideoTime=-1;
-        syncCanvasSize();
-        requestAnimationFrame(camTick);
-      };
+      vid.onloadeddata=()=>{S.camRunning=true;S.lastVideoTime=-1;syncCanvasSize();requestAnimationFrame(camTick);};
       vid.onerror=()=>tryNext(i+1);
     }catch(e){tryNext(i+1);}
   }
@@ -1256,408 +2088,181 @@ function stopCam(){
 let _lastDetectT=0;
 function camTick(){
   if(!S.camRunning)return;
-  syncCanvasSize();
-  sampleBright();
+  syncCanvasSize();sampleBright();
   const now=performance.now();
   if(S.mpReady&&S.holistic&&vid.readyState>=2){
     if(now-_lastDetectT>=60){
       _lastDetectT=now;
-      // run segmenter at ~180ms intervals (every 3rd holistic frame)
       if(S.segReady&&S.segmenter&&(now-S._lastSegT)>=180){
         S._lastSegT=now;
         try{
           const sr=S.segmenter.segmentForVideo(vid,now);
           const cm=sr&&sr.categoryMask;
-          if(cm){
-            try{
-              const u8=cm.getAsUint8Array();
-              S._lastSegU8=u8;S._lastSegW=cm.width;S._lastSegH=cm.height;
-            }finally{try{cm.close();}catch(ce){}}
-          }
+          if(cm){try{const u8=cm.getAsUint8Array();S._lastSegU8=u8;S._lastSegW=cm.width;S._lastSegH=cm.height;}finally{try{cm.close();}catch(ce){}}}
         }catch(e){console.warn('segForVideo:',e);}
       }
       try{
-        const result=S.holistic.detectForVideo(vid,now);
-        drawResults(result);
+        const result=S.holistic.detectForVideo(vid,now);drawResults(result);
       }catch(e){
         console.warn('detectForVideo:',e);
-        mCtx.clearRect(0,0,mCvs.width,mCvs.height);
-        pCtx.clearRect(0,0,pCvs.width,pCvs.height);
+        mCtx.clearRect(0,0,mCvs.width,mCvs.height);pCtx.clearRect(0,0,pCvs.width,pCvs.height);
         updateHBadge(null);updateUI();
       }
     }
   }else if(!S.mpReady){
-    mCtx.clearRect(0,0,mCvs.width,mCvs.height);
-    pCtx.clearRect(0,0,pCvs.width,pCvs.height);
-    updateUI();
+    mCtx.clearRect(0,0,mCvs.width,mCvs.height);pCtx.clearRect(0,0,pCvs.width,pCvs.height);updateUI();
   }
   requestAnimationFrame(camTick);
 }
-/* ── OVERLAY DRAWING — mirrors ar.html approach exactly ──────────────────
-   Uses raw canvas 2D API (no DrawingUtils dependency).
-   Face index arrays hardcoded from MediaPipe face mesh map.
-   Pose/hand connections from HolisticLandmarker static properties.
-   drawResults() is called with the SYNC result object from detectForVideo.
-────────────────────────────────────────────────────────────────────────── */
 
-// Face mesh index arrays (same as ar.html)
 const FOVAL=[10,338,297,332,284,251,389,356,454,323,361,288,397,365,379,378,400,377,152,148,176,149,150,136,172,58,132,93,234,127,162,21,54,103,67,109];
 const FLEYE=[33,7,163,144,145,153,154,155,133,173,157,158,159,160,161,246];
 const FREYE=[362,382,381,380,374,373,390,249,263,466,388,387,386,385,384,398];
 const FLIPS=[61,185,40,39,37,0,267,269,270,409,291,375,321,405,314,17,84,181,91,146];
-
-// lx/ly: landmark normalised coords → canvas pixels (no crop needed with height:auto video)
 function lx(lm,W){return lm.x*W;}
 function ly(lm,H){return lm.y*H;}
 
 function drawResults(result){
   if(!S.camRunning)return;
   const W=mCvs.width,H=mCvs.height;
-
-  // Extract landmarks up-front — needed for height calculation AND overlay drawing
   const pose=result.poseLandmarks&&result.poseLandmarks[0];
   const face=result.faceLandmarks&&result.faceLandmarks[0];
   const lhand=result.leftHandLandmarks&&result.leftHandLandmarks[0];
   const rhand=result.rightHandLandmarks&&result.rightHandLandmarks[0];
 
-  /* ── CANVAS 1: segmentation mask (mCvs) ── */
   mCtx.clearRect(0,0,W,H);
   const mask=result.poseSegmentationMasks&&result.poseSegmentationMasks[0];
   if(mask){
     try{
       const mW=mask.width,mH=mask.height;
       const f32=mask.getAsFloat32Array();
-
-      // Draw multiclass colour mask if available (180ms cadence), else teal fallback
-      if(S._lastSegU8&&S._lastSegW===mW&&S._lastSegH===mH){
-        // multiclass mask — 6 classes with distinct colours
-        // 0=bg(skip) 1=hair(violet) 2=skin(peach) 3=face-skin(salmon) 4=clothes(blue) 5=acc(yellow)
+      if(S._lastSegU8&&S._lastSegW===mW&&S._lastSegH===mH&&S._lastSegT!==S._lastSegRenderT){
+        S._lastSegRenderT=S._lastSegT;
         const SEG_RGBA=[[0,0,0,0],[200,130,255,165],[255,180,100,140],[255,120,80,153],[60,140,255,140],[255,220,40,153]];
         if(maskTmp.width!==mW||maskTmp.height!==mH){maskTmp.width=mW;maskTmp.height=mH;}
-        const tc=maskTmp.getContext('2d');
-        const id=tc.createImageData(mW,mH);
-        const u8=S._lastSegU8;
+        const tc=maskTmp.getContext('2d');const id=tc.createImageData(mW,mH);const u8=S._lastSegU8;
         for(let i=0;i<mW*mH;i++){
-          const cls=u8[i];
-          if(cls===0)continue;
-          const c=SEG_RGBA[cls];
-          const r=i*4;
-          // modulate alpha by holistic fg confidence so edges are clean
-          const conf=f32[i];
-          id.data[r]=c[0];id.data[r+1]=c[1];id.data[r+2]=c[2];
-          id.data[r+3]=Math.round(c[3]*Math.min(1,conf*2));
+          const cls=u8[i];if(cls===0)continue;
+          const c=SEG_RGBA[cls];const r=i*4;const conf=f32[i];
+          id.data[r]=c[0];id.data[r+1]=c[1];id.data[r+2]=c[2];id.data[r+3]=Math.round(c[3]*Math.min(1,conf*2));
         }
-        tc.putImageData(id,0,0);
-        mCtx.drawImage(maskTmp,0,0,W,H);
+        tc.putImageData(id,0,0);mCtx.drawImage(maskTmp,0,0,W,H);
       }else{
-        // fallback: single teal mask from holistic pose segmentation
         if(maskTmp.width!==mW||maskTmp.height!==mH){maskTmp.width=mW;maskTmp.height=mH;}
-        const tc=maskTmp.getContext('2d');
-        const id=tc.createImageData(mW,mH);
-        for(let i=0;i<mW*mH;i++){
-          const v=f32[i],r=i*4;
-          if(v>0.4){id.data[r]=0;id.data[r+1]=220;id.data[r+2]=180;id.data[r+3]=Math.round(v*68);}
-        }
-        tc.putImageData(id,0,0);
-        mCtx.drawImage(maskTmp,0,0,W,H);
+        const tc=maskTmp.getContext('2d');const id=tc.createImageData(mW,mH);
+        for(let i=0;i<mW*mH;i++){const v=f32[i],r=i*4;if(v>0.4){id.data[r]=0;id.data[r+1]=220;id.data[r+2]=180;id.data[r+3]=Math.round(v*68);}}
+        tc.putImageData(id,0,0);mCtx.drawImage(maskTmp,0,0,W,H);
       }
       computeHeightFromMask(f32,mW,mH,W,H,pose,face);
     }catch(e){updateHBadge(null);console.warn('mask:',e);}
     finally{try{mask.close();}catch(e){}}
-  }else{
-    updateHBadge(null);
-  }
+  }else{updateHBadge(null);}
 
-  /* ── CANVAS 2: landmarks overlay (pCvs) ── */
   pCtx.clearRect(0,0,W,H);
-
-  /* Face mesh fill + contours */
   if(face){
-    // Face oval filled — blue
     pCtx.beginPath();
-    FOVAL.forEach((i,j)=>{
-      if(!face[i])return;
-      j===0?pCtx.moveTo(lx(face[i],W),ly(face[i],H)):pCtx.lineTo(lx(face[i],W),ly(face[i],H));
-    });
-    pCtx.closePath();
-    pCtx.fillStyle='rgba(72,130,255,0.18)';pCtx.fill();
+    FOVAL.forEach((i,j)=>{if(!face[i])return;j===0?pCtx.moveTo(lx(face[i],W),ly(face[i],H)):pCtx.lineTo(lx(face[i],W),ly(face[i],H));});
+    pCtx.closePath();pCtx.fillStyle='rgba(72,130,255,0.18)';pCtx.fill();
     pCtx.strokeStyle='rgba(72,130,255,0.60)';pCtx.lineWidth=1.2;pCtx.stroke();
-    // Eye contours — cyan
-    const contour=(pts,col,lw)=>{
-      pCtx.beginPath();
-      pts.forEach((i,j)=>{if(!face[i])return;j===0?pCtx.moveTo(lx(face[i],W),ly(face[i],H)):pCtx.lineTo(lx(face[i],W),ly(face[i],H));});
-      pCtx.strokeStyle=col;pCtx.lineWidth=lw||1;pCtx.stroke();
-    };
-    contour(FLEYE,'rgba(0,220,175,0.75)',1.2);
-    contour(FREYE,'rgba(0,220,175,0.75)',1.2);
-    contour(FLIPS,'rgba(245,80,90,0.60)',1.4);
-    // Face landmark dots — tiny white
+    const contour=(pts,col,lw)=>{pCtx.beginPath();pts.forEach((i,j)=>{if(!face[i])return;j===0?pCtx.moveTo(lx(face[i],W),ly(face[i],H)):pCtx.lineTo(lx(face[i],W),ly(face[i],H));});pCtx.strokeStyle=col;pCtx.lineWidth=lw||1;pCtx.stroke();};
+    contour(FLEYE,'rgba(0,220,175,0.75)',1.2);contour(FREYE,'rgba(0,220,175,0.75)',1.2);contour(FLIPS,'rgba(245,80,90,0.60)',1.4);
     pCtx.fillStyle='rgba(255,255,255,0.25)';
-    face.forEach(lm=>{
-      if(!lm)return;
-      pCtx.beginPath();pCtx.arc(lx(lm,W),ly(lm,H),0.8,0,Math.PI*2);pCtx.fill();
-    });
+    face.forEach(lm=>{if(!lm)return;pCtx.beginPath();pCtx.arc(lx(lm,W),ly(lm,H),0.8,0,Math.PI*2);pCtx.fill();});
   }
-
-  /* Pose skeleton — green */
   if(pose){
     S.lastPose=pose;S.lastFace=face||null;
     const PC=window._HL&&window._HL.POSE_CONNECTIONS;
     const lw=Math.max(2,W*0.004);
     pCtx.strokeStyle='rgba(0,220,175,0.85)';pCtx.lineWidth=lw;
-    if(PC){
-      PC.forEach(conn=>{
-        const a=conn.start??conn[0],b=conn.end??conn[1];
-        const la=pose[a],lb=pose[b];
-        if(!la||!lb)return;
-        if((la.visibility??1)<0.3||(lb.visibility??1)<0.3)return;
-        pCtx.beginPath();pCtx.moveTo(lx(la,W),ly(la,H));pCtx.lineTo(lx(lb,W),ly(lb,H));pCtx.stroke();
-      });
-    }
-    pose.forEach(lm=>{
-      if(!lm||(lm.visibility??1)<0.25)return;
-      pCtx.beginPath();pCtx.arc(lx(lm,W),ly(lm,H),3.5,0,Math.PI*2);
-      pCtx.fillStyle='rgba(0,232,184,1)';pCtx.fill();
-    });
+    if(PC){PC.forEach(conn=>{const a=conn.start??conn[0],b=conn.end??conn[1];const la=pose[a],lb=pose[b];if(!la||!lb)return;if((la.visibility??1)<0.3||(lb.visibility??1)<0.3)return;pCtx.beginPath();pCtx.moveTo(lx(la,W),ly(la,H));pCtx.lineTo(lx(lb,W),ly(lb,H));pCtx.stroke();});}
+    pose.forEach(lm=>{if(!lm||(lm.visibility??1)<0.25)return;pCtx.beginPath();pCtx.arc(lx(lm,W),ly(lm,H),3.5,0,Math.PI*2);pCtx.fillStyle='rgba(0,232,184,1)';pCtx.fill();});
     runChecks(pose);
-  }else{
-    S.lastPose=null;
-    S.checks.body=false;S.checks.dist=false;S.checks.pose=false;
-  }
+  }else{S.lastPose=null;S.checks.body=false;S.checks.dist=false;S.checks.pose=false;}
 
-  /* Hands — left=amber, right=purple */
   const HC=window._HL&&window._HL.HAND_CONNECTIONS;
   function drawHand(lms,col,fill){
     if(!lms||!lms.length)return;
-    pCtx.beginPath();
-    [0,1,5,9,13,17,0].forEach((i,j)=>{
-      if(!lms[i])return;
-      j===0?pCtx.moveTo(lx(lms[i],W),ly(lms[i],H)):pCtx.lineTo(lx(lms[i],W),ly(lms[i],H));
-    });
+    pCtx.beginPath();[0,1,5,9,13,17,0].forEach((i,j)=>{if(!lms[i])return;j===0?pCtx.moveTo(lx(lms[i],W),ly(lms[i],H)):pCtx.lineTo(lx(lms[i],W),ly(lms[i],H));});
     pCtx.fillStyle=fill;pCtx.fill();
-    if(HC){
-      pCtx.strokeStyle=col;pCtx.lineWidth=1.8;
-      HC.forEach(conn=>{
-        const a=conn.start??conn[0],b=conn.end??conn[1];
-        if(!lms[a]||!lms[b])return;
-        pCtx.beginPath();pCtx.moveTo(lx(lms[a],W),ly(lms[a],H));pCtx.lineTo(lx(lms[b],W),ly(lms[b],H));pCtx.stroke();
-      });
-    }
-    pCtx.fillStyle=col;
-    lms.forEach(lm=>{
-      if(!lm)return;
-      pCtx.beginPath();pCtx.arc(lx(lm,W),ly(lm,H),2.5,0,Math.PI*2);pCtx.fill();
-    });
+    if(HC){pCtx.strokeStyle=col;pCtx.lineWidth=1.8;HC.forEach(conn=>{const a=conn.start??conn[0],b=conn.end??conn[1];if(!lms[a]||!lms[b])return;pCtx.beginPath();pCtx.moveTo(lx(lms[a],W),ly(lms[a],H));pCtx.lineTo(lx(lms[b],W),ly(lms[b],H));pCtx.stroke();});}
+    pCtx.fillStyle=col;lms.forEach(lm=>{if(!lm)return;pCtx.beginPath();pCtx.arc(lx(lm,W),ly(lm,H),2.5,0,Math.PI*2);pCtx.fill();});
   }
   drawHand(lhand,'rgba(240,185,50,0.9)','rgba(240,185,50,0.12)');
   drawHand(rhand,'rgba(176,96,240,0.9)','rgba(176,96,240,0.12)');
-
-  // × marker at top of measured height span
   drawHeightOverlay();
-  updateUI();
+  const _nt=performance.now();if(_nt-_lastUIUpdate>100){_lastUIUpdate=_nt;updateUI();}
 }
 
-/* ── HEIGHT CALCULATION ────────────────────────────────────────────────────
-   Pp = top-of-head to sole-of-foot in display pixels
-   Pc = sole-of-foot to image centre (camera optical axis) in display pixels
-   H  = camH_cm × Pp / Pc
-
-   BOTTOM (botRow): always a full-width mask scan bottom-to-top — reliable
-   for feet regardless of view direction or arm position.
-
-   TOP (topRow): view-dependent, arm-safe:
-
-   FRONT VIEW — uses nose X as anchor for the head column:
-     1. noseCol = round(nose.x × mW), band = noseCol ± 5 columns
-     2. maskHeadRow: first row (top→down) in that band with any fg pixel > MASK_THR
-     3. faceHeadRow: round(min(face[*].y) × mH)  — topmost face mesh point
-     4. topRow = min(maskHeadRow, faceHeadRow)     — whichever is higher in frame
-     Fallback (no nose/face): full-width mask scan (current behaviour)
-
-   SIDE VIEW — ear X + shoulder X give head column candidates:
-     1. Collect candidate X positions: both ear landmarks (93,132,361,389 in face mesh)
-        + dominant shoulder (higher visibility of lm[11]/lm[12])
-     2. For each candidate: scan a ±5 column band in the mask top→down, take first fg row
-     3. faceHeadRow = round(min(face[*].y) × mH)
-     4. topRow = min of all candidate rows (highest point found)
-     Fallback (no face/pose): full-width mask scan
-──────────────────────────────────────────────────────────────────────────── */
 function computeHeightFromMask(f32,mW,mH,dispW,dispH,pose,face){
   if(!f32||!mW||!mH||dispH===0){updateHBadge(null);return;}
-  const THR=C.MASK_THR;
-  const BAND=5; // ± columns around anchor for head scan
-
-  /* ── helper: scan top→down in column band [colLo..colHi], return first fg row ── */
-  function scanTopInBand(colLo,colHi){
-    colLo=Math.max(0,colLo);colHi=Math.min(mW-1,colHi);
-    for(let row=0;row<mH;row++){
-      for(let col=colLo;col<=colHi;col++){
-        if(f32[row*mW+col]>THR)return row;
-      }
-    }
-    return -1;
-  }
-
-  /* ── full-width mask scan for top (fallback) ── */
-  function scanTopFull(){
-    const MIN_W=C.SCAN_MIN_W;
-    outer:
-    for(let row=0;row<mH;row++){
-      let run=0;
-      for(let col=0;col<mW;col++){
-        if(f32[row*mW+col]>THR){run++;}else{run=0;}
-        if(run>=MIN_W){return row;}
-      }
-    }
-    return -1;
-  }
-
-  /* ── bottom: full-width scan bottom→top (unchanged, arm-safe for feet) ── */
+  const THR=C.MASK_THR,BAND=5;
+  function scanTopInBand(colLo,colHi){colLo=Math.max(0,colLo);colHi=Math.min(mW-1,colHi);for(let row=0;row<mH;row++){for(let col=colLo;col<=colHi;col++){if(f32[row*mW+col]>THR)return row;}}return -1;}
+  function scanTopFull(){const MIN_W=C.SCAN_MIN_W;outer:for(let row=0;row<mH;row++){let run=0;for(let col=0;col<mW;col++){if(f32[row*mW+col]>THR){run++;}else{run=0;}if(run>=MIN_W){return row;}}}return -1;}
   let botRow=-1;
-  {
-    const MIN_W=C.SCAN_MIN_W;
-    outer_bot:
-    for(let row=mH-1;row>=0;row--){
-      let run=0;
-      for(let col=0;col<mW;col++){
-        if(f32[row*mW+col]>THR){run++;}else{run=0;}
-        if(run>=MIN_W){botRow=row;break outer_bot;}
-      }
-    }
-  }
+  {const MIN_W=C.SCAN_MIN_W;outer_bot:for(let row=mH-1;row>=0;row--){let run=0;for(let col=0;col<mW;col++){if(f32[row*mW+col]>THR){run++;}else{run=0;}if(run>=MIN_W){botRow=row;break outer_bot;}}}}
   if(botRow<0){updateHBadge(null);return;}
-
-  /* ── top: view-dependent head-column approach ── */
   let topRow=-1;
-
   if(S.phase==='front'){
-    /* FRONT: anchor on nose X ± 5 cols, then take min with face mesh min-Y */
     const nose=pose&&pose[0];
     if(nose){
       const noseCol=Math.round(nose.x*mW);
       const maskHeadRow=scanTopInBand(noseCol-BAND,noseCol+BAND);
-      // face mesh minimum Y → topmost head point
-      let faceHeadRow=mH; // pessimistic default
-      if(face&&face.length){
-        let minY=1;
-        for(let i=0;i<face.length;i++){if(face[i]&&face[i].y<minY)minY=face[i].y;}
-        faceHeadRow=Math.round(minY*mH);
-      }
-      // take the higher point (smaller row index)
-      if(maskHeadRow>=0)topRow=Math.min(maskHeadRow,faceHeadRow);
-      else if(faceHeadRow<mH)topRow=faceHeadRow;
+      let faceHeadRow=mH;
+      if(face&&face.length){let minY=1;for(let i=0;i<face.length;i++){if(face[i]&&face[i].y<minY)minY=face[i].y;}faceHeadRow=Math.round(minY*mH);}
+      if(maskHeadRow>=0)topRow=Math.min(maskHeadRow,faceHeadRow);else if(faceHeadRow<mH)topRow=faceHeadRow;
     }
-    // fallback: full-width scan
     if(topRow<0)topRow=scanTopFull();
-
   }else{
-    /* SIDE: multiple column anchors — ears + dominant shoulder + face mesh min-Y */
     const candidates=[];
-
-    // Face mesh ear landmarks (tragus region — reliable in side view)
-    // Left ear: 93,132  Right ear: 361,389
     if(face&&face.length){
-      [93,132,361,389].forEach(i=>{
-        if(face[i]){
-          const col=Math.round(face[i].x*mW);
-          const row=scanTopInBand(col-BAND,col+BAND);
-          if(row>=0)candidates.push(row);
-        }
-      });
-      // face mesh min-Y (topmost skull point regardless of orientation)
-      let minY=1;
-      for(let i=0;i<face.length;i++){if(face[i]&&face[i].y<minY)minY=face[i].y;}
-      const faceHeadRow=Math.round(minY*mH);
-      if(faceHeadRow<mH)candidates.push(faceHeadRow);
+      [93,132,361,389].forEach(i=>{if(face[i]){const col=Math.round(face[i].x*mW);const row=scanTopInBand(col-BAND,col+BAND);if(row>=0)candidates.push(row);}});
+      let minY=1;for(let i=0;i<face.length;i++){if(face[i]&&face[i].y<minY)minY=face[i].y;}
+      const faceHeadRow=Math.round(minY*mH);if(faceHeadRow<mH)candidates.push(faceHeadRow);
     }
-
-    // Dominant shoulder (higher visibility)
-    if(pose){
-      const lv=(pose[11]&&pose[11].visibility)||0;
-      const rv=(pose[12]&&pose[12].visibility)||0;
-      const domShoulder=lv>=rv?pose[11]:pose[12];
-      if(domShoulder){
-        const col=Math.round(domShoulder.x*mW);
-        const row=scanTopInBand(col-BAND,col+BAND);
-        if(row>=0)candidates.push(row);
-      }
-    }
-
-    // Take the highest (smallest row index) among all candidates
+    if(pose){const lv=(pose[11]&&pose[11].visibility)||0,rv=(pose[12]&&pose[12].visibility)||0;const domShoulder=lv>=rv?pose[11]:pose[12];if(domShoulder){const col=Math.round(domShoulder.x*mW);const row=scanTopInBand(col-BAND,col+BAND);if(row>=0)candidates.push(row);}}
     if(candidates.length>0)topRow=Math.min(...candidates);
-    // fallback: full-width scan
     if(topRow<0)topRow=scanTopFull();
   }
-
   if(topRow<0||botRow<=topRow){updateHBadge(null);return;}
-
-  /* ── geometry ── */
-  const topPx=(topRow/mH)*dispH;
-  const botPx=(botRow/mH)*dispH;
-  const midPx=dispH/2;
-
-  const Pp=botPx-topPx;
-  const Pc=botPx-midPx;
-
+  const topPx=(topRow/mH)*dispH,botPx=(botRow/mH)*dispH,midPx=dispH/2;
+  const Pp=botPx-topPx,Pc=botPx-midPx;
   if(Pc<=0||Pp<=0){updateHBadge(null);return;}
-
   const hcm=S.camH*Pp/Pc;
   if(hcm<=0||hcm>350){updateHBadge(null);return;}
-
-  S._lastPpNorm=Pp/dispH;
-  S._lastPcNorm=Pc/dispH;
-  S._lastTopRow=topRow;
-  S._lastBotRow=botRow;
-  S._lastMH=mH;
-
+  S._lastPpNorm=Pp/dispH;S._lastPcNorm=Pc/dispH;S._lastTopRow=topRow;S._lastBotRow=botRow;S._lastMH=mH;
   updateHBadge(hcm);
 }
 
 function updateHBadge(hcm){
   const el=g('hval-cur');
-  if(hcm===null){
-    el.textContent='\u2014';el.className='h-val dim';S._lastHcm=null;
-    // clear overlay state so stale × doesn't persist
-    S._lastTopRow=null;S._lastBotRow=null;S._lastMH=null;
-    S._lastPpNorm=null;S._lastPcNorm=null;
-  }else{
-    el.textContent=hcm.toFixed(1)+' cm';el.className='h-val';S._lastHcm=hcm;
-  }
+  if(hcm===null){el.textContent='—';el.className='h-val dim';S._lastHcm=null;S._lastTopRow=null;S._lastBotRow=null;S._lastMH=null;S._lastPpNorm=null;S._lastPcNorm=null;}
+  else{el.textContent=hcm.toFixed(1)+' cm';el.className='h-val';S._lastHcm=hcm;}
 }
 
-/* Draw × at image centre (dispH/2) — the camera optical axis point, one end of Pc */
 function drawHeightOverlay(){
   if(S._lastBotRow===null||S._lastMH===null)return;
-  const dispH=pCvs.height,dispW=pCvs.width;
-  const midPx=dispH/2;   // image centre = camera horizon = upper end of Pc
-  const cx=dispW/2;
-  const r=9;
-  pCtx.save();
-  pCtx.strokeStyle='rgba(255,210,50,0.95)';
-  pCtx.lineWidth=2.5;
-  pCtx.lineCap='round';
+  const dispH=pCvs.height,dispW=pCvs.width,midPx=dispH/2,cx=dispW/2,r=9;
+  pCtx.save();pCtx.strokeStyle='rgba(255,210,50,0.95)';pCtx.lineWidth=2.5;pCtx.lineCap='round';
   pCtx.beginPath();pCtx.moveTo(cx-r,midPx-r);pCtx.lineTo(cx+r,midPx+r);pCtx.stroke();
   pCtx.beginPath();pCtx.moveTo(cx+r,midPx-r);pCtx.lineTo(cx-r,midPx+r);pCtx.stroke();
   pCtx.restore();
 }
 
-/* ── BRIGHTNESS ── */
 function sampleBright(){
   if(!vid.videoWidth)return;
   try{bCtx.drawImage(vid,0,0,32,32);const d=bCtx.getImageData(0,0,32,32).data;let s=0;for(let i=0;i<d.length;i+=4)s+=d[i]*0.299+d[i+1]*0.587+d[i+2]*0.114;S.checks.light=(s/1024)>C.BRIGHT_MIN;}
   catch(e){S.checks.light=true;}
 }
 
-/* ── SENSORS ── */
+let _lastUIUpdate=0;
 function onOrientation(e){
-  const beta=e.beta||0, gamma=e.gamma||0;
-  const betaOk=Math.abs(beta-90)<C.TILT_BETA, gammaOk=Math.abs(gamma)<C.TILT_GAMMA;
-  S.checks.level=betaOk&&gammaOk;
-  S._lastBeta=beta; S._lastGamma=gamma;
-  // write live to display — normal colour when within constraint, dim when outside
-  const bEl=g('hval-beta'), gEl=g('hval-gamma');
-  if(bEl){bEl.textContent=(beta).toFixed(1)+'\u00b0';bEl.className='h-val'+(betaOk?'':' dim');}
-  if(gEl){gEl.textContent=(gamma).toFixed(1)+'\u00b0';gEl.className='h-val'+(gammaOk?'':' dim');}
+  const beta=e.beta||0,gamma=e.gamma||0;
+  const betaOk=Math.abs(beta-90)<C.TILT_BETA,gammaOk=Math.abs(gamma)<C.TILT_GAMMA;
+  S.checks.level=betaOk&&gammaOk;S._lastBeta=beta;S._lastGamma=gamma;
+  const bEl=g('hval-beta'),gEl=g('hval-gamma');
+  if(bEl){bEl.textContent=beta.toFixed(1)+'°';bEl.className='h-val'+(betaOk?'':' dim');}
+  if(gEl){gEl.textContent=gamma.toFixed(1)+'°';gEl.className='h-val'+(gammaOk?'':' dim');}
+  const _now2=performance.now();if(_now2-_lastUIUpdate>100){_lastUIUpdate=_now2;if(S.camRunning)updateUI();}
 }
 function onMotion(e){
   const a=e.accelerationIncludingGravity;if(!a){S.checks.steady=true;return;}
@@ -1669,32 +2274,17 @@ function onMotion(e){
 if(typeof DeviceOrientationEvent!=='undefined'&&typeof DeviceOrientationEvent.requestPermission!=='function')addEventListener('deviceorientation',onOrientation);
 if(typeof DeviceMotionEvent!=='undefined'&&typeof DeviceMotionEvent.requestPermission!=='function')addEventListener('devicemotion',onMotion);
 
-/* ── POSE CHECKS ── */
-function vis(lm,i,vt){
-  vt=vt||0.30;const p=lm[i];if(!p)return false;
-  return(p.visibility!==undefined?p.visibility:1)>=vt;
-}
+function vis(lm,i,vt){vt=vt||0.30;const p=lm[i];if(!p)return false;return(p.visibility!==undefined?p.visibility:1)>=vt;}
 function runChecks(lm){
   const nose=vis(lm,0,0.3)?lm[0]:null;
-  let ankleY=0;
-  [[27,0.3],[28,0.3],[29,0.25],[30,0.25]].forEach(function(x){if(vis(lm,x[0],x[1]))ankleY=Math.max(ankleY,lm[x[0]].y);});
+  let ankleY=0;[[27,0.3],[28,0.3],[29,0.25],[30,0.25]].forEach(function(x){if(vis(lm,x[0],x[1]))ankleY=Math.max(ankleY,lm[x[0]].y);});
   const span=(nose&&ankleY>0)?ankleY-nose.y:0;
-  S.checks.dist=span>=C.BODY_MIN&&span<=C.BODY_MAX;
-  S.checks.body=checkBody(lm,span);
-  S.checks.pose=S.phase==='front'?checkFront(lm):checkSide(lm);
-  // Sleeve check — front view only, requires segmenter
-  if(S.phase==='front'&&S.segReady&&S._lastSegU8){
-    S.checks.sleeve=checkSleeve(lm);
-  }else{
-    S.checks.sleeve=true; // not checked in side view or without segmenter
-  }
+  S.checks.dist=span>=C.BODY_MIN&&span<=C.BODY_MAX;S.checks.body=checkBody(lm,span);S.checks.pose=S.phase==='front'?checkFront(lm):checkSide(lm);
+  if(S.phase==='front'&&S.segReady&&S._lastSegU8){S.checks.sleeve=checkSleeve(lm);}else{S.checks.sleeve=true;}
 }
 function checkBody(lm,span){
   if(span<C.BODY_SPAN_MIN)return false;
-  if(S.phase==='front'){
-    if(![0,11,12,23,24].every(i=>vis(lm,i,0.35)))return false;
-    return[13,14,25,26,27,28].filter(i=>vis(lm,i,0.25)).length>=3;
-  }
+  if(S.phase==='front'){if(![0,11,12,23,24].every(i=>vis(lm,i,0.35)))return false;return[13,14,25,26,27,28].filter(i=>vis(lm,i,0.25)).length>=3;}
   const lv=(lm[11]&&lm[11].visibility)||0,rv=(lm[12]&&lm[12].visibility)||0;
   const arr=lv>=rv?[11,13,23,25,27]:[12,14,24,26,28];
   if(!vis(lm,0,0.3)||!vis(lm,arr[0],0.35)||!vis(lm,arr[2],0.35))return false;
@@ -1713,53 +2303,23 @@ function checkSide(lm){
   if(![11,12,23,24].every(i=>vis(lm,i,0.30)))return false;
   const ls=lm[11],rs=lm[12],lh=lm[23],rh=lm[24];
   const sMy=(ls.y+rs.y)/2,hMy=(lh.y+rh.y)/2,tH=Math.max(hMy-sMy,0.05);
-  if(Math.abs(rs.x-ls.x)/tH>0.35)return false;
-  if(Math.abs(rh.x-lh.x)/tH>0.32)return false;
+  if(Math.abs(rs.x-ls.x)/tH>0.35)return false;if(Math.abs(rh.x-lh.x)/tH>0.32)return false;
   const eI=((lm[11]&&lm[11].visibility)||0)>=((lm[12]&&lm[12].visibility)||0)?13:14;
-  if(vis(lm,eI,0.25)&&lm[eI].y<sMy-tH*0.2)return false;
-  return true;
+  if(vis(lm,eI,0.25)&&lm[eI].y<sMy-tH*0.2)return false;return true;
 }
-
-/* ── SLEEVE CHECK ──────────────────────────────────────────────────────
-   Samples pixels along shoulder→elbow for both arms in the multiclass mask.
-   Class 2 = body-skin, class 4 = clothes.
-   Checks the mid-upper-arm region (midpoint ± spread) specifically.
-   Returns true if both mid-upper-arms are ≥ SLEEVE_THR fraction skin.
-────────────────────────────────────────────────────────────────────────── */
 function checkSleeve(pose){
   if(!pose||!S._lastSegU8)return true;
-  const u8=S._lastSegU8,mW=S._lastSegW,mH=S._lastSegH;
-  if(!mW||!mH)return true;
-  // pose landmark indices: L shoulder=11, L elbow=13, R shoulder=12, R elbow=14
+  const u8=S._lastSegU8,mW=S._lastSegW,mH=S._lastSegH;if(!mW||!mH)return true;
   function armExposed(shIdx,elIdx){
-    const sh=pose[shIdx],el=pose[elIdx];
-    if(!sh||!el||(sh.visibility??1)<0.3||(el.visibility??1)<0.3)return true;// can't tell, pass
-    // mid upper arm = midpoint between shoulder and elbow
-    const mx=(sh.x+el.x)/2, my=(sh.y+el.y)/2;
-    // sample a 7-pixel cross at mid-upper-arm in mask coords
-    const mc=Math.round(mx*mW), mr=Math.round(my*mH);
-    let skinPx=0,totalPx=0;
-    const spread=3;
-    for(let dr=-spread;dr<=spread;dr++){
-      for(let dc=-spread;dc<=spread;dc++){
-        const r=mr+dr,c=mc+dc;
-        if(r<0||r>=mH||c<0||c>=mW)continue;
-        const cls=u8[r*mW+c];
-        totalPx++;
-        if(cls===2)skinPx++; // body-skin
-      }
-    }
-    if(totalPx===0)return true;
-    return(skinPx/totalPx)>=C.SLEEVE_THR;
+    const sh=pose[shIdx],el=pose[elIdx];if(!sh||!el||(sh.visibility??1)<0.3||(el.visibility??1)<0.3)return true;
+    const mx=(sh.x+el.x)/2,my=(sh.y+el.y)/2;const mc=Math.round(mx*mW),mr=Math.round(my*mH);
+    let skinPx=0,totalPx=0;const spread=3;
+    for(let dr=-spread;dr<=spread;dr++){for(let dc=-spread;dc<=spread;dc++){const r=mr+dr,c=mc+dc;if(r<0||r>=mH||c<0||c>=mW)continue;const cls=u8[r*mW+c];totalPx++;if(cls===2)skinPx++;}}
+    if(totalPx===0)return true;return(skinPx/totalPx)>=C.SLEEVE_THR;
   }
-  const leftOk=armExposed(11,13);
-  const rightOk=armExposed(12,14);
-  // store for guide message
-  S._sleeveLeft=leftOk;S._sleeveRight=rightOk;
-  return leftOk&&rightOk;
+  const leftOk=armExposed(11,13),rightOk=armExposed(12,14);S._sleeveLeft=leftOk;S._sleeveRight=rightOk;return leftOk&&rightOk;
 }
 
-/* ── UI ── */
 function activateNoPose(){
   S.checks.body=true;S.checks.dist=true;S.checks.pose=true;
   S.chipBlock.body=false;S.chipBlock.dist=false;S.chipBlock.pose=false;S.chipBlock.sleeve=false;
@@ -1767,141 +2327,103 @@ function activateNoPose(){
   ['ch-body','ch-dist','ch-pose','ch-sleeve'].forEach(id=>{const e=g(id);if(e)e.className='chip dis';});
   saveChipBlock();
 }
-function allOk(){
-  return(S.mpReady?['light','steady','level','body','dist','pose']:['light','steady','level']).every(k=>S.checks[k]);
-}
+function allOk(){return(S.mpReady?['light','steady','level','body','dist','pose']:['light','steady','level']).every(k=>S.checks[k]);}
+
 const CHIPS={light:'ch-light',steady:'ch-steady',level:'ch-level',body:'ch-body',dist:'ch-dist',pose:'ch-pose',sleeve:'ch-sleeve'};
 function updateUI(){
   const allKeys=S.mpReady?['light','steady','level','body','dist','pose','sleeve']:['light','steady','level'];
   const blockedFails=allKeys.filter(k=>S.chipBlock[k]&&!S.checks[k]);
   const warnFails=allKeys.filter(k=>!S.chipBlock[k]&&!S.checks[k]);
-  const canShoot=blockedFails.length===0;
-  const allPass=blockedFails.length===0&&warnFails.length===0;
+  const canShoot=blockedFails.length===0;const allPass=canShoot&&warnFails.length===0;
   const sh=g('shutter');
   if(!S.camRunning)sh.className='off';
   else if(canShoot)sh.className=allPass?'ok':'warn';
   else sh.className='off';
   Object.keys(CHIPS).forEach(k=>{
     const el=g(CHIPS[k]);if(!el)return;
-    const isDisabled=(!S.mpReady&&['body','dist','pose','sleeve'].indexOf(k)>=0)||(!S.segReady&&k==='sleeve');
-    // sleeve chip is hidden (dis) on side view — not relevant for side photo
     const isSideView=S.phase==='side'&&k==='sleeve';
+    const isDisabled=(!S.mpReady&&['body','dist','pose','sleeve'].indexOf(k)>=0);
     if(isDisabled||isSideView){el.className='chip dis';return;}
     if(S.checks[k])el.className='chip ok';
     else if(S.chipBlock[k])el.className='chip bad';
     else el.className='chip soft';
   });
   const gt=g('guide-txt');
-  function sleeveMsg(){
-    if(!S._sleeveLeft&&!S._sleeveRight)return T('g_sleeve_both');
-    if(!S._sleeveLeft)return T('g_sleeve_left');
-    return T('g_sleeve_right');
-  }
+  function sleeveMsg(){if(!S._sleeveLeft&&!S._sleeveRight)return T('g_sleeve_both');if(!S._sleeveLeft)return T('g_sleeve_left');return T('g_sleeve_right');}
   function getMsg(k,isBlocked){
     switch(k){
       case 'light':  return T(isBlocked?'g_light_blk':'g_light_wrn');
       case 'steady': return T(isBlocked?'g_steady_blk':'g_steady_wrn');
       case 'level':  return T(isBlocked?'g_level_blk':'g_level_wrn');
       case 'body':   return T(isBlocked?'g_body_blk':'g_body_wrn');
-      case 'dist':
-        if(!S.lastPose)return T('g_dist_none');
-        return(S.lastPose[0]&&S.lastPose[0].y>0.6)?T('g_dist_far'):T('g_dist_near');
-      case 'pose':
-        if(S.phase==='front')return T(isBlocked?'g_pose_front_blk':'g_pose_front_wrn')+' (\u2265'+C.ARM_RAISE_DEG+'\u00b0)';
-        return T(isBlocked?'g_pose_side_blk':'g_pose_side_wrn');
+      case 'dist':   if(!S.lastPose)return T('g_dist_none');return(S.lastPose[0]&&S.lastPose[0].y>0.6)?T('g_dist_far'):T('g_dist_near');
+      case 'pose':   if(S.phase==='front')return T(isBlocked?'g_pose_front_blk':'g_pose_front_wrn')+' (≥'+C.ARM_RAISE_DEG+'°)';return T(isBlocked?'g_pose_side_blk':'g_pose_side_wrn');
       case 'sleeve': return sleeveMsg();
     }
     return k;
   }
-  if(blockedFails.length){
-    gt.textContent=getMsg(blockedFails[0],true);gt.className='guide-txt bad';
-  }else if(warnFails.length){
-    gt.textContent=getMsg(warnFails[0],false);gt.className='guide-txt warn';
-  }else{
-    gt.textContent=S.phase==='front'?T('g_front_ok'):T('g_side_ok');gt.className='guide-txt ok';
-  }
+  if(blockedFails.length){gt.textContent=getMsg(blockedFails[0],true);gt.className='guide-txt bad';}
+  else if(warnFails.length){gt.textContent=getMsg(warnFails[0],false);gt.className='guide-txt warn';}
+  else{gt.textContent=S.phase==='front'?T('g_front_ok'):T('g_side_ok');gt.className='guide-txt ok';}
 }
-// Per-chip block toggle — click chip to toggle between blocking and warn-only
-function loadChipBlock(){
-  try{
-    const saved=localStorage.getItem(C.CHIP_KEY);
-    if(saved){const obj=JSON.parse(saved);Object.keys(obj).forEach(k=>{if(k in S.chipBlock)S.chipBlock[k]=obj[k];});}
-  }catch(e){}
-}
-function saveChipBlock(){
-  try{localStorage.setItem(C.CHIP_KEY,JSON.stringify(S.chipBlock));}catch(e){}
-}
+
+function loadChipBlock(){try{const saved=localStorage.getItem(C.CHIP_KEY);if(saved){const obj=JSON.parse(saved);Object.keys(obj).forEach(k=>{if(k in S.chipBlock)S.chipBlock[k]=obj[k];});}}catch(e){}}
+function saveChipBlock(){try{localStorage.setItem(C.CHIP_KEY,JSON.stringify(S.chipBlock));}catch(e){}}
 document.querySelectorAll('[data-chip]').forEach(el=>{
   el.addEventListener('click',function(){
-    const k=this.getAttribute('data-chip');
-    if(!(k in S.chipBlock))return;
-    if(this.classList.contains('dis'))return;
-    S.chipBlock[k]=!S.chipBlock[k];
-    saveChipBlock();
-    updateUI();
+    const k=this.getAttribute('data-chip');if(!(k in S.chipBlock))return;if(this.classList.contains('dis'))return;
+    S.chipBlock[k]=!S.chipBlock[k];saveChipBlock();updateUI();
   });
 });
-/* ── SILHOUETTES ── */
+
 const SIL_FRONT='<ellipse cx="30" cy="7" rx="5" ry="6" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="1.2"/><path d="M26 12 Q30 10 34 12 L33 30 Q30 32 27 30 Z" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="1.2"/><path d="M26 15 L18 24" stroke="rgba(255,255,255,.45)" stroke-width="2.5" stroke-linecap="round"/><path d="M18 24 L14 22" stroke="rgba(255,255,255,.35)" stroke-width="2" stroke-linecap="round"/><path d="M34 15 L42 24" stroke="rgba(255,255,255,.45)" stroke-width="2.5" stroke-linecap="round"/><path d="M42 24 L46 22" stroke="rgba(255,255,255,.35)" stroke-width="2" stroke-linecap="round"/><path d="M28 30 L26 52" stroke="rgba(255,255,255,.45)" stroke-width="3" stroke-linecap="round"/><path d="M26 52 L24 72" stroke="rgba(255,255,255,.38)" stroke-width="2.5" stroke-linecap="round"/><path d="M32 30 L33 52" stroke="rgba(255,255,255,.45)" stroke-width="3" stroke-linecap="round"/><path d="M33 52 L34 72" stroke="rgba(255,255,255,.38)" stroke-width="2.5" stroke-linecap="round"/>';
 const SIL_SIDE='<ellipse cx="32" cy="7" rx="5" ry="6" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="1.2"/><path d="M30 12 Q34 10 36 12 L35 30 Q32 32 29 30 Z" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="1.2"/><path d="M30 16 L28 34" stroke="rgba(255,255,255,.45)" stroke-width="2.5" stroke-linecap="round"/><path d="M28 34 L27 46" stroke="rgba(255,255,255,.35)" stroke-width="2" stroke-linecap="round"/><path d="M34 16 L34 28" stroke="rgba(255,255,255,.15)" stroke-width="2" stroke-linecap="round" stroke-dasharray="4 3"/><path d="M30 30 L29 52" stroke="rgba(255,255,255,.45)" stroke-width="3" stroke-linecap="round"/><path d="M29 52 L28 72" stroke="rgba(255,255,255,.38)" stroke-width="2.5" stroke-linecap="round"/><path d="M33 30 L34 52" stroke="rgba(255,255,255,.15)" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="5 4"/>';
-function updatePoseSil(){g('pose-sil').innerHTML=S.phase==='front'?SIL_FRONT:SIL_SIDE;}
+function updatePoseSil(){const ps=g('pose-sil');if(ps)ps.innerHTML=S.phase==='front'?SIL_FRONT:SIL_SIDE;}
 
-/* ── SHUTTER + CAPTURE ── */
 g('shutter').addEventListener('click',()=>{
-  const sh=g('shutter');
-  if(sh.classList.contains('off'))return;
-  sh.className='off'; // disable immediately — re-enabled via preview retake or next session
-  doCapture();
+  const sh=g('shutter');if(sh.classList.contains('off'))return;sh.className='off';doCapture();
 });
 function doCapture(){
-  // Save height and orientation at moment of capture
-  if(S.phase==='front'){
-    S.frontHeight=S._lastHcm||null;S.frontPpNorm=S._lastPpNorm||null;S.frontPcNorm=S._lastPcNorm||null;
-    S.frontBeta=S._lastBeta;S.frontGamma=S._lastGamma;
-  }else{
-    S.sideHeight=S._lastHcm||null;S.sidePpNorm=S._lastPpNorm||null;S.sidePcNorm=S._lastPcNorm||null;
-    S.sideBeta=S._lastBeta;S.sideGamma=S._lastGamma;
+  if(S.phase==='front'){S.frontHeight=S._lastHcm||null;S.frontPpNorm=S._lastPpNorm||null;S.frontPcNorm=S._lastPcNorm||null;S.frontBeta=S._lastBeta;S.frontGamma=S._lastGamma;}
+  else{S.sideHeight=S._lastHcm||null;S.sidePpNorm=S._lastPpNorm||null;S.sidePcNorm=S._lastPcNorm||null;S.sideBeta=S._lastBeta;S.sideGamma=S._lastGamma;}
+  const fl=g('c-flash');fl.classList.add('on');requestAnimationFrame(()=>requestAnimationFrame(()=>fl.classList.remove('on')));
+  const vw=vid.videoWidth,vh=vid.videoHeight;if(!vw||!vh)return;
+  let cSx,cSy,cSw,cSh;
+  const pose=S.lastPose;
+  if(pose&&pose.length>=2){
+    let mnX=1,mxX=0,mnY=1,mxY=0,hit=false;
+    pose.forEach(lm=>{if((lm.visibility||1)<0.3)return;mnX=Math.min(mnX,lm.x);mxX=Math.max(mxX,lm.x);mnY=Math.min(mnY,lm.y);mxY=Math.max(mxY,lm.y);hit=true;});
+    if(hit){
+      const bboxH=mxY-mnY,bboxW=mxX-mnX,pad=0.10;
+      mnX=Math.max(0,mnX-bboxW*pad);mxX=Math.min(1,mxX+bboxW*pad);mnY=Math.max(0,mnY-bboxH*pad);mxY=Math.min(1,mxY+bboxH*pad);
+      let cw=(mxX-mnX)*vw,ch=(mxY-mnY)*vh;const TR=3/4;if(cw/ch<TR)cw=ch*TR;else ch=cw/TR;
+      const midX=(mnX+mxX)/2*vw,midY=(mnY+mxY)/2*vh;
+      cSx=Math.max(0,Math.round(midX-cw/2));cSy=Math.max(0,Math.round(midY-ch/2));
+      cSw=Math.min(vw-cSx,Math.round(cw));cSh=Math.min(vh-cSy,Math.round(ch));
+      if(Math.abs(cSw/cSh-TR)>0.01){cSh=Math.round(cSw/TR);if(cSy+cSh>vh)cSy=Math.max(0,vh-cSh);}
+    }
   }
-
-  const fl=g('c-flash');fl.classList.add('on');
-  requestAnimationFrame(()=>requestAnimationFrame(()=>fl.classList.remove('on')));
-
-  // Capture: 3:4 crop from whatever the video delivers
-  const W=1080,H=1440;
-  const cap=document.createElement('canvas');cap.width=W;cap.height=H;
-  const octx=cap.getContext('2d'),vw=vid.videoWidth,vh=vid.videoHeight;
-  if(!vw||!vh)return;
-  const TR=3/4,SR=vw/vh;
-  let sx,sy,sw,sh;
-  if(SR>TR){sh=vh;sw=Math.round(vh*TR);sx=Math.round((vw-sw)/2);sy=0;}
-  else{sw=vw;sh=Math.round(vw/TR);sx=0;sy=Math.round((vh-sh)/2);}
-  octx.drawImage(vid,sx,sy,sw,sh,0,0,W,H);
-
-  // Get preview dataURL BEFORE face masking (preview shows unmasked original)
-  const previewUrl=cap.toDataURL('image/jpeg',0.75);
-
-  // Mask face on capture canvas using FOVAL polygon — privacy protection
-  if(S.lastFace&&S.lastFace.length){
-    octx.beginPath();
-    FOVAL.forEach((i,j)=>{
-      const lm=S.lastFace[i];if(!lm)return;
-      // normalised coords map directly to 1080x1440 capture canvas
-      j===0?octx.moveTo(lm.x*W,lm.y*H):octx.lineTo(lm.x*W,lm.y*H);
-    });
-    octx.closePath();
-    octx.fillStyle='#1a1a1a';
-    octx.fill();
-  }
-
-  cap.toBlob(function(blob){
-    if(!blob)return;
-    if(S.phase==='front')S.frontBlob=blob;else S.sideBlob=blob;
-    showPreview(previewUrl);
-  },'image/jpeg',0.93);
-  // Note: do NOT assign cap=null (cap is const in strict mode)
+  if(!cSw||!cSh){const TR=3/4,SR=vw/vh;if(SR>TR){cSh=vh;cSw=Math.round(vh*TR);cSx=Math.round((vw-cSw)/2);cSy=0;}else{cSw=vw;cSh=Math.round(vw/TR);cSx=0;cSy=Math.round((vh-cSh)/2);}}
+  S._captureCancel=false;
+  const pW=Math.min(cSw,1080),pH=Math.round(pW*4/3);
+  const pCvs2=document.createElement('canvas');pCvs2.width=pW;pCvs2.height=pH;
+  pCvs2.getContext('2d').drawImage(vid,cSx,cSy,cSw,cSh,0,0,pW,pH);
+  showPreview(pCvs2.toDataURL('image/jpeg',0.82));
+  const captPhase=S.phase,lastFace=S.lastFace;
+  setTimeout(function(){
+    if(S._captureCancel)return;
+    const cap=document.createElement('canvas');cap.width=cSw;cap.height=cSh;
+    const octx=cap.getContext('2d');octx.drawImage(vid,cSx,cSy,cSw,cSh,0,0,cSw,cSh);
+    if(S._captureCancel)return;
+    if(lastFace&&lastFace.length){
+      octx.beginPath();FOVAL.forEach((i,j)=>{const lm=lastFace[i];if(!lm)return;const cx=(lm.x*vw-cSx),cy=(lm.y*vh-cSy);j===0?octx.moveTo(cx,cy):octx.lineTo(cx,cy);});
+      octx.closePath();octx.fillStyle='#1a1a1a';octx.fill();
+    }
+    if(S._captureCancel)return;
+    cap.toBlob(function(blob){if(S._captureCancel||!blob)return;if(captPhase==='front')S.frontBlob=blob;else S.sideBlob=blob;},'image/jpeg',0.93);
+  },0);
 }
 
-/* ── PREVIEW ── */
 function showPreview(dataUrl){
   g('prev-img').src=dataUrl;
   g('prev-lbl').textContent=S.phase==='front'?T('prev_front'):T('prev_side');
@@ -1912,8 +2434,8 @@ function showPreview(dataUrl){
   g('preview').classList.add('on');
 }
 function hidePreview(){g('preview').classList.remove('on');}
-
 g('prev-retake').addEventListener('click',()=>{
+  S._captureCancel=true;
   if(S.popupMode.indexOf('front')===0){S.frontBlob=null;S.frontHeight=null;S.frontPpNorm=null;S.frontPcNorm=null;}
   else{S.sideBlob=null;S.sideHeight=null;S.sidePpNorm=null;S.sidePcNorm=null;}
   hidePreview();
@@ -1921,34 +2443,20 @@ g('prev-retake').addEventListener('click',()=>{
 g('prev-next').addEventListener('click',()=>{
   const nb=g('prev-next');nb.disabled=true;
   if(S.popupMode==='front-normal'||S.popupMode==='front-retry'){
-    S.frontDone=false;S.frontErr=null;
-    uploadBlob(S.frontBlob,S.uuid+'_front.jpg','front');
-    hidePreview();
-    S.phase='side';updatePoseSil();
+    hidePreview();S.phase='side';updatePoseSil();
     g('cam-phase-lbl').textContent=T('side_view');
-    g('hval-cur').textContent='\u2014';g('hval-cur').className='h-val dim';
-  }else{
-    S.sideDone=false;S.sideErr=null;
-    uploadBlob(S.sideBlob,S.uuid+'_side.jpg','side');
-    g('prev-status').textContent=T('prev_uploading');g('prev-status').className='prev-status uploading on';
-    pollSide();
-  }
+    g('hval-cur').textContent='—';g('hval-cur').className='h-val dim';
+  }else{hidePreview();goForm();}
 });
-function pollSide(){
-  if(S.sideErr)return;
-  if(S.sideDone){hidePreview();goForm();return;}
-  // timeout after 30s
-  S._pollSideCount=(S._pollSideCount||0)+1;
-  if(S._pollSideCount>150){S._pollSideCount=0;showUploadErr('side',T('err_upload_timeout'));return;}
-  setTimeout(pollSide,200);
-}
-
 function fetchWithTimeout(input,opts,ms){
-  const ctrl=new AbortController();
-  const id=setTimeout(()=>ctrl.abort(),ms);
+  const ctrl=new AbortController();const id=setTimeout(()=>ctrl.abort(),ms);
   return fetch(input,{...opts,signal:ctrl.signal}).finally(()=>clearTimeout(id));
 }
-
+function pollSide(){
+  if(S.sideErr)return;if(S.sideDone){hidePreview();goForm();return;}
+  S._pollSideCount=(S._pollSideCount||0)+1;if(S._pollSideCount>150){S._pollSideCount=0;showUploadErr('side',T('err_upload_timeout'));return;}
+  setTimeout(pollSide,200);
+}
 function uploadBlob(blob,filename,side){
   const fd=new FormData();fd.append('file',blob,filename);
   if(!S.token){if(side==='front'){S.frontErr='Not authenticated';showUploadErr('front',T('err_not_auth'));}else{S.sideErr='Not authenticated';showUploadErr('side',T('err_not_auth'));}return;}
@@ -1970,35 +2478,54 @@ function showUploadErr(side,msg){
 /* ── FORM ── */
 function goForm(){
   stopCam();
-  S.consentOn=false;S.genderVal=null;S.litVal=null;
-  ['f-dob','f-weight','f-height','f-muac'].forEach(id=>g(id).value='');
-  g('f-caste').value='';
+  S.genderVal=null;S.litVal=null;
+  ['f-weight','f-height','f-muac'].forEach(id=>g(id).value='');
   g('f-h-front').value=S.frontHeight?S.frontHeight.toFixed(1):'';
   g('f-h-side').value=S.sideHeight?S.sideHeight.toFixed(1):'';
-  g('consent-box').classList.remove('on');
-  g('form-submit').disabled=true;
+  g('form-submit').disabled=false;
   g('form-msg').textContent='';g('form-msg').className='form-msg';
+  S.hFever=null;S.hDiarr=null;S.hCough=null;S.apLess=null;S.apRefused=null;S.apBreastfed=null;
   document.querySelectorAll('.seg-btn').forEach(b=>b.classList.remove('on'));
+  document.querySelectorAll('#social-group .radio-opt').forEach(o=>o.classList.remove('on'));S.socialVal=null;
+  document.querySelectorAll('#lit-group .radio-opt').forEach(o=>o.classList.remove('on'));
+  const bfField=g('bf-field');
+  if(bfField){const dobVal=localStorage.getItem(C.SESS_DOB_KEY)||'';let showBf=false;if(dobVal){const ageMs=Date.now()-new Date(dobVal).getTime();showBf=(ageMs/(1000*60*60*24*30.44))<=24;}bfField.style.display=showBf?'':'none';}
   showScreen('s-form');
 }
 document.querySelectorAll('#g-male,#g-female').forEach(function(b){b.addEventListener('click',function(){S.genderVal=b.dataset.v;document.querySelectorAll('#g-male,#g-female').forEach(x=>x.classList.remove('on'));b.classList.add('on');});});
-document.querySelectorAll('#lit-yes,#lit-no').forEach(function(b){b.addEventListener('click',function(){S.litVal=b.dataset.v;document.querySelectorAll('#lit-yes,#lit-no').forEach(x=>x.classList.remove('on'));b.classList.add('on');});});
-g('consent-row').addEventListener('click',function(){S.consentOn=!S.consentOn;g('consent-box').classList.toggle('on',S.consentOn);g('form-submit').disabled=!S.consentOn;});
+document.querySelectorAll('#lit-group .radio-opt').forEach(function(row){
+  row.addEventListener('click',function(){
+    document.querySelectorAll('#lit-group .radio-opt').forEach(r=>{r.classList.remove('on');});
+    row.classList.add('on');S.litVal=row.dataset.v;
+  });
+});
+function wireSegGroup(ids,key){
+  ids.forEach(function(id){const btn=g(id);if(!btn)return;btn.addEventListener('click',function(){ids.forEach(function(i){const b=g(i);if(b)b.classList.remove('on');});btn.classList.add('on');S[key]=btn.dataset.v;});});
+}
+wireSegGroup(['h-fever-y','h-fever-n'],'hFever');
+wireSegGroup(['h-diarr-y','h-diarr-n'],'hDiarr');
+wireSegGroup(['h-cough-y','h-cough-n'],'hCough');
+wireSegGroup(['ap-less-y','ap-less-n'],'apLess');
+wireSegGroup(['ap-ref-nv','ap-ref-so','ap-ref-of','ap-ref-al'],'apRefused');
+wireSegGroup(['ap-bf-y','ap-bf-n'],'apBreastfed');
+
 g('form-submit').addEventListener('click',async function(){
-  if(!S.consentOn)return;
+  const missing=[];
+  if(!S.genderVal)missing.push(T('lbl_gender'));if(!g('f-weight').value)missing.push(T('lbl_weight'));
+  if(!S.litVal)missing.push(T('lbl_literacy'));if(!S.socialVal)missing.push(T('lbl_socialgroup'));
+  if(!S.hFever)missing.push(T('lbl_fever'));if(!S.hDiarr)missing.push(T('lbl_diarr'));
+  if(!S.hCough)missing.push(T('lbl_cough'));if(!S.apLess)missing.push(T('lbl_ate_less'));
+  if(!S.apRefused)missing.push(T('lbl_refused'));
+  if(g('bf-field').style.display!=='none'&&!S.apBreastfed)missing.push(T('lbl_breastfed'));
+  if(missing.length){g('form-msg').textContent=T('err_required')+': '+missing.join(', ');g('form-msg').className='form-msg err';return;}
   const sb=g('form-submit'),msg=g('form-msg');
   sb.disabled=true;msg.textContent=T('form_submitting');msg.className='form-msg';
-  const dobRaw=g('f-dob').value;let dob='';
-  if(dobRaw){const p=dobRaw.split('-');dob=p[2]+'/'+p[1]+'/'+p[0];}
   const payload={
-    uuid:S.uuid,
-    timestamp:new Date(Date.now()+330*60000).toISOString().replace('Z','+05:30'),
-    consent:true,
-    lat:S.location?S.location.lat:null,
-    lon:S.location?S.location.lon:null,
+    uuid:S.uuid,timestamp:new Date(Date.now()+330*60000).toISOString().replace('Z','+05:30'),
+    consent:true,language:_lang,
+    lat:S.location?S.location.lat:null,lon:S.location?S.location.lon:null,
     location_accuracy_m:S.location?S.location.acc:null,
-    date_of_birth:dob||null,
-    gender:S.genderVal||null,
+    date_of_birth:S.sessDob||null,gender:S.genderVal||null,
     weight_g:(v=>isNaN(v)||v<=0?null:v)(parseFloat(g('f-weight').value)),
     height_cm_self_reported:(v=>isNaN(v)||v<=0?null:v)(parseFloat(g('f-height').value)),
     height_cm_front_estimate:S.frontHeight?parseFloat(S.frontHeight.toFixed(1)):null,
@@ -2012,24 +2539,54 @@ g('form-submit').addEventListener('click',async function(){
     beta_side:S.sideBeta!==null?parseFloat(S.sideBeta.toFixed(2)):null,
     gamma_side:S.sideGamma!==null?parseFloat(S.sideGamma.toFixed(2)):null,
     muac_mm:(v=>isNaN(v)||v<=0?null:v)(parseFloat(g('f-muac').value)),
-    female_literacy:S.litVal||null,
-    social_group:g('f-caste').value||null,
-    language:_lang
+    female_literacy:S.litVal||null,social_group:S.socialVal||null,
+    fever_2wk:S.hFever||null,diarrhoea_2wk:S.hDiarr||null,cough_ari_2wk:S.hCough||null,
+    appetite_less_1wk:S.apLess||null,food_refusal_1wk:S.apRefused||null,breastfed:S.apBreastfed||null
   };
   try{
-    const r=await apiFetch('/data','POST',payload,false);
-    if(!r.ok){const t=await r.text();throw new Error(r.status+': '+t);}
+    await enqueueSession(S.uuid,S.frontBlob,S.sideBlob,payload);
     msg.textContent=T('form_ok');msg.className='form-msg ok';
-    setTimeout(()=>goSession(),1200);
-  }catch(e){msg.textContent=T('failed')+e.message;msg.className='form-msg err';sb.disabled=false;}
+    refreshQueueCount();setTimeout(drainQueue,500);setTimeout(()=>goSession(),2200);
+  }catch(e){sb.disabled=false;msg.textContent=T('failed')+e.message;msg.className='form-msg err';}
 });
-g('h-reset').addEventListener('click',()=>goSession());
+
+/* ── FONT SIZE ── */
+const FONT_SIZES=[12,13,14,15,16,17,18];const FONT_KEY='aimm.fontsize';
+let _fontSize=parseInt(localStorage.getItem(FONT_KEY)||'15',10);
+if(!FONT_SIZES.includes(_fontSize))_fontSize=15;
+function applyFontSize(){
+  document.documentElement.style.fontSize=_fontSize+'px';
+  const dec=g('h-font-dec'),inc=g('h-font-inc');
+  if(dec)dec.style.opacity=_fontSize<=FONT_SIZES[0]?'0.35':'1';
+  if(inc)inc.style.opacity=_fontSize>=FONT_SIZES[FONT_SIZES.length-1]?'0.35':'1';
+}
+function changeFontSize(dir){
+  const idx=FONT_SIZES.indexOf(_fontSize);const newIdx=Math.max(0,Math.min(FONT_SIZES.length-1,idx+dir));
+  _fontSize=FONT_SIZES[newIdx];localStorage.setItem(FONT_KEY,_fontSize);applyFontSize();
+}
+window.changeFontSize=changeFontSize;
+applyFontSize();
+
+function selectSocial(el){
+  document.querySelectorAll('#social-group .radio-opt').forEach(o=>o.classList.remove('on'));
+  el.classList.add('on');S.socialVal=el.dataset.v;
+}
+window.selectSocial=selectSocial;
 
 /* ── BOOT ── */
-applyLang();
-loadChipBlock();
-showScreen('s-setup');
-runSetup();
+if(typeof enqueueSession==='undefined'){
+  console.error('AIMM: stale cached JS detected.');
+  document.body.innerHTML='<div style="padding:40px;font-family:monospace;color:red;font-size:1rem">Stale cache detected.<br><br>Please hard-refresh:<br>Android: tap ⋮ → Reload<br>iOS: hold reload button → Empty Caches and Reload</div>';
+  throw new Error('Stale cache');
+}
+applyLang();loadChipBlock();
+openDB().then(async db=>{S._db=db;await refreshQueueCount();if(!S.offlineMode)drainQueue();}).catch(e=>console.warn('IDB:',e));
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&S._db)setTimeout(drainQueue,500);});
+window.addEventListener('online',()=>{setOnline(true);setTimeout(drainQueue,1000);});
+window.addEventListener('offline',()=>setOnline(false));
+if(IS_FILE){setOnline(false);}else{probeConnectivity();}
+window.addEventListener('beforeunload',e=>{if(S._pendingCount>0){e.preventDefault();e.returnValue='';}});
+showScreen('s-setup');runSetup();
 
 })();
 </script>

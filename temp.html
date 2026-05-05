@@ -186,9 +186,8 @@ body{
 #cam-viewport{
   position:relative;width:100%;flex:0 0 auto;
   background:#000;touch-action:none;overflow:hidden;
-  max-height:min(calc(75vw * 4 / 3), calc(100svh - 220px));
 }
-#vid{display:block;width:100%;height:auto;max-height:min(calc(75vw * 4 / 3), calc(100svh - 220px));object-fit:contain;}
+#vid{display:block;width:100%;height:auto;}
 #c-mask,#c-pose{
   position:absolute;top:0;left:0;
   pointer-events:none;
@@ -496,7 +495,8 @@ select.f-in{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns
       <canvas id="c-mask"></canvas>
       <canvas id="c-pose"></canvas>
       <div id="c-flash"></div>
-      <div id="cam-panel">
+    </div>
+    <div id="cam-panel">
         <div id="no-pose-bar"><span id="no-pose-txt">POSE DETECTION UNAVAILABLE — WARN MODE ACTIVE</span></div>
         <div id="cam-topbar">
           <div class="cam-phase" id="cam-phase-lbl">FRONT VIEW</div>
@@ -1728,7 +1728,8 @@ function syncCanvasSize(){
   // position canvases on top of video (video height = auto, need explicit pixel size)
   mCvs.style.width=w+'px';mCvs.style.height=h+'px';
   pCvs.style.width=w+'px';pCvs.style.height=h+'px';
-  // cam-viewport height is CSS-controlled (max-height prevents overflow)
+  // cam-viewport height = video natural height
+  g('cam-viewport').style.height=h+'px';
 }
 if(window.ResizeObserver){new ResizeObserver(()=>{if(S.camRunning)syncCanvasSize();}).observe(vid);}
 

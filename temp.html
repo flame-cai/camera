@@ -89,7 +89,7 @@ body{
 #app{position:fixed;inset:0;background:var(--bg);}
 #header{
   position:fixed;top:0;left:0;right:0;z-index:300;
-  height:calc(var(--safe-t) + var(--hdr-h));
+  height:calc(var(--safe-t) + 52px);
   padding-top:var(--safe-t);
   display:flex;align-items:center;justify-content:space-between;
   padding-left:var(--sp-20);padding-right:var(--sp-12);
@@ -108,7 +108,7 @@ body{
 .h-btn.hidden{display:none;}
 .screen{
   position:fixed;inset:0;
-  padding-top:calc(var(--safe-t) + var(--hdr-h));
+  padding-top:calc(var(--safe-t) + 52px);
   padding-bottom:var(--safe-b);display:none;flex-direction:column;
   overflow-y:auto;-webkit-overflow-scrolling:touch;
 }
@@ -317,7 +317,7 @@ select.f-in{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns
 #queue-modal.on{display:flex;}
 #queue-modal-box{
   flex:1;width:100%;display:flex;flex-direction:column;gap:0;
-  padding:calc(var(--safe-t) + var(--hdr-h) + var(--sp-16)) var(--sp-20) calc(var(--safe-b) + var(--sp-16));
+  padding:calc(var(--safe-t) + 52px + var(--sp-16)) var(--sp-20) calc(var(--safe-b) + var(--sp-16));
   overflow:hidden;
 }
 .qm-title{font-size:var(--fs-lg);font-weight:600;color:var(--text);font-family:var(--font);margin-bottom:var(--sp-12);}

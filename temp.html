@@ -2479,6 +2479,8 @@ function doCapture(){
     cap.toBlob(function(blob){
       if(S._captureCancel||!blob)return;
       if(captPhase==='front')S.frontBlob=blob;else S.sideBlob=blob;
+      // enable Next now that blob is ready
+      const nb=g('prev-next');if(nb)nb.disabled=false;
     },'image/jpeg',0.93);
   },0);
 }
@@ -2488,7 +2490,7 @@ function showPreview(dataUrl){
   g('prev-img').src=dataUrl;
   g('prev-lbl').textContent=S.phase==='front'?T('prev_front'):T('prev_side');
   g('prev-status').textContent='';g('prev-status').className='prev-status';
-  const nb=g('prev-next');nb.textContent=T('prev_next');nb.disabled=false;
+  const nb=g('prev-next');nb.textContent=T('prev_next');nb.disabled=true; // enabled after blob ready
   g('prev-retake').textContent=T('prev_retake');
   S.popupMode=S.phase==='front'?'front-normal':'side-normal';
   g('preview').classList.add('on');

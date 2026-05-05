@@ -40,10 +40,11 @@
   --amber:#ffca28;--amber-bg:#2a1e00;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-html,body{
+html{font-size:14px;}
+body{
   width:100%;height:100%;overflow:hidden;
   background:var(--bg);color:var(--text);
-  font-family:var(--font);font-size:14px;line-heightline-height:1.5;
+  font-family:var(--font);font-size:1rem;line-height:1.5;
   -webkit-tap-highlight-color:transparent;
   touch-action:manipulation;-webkit-user-select:none;user-select:none;
   overscroll-behavior:none;
@@ -332,6 +333,7 @@ select.f-in{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns
 <div id="app">
   <div id="header">
     <span class="h-logo">AIMM</span>
+    <span class="cam-phase" id="cam-phase-lbl" style="display:none;font-family:var(--mono);font-size:11px;letter-spacing:2px;color:var(--text3);"></span>
     <div class="h-right">
       <button id="net-dot" title="Pending uploads" onclick="showQueueModal()"><span id="net-count" style="display:none;"></span></button>
       <button class="h-btn" id="h-font-dec" onclick="changeFontSize(-1)" title="Decrease text size">A&#8722;</button>
@@ -474,14 +476,7 @@ select.f-in{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns
     </div>
     <div id="cam-panel">
         <div id="no-pose-bar"><span id="no-pose-txt">POSE DETECTION UNAVAILABLE — WARN MODE ACTIVE</span></div>
-        <div id="cam-topbar">
-          <div class="cam-phase" id="cam-phase-lbl">FRONT VIEW</div>
-          <div class="cam-topright">
-            <button id="cam-lang-btn" onclick="toggleLang()" style="padding:0 8px;border-radius:16px;border:1.5px solid var(--line2);background:transparent;color:var(--text2);font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:1px;cursor:pointer;height:32px;">EN</button>
-            <button class="cam-btn" id="cam-reset">&#8634;</button>
-            <button class="cam-btn" id="cam-signout">&#9167;</button>
-            <button class="cam-btn" id="cam-theme">&#9680;</button>
-          </div>
+        
         </div>
         <div id="h-display">
           <div class="h-box"><div class="h-lbl">Height</div><div class="h-val dim" id="hval-cur">&mdash;</div></div>
@@ -722,7 +717,7 @@ function applyTheme(){dark?document.documentElement.setAttribute('data-dark','')
 applyTheme();
 function toggleTheme(){dark=!dark;applyTheme();}
 g('h-theme').addEventListener('click',toggleTheme);
-g('cam-theme').addEventListener('click',toggleTheme);
+
 
 /* ── OFFLINE & QUEUE ── */
 // Detect file:// protocol or forced offline — bypass all auth and API
@@ -1301,7 +1296,7 @@ function applyLang(){
   // reauth banner
   const rm=g('reauth-msg');if(rm&&rm.dataset.key)rm.textContent=T(rm.dataset.key);
   // cam-lang-btn mirrors header lang-btn
-  const clb=g('cam-lang-btn');if(clb)clb.textContent=_lang==='en'?'EN':'MR';
+  // cam-lang-btn removed — lang shown in main header
   const sc=g('sess-consent-txt');if(sc)sc.textContent=T('consent');
   // cam phase label
   const cpl=g('cam-phase-lbl');if(cpl)cpl.textContent=S.phase==='front'?T('front_view'):T('side_view');
@@ -1318,7 +1313,9 @@ function showScreen(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
   g(id).classList.add('on');
   const isSess=id==='s-session';
-  g('header').style.display='flex'; // always visible on all screens
+  g('header').style.display='flex';
+  // show/hide camera phase label
+  const cpl=g('cam-phase-lbl');if(cpl)cpl.style.display=(id==='s-camera')?'block':'none';
   g('h-signout').classList.toggle('hidden',!isSess&&id!=='s-form');
   g('h-reset').classList.toggle('hidden',id!=='s-form');
 }
@@ -1558,7 +1555,7 @@ function doSignOut(){
   showScreen('s-setup');runSetup();
 }
 g('h-signout').addEventListener('click',doSignOut);
-g('cam-signout').addEventListener('click',doSignOut);
+
 
 /* apiFetch: auto-retry once after silent token refresh on 401 */
 async function apiFetch(path,method,body,isForm,_retry){
@@ -1738,7 +1735,7 @@ g('camh-input').addEventListener('input',function(){const v=parseFloat(this.valu
 g('sess-go').addEventListener('click',()=>{const v=parseFloat(g('camh-input').value);if(!isNaN(v)&&v>0)S.camH=v;beginCapture('front');});
 function newSession(){stopCam();goSession();}
 g('h-reset').addEventListener('click',newSession);
-g('cam-reset').addEventListener('click',newSession);
+
 
 /* ── CAMERA ── */
 const vid=g('vid');
@@ -1767,8 +1764,10 @@ function syncCanvasSize(){
 if(window.ResizeObserver){new ResizeObserver(()=>{if(S.camRunning)syncCanvasSize();}).observe(vid);}
 
 function beginCapture(phase){
-  stopGpsWatch(); // stop GPS when leaving session page
+  stopGpsWatch();
   S.phase=phase;
+  // show phase label in main header
+  const cpl=g('cam-phase-lbl');if(cpl)cpl.style.display='block';
   updatePoseSil();
   g('cam-phase-lbl').textContent=phase==='front'?T('front_view'):T('side_view');
   // reset realtime displays
@@ -2505,19 +2504,51 @@ g('prev-retake').addEventListener('click',()=>{
 });
 g('prev-next').addEventListener('click',()=>{
   const nb=g('prev-next');nb.disabled=true;
-  if(S.popupMode==='front-normal'){
+  if(S.popupMode==='front-normal'||S.popupMode==='front-retry'){
+    S.frontDone=false;S.frontErr=null;
+    uploadBlob(S.frontBlob,S.uuid+'_front.jpg','front');
     hidePreview();
     S.phase='side';updatePoseSil();
     g('cam-phase-lbl').textContent=T('side_view');
     g('hval-cur').textContent='—';g('hval-cur').className='h-val dim';
   }else{
-    hidePreview();goForm();
+    S.sideDone=false;S.sideErr=null;
+    uploadBlob(S.sideBlob,S.uuid+'_side.jpg','side');
+    g('prev-status').textContent=T('prev_uploading');g('prev-status').className='prev-status uploading on';
+    pollSide();
   }
 });
 function fetchWithTimeout(input,opts,ms){
   const ctrl=new AbortController();
   const id=setTimeout(()=>ctrl.abort(),ms);
   return fetch(input,{...opts,signal:ctrl.signal}).finally(()=>clearTimeout(id));
+}
+
+function pollSide(){
+  if(S.sideErr)return;
+  if(S.sideDone){hidePreview();goForm();return;}
+  S._pollSideCount=(S._pollSideCount||0)+1;
+  if(S._pollSideCount>150){S._pollSideCount=0;showUploadErr('side',T('err_upload_timeout'));return;}
+  setTimeout(pollSide,200);
+}
+
+function uploadBlob(blob,filename,side){
+  const fd=new FormData();fd.append('file',blob,filename);
+  if(!S.token){if(side==='front'){S.frontErr='Not authenticated';showUploadErr('front',T('err_not_auth'));}else{S.sideErr='Not authenticated';showUploadErr('side',T('err_not_auth'));}return;}
+  const hdrs={'Authorization':'Bearer '+S.token};
+  fetchWithTimeout(C.API+'/file',{method:'POST',headers:hdrs,body:fd},30000)
+    .then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);if(side==='front'){S.frontDone=true;S.frontErr=null;S._pollSideCount=0;}else{S.sideDone=true;S.sideErr=null;}})
+    .catch(e=>{const msg=e.name==='AbortError'?T('err_upload_timeout'):e.message;if(side==='front'){S.frontErr=msg;showUploadErr('front',msg);}else{S.sideErr=msg;showUploadErr('side',msg);}});
+}
+
+function showUploadErr(side,msg){
+  const st=g('prev-status');
+  if(side==='front'){
+    S.phase='front';updatePoseSil();g('cam-phase-lbl').textContent=T('front_view');
+    if(S.frontBlob){g('prev-img').src=URL.createObjectURL(S.frontBlob);g('prev-lbl').textContent=T('prev_front');st.textContent=T('prev_upload_fail')+msg;st.className='prev-status err on';const nb=g('prev-next');nb.textContent=T('prev_retry');nb.disabled=false;S.popupMode='front-retry';showScreen('s-camera');g('preview').classList.add('on');}
+  }else{
+    if(S.sideBlob){g('prev-img').src=URL.createObjectURL(S.sideBlob);g('prev-lbl').textContent=T('prev_side');st.textContent=T('prev_upload_fail')+msg;st.className='prev-status err on';const nb=g('prev-next');nb.textContent=T('prev_retry');nb.disabled=false;S.popupMode='side-retry';showScreen('s-camera');g('preview').classList.add('on');}
+  }
 }
 
 /* ── FORM ── */

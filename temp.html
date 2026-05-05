@@ -375,8 +375,8 @@ select.f-in{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns
       </div>
       <div id="qm-list"></div>
       <div id="qm-empty" style="display:none;text-align:center;padding:var(--sp-24);color:var(--text3);">All uploads complete</div>
-      <div style="margin-top:var(--sp-16);display:flex;gap:var(--sp-8);">
-        <button class="btn btn-primary" onclick="retryAllQueue()">Upload All</button>
+      <div style="margin-top:var(--sp-16);display:flex;gap:var(--sp-8);flex-shrink:0;">
+        <button class="btn btn-primary" id="qm-upload-all" onclick="retryAllQueue()">&#8679; Upload All Now</button>
         <button class="btn btn-ghost" onclick="hideQueueModal()">Close</button>
       </div>
     </div>
@@ -958,7 +958,7 @@ window.showQueueModal=async function(){
       const ts=new Date(item.ts).toLocaleTimeString();
       const scls=item.status==='failed'?'failed':item.status==='pending'?'pending':item.status==='uploading'?'uploading':'done';
       const uuidSpan=document.createElement('span');uuidSpan.className='qm-uuid';
-      uuidSpan.innerHTML='<strong>'+item.uuid.slice(0,8)+'…</strong><small>'+new Date(item.ts).toLocaleString()+(item.lastErr?' — '+item.lastErr.slice(0,50):'')+'</small>';
+      uuidSpan.innerHTML='<strong>'+item.uuid+'</strong><small>'+new Date(item.ts).toLocaleString()+(item.lastErr?' — '+item.lastErr:'')+'</small>';
       const statusSpan=document.createElement('span');statusSpan.className='qm-status-badge '+scls;
       statusSpan.textContent=item.status+(item.retries?' ×'+item.retries:'');
       const actDiv=document.createElement('div');actDiv.className='qm-actions';
@@ -1369,7 +1369,7 @@ async function runSetup(){
   setStep('st-loc','active',T('setup_loc'));setProg(25,T('setup_loc_prog'));
   const locOk=await getLocation();
   if(locOk&&S.location){
-    setStep('st-loc','done',S.location.lat.toFixed(5)+', '+S.location.lon.toFixed(5)+' ±'+S.location.acc.toFixed(0)+'m');
+    setStep('st-loc','done',S.location.lat+', '+S.location.lon+' ±'+S.location.acc.toFixed(1)+'m');
   }else{
     setStep('st-loc','err',T('loc_unavailable'));
     // Non-fatal: record null location, proceed
@@ -1418,7 +1418,7 @@ function getLocation(){
     function done(loc,ok){
       if(settled)return;settled=true;
       if(watchId!==null)navigator.geolocation.clearWatch(watchId);
-      if(ok){S.location=loc;setStep('st-loc','done',`${loc.lat.toFixed(5)}, ${loc.lon.toFixed(5)} \u00b1${loc.acc.toFixed(0)}m`);}
+      if(ok){S.location=loc;setStep('st-loc','done',`${loc.lat}, ${loc.lon} \u00b1${loc.acc.toFixed(1)}m`);}
       resolve(ok);
     }
     watchId=navigator.geolocation.watchPosition(
@@ -1427,7 +1427,7 @@ function getLocation(){
         if(acc<bestAcc){
           bestAcc=acc;
           const loc={lat:pos.coords.latitude,lon:pos.coords.longitude,acc};
-          setStep('st-loc','active',`${loc.lat.toFixed(5)}, ${loc.lon.toFixed(5)} \u00b1${acc.toFixed(0)}m`);
+          setStep('st-loc','active',`${loc.lat}, ${loc.lon} \u00b1${acc.toFixed(0)}m`);
           S.location=loc;
           if(acc<=15)done(loc,true);
         }
@@ -1684,7 +1684,7 @@ function goSession(){
   S.phase='front';
   g('sess-uuid').textContent=S.uuid;
   const dot=g('loc-dot'),val=g('loc-val');
-  if(S.location){dot.className='loc-dot ok';val.textContent=`${S.location.lat.toFixed(5)}, ${S.location.lon.toFixed(5)} \u00b1${S.location.acc.toFixed(0)}m`;}
+  if(S.location){dot.className='loc-dot ok';val.textContent=`${S.location.lat}, ${S.location.lon} \u00b1${S.location.acc.toFixed(1)}m`;}
   else{dot.className='loc-dot err';val.textContent=T('loc_unavailable');}
   const saved=parseFloat(localStorage.getItem(C.CAM_H_KEY));
   S.camH=isNaN(saved)?C.CAM_H_DEFAULT:saved;
@@ -2369,7 +2369,7 @@ document.querySelectorAll('[data-chip]').forEach(el=>{
 /* ── SILHOUETTES ── */
 const SIL_FRONT='<ellipse cx="30" cy="7" rx="5" ry="6" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="1.2"/><path d="M26 12 Q30 10 34 12 L33 30 Q30 32 27 30 Z" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="1.2"/><path d="M26 15 L18 24" stroke="rgba(255,255,255,.45)" stroke-width="2.5" stroke-linecap="round"/><path d="M18 24 L14 22" stroke="rgba(255,255,255,.35)" stroke-width="2" stroke-linecap="round"/><path d="M34 15 L42 24" stroke="rgba(255,255,255,.45)" stroke-width="2.5" stroke-linecap="round"/><path d="M42 24 L46 22" stroke="rgba(255,255,255,.35)" stroke-width="2" stroke-linecap="round"/><path d="M28 30 L26 52" stroke="rgba(255,255,255,.45)" stroke-width="3" stroke-linecap="round"/><path d="M26 52 L24 72" stroke="rgba(255,255,255,.38)" stroke-width="2.5" stroke-linecap="round"/><path d="M32 30 L33 52" stroke="rgba(255,255,255,.45)" stroke-width="3" stroke-linecap="round"/><path d="M33 52 L34 72" stroke="rgba(255,255,255,.38)" stroke-width="2.5" stroke-linecap="round"/>';
 const SIL_SIDE='<ellipse cx="32" cy="7" rx="5" ry="6" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="1.2"/><path d="M30 12 Q34 10 36 12 L35 30 Q32 32 29 30 Z" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="1.2"/><path d="M30 16 L28 34" stroke="rgba(255,255,255,.45)" stroke-width="2.5" stroke-linecap="round"/><path d="M28 34 L27 46" stroke="rgba(255,255,255,.35)" stroke-width="2" stroke-linecap="round"/><path d="M34 16 L34 28" stroke="rgba(255,255,255,.15)" stroke-width="2" stroke-linecap="round" stroke-dasharray="4 3"/><path d="M30 30 L29 52" stroke="rgba(255,255,255,.45)" stroke-width="3" stroke-linecap="round"/><path d="M29 52 L28 72" stroke="rgba(255,255,255,.38)" stroke-width="2.5" stroke-linecap="round"/><path d="M33 30 L34 52" stroke="rgba(255,255,255,.15)" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="5 4"/>';
-function updatePoseSil(){g('pose-sil').innerHTML=S.phase==='front'?SIL_FRONT:SIL_SIDE;}
+function updatePoseSil(){const ps=g('pose-sil');if(ps)ps.innerHTML=S.phase==='front'?SIL_FRONT:SIL_SIDE;}
 
 /* ── SHUTTER + CAPTURE ── */
 g('shutter').addEventListener('click',()=>{
@@ -2528,7 +2528,7 @@ wireSegGroup(['ap-bf-y','ap-bf-n'],'apBreastfed');
 document.querySelectorAll('#lit-yes,#lit-no').forEach(function(b){b.addEventListener('click',function(){S.litVal=b.dataset.v;document.querySelectorAll('#lit-yes,#lit-no').forEach(x=>x.classList.remove('on'));b.classList.add('on');});});
 // consent handled on session page
 g('form-submit').addEventListener('click',async function(){
-  if(!S.sessConsentOn)return;
+  // consent verified at session start — sessConsentOn not checked here
   const missing=[];
   if(!S.genderVal)missing.push(T('lbl_gender'));
   if(!g('f-weight').value)missing.push(T('lbl_weight'));

@@ -337,8 +337,8 @@ select.f-in{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns
         <div class="qm-title" id="qm-title">Uploads</div>
       </div>
       <div id="qm-list"></div>
-      <div id="qm-empty" style="display:none;text-align:center;padding:var(--sp-24);color:var(--text3);font-size:var(--fs-md);font-family:var(--font);">All uploads complete</div>
-      <div style="margin-top:var(--sp-16);display:flex;gap:var(--sp-8);flex-shrink:0;padding-top:var(--sp-12);border-top:1px solid var(--line);">
+      <div id="qm-empty" style="display:none;text-align:center;padding:24px;color:var(--text3);font-size:15px;font-family:var(--font);">All uploads complete</div>
+      <div style="margin-top:18px;display:flex;gap:10px;flex-shrink:0;padding-top:14px;border-top:1px solid var(--line);">
         <button class="btn btn-primary" id="qm-upload-all" onclick="retryAllQueue()">&#8679; Upload All Now</button>
         <button class="btn btn-ghost" onclick="hideQueueModal()">Close</button>
       </div>
@@ -436,7 +436,7 @@ select.f-in{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns
         <div class="card-body">
           <input class="f-in" type="date" id="sess-dob" style="-webkit-user-select:text;user-select:text;">
           <div class="age-err" id="sess-age-err" data-t="err_age_over5">Child must be 0–5 years old for this study.</div>
-          <div id="sess-age-ok" style="font-family:var(--mono);font-size:var(--fs-xs);color:var(--green);margin-top:var(--sp-4);display:none;"></div>
+          <div id="sess-age-ok" style="font-family:var(--mono);font-size:11px;color:var(--green);margin-top:6px;display:none;"></div>
         </div>
       </div>
       <div class="consent-wrap" id="sess-consent-wrap">
@@ -446,7 +446,7 @@ select.f-in{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns
         </div>
       </div>
       <div class="spacer"></div>
-      <div style="font-family:var(--mono);font-size:var(--fs-xs);color:var(--text3);text-align:center;padding:var(--sp-4) 0;min-height:1.4em;" id="sess-go-hint">Enter date of birth and accept consent to proceed</div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--text3);text-align:center;padding:6px 0;min-height:1.4em;" id="sess-go-hint">Enter date of birth and accept consent to proceed</div>
       <button class="btn btn-primary" id="sess-go" data-t="btn_begincapture" disabled>Begin Capture &rarr;</button>
     </div>
   </div>
@@ -900,7 +900,7 @@ window.showQueueModal=async function(){
   g('qm-title').textContent=T('queue_title');
   const all=await dbAll();
   if(all.length===0){
-    list.innerHTML='<p style="color:var(--text3);font-size:var(--fs-sm);padding:var(--sp-8) 0">'+T('queue_empty')+'</p>';
+    list.innerHTML='<p style="color:var(--text3);font-size:13px;padding:10px 0">'+T('queue_empty')+'</p>';
   }else{
     all.forEach(function(item){
       const d=document.createElement('div');d.className='qm-item';
@@ -2529,7 +2529,10 @@ function goForm(){
     bfField.style.display=showBf?'':'none';
   }
   showScreen('s-form');
-  g('header').style.display='flex';
+  // Force header visible - belt and suspenders
+  const hdr=g('header');
+  hdr.style.cssText='';  // clear any inline overrides first
+  hdr.style.display='flex';
 }
 document.querySelectorAll('#g-male,#g-female').forEach(function(b){b.addEventListener('click',function(){S.genderVal=b.dataset.v;document.querySelectorAll('#g-male,#g-female').forEach(x=>x.classList.remove('on'));b.classList.add('on');});});
 // 5-level literacy radio

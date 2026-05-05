@@ -88,14 +88,14 @@ body{
 @media(min-width:1024px){#dwall{display:flex}#app{display:none!important}}
 #app{position:fixed;inset:0;background:var(--bg);}
 #header{
-  position:fixed;top:0;left:0;right:0;z-index:300;
+  position:fixed;top:0;left:0;right:0;z-index:9000;
   height:calc(var(--safe-t) + 52px);
   padding-top:var(--safe-t);
   display:flex;align-items:center;justify-content:space-between;
-  padding-left:var(--sp-20);padding-right:var(--sp-12);
-  background:var(--bg2);border-bottom:1px solid var(--line);
+  padding-left:20px;padding-right:14px;
+  background:var(--bg2);border-bottom:2px solid var(--line);
 }
-.h-logo{font-family:var(--mono);font-size:var(--fs-lg);letter-spacing:0.3em;color:var(--text);font-weight:500;}
+.h-logo{font-family:var(--mono);font-size:var(--fs-lg);letter-spacing:0.3em;color:var(--text);font-weight:700;}
 .h-right{display:flex;gap:var(--sp-6);align-items:center;}
 .h-btn{
   width:var(--tap);height:var(--tap);border-radius:50%;
@@ -116,7 +116,7 @@ body{
 .sp{padding:var(--sp-24) var(--sp-20);flex:1;display:flex;flex-direction:column;gap:var(--sp-20);}
 
 /* SETUP */
-#s-setup{background:var(--bg);padding-top:calc(max(env(safe-area-inset-top,0px),14px) + 52px)!important;}
+#s-setup{background:var(--bg);}
 .setup-hd{font-size:var(--fs-xl);font-weight:600;color:var(--text);}
 .step-list{display:flex;flex-direction:column;}
 .step-row{display:flex;align-items:flex-start;gap:var(--sp-16);padding:var(--sp-14) 0;border-bottom:1px solid var(--line);}
@@ -276,7 +276,7 @@ body{
 #reauth-btn:active{background:var(--amber-bg);}
 
 /* FORM */
-#s-form{background:var(--bg);padding-top:calc(max(env(safe-area-inset-top,0px),14px) + 52px)!important;}
+#s-form{background:var(--bg);}
 .form-card{background:var(--bg2);border:1.5px solid var(--line);border-radius:var(--r);overflow:hidden;margin-bottom:var(--sp-12);}
 .form-card-hd{font-family:var(--mono);font-size:var(--fs-xs);font-weight:500;letter-spacing:0.1em;color:var(--text3);text-transform:uppercase;padding:var(--sp-8) var(--sp-16);border-bottom:1px solid var(--line);background:var(--bg3);}
 .form-field{padding:var(--sp-12) var(--sp-16);border-bottom:1px solid var(--line);}

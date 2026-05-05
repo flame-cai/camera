@@ -186,8 +186,9 @@ body{
 #cam-viewport{
   position:relative;width:100%;flex:0 0 auto;
   background:#000;touch-action:none;overflow:hidden;
+  max-height:min(calc(75vw * 4 / 3), calc(100svh - 220px));
 }
-#vid{display:block;width:100%;height:auto;}
+#vid{display:block;width:100%;height:auto;max-height:min(calc(75vw * 4 / 3), calc(100svh - 220px));object-fit:contain;}
 #c-mask,#c-pose{
   position:absolute;top:0;left:0;
   pointer-events:none;
@@ -1727,8 +1728,7 @@ function syncCanvasSize(){
   // position canvases on top of video (video height = auto, need explicit pixel size)
   mCvs.style.width=w+'px';mCvs.style.height=h+'px';
   pCvs.style.width=w+'px';pCvs.style.height=h+'px';
-  // cam-viewport height = video natural height
-  g('cam-viewport').style.height=h+'px';
+  // cam-viewport height is CSS-controlled (max-height prevents overflow)
 }
 if(window.ResizeObserver){new ResizeObserver(()=>{if(S.camRunning)syncCanvasSize();}).observe(vid);}
 

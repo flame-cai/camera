@@ -2479,8 +2479,6 @@ function doCapture(){
     cap.toBlob(function(blob){
       if(S._captureCancel||!blob)return;
       if(captPhase==='front')S.frontBlob=blob;else S.sideBlob=blob;
-      // enable Next now that blob is ready
-      const nb=g('prev-next');if(nb)nb.disabled=false;
     },'image/jpeg',0.93);
   },0);
 }
@@ -2490,7 +2488,7 @@ function showPreview(dataUrl){
   g('prev-img').src=dataUrl;
   g('prev-lbl').textContent=S.phase==='front'?T('prev_front'):T('prev_side');
   g('prev-status').textContent='';g('prev-status').className='prev-status';
-  const nb=g('prev-next');nb.textContent=T('prev_next');nb.disabled=true; // enabled after blob ready
+  const nb=g('prev-next');nb.textContent=T('prev_next');nb.disabled=false;
   g('prev-retake').textContent=T('prev_retake');
   S.popupMode=S.phase==='front'?'front-normal':'side-normal';
   g('preview').classList.add('on');
@@ -2506,17 +2504,12 @@ g('prev-retake').addEventListener('click',()=>{
 g('prev-next').addEventListener('click',()=>{
   const nb=g('prev-next');nb.disabled=true;
   if(S.popupMode==='front-normal'||S.popupMode==='front-retry'){
-    S.frontDone=false;S.frontErr=null;
-    uploadBlob(S.frontBlob,S.uuid+'_front.jpg','front');
     hidePreview();
     S.phase='side';updatePoseSil();
     g('cam-phase-lbl').textContent=T('side_view');
     g('hval-cur').textContent='—';g('hval-cur').className='h-val dim';
   }else{
-    S.sideDone=false;S.sideErr=null;
-    uploadBlob(S.sideBlob,S.uuid+'_side.jpg','side');
-    g('prev-status').textContent=T('prev_uploading');g('prev-status').className='prev-status uploading on';
-    pollSide();
+    hidePreview();goForm();
   }
 });
 function fetchWithTimeout(input,opts,ms){

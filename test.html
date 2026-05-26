@@ -960,7 +960,7 @@ const state = {
   allPass: false,
   lastPixelHash: 0,
   stableFrames: 0,
-  STABLE_THRESH: 8,
+  STABLE_THRESH: 1,
   results: null
 };
 
@@ -1078,7 +1078,7 @@ function startOverlayLoop() {
     state.constraints.stillness = state.stableFrames >= state.STABLE_THRESH;
 
     // ── Camera tilt from IMU or analysis ──
-    const tiltOk = Math.abs(state.tiltDeg) < 8; // ±8° tolerance
+    const tiltOk = Math.abs(state.tiltDeg) < 15; // ±8° tolerance
     state.constraints.level = tiltOk;
 
     // ── Distance estimation ──

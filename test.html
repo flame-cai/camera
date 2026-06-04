@@ -30,16 +30,6 @@
             --gray-700: #374151;
             --gray-800: #1f2937;
             --gray-900: #111827;
-            
-            --radius-sm: 4px;
-            --radius-md: 8px;
-            --radius-lg: 12px;
-            --radius-xl: 16px;
-            
-            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
         }
 
         html, body {
@@ -48,11 +38,10 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
             color: var(--gray-900);
-            overflow-x: hidden;
-            position: fixed;
+            overflow: hidden;
         }
 
         #app {
@@ -60,139 +49,157 @@
             height: 100%;
             display: flex;
             flex-direction: column;
-            background: white;
         }
 
         .header {
             background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
             color: white;
-            padding: 20px;
-            padding-top: max(20px, env(safe-area-inset-top));
-            box-shadow: var(--shadow-lg);
+            padding: 12px 16px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
             flex-shrink: 0;
         }
 
         .header h1 {
-            font-size: 24px;
+            font-size: 20px;
             font-weight: 600;
-            margin-bottom: 4px;
+            margin-bottom: 2px;
         }
 
         .header .subtitle {
-            font-size: 13px;
+            font-size: 12px;
             opacity: 0.9;
         }
 
         .main-container {
             flex: 1;
             display: flex;
-            flex-direction: column;
             overflow: hidden;
         }
 
-        .nav-tabs {
-            display: flex;
-            gap: 0;
-            border-bottom: 1px solid var(--gray-200);
+        .sidebar {
+            width: 320px;
             background: white;
-            overflow-x: auto;
-            flex-shrink: 0;
+            border-right: 1px solid var(--gray-200);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
         }
 
-        .nav-tab {
-            flex: 1;
-            min-width: 100px;
-            padding: 12px 16px;
-            border: none;
-            background: white;
-            color: var(--gray-600);
+        .sidebar-section {
+            padding: 16px;
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .sidebar-section h3 {
             font-size: 13px;
+            font-weight: 600;
+            color: var(--gray-700);
+            margin-bottom: 12px;
+        }
+
+        .control-group {
+            margin-bottom: 12px;
+        }
+
+        .control-group label {
+            display: block;
+            font-size: 12px;
             font-weight: 500;
+            color: var(--gray-700);
+            margin-bottom: 4px;
+        }
+
+        .control-group input,
+        .control-group select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid var(--gray-300);
+            border-radius: 6px;
+            font-size: 13px;
+            font-family: inherit;
+        }
+
+        .control-group input:focus,
+        .control-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-unit {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 11px;
+            color: var(--gray-500);
+            pointer-events: none;
+        }
+
+        .input-wrapper input {
+            padding-right: 30px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
-            border-bottom: 3px solid transparent;
+            font-family: inherit;
+            margin-top: 8px;
         }
 
-        .nav-tab:hover {
-            background: var(--gray-50);
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: var(--primary-dark);
+        }
+
+        .btn-primary:disabled {
+            background: var(--gray-300);
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: var(--gray-100);
             color: var(--gray-700);
         }
 
-        .nav-tab.active {
-            color: var(--primary);
-            border-bottom-color: var(--primary);
+        .btn-secondary:hover {
+            background: var(--gray-200);
         }
 
-        .tab-content {
-            display: none;
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 12px;
+            margin-top: 4px;
+        }
+
+        .video-container {
             flex: 1;
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        .tab-content.active {
-            display: flex;
-            flex-direction: column;
-        }
-
-        #measurement {
-            padding: 0;
-        }
-
-        .status-bar {
-            display: flex;
-            gap: 0;
-            background: var(--gray-50);
-            border-bottom: 1px solid var(--gray-200);
-            padding: 0;
-        }
-
-        .status-item {
-            flex: 1;
-            padding: 12px;
-            text-align: center;
-            border-right: 1px solid var(--gray-200);
-        }
-
-        .status-item:last-child {
-            border-right: none;
-        }
-
-        .status-label {
-            display: block;
-            font-size: 11px;
-            color: var(--gray-500);
-            margin-bottom: 4px;
-            font-weight: 500;
-        }
-
-        .status-value {
-            display: block;
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--gray-900);
-        }
-
-        .video-section {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            overflow: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        .video-wrapper {
-            position: relative;
-            width: 100%;
-            aspect-ratio: 4 / 3;
             background: #000;
-            flex-shrink: 0;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
         }
 
         #video {
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            object-fit: contain;
             display: block;
         }
 
@@ -210,22 +217,21 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 40px;
-            height: 40px;
-            border: 2px solid rgba(255, 255, 255, 0.5);
+            width: 50px;
+            height: 50px;
+            border: 2px solid rgba(255, 255, 255, 0.6);
             border-radius: 50%;
-            opacity: 0.7;
         }
 
         .crosshair::before,
         .crosshair::after {
             content: '';
             position: absolute;
-            background: rgba(255, 255, 255, 0.5);
+            background: rgba(255, 255, 255, 0.6);
         }
 
         .crosshair::before {
-            width: 20px;
+            width: 25px;
             height: 2px;
             top: 50%;
             left: 50%;
@@ -234,7 +240,7 @@
 
         .crosshair::after {
             width: 2px;
-            height: 20px;
+            height: 25px;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
@@ -249,277 +255,166 @@
 
         .video-controls {
             position: absolute;
-            bottom: 20px;
-            right: 20px;
+            bottom: 16px;
+            right: 16px;
             display: flex;
-            gap: 10px;
+            gap: 8px;
+            z-index: 10;
         }
 
         .btn-icon {
-            width: 44px;
-            height: 44px;
+            width: 48px;
+            height: 48px;
             border-radius: 50%;
-            background: rgba(0, 0, 0, 0.6);
+            background: rgba(0, 0, 0, 0.7);
             border: none;
             color: white;
-            font-size: 18px;
+            font-size: 20px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.3s ease;
-            backdrop-filter: blur(10px);
+            transition: all 0.3s;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-icon:hover {
+            background: rgba(0, 0, 0, 0.9);
         }
 
         .btn-icon:active {
-            background: rgba(0, 0, 0, 0.8);
             transform: scale(0.95);
         }
 
-        .controls-section {
-            padding: 16px;
-            background: white;
-            border-bottom: 1px solid var(--gray-200);
-            flex-shrink: 0;
-        }
-
-        .control-group {
-            margin-bottom: 12px;
-        }
-
-        .control-group:last-child {
-            margin-bottom: 0;
-        }
-
-        .control-group label {
-            display: block;
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--gray-700);
-            margin-bottom: 6px;
-        }
-
-        .control-group input[type="number"],
-        .control-group select {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid var(--gray-300);
-            border-radius: var(--radius-md);
-            font-size: 14px;
-            font-family: inherit;
-        }
-
-        .control-group input:focus,
-        .control-group select:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-
-        .input-wrapper {
-            position: relative;
-            display: flex;
-            align-items: center;
-        }
-
-        .input-wrapper input {
-            flex: 1;
-            padding-right: 40px;
-        }
-
-        .input-unit {
+        .status-overlay {
             position: absolute;
-            right: 12px;
-            font-size: 12px;
-            color: var(--gray-500);
-            font-weight: 500;
-            pointer-events: none;
-        }
-
-        .btn {
-            width: 100%;
-            padding: 12px;
-            border: none;
-            border-radius: var(--radius-md);
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-family: inherit;
-        }
-
-        .btn-primary {
-            background: var(--primary);
+            top: 12px;
+            left: 12px;
+            background: rgba(0, 0, 0, 0.7);
             color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            z-index: 10;
         }
 
-        .btn-primary:hover:not(:disabled) {
-            background: var(--primary-dark);
-            box-shadow: var(--shadow-lg);
-            transform: translateY(-2px);
+        .status-bar {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            display: flex;
+            gap: 8px;
+            z-index: 10;
         }
 
-        .btn-primary:active:not(:disabled) {
-            transform: translateY(0);
+        .status-badge {
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            min-width: 50px;
+            text-align: center;
         }
 
-        .btn-primary:disabled {
-            background: var(--gray-300);
-            cursor: not-allowed;
-        }
-
-        .btn-secondary {
-            background: var(--gray-100);
-            color: var(--gray-700);
-        }
-
-        .btn-secondary:hover:not(:disabled) {
-            background: var(--gray-200);
-        }
-
-        .results-section {
-            flex: 1;
-            padding: 16px;
+        .results-panel {
+            width: 280px;
+            background: white;
+            border-left: 1px solid var(--gray-200);
             overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
+            display: flex;
+            flex-direction: column;
         }
 
-        .results-section h2 {
-            font-size: 16px;
+        .results-header {
+            padding: 16px;
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .results-header h2 {
+            font-size: 14px;
             font-weight: 600;
             color: var(--gray-900);
-            margin-bottom: 16px;
         }
 
-        .results-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-            margin-bottom: 24px;
+        .results-content {
+            padding: 16px;
+            flex: 1;
+            overflow-y: auto;
         }
 
         .result-card {
-            background: white;
-            border: 1px solid var(--gray-200);
-            border-radius: var(--radius-lg);
-            padding: 16px;
-            text-align: center;
-            transition: all 0.3s ease;
-        }
-
-        .result-card.primary {
             background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
             color: white;
-            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            text-align: center;
         }
 
         .result-label {
-            font-size: 12px;
-            font-weight: 500;
+            font-size: 11px;
             opacity: 0.8;
-            margin-bottom: 8px;
-        }
-
-        .result-value {
-            font-size: 28px;
-            font-weight: 700;
             margin-bottom: 4px;
         }
 
+        .result-value {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+
         .result-unit {
-            font-size: 11px;
-            font-weight: 500;
+            font-size: 10px;
             opacity: 0.7;
         }
 
-        .error-container {
-            background: var(--gray-50);
-            border-left: 4px solid var(--error);
-            border-radius: var(--radius-md);
-            padding: 0;
-            margin-bottom: 16px;
+        .error-box {
+            background: #fee;
+            border: 1px solid var(--error);
+            border-radius: 6px;
+            padding: 10px;
+            margin-bottom: 12px;
+            display: none;
         }
 
-        .error-item {
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
-            padding: 12px;
-        }
-
-        .error-icon {
-            font-size: 18px;
-            flex-shrink: 0;
-            margin-top: 2px;
-        }
-
-        .error-content {
-            flex: 1;
+        .error-box.show {
+            display: block;
         }
 
         .error-title {
             font-weight: 600;
             color: var(--error);
-            font-size: 13px;
+            font-size: 12px;
             margin-bottom: 2px;
         }
 
         .error-message {
-            font-size: 12px;
-            color: var(--gray-600);
+            font-size: 11px;
+            color: #c41e3a;
             line-height: 1.4;
-        }
-
-        .btn-close {
-            background: none;
-            border: none;
-            font-size: 20px;
-            color: var(--gray-400);
-            cursor: pointer;
-            padding: 0;
-            width: 24px;
-            height: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-
-        .btn-close:hover {
-            color: var(--gray-600);
-        }
-
-        .methods-section {
-            margin-top: 24px;
-        }
-
-        .methods-section h3 {
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--gray-900);
-            margin-bottom: 12px;
         }
 
         .method-tabs {
             display: flex;
-            gap: 8px;
+            gap: 4px;
             margin-bottom: 12px;
             overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
             padding-bottom: 8px;
         }
 
         .method-tab {
             flex-shrink: 0;
-            padding: 8px 12px;
+            padding: 6px 10px;
             border: 1px solid var(--gray-300);
             background: white;
-            border-radius: var(--radius-md);
-            font-size: 11px;
+            border-radius: 4px;
+            font-size: 10px;
             font-weight: 500;
             color: var(--gray-600);
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.2s;
+            white-space: nowrap;
         }
 
         .method-tab:hover {
@@ -533,76 +428,193 @@
             color: white;
         }
 
-        .method-results {
+        .method-result {
             background: white;
             border: 1px solid var(--gray-200);
-            border-radius: var(--radius-lg);
-            padding: 12px;
+            border-radius: 6px;
+            padding: 10px;
+            margin-bottom: 8px;
         }
 
         .method-result-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 8px 0;
+            padding: 4px 0;
+            font-size: 11px;
             border-bottom: 1px solid var(--gray-100);
-            font-size: 12px;
         }
 
         .method-result-item:last-child {
             border-bottom: none;
         }
 
-        .method-result-item label {
+        .method-result-label {
+            color: var(--gray-600);
             font-weight: 500;
+        }
+
+        .method-result-value {
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .history-item {
+            background: var(--gray-50);
+            border: 1px solid var(--gray-200);
+            border-radius: 6px;
+            padding: 8px;
+            margin-bottom: 8px;
+            font-size: 11px;
+        }
+
+        .history-time {
+            color: var(--gray-500);
+            margin-bottom: 4px;
+        }
+
+        .history-values {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4px;
+        }
+
+        .history-value {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .history-label {
             color: var(--gray-600);
         }
 
-        .method-result-item value {
+        .history-data {
             font-weight: 600;
             color: var(--primary);
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 2px solid var(--gray-300);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
 
         .placeholder {
             text-align: center;
             padding: 20px;
             color: var(--gray-400);
-            font-size: 13px;
+            font-size: 12px;
         }
 
-        .settings-panel,
-        .history-panel {
-            padding: 16px;
+        @media (max-width: 1200px) {
+            .sidebar {
+                width: 280px;
+            }
+
+            .results-panel {
+                width: 240px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                max-height: 150px;
+                border-right: none;
+                border-bottom: 1px solid var(--gray-200);
+            }
+
+            .results-panel {
+                width: 100%;
+                max-height: 200px;
+                border-left: none;
+                border-top: 1px solid var(--gray-200);
+            }
+
+            .video-container {
+                height: 400px;
+            }
+        }
+
+        .tabs-container {
+            display: flex;
+            border-bottom: 1px solid var(--gray-200);
+            background: white;
+            flex-shrink: 0;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            background: white;
+            color: var(--gray-600);
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .tab-btn:hover {
+            background: var(--gray-50);
+        }
+
+        .tab-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+            background: var(--gray-50);
+        }
+
+        .tab-content {
+            display: none;
+            flex: 1;
             overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
         }
 
-        .settings-panel h2,
-        .history-panel h2 {
-            font-size: 16px;
-            font-weight: 600;
-            color: var(--gray-900);
+        .tab-content.active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        #settings {
+            flex-direction: column;
+        }
+
+        .settings-grid {
+            padding: 16px;
+        }
+
+        .setting-group {
             margin-bottom: 16px;
-        }
-
-        .settings-group {
-            margin-bottom: 24px;
             background: white;
             border: 1px solid var(--gray-200);
-            border-radius: var(--radius-lg);
-            padding: 16px;
+            border-radius: 6px;
+            padding: 12px;
         }
 
-        .settings-group h3 {
-            font-size: 13px;
+        .setting-group h4 {
+            font-size: 12px;
             font-weight: 600;
             color: var(--gray-900);
-            margin-bottom: 12px;
+            margin-bottom: 8px;
         }
 
         .setting-item {
-            margin-bottom: 16px;
-            padding-bottom: 16px;
+            margin-bottom: 8px;
+            padding-bottom: 8px;
             border-bottom: 1px solid var(--gray-100);
         }
 
@@ -615,310 +627,187 @@
         .setting-item label {
             display: flex;
             align-items: center;
-            gap: 8px;
-            font-size: 13px;
-            font-weight: 500;
-            color: var(--gray-900);
-            margin-bottom: 6px;
+            gap: 6px;
+            font-size: 12px;
             cursor: pointer;
         }
 
         .setting-item input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
-            cursor: pointer;
-        }
-
-        .setting-item input[type="number"],
-        .setting-item select {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid var(--gray-300);
-            border-radius: var(--radius-md);
-            font-size: 13px;
-        }
-
-        .setting-item input[type="range"] {
-            width: 100%;
-            cursor: pointer;
-        }
-
-        .input-value {
-            display: inline-block;
-            min-width: 30px;
-            text-align: right;
-            font-weight: 600;
-            color: var(--primary);
-        }
-
-        .setting-description {
-            font-size: 11px;
-            color: var(--gray-500);
-            margin-top: 4px;
-            line-height: 1.4;
-        }
-
-        .history-controls {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 16px;
-        }
-
-        .history-controls .btn {
-            flex: 1;
-        }
-
-        .history-list {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .history-item {
-            background: white;
-            border: 1px solid var(--gray-200);
-            border-radius: var(--radius-lg);
-            padding: 12px;
-        }
-
-        .history-time {
-            font-size: 11px;
-            color: var(--gray-500);
-            margin-bottom: 4px;
-        }
-
-        .history-values {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-            font-size: 12px;
-        }
-
-        .history-value {
-            display: flex;
-            justify-content: space-between;
-        }
-
-        .history-value-label {
-            color: var(--gray-600);
-        }
-
-        .history-value-data {
-            font-weight: 600;
-            color: var(--primary);
-        }
-
-        @media (min-width: 600px) {
-            .results-grid {
-                grid-template-columns: repeat(4, 1fr);
-            }
-        }
-
-        @media (min-width: 768px) {
-            #app {
-                max-width: 100%;
-                margin: 0 auto;
-            }
-            
-            .header {
-                padding: 24px;
-            }
-            
-            .video-wrapper {
-                aspect-ratio: 16 / 9;
-            }
-            
-            .controls-section {
-                display: grid;
-                grid-template-columns: repeat(2, 1fr);
-                gap: 12px;
-            }
-            
-            .controls-section .btn {
-                grid-column: 1 / -1;
-            }
-        }
-
-        .hidden {
-            display: none !important;
-        }
-
-        .loading {
-            opacity: 0.6;
-            pointer-events: none;
-        }
-
-        .spinner {
-            display: inline-block;
             width: 16px;
             height: 16px;
-            border: 2px solid var(--gray-300);
-            border-top-color: var(--primary);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body>
     <div id="app" class="app">
         <header class="header">
-            <div class="header-content">
-                <h1>📏 Distance Estimator</h1>
-                <p class="subtitle">Professional human distance measurement system</p>
-            </div>
+            <h1>📏 Distance Estimator Pro</h1>
+            <p class="subtitle">8-Method Professional Distance Measurement System</p>
         </header>
 
-        <main class="main-container">
-            <nav class="nav-tabs">
-                <button class="nav-tab active" data-tab="measurement">Measurement</button>
-                <button class="nav-tab" data-tab="settings">Settings</button>
-                <button class="nav-tab" data-tab="history">History</button>
-            </nav>
+        <div class="tabs-container">
+            <button class="tab-btn active" onclick="switchTab('measurement')">Measurement</button>
+            <button class="tab-btn" onclick="switchTab('settings')">Settings</button>
+            <button class="tab-btn" onclick="switchTab('history')">History</button>
+        </div>
 
-            <section id="measurement" class="tab-content active">
-                <div id="statusBar" class="status-bar">
-                    <div class="status-item">
-                        <span class="status-label">Camera Status</span>
-                        <span class="status-value" id="cameraStatus">Idle</span>
-                    </div>
-                    <div class="status-item">
-                        <span class="status-label">FPS</span>
-                        <span class="status-value" id="fpsCounter">0</span>
-                    </div>
-                    <div class="status-item">
-                        <span class="status-label">Processing</span>
-                        <span class="status-value" id="processingStatus">Ready</span>
-                    </div>
-                </div>
-
-                <div class="video-section">
-                    <div class="video-wrapper">
-                        <video id="video" playsinline autoplay muted></video>
-                        <canvas id="canvas" style="display: none;"></canvas>
-                        <div class="video-overlay">
-                            <div class="crosshair"></div>
-                            <div class="detection-box" id="detectionBox" style="display: none;"></div>
-                        </div>
-                        <div class="video-controls">
-                            <button id="focusButton" class="btn-icon" title="Tap to Focus">📍</button>
-                            <button id="torchButton" class="btn-icon" title="Toggle Torch" style="display: none;">💡</button>
-                        </div>
-                    </div>
-
-                    <div class="controls-section">
+        <div class="main-container">
+            <!-- Measurement Tab -->
+            <div id="measurement" class="tab-content active">
+                <div class="sidebar">
+                    <div class="sidebar-section">
+                        <h3>📸 Camera Setup</h3>
                         <div class="control-group">
-                            <label for="cameraHeight">Camera Height (cm)</label>
+                            <label>Camera Height (cm)</label>
                             <div class="input-wrapper">
-                                <input type="number" id="cameraHeight" min="10" max="300" step="5" value="150" required>
+                                <input type="number" id="cameraHeight" min="10" max="300" step="5" value="150">
                                 <span class="input-unit">cm</span>
                             </div>
                         </div>
 
                         <div class="control-group">
-                            <label for="focalLengthMode">Focal Length Mode</label>
+                            <label>Focal Length Mode</label>
                             <select id="focalLengthMode">
-                                <option value="auto">Auto-Detect (Device)</option>
+                                <option value="auto">Auto-Detect</option>
                                 <option value="manual">Manual</option>
                             </select>
                         </div>
 
                         <div class="control-group" id="manualFocalLengthGroup" style="display: none;">
-                            <label for="focalLengthManual">Focal Length (px)</label>
+                            <label>Focal Length (px)</label>
                             <div class="input-wrapper">
                                 <input type="number" id="focalLengthManual" min="500" max="2000" step="50" value="1200">
                                 <span class="input-unit">px</span>
                             </div>
                         </div>
 
-                        <button id="startBtn" class="btn btn-primary">Start Camera</button>
-                        <button id="stopBtn" class="btn btn-secondary" disabled style="display: none;">Stop Camera</button>
+                        <button id="startBtn" class="btn btn-primary">▶ Start Camera</button>
+                        <button id="stopBtn" class="btn btn-secondary" style="display: none;">⏹ Stop Camera</button>
+                    </div>
+
+                    <div class="sidebar-section">
+                        <h3>⚙️ Quick Settings</h3>
+                        <div class="setting-item">
+                            <label>
+                                <input type="checkbox" id="useRearCamera" checked>
+                                Rear Camera (Mobile)
+                            </label>
+                        </div>
+                        <div class="setting-item">
+                            <label>
+                                <input type="checkbox" id="enableAutofocus" checked>
+                                Autofocus
+                            </label>
+                        </div>
+                        <div class="setting-item">
+                            <label>
+                                <input type="checkbox" id="showDetectionBox" checked>
+                                Show Detection
+                            </label>
+                        </div>
                     </div>
                 </div>
 
-                <section class="results-section">
-                    <h2>Measurement Results</h2>
+                <div class="video-container">
+                    <video id="video" playsinline autoplay muted></video>
+                    <canvas id="canvas" style="display: none;"></canvas>
                     
-                    <div class="results-grid">
-                        <div class="result-card primary">
+                    <div class="video-overlay">
+                        <div class="crosshair"></div>
+                        <div class="detection-box" id="detectionBox" style="display: none;"></div>
+                    </div>
+
+                    <div class="status-overlay" id="statusOverlay">
+                        <span class="loading-spinner"></span>
+                        <span id="statusText" style="margin-left: 8px;">Loading...</span>
+                    </div>
+
+                    <div class="status-bar">
+                        <div class="status-badge" id="fpsDisplay">FPS: 0</div>
+                        <div class="status-badge" id="detectionStatus">Idle</div>
+                    </div>
+
+                    <div class="video-controls">
+                        <button id="focusButton" class="btn-icon" title="Manual Focus">📍</button>
+                        <button id="torchButton" class="btn-icon" title="Torch" style="display: none;">💡</button>
+                    </div>
+                </div>
+
+                <div class="results-panel">
+                    <div class="results-header">
+                        <h2>📊 Results</h2>
+                    </div>
+
+                    <div class="results-content">
+                        <div class="error-box" id="errorBox">
+                            <div class="error-title" id="errorTitle">Error</div>
+                            <div class="error-message" id="errorMessage">Unknown error</div>
+                        </div>
+
+                        <div class="result-card">
                             <div class="result-label">Real Height</div>
                             <div class="result-value" id="resultHReal">-</div>
                             <div class="result-unit">cm</div>
                         </div>
-                        <div class="result-card primary">
+
+                        <div class="result-card">
                             <div class="result-label">Distance</div>
                             <div class="result-value" id="resultDistance">-</div>
                             <div class="result-unit">cm</div>
                         </div>
+
                         <div class="result-card">
                             <div class="result-label">Confidence</div>
                             <div class="result-value" id="resultConfidence">-</div>
                             <div class="result-unit">%</div>
                         </div>
-                        <div class="result-card">
-                            <div class="result-label">Method</div>
-                            <div class="result-value" id="resultMethod" style="font-size: 14px;">-</div>
-                            <div class="result-unit"></div>
-                        </div>
-                    </div>
 
-                    <div id="errorContainer" class="error-container" style="display: none;">
-                        <div class="error-item">
-                            <span class="error-icon">⚠️</span>
-                            <div class="error-content">
-                                <div class="error-title" id="errorTitle">Error</div>
-                                <div class="error-message" id="errorMessage">Unknown error occurred</div>
-                            </div>
-                            <button class="btn-close" onclick="dismissError()">×</button>
-                        </div>
-                    </div>
-
-                    <div class="methods-section">
-                        <h3>Method Breakdown</h3>
+                        <h3 style="font-size: 12px; font-weight: 600; margin: 16px 0 8px 0; color: var(--gray-700);">Method Details</h3>
+                        
                         <div class="method-tabs">
-                            <button class="method-tab active" data-method="voting">Method 7: Voting</button>
-                            <button class="method-tab" data-method="mask">Method 1: Mask</button>
-                            <button class="method-tab" data-method="landmarks">Method 2: Landmarks</button>
-                            <button class="method-tab" data-method="fov">Method 3: FOV</button>
+                            <button class="method-tab active" data-method="voting">M7: Voting</button>
+                            <button class="method-tab" data-method="mask">M1: Mask</button>
+                            <button class="method-tab" data-method="landmarks">M2: Landmarks</button>
+                            <button class="method-tab" data-method="fov">M3: FOV</button>
+                            <button class="method-tab" data-method="homography">M4: Homography</button>
+                            <button class="method-tab" data-method="parallax">M5: Parallax</button>
+                            <button class="method-tab" data-method="edge">M6: Edge</button>
+                            <button class="method-tab" data-method="progressive">M8: Progressive</button>
                         </div>
-                        <div class="method-results" id="methodResults">
-                            <p class="placeholder">Run measurement to see detailed results</p>
+
+                        <div id="methodResults" class="method-result">
+                            <p class="placeholder">Waiting for measurements...</p>
                         </div>
                     </div>
-                </section>
-            </section>
+                </div>
+            </div>
 
-            <section id="settings" class="tab-content">
-                <div class="settings-panel">
-                    <h2>Settings & Configuration</h2>
-
-                    <div class="settings-group">
-                        <h3>Camera Settings</h3>
+            <!-- Settings Tab -->
+            <div id="settings" class="tab-content">
+                <div class="settings-grid">
+                    <div class="setting-group">
+                        <h4>Camera Settings</h4>
                         <div class="setting-item">
-                            <label>Use Rear Camera (Mobile)</label>
-                            <input type="checkbox" id="useRearCamera" checked>
-                            <p class="setting-description">Use back camera on mobile devices for better distance accuracy</p>
+                            <label>
+                                <input type="checkbox" id="useRearCamera2" checked>
+                                Use Rear Camera (Mobile)
+                            </label>
                         </div>
                         <div class="setting-item">
-                            <label>Enable Autofocus</label>
-                            <input type="checkbox" id="enableAutofocus" checked>
-                            <p class="setting-description">Continuously adjust focus for clearer detection</p>
+                            <label>
+                                <input type="checkbox" id="enableAutofocus2" checked>
+                                Enable Autofocus
+                            </label>
                         </div>
-                        <div class="setting-item">
+                        <div class="control-group">
                             <label>Autofocus Interval (ms)</label>
-                            <div class="input-wrapper">
-                                <input type="number" id="autofocusInterval" min="100" max="5000" step="100" value="500">
-                                <span class="input-unit">ms</span>
-                            </div>
+                            <input type="number" id="autofocusInterval" min="100" max="5000" value="500">
                         </div>
                     </div>
 
-                    <div class="settings-group">
-                        <h3>Processing Settings</h3>
-                        <div class="setting-item">
+                    <div class="setting-group">
+                        <h4>Processing Settings</h4>
+                        <div class="control-group">
                             <label>Target FPS</label>
                             <select id="targetFps">
                                 <option value="30">30 FPS</option>
@@ -926,69 +815,44 @@
                                 <option value="15">15 FPS</option>
                             </select>
                         </div>
-                        <div class="setting-item">
-                            <label>Smoothing Factor</label>
-                            <div class="input-wrapper">
-                                <input type="range" id="smoothingFactor" min="0" max="1" step="0.1" value="0.3">
-                                <span class="input-value" id="smoothingValue">0.3</span>
-                            </div>
-                            <p class="setting-description">Lower = more responsive, Higher = smoother</p>
+                        <div class="control-group">
+                            <label>Smoothing Factor: <span id="smoothingValue">0.3</span></label>
+                            <input type="range" id="smoothingFactor" min="0" max="1" step="0.1" value="0.3">
                         </div>
                     </div>
 
-                    <div class="settings-group">
-                        <h3>Detection Settings</h3>
-                        <div class="setting-item">
-                            <label>Landmark Confidence Threshold</label>
-                            <div class="input-wrapper">
-                                <input type="range" id="landmarkConfidence" min="0" max="1" step="0.1" value="0.7">
-                                <span class="input-value" id="landmarkValue">0.7</span>
-                            </div>
+                    <div class="setting-group">
+                        <h4>Detection Settings</h4>
+                        <div class="control-group">
+                            <label>Landmark Confidence: <span id="landmarkValue">0.7</span></label>
+                            <input type="range" id="landmarkConfidence" min="0" max="1" step="0.1" value="0.7">
                         </div>
-                        <div class="setting-item">
-                            <label>Minimum Detection Area</label>
-                            <div class="input-wrapper">
-                                <input type="range" id="minDetectionArea" min="0.05" max="0.5" step="0.05" value="0.1">
-                                <span class="input-value" id="areaValue">0.1</span>
-                            </div>
+                        <div class="control-group">
+                            <label>Min Detection Area: <span id="areaValue">0.1</span></label>
+                            <input type="range" id="minDetectionArea" min="0.05" max="0.5" step="0.05" value="0.1">
                         </div>
                     </div>
 
-                    <div class="settings-group">
-                        <h3>Display Settings</h3>
-                        <div class="setting-item">
-                            <label>Show Detection Box</label>
-                            <input type="checkbox" id="showDetectionBox" checked>
-                        </div>
-                        <div class="setting-item">
-                            <label>Show FPS Counter</label>
-                            <input type="checkbox" id="showFpsCounter" checked>
-                        </div>
-                    </div>
-
-                    <button id="resetSettingsBtn" class="btn btn-secondary">Reset to Defaults</button>
+                    <button class="btn btn-secondary btn-small" onclick="resetSettings()">Reset to Defaults</button>
                 </div>
-            </section>
+            </div>
 
-            <section id="history" class="tab-content">
-                <div class="history-panel">
-                    <h2>Measurement History</h2>
-                    
-                    <div class="history-controls">
-                        <button id="clearHistoryBtn" class="btn btn-secondary">Clear History</button>
-                        <button id="exportHistoryBtn" class="btn btn-secondary">Export CSV</button>
+            <!-- History Tab -->
+            <div id="history" class="tab-content">
+                <div style="padding: 16px; flex: 1; overflow-y: auto;">
+                    <div style="margin-bottom: 12px;">
+                        <button class="btn btn-secondary btn-small" onclick="exportHistory()">Export CSV</button>
+                        <button class="btn btn-secondary btn-small" onclick="clearHistory()">Clear History</button>
                     </div>
-
-                    <div class="history-list" id="historyList">
-                        <p class="placeholder">No measurements recorded yet</p>
-                    </div>
+                    <div id="historyList" class="placeholder">No measurements recorded yet</div>
                 </div>
-            </section>
-        </main>
+            </div>
+        </div>
     </div>
 
-    <script async src="https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation@0.1/selfie_segmentation.js"></script>
-    <script async src="https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.4/pose.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation@0.1/selfie_segmentation.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.4/pose.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
 
     <script>
         // ============================================================================
@@ -1027,15 +891,12 @@
             },
             defaultFocalLength: 1100,
             errors: {
-                CAMERA_NOT_FOUND: 'Camera not found. Make sure camera is available and permissions are granted.',
-                PERMISSION_DENIED: 'Camera permission denied. Please grant camera access in settings.',
-                NO_MEDIAPIPE: 'MediaPipe library failed to load. Check internet connection.',
-                NO_PERSON_DETECTED: 'No person detected in frame. Please move closer or adjust lighting.',
-                INVALID_CAMERA_HEIGHT: 'Camera height must be between 10-300 cm.',
-                INVALID_FOCAL_LENGTH: 'Focal length must be between 500-2000 pixels.',
-                AUTOFOCUS_FAILED: 'Autofocus is not supported on this device.',
-                TORCH_NOT_AVAILABLE: 'Torch is not available on this device.',
-                UNKNOWN_ERROR: 'An unknown error occurred. Please try again.',
+                CAMERA_NOT_FOUND: 'Camera not found. Please grant camera permission.',
+                PERMISSION_DENIED: 'Camera permission denied.',
+                NO_MEDIAPIPE: 'Failed to load MediaPipe. Check your internet connection.',
+                NO_PERSON_DETECTED: 'No person detected. Move closer or improve lighting.',
+                INVALID_INPUT: 'Invalid input value.',
+                UNKNOWN_ERROR: 'An error occurred. Please try again.',
             },
             storage: {
                 SETTINGS: 'distance_estimator_settings',
@@ -1045,459 +906,280 @@
         };
 
         // ============================================================================
+        // STATE
+        // ============================================================================
+
+        let State = {
+            isRunning: false,
+            processingFrame: false,
+            lastFrameTime: 0,
+            frameCount: 0,
+            lastFpsTime: 0,
+            smoothDistance: null,
+            smoothHReal: null,
+            history: [],
+            results: {},
+            mediapikeReady: false,
+            stream: null,
+            currentMethod: 'voting',
+        };
+
+        // ============================================================================
         // ERROR HANDLER
         // ============================================================================
 
-        const ErrorHandler = {
-            errorQueue: [],
-            maxErrors: 5,
+        function showError(code, details = '') {
+            const box = document.getElementById('errorBox');
+            const title = document.getElementById('errorTitle');
+            const message = document.getElementById('errorMessage');
 
-            show(code, details = '') {
-                const message = Config.errors[code] || Config.errors.UNKNOWN_ERROR;
-                const error = {
-                    code,
-                    message,
-                    details,
-                    timestamp: new Date(),
-                    id: `error_${Date.now()}_${Math.random()}`,
-                };
-                this.errorQueue.push(error);
-                if (this.errorQueue.length > this.maxErrors) {
-                    this.errorQueue.shift();
-                }
-                this.displayError(error);
-                console.error(`[${code}] ${message}${details ? ': ' + details : ''}`);
-                return error.id;
-            },
+            title.textContent = code;
+            message.textContent = Config.errors[code] || 'Unknown error';
 
-            displayError(error) {
-                const container = document.getElementById('errorContainer');
-                if (!container) return;
-                const title = document.getElementById('errorTitle');
-                const message = document.getElementById('errorMessage');
-                title.textContent = error.code.replace(/_/g, ' ');
-                message.textContent = error.details ? `${error.message} (${error.details})` : error.message;
-                container.style.display = 'block';
-            },
-
-            dismiss(errorId) {
-                this.errorQueue = this.errorQueue.filter(e => e.id !== errorId);
-                if (this.errorQueue.length === 0) {
-                    const container = document.getElementById('errorContainer');
-                    if (container) {
-                        container.style.display = 'none';
-                    }
-                }
-            },
-
-            clearAll() {
-                this.errorQueue = [];
-                const container = document.getElementById('errorContainer');
-                if (container) {
-                    container.style.display = 'none';
-                }
-            },
-
-            handleCameraError(error) {
-                if (error.name === 'NotAllowedError') {
-                    this.show('PERMISSION_DENIED', error.message);
-                } else if (error.name === 'NotFoundError') {
-                    this.show('CAMERA_NOT_FOUND', error.message);
-                } else if (error.name === 'NotReadableError') {
-                    this.show('CAMERA_NOT_FOUND', 'Camera is already in use or not accessible');
-                } else {
-                    this.show('UNKNOWN_ERROR', error.message);
-                }
-            },
-
-            validateCameraHeight(value) {
-                const num = parseFloat(value);
-                if (isNaN(num) || num < 10 || num > 300) {
-                    this.show('INVALID_CAMERA_HEIGHT');
-                    return false;
-                }
-                return true;
-            },
-
-            validateFocalLength(value) {
-                const num = parseFloat(value);
-                if (isNaN(num) || num < 500 || num > 2000) {
-                    this.show('INVALID_FOCAL_LENGTH');
-                    return false;
-                }
-                return true;
-            },
-
-            getLatestError() {
-                return this.errorQueue[this.errorQueue.length - 1] || null;
-            },
-        };
-
-        function dismissError() {
-            const error = ErrorHandler.getLatestError();
-            if (error) {
-                ErrorHandler.dismiss(error.id);
+            if (details) {
+                message.textContent += ' (' + details + ')';
             }
+
+            box.classList.add('show');
+            console.error(`[${code}] ${Config.errors[code]}${details ? ': ' + details : ''}`);
+        }
+
+        function clearError() {
+            document.getElementById('errorBox').classList.remove('show');
         }
 
         // ============================================================================
-        // MEDIAPIPE LOADER
+        // UI FUNCTIONS
         // ============================================================================
 
-        const MediaPipeLoader = {
-            isLoading: false,
-            isLoaded: false,
-            segmentation: null,
-            pose: null,
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
 
-            async load() {
-                if (this.isLoaded) return true;
-                if (this.isLoading) return this.waitForLoad();
+            document.getElementById(tab)?.classList.add('active');
+            document.querySelector(`.tab-btn[onclick="switchTab('${tab}')"]`)?.classList.add('active');
+        }
 
-                this.isLoading = true;
+        function updateStatus(text) {
+            document.getElementById('statusText').textContent = text;
+        }
 
-                try {
-                    await this.waitForGlobals();
-                    await this.initializeSegmentation();
-                    await this.initializePose();
-                    this.isLoaded = true;
-                    this.isLoading = false;
-                    return true;
-                } catch (error) {
-                    this.isLoading = false;
-                    ErrorHandler.show('NO_MEDIAPIPE', error.message);
-                    throw error;
-                }
-            },
+        function switchMethodTab(method) {
+            State.currentMethod = method;
+            document.querySelectorAll('.method-tab').forEach(el => el.classList.remove('active'));
+            document.querySelector(`.method-tab[data-method="${method}"]`)?.classList.add('active');
+            updateMethodDisplay(method);
+        }
 
-            async waitForGlobals(timeout = 10000) {
-                const startTime = Date.now();
-                while (!window.SelfieSegmentation || !window.Pose) {
-                    if (Date.now() - startTime > timeout) {
-                        throw new Error('MediaPipe libraries failed to load within timeout');
-                    }
-                    await new Promise(r => setTimeout(r, 100));
-                }
-            },
+        function updateMethodDisplay(method) {
+            const result = State.results[method];
+            const container = document.getElementById('methodResults');
 
-            async initializeSegmentation() {
-                return new Promise((resolve, reject) => {
-                    this.segmentation = new window.SelfieSegmentation({
-                        locateFile: (file) => {
-                            return `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation@0.1/${file}`;
-                        }
-                    });
+            if (!result) {
+                container.innerHTML = '<p class="placeholder">No data for this method</p>';
+                return;
+            }
 
-                    this.segmentation.setOptions({
-                        modelSelection: 1,
-                        selfieMode: true,
-                    });
+            let html = '<div class="method-result-item">';
+            html += '<span class="method-result-label">H_real</span>';
+            html += `<span class="method-result-value">${result.hreal ? result.hreal.toFixed(1) : '-'} cm</span>`;
+            html += '</div>';
 
-                    this.segmentation.onResults((results) => {
-                        resolve();
-                    });
+            html += '<div class="method-result-item">';
+            html += '<span class="method-result-label">Distance</span>';
+            html += `<span class="method-result-value">${result.distance ? result.distance.toFixed(1) : '-'} cm</span>`;
+            html += '</div>';
 
-                    const canvas = document.createElement('canvas');
-                    canvas.width = 1;
-                    canvas.height = 1;
-                    this.segmentation.send({ image: canvas });
-                });
-            },
+            if (result.confidence !== undefined) {
+                html += '<div class="method-result-item">';
+                html += '<span class="method-result-label">Confidence</span>';
+                html += `<span class="method-result-value">${result.confidence.toFixed(0)}%</span>`;
+                html += '</div>';
+            }
 
-            async initializePose() {
-                return new Promise((resolve, reject) => {
-                    this.pose = new window.Pose({
-                        locateFile: (file) => {
-                            return `https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.4/${file}`;
-                        }
-                    });
+            container.innerHTML = html;
+        }
 
-                    this.pose.setOptions({
-                        modelComplexity: 1,
-                        smoothLandmarks: true,
-                        enableSegmentation: false,
-                        minDetectionConfidence: 0.5,
-                        minTrackingConfidence: 0.5,
-                    });
+        function updateFps() {
+            const now = Date.now();
+            State.frameCount++;
 
-                    this.pose.onResults((results) => {
-                        resolve();
-                    });
+            if (now - State.lastFpsTime >= 1000) {
+                document.getElementById('fpsDisplay').textContent = `FPS: ${State.frameCount}`;
+                State.frameCount = 0;
+                State.lastFpsTime = now;
+            }
+        }
 
-                    const canvas = document.createElement('canvas');
-                    canvas.width = 1;
-                    canvas.height = 1;
-                    this.pose.send({ image: canvas });
-                });
-            },
+        function updateDetectionStatus(status) {
+            document.getElementById('detectionStatus').textContent = status;
+        }
 
-            async segment(imageData) {
-                if (!this.isLoaded) {
-                    throw new Error('MediaPipe not loaded');
-                }
-                return new Promise((resolve, reject) => {
-                    this.segmentation.onResults((results) => {
-                        resolve(results);
-                    });
-                    this.segmentation.send({ image: imageData }).catch(reject);
-                });
-            },
+        // ============================================================================
+        // MEDIAPIPE INITIALIZATION
+        // ============================================================================
 
-            async detectPose(imageData) {
-                if (!this.isLoaded) {
-                    throw new Error('MediaPipe not loaded');
-                }
-                return new Promise((resolve, reject) => {
-                    this.pose.onResults((results) => {
-                        resolve(results);
-                    });
-                    this.pose.send({ image: imageData }).catch(reject);
-                });
-            },
+        async function initializeMediaPipe() {
+            try {
+                updateStatus('Loading MediaPipe...');
 
-            waitForLoad() {
-                return new Promise((resolve) => {
-                    const checkLoaded = () => {
-                        if (this.isLoaded) {
-                            resolve(true);
+                await new Promise((resolve) => {
+                    const checkReady = () => {
+                        if (window.SelfieSegmentation && window.Pose) {
+                            resolve();
                         } else {
-                            setTimeout(checkLoaded, 100);
+                            setTimeout(checkReady, 100);
                         }
                     };
-                    checkLoaded();
+                    checkReady();
                 });
-            },
 
-            isReady() {
-                return this.isLoaded && this.segmentation && this.pose;
-            },
-        };
+                console.log('Initializing Selfie Segmentation...');
+                const segmentation = new SelfieSegmentation({
+                    locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation@0.1/${file}`
+                });
+
+                segmentation.setOptions({
+                    modelSelection: 1,
+                    selfieMode: true,
+                });
+
+                State.segmentation = segmentation;
+
+                console.log('Initializing Pose...');
+                const pose = new Pose({
+                    locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.4/${file}`
+                });
+
+                pose.setOptions({
+                    modelComplexity: 1,
+                    smoothLandmarks: true,
+                    enableSegmentation: false,
+                    minDetectionConfidence: 0.5,
+                    minTrackingConfidence: 0.5,
+                });
+
+                State.pose = pose;
+
+                // Wait for models to actually load by sending a test frame
+                const canvas = document.createElement('canvas');
+                canvas.width = 1;
+                canvas.height = 1;
+
+                let segmentationReady = false;
+                let poseReady = false;
+
+                segmentation.onResults(() => {
+                    segmentationReady = true;
+                });
+
+                pose.onResults(() => {
+                    poseReady = true;
+                });
+
+                segmentation.send({ image: canvas });
+                pose.send({ image: canvas });
+
+                // Wait for both to be ready
+                await new Promise((resolve) => {
+                    const checkBoth = () => {
+                        if (segmentationReady && poseReady) {
+                            resolve();
+                        } else {
+                            setTimeout(checkBoth, 100);
+                        }
+                    };
+                    checkBoth();
+                });
+
+                State.mediapikeReady = true;
+                updateStatus('Ready');
+                clearError();
+
+                console.log('MediaPipe initialized successfully');
+                return true;
+
+            } catch (error) {
+                console.error('MediaPipe init error:', error);
+                showError('NO_MEDIAPIPE', error.message);
+                return false;
+            }
+        }
 
         // ============================================================================
         // CAMERA MANAGER
         // ============================================================================
 
-        const CameraManager = {
-            stream: null,
-            videoElement: null,
-            hasAutofocus: false,
-            torchAvailable: false,
-            autofocusInterval: null,
+        async function startCamera() {
+            try {
+                updateStatus('Requesting camera...');
 
-            async initialize() {
-                this.videoElement = document.getElementById('video');
-                if (!this.videoElement) {
-                    throw new Error('Video element not found');
-                }
-
-                try {
-                    const constraints = this.buildConstraints();
-                    this.stream = await navigator.mediaDevices.getUserMedia(constraints);
-                    this.videoElement.srcObject = this.stream;
-
-                    await new Promise((resolve) => {
-                        this.videoElement.onloadedmetadata = resolve;
-                        this.videoElement.play();
-                    });
-
-                    await this.checkCapabilities();
-
-                    if (Config.camera.enableAutofocus) {
-                        this.startAutofocus();
-                    }
-
-                    UIManager.updateStatus('Camera started', 'success');
-                    return true;
-
-                } catch (error) {
-                    ErrorHandler.handleCameraError(error);
-                    throw error;
-                }
-            },
-
-            buildConstraints() {
-                const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-                const useRear = Config.camera.useRearCamera && isMobile;
-
-                return {
+                const constraints = {
                     video: {
                         width: { ideal: Config.camera.targetWidth },
                         height: { ideal: Config.camera.targetHeight },
-                        facingMode: useRear ? { exact: 'environment' } : 'user',
-                        focusMode: 'continuous',
-                        autoFocus: Config.camera.enableAutofocus,
+                        facingMode: Config.camera.useRearCamera ? { exact: 'environment' } : 'user',
                     },
                     audio: false,
                 };
-            },
 
-            async checkCapabilities() {
-                try {
-                    if (!this.stream || !this.stream.getTracks()[0]) {
-                        return;
-                    }
+                State.stream = await navigator.mediaDevices.getUserMedia(constraints);
 
-                    const track = this.stream.getVideoTracks()[0];
-                    if (!track) return;
+                const video = document.getElementById('video');
+                video.srcObject = State.stream;
 
-                    const settings = track.getSettings();
-                    const capabilities = track.getCapabilities();
-
-                    this.hasAutofocus = capabilities && capabilities.focusMode && 
-                                       capabilities.focusMode.includes('continuous');
-
-                    try {
-                        this.torchAvailable = capabilities && capabilities.torch;
-                        if (this.torchAvailable) {
-                            document.getElementById('torchButton').style.display = 'block';
-                        }
-                    } catch (e) {
-                        this.torchAvailable = false;
-                    }
-
-                } catch (error) {
-                    console.warn('Could not check camera capabilities:', error);
-                }
-            },
-
-            startAutofocus() {
-                if (!this.hasAutofocus) {
-                    ErrorHandler.show('AUTOFOCUS_FAILED', 'Not supported on this device');
-                    return;
-                }
-
-                this.stopAutofocus();
-
-                const autofocusInterval = parseInt(Config.camera.autofocusInterval) || 500;
-
-                this.autofocusInterval = setInterval(() => {
-                    this.triggerAutofocus();
-                }, autofocusInterval);
-            },
-
-            async triggerAutofocus() {
-                try {
-                    if (!this.stream) return;
-
-                    const track = this.stream.getVideoTracks()[0];
-                    if (!track) return;
-
-                    const capabilities = track.getCapabilities();
-                    if (!capabilities || !capabilities.focusMode || !capabilities.focusMode.includes('continuous')) {
-                        return;
-                    }
-
-                    const constraints = {
-                        advanced: [{
-                            focusMode: 'continuous',
-                            focusDistance: undefined,
-                        }]
+                await new Promise((resolve) => {
+                    video.onloadedmetadata = () => {
+                        video.play();
+                        resolve();
                     };
+                });
 
-                    await track.applyConstraints(constraints);
+                State.isRunning = true;
+                document.getElementById('startBtn').style.display = 'none';
+                document.getElementById('stopBtn').style.display = 'block';
 
-                } catch (error) {
-                    console.debug('Autofocus error:', error);
+                updateStatus('Processing...');
+                clearError();
+
+                processFrame();
+
+            } catch (error) {
+                console.error('Camera error:', error);
+                if (error.name === 'NotAllowedError') {
+                    showError('PERMISSION_DENIED');
+                } else if (error.name === 'NotFoundError') {
+                    showError('CAMERA_NOT_FOUND');
+                } else {
+                    showError('UNKNOWN_ERROR', error.message);
                 }
-            },
+            }
+        }
 
-            stopAutofocus() {
-                if (this.autofocusInterval) {
-                    clearInterval(this.autofocusInterval);
-                    this.autofocusInterval = null;
-                }
-            },
+        function stopCamera() {
+            State.isRunning = false;
 
-            async manualFocus() {
-                await this.triggerAutofocus();
-                UIManager.updateStatus('Focus requested', 'success');
-            },
+            if (State.stream) {
+                State.stream.getTracks().forEach(track => track.stop());
+                State.stream = null;
+            }
 
-            async toggleTorch() {
-                if (!this.torchAvailable || !this.stream) {
-                    ErrorHandler.show('TORCH_NOT_AVAILABLE');
-                    return;
-                }
+            const video = document.getElementById('video');
+            video.srcObject = null;
 
-                try {
-                    const track = this.stream.getVideoTracks()[0];
-                    if (!track) return;
+            document.getElementById('startBtn').style.display = 'block';
+            document.getElementById('stopBtn').style.display = 'none';
 
-                    const settings = track.getSettings();
-                    const currentTorch = settings.torch || false;
-
-                    await track.applyConstraints({
-                        advanced: [{ torch: !currentTorch }]
-                    });
-
-                    UIManager.updateStatus(
-                        !currentTorch ? 'Torch ON' : 'Torch OFF',
-                        'success'
-                    );
-
-                } catch (error) {
-                    ErrorHandler.show('TORCH_NOT_AVAILABLE', error.message);
-                }
-            },
-
-            getVideoDimensions() {
-                if (!this.videoElement) {
-                    return { width: Config.camera.targetWidth, height: Config.camera.targetHeight };
-                }
-
-                return {
-                    width: this.videoElement.videoWidth || Config.camera.targetWidth,
-                    height: this.videoElement.videoHeight || Config.camera.targetHeight,
-                };
-            },
-
-            captureFrame(canvas) {
-                if (!this.videoElement || !canvas) {
-                    throw new Error('Video element or canvas not available');
-                }
-
-                canvas.width = this.videoElement.videoWidth;
-                canvas.height = this.videoElement.videoHeight;
-
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(this.videoElement, 0, 0);
-
-                return canvas;
-            },
-
-            stop() {
-                this.stopAutofocus();
-
-                if (this.stream) {
-                    this.stream.getTracks().forEach(track => track.stop());
-                    this.stream = null;
-                }
-
-                if (this.videoElement) {
-                    this.videoElement.srcObject = null;
-                }
-
-                UIManager.updateStatus('Camera stopped', 'normal');
-            },
-
-            isRunning() {
-                return this.stream !== null && this.stream.active;
-            },
-        };
+            updateStatus('Stopped');
+        }
 
         // ============================================================================
-        // DISTANCE METHODS
+        // DISTANCE CALCULATION METHODS
         // ============================================================================
 
         const Methods = {
-            parallaxHistory: {
-                positions: [],
-                timestamps: [],
-                maxSize: 10,
-            },
-
             calculateHReal(topP, botP, midP, cameraHeight) {
-                if (!topP || !botP || !midP || !cameraHeight) return null;
+                if (!topP || topP === undefined || !botP || botP === undefined || !midP || !cameraHeight) return null;
 
                 const denominator = midP - botP;
                 if (Math.abs(denominator) < 1) return null;
@@ -1515,22 +1197,13 @@
             },
 
             async getFocalLength() {
-                const mode = document.getElementById('focalLengthMode')?.value || 'auto';
+                const mode = document.getElementById('focalLengthMode').value;
 
                 if (mode === 'manual') {
-                    const manual = parseFloat(document.getElementById('focalLengthManual')?.value || Config.defaultFocalLength);
-                    if (ErrorHandler.validateFocalLength(manual)) {
-                        return manual;
-                    }
-                    return Config.defaultFocalLength;
+                    return parseFloat(document.getElementById('focalLengthManual').value) || Config.defaultFocalLength;
                 }
 
-                return this.getDeviceFocalLength();
-            },
-
-            getDeviceFocalLength() {
                 const userAgent = navigator.userAgent;
-
                 for (const [key, value] of Object.entries(Config.focalLengthPresets)) {
                     if (userAgent.includes(key)) {
                         return value;
@@ -1540,7 +1213,8 @@
                 return Config.defaultFocalLength;
             },
 
-            async method1_maskBounding(segmentationResult, cameraHeight, midP) {
+            // Method 1: Mask Bounding Box
+            async method1(segmentationResult, cameraHeight, midP) {
                 try {
                     if (!segmentationResult || !segmentationResult.segmentationMask) return null;
 
@@ -1561,22 +1235,20 @@
 
                     if (topP === height || botP === 0) return null;
 
-                    const maskArea = (botP - topP) / height;
-                    if (maskArea < Config.detection.minDetectionArea) return null;
-
                     const hreal = this.calculateHReal(topP, botP, midP, cameraHeight);
                     const hpixel = botP - topP;
                     const focalLength = await this.getFocalLength();
                     const distance = this.calculateDistance(hreal, hpixel, focalLength, midP, botP);
 
                     return { hreal, distance, hpixel, topP, botP };
-                } catch (error) {
-                    console.error('Method 1 error:', error);
+                } catch (e) {
+                    console.error('Method 1 error:', e);
                     return null;
                 }
             },
 
-            async method2_landmarksHeight(poseResult, cameraHeight, midP) {
+            // Method 2: Landmarks Height
+            async method2(poseResult, cameraHeight, midP) {
                 try {
                     if (!poseResult || !poseResult.landmarks || poseResult.landmarks.length < 28) return null;
 
@@ -1587,7 +1259,6 @@
 
                     if (!nose || !ankleL || !ankleR) return null;
                     if (nose.visibility < Config.detection.landmarkConfidenceThreshold) return null;
-                    if (ankleL.visibility < 0.3 || ankleR.visibility < 0.3) return null;
 
                     const topP = nose.y;
                     const botP = Math.max(ankleL.y, ankleR.y);
@@ -1600,13 +1271,14 @@
                     const distance = this.calculateDistance(hreal, hpixel, focalLength, midP, botP);
 
                     return { hreal, distance, hpixel, topP, botP };
-                } catch (error) {
-                    console.error('Method 2 error:', error);
+                } catch (e) {
+                    console.error('Method 2 error:', e);
                     return null;
                 }
             },
 
-            async method3_fovAngle(segmentationResult, cameraHeight, midP) {
+            // Method 3: FOV Angle
+            async method3(segmentationResult, cameraHeight, midP) {
                 try {
                     if (!segmentationResult || !segmentationResult.segmentationMask) return null;
 
@@ -1635,24 +1307,134 @@
                     const distance = hreal / Math.tan(angle);
 
                     return { hreal, distance, hpixel, topP, botP };
-                } catch (error) {
-                    console.error('Method 3 error:', error);
+                } catch (e) {
+                    console.error('Method 3 error:', e);
                     return null;
                 }
             },
 
-            async method7_voting(segmentationResult, poseResult, canvas, cameraHeight, midP) {
+            // Method 4: Homography
+            async method4(poseResult, cameraHeight, midP) {
+                try {
+                    if (!poseResult || !poseResult.landmarks || poseResult.landmarks.length < 28) return null;
+
+                    const landmarks = poseResult.landmarks;
+                    const ankleL = landmarks[27];
+                    const ankleR = landmarks[28];
+
+                    if (!ankleL || !ankleR) return null;
+
+                    const botP = (ankleL.y + ankleR.y) / 2;
+                    const topP = landmarks[0]?.y || botP;
+
+                    if (topP >= botP) return null;
+
+                    const hreal = this.calculateHReal(topP, botP, midP, cameraHeight);
+                    const pixelsAboveCenter = midP - botP;
+                    const distance = (pixelsAboveCenter * cameraHeight) / (midP - botP);
+
+                    return { hreal, distance, hpixel: botP - topP, topP, botP };
+                } catch (e) {
+                    console.error('Method 4 error:', e);
+                    return null;
+                }
+            },
+
+            // Method 5: Stereo Parallax
+            parallaxHistory: { positions: [], timestamps: [] },
+
+            async method5(poseResult, cameraHeight, midP) {
+                try {
+                    if (!poseResult || !poseResult.landmarks || poseResult.landmarks.length < 1) return null;
+
+                    const nose = poseResult.landmarks[0];
+                    if (!nose || nose.visibility < Config.detection.landmarkConfidenceThreshold) return null;
+
+                    const now = Date.now();
+                    this.parallaxHistory.positions.push(nose.x);
+                    this.parallaxHistory.timestamps.push(now);
+
+                    if (this.parallaxHistory.positions.length > 10) {
+                        this.parallaxHistory.positions.shift();
+                        this.parallaxHistory.timestamps.shift();
+                    }
+
+                    if (this.parallaxHistory.positions.length < 3) return null;
+
+                    const positions = this.parallaxHistory.positions;
+                    const minX = Math.min(...positions);
+                    const maxX = Math.max(...positions);
+                    const disparity = maxX - minX;
+
+                    if (disparity < 5) return null;
+
+                    const baseline = 10;
+                    const focalLength = await this.getFocalLength();
+                    const distance = (baseline * focalLength) / disparity;
+
+                    const ankleL = poseResult.landmarks[27];
+                    const botP = ankleL ? ankleL.y : 0;
+                    const topP = poseResult.landmarks[0]?.y || botP;
+                    const hreal = this.calculateHReal(topP, botP, midP, cameraHeight);
+
+                    return { hreal, distance, hpixel: disparity, topP, botP };
+                } catch (e) {
+                    console.error('Method 5 error:', e);
+                    return null;
+                }
+            },
+
+            // Method 6: Edge Detection
+            async method6(canvas, cameraHeight, midP) {
+                try {
+                    if (!canvas) return null;
+
+                    const ctx = canvas.getContext('2d');
+                    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                    const data = imageData.data;
+
+                    let topP = canvas.height, botP = 0;
+
+                    for (let y = 1; y < canvas.height - 1; y++) {
+                        for (let x = 1; x < canvas.width - 1; x++) {
+                            const gx = (-data[(y-1)*canvas.width*4 + (x-1)*4] + data[(y-1)*canvas.width*4 + (x+1)*4] +
+                                       -2*data[y*canvas.width*4 + (x-1)*4] + 2*data[y*canvas.width*4 + (x+1)*4] +
+                                       -data[(y+1)*canvas.width*4 + (x-1)*4] + data[(y+1)*canvas.width*4 + (x+1)*4]) / 8;
+
+                            if (Math.abs(gx) > 50) {
+                                topP = Math.min(topP, y);
+                                botP = Math.max(botP, y);
+                            }
+                        }
+                    }
+
+                    if (topP === canvas.height) return null;
+
+                    const hreal = this.calculateHReal(topP, botP, midP, cameraHeight);
+                    const hpixel = botP - topP;
+                    const focalLength = await this.getFocalLength();
+                    const distance = this.calculateDistance(hreal, hpixel, focalLength, midP, botP);
+
+                    return { hreal, distance, hpixel, topP, botP };
+                } catch (e) {
+                    console.error('Method 6 error:', e);
+                    return null;
+                }
+            },
+
+            // Method 7: Voting
+            async method7(segmentationResult, poseResult, canvas, cameraHeight, midP) {
                 try {
                     const results = [];
 
-                    const m1 = await this.method1_maskBounding(segmentationResult, cameraHeight, midP);
-                    if (m1) results.push(m1.distance);
+                    const m1 = await this.method1(segmentationResult, cameraHeight, midP);
+                    if (m1 && m1.distance > 0) results.push(m1.distance);
 
-                    const m2 = await this.method2_landmarksHeight(poseResult, cameraHeight, midP);
-                    if (m2) results.push(m2.distance);
+                    const m2 = await this.method2(poseResult, cameraHeight, midP);
+                    if (m2 && m2.distance > 0) results.push(m2.distance);
 
-                    const m3 = await this.method3_fovAngle(segmentationResult, cameraHeight, midP);
-                    if (m3) results.push(m3.distance);
+                    const m3 = await this.method3(segmentationResult, cameraHeight, midP);
+                    if (m3 && m3.distance > 0) results.push(m3.distance);
 
                     if (results.length === 0) return null;
 
@@ -1666,494 +1448,343 @@
 
                     const hreal = m1 ? m1.hreal : (m2 ? m2.hreal : (m3 ? m3.hreal : null));
 
-                    return { hreal, distance: median, confidence, methodCount: results.length };
-                } catch (error) {
-                    console.error('Method 7 error:', error);
+                    return { hreal, distance: median, confidence };
+                } catch (e) {
+                    console.error('Method 7 error:', e);
+                    return null;
+                }
+            },
+
+            // Method 8: Progressive
+            async method8(segmentationResult, poseResult, canvas, cameraHeight, midP) {
+                try {
+                    const votingResult = await this.method7(segmentationResult, poseResult, canvas, cameraHeight, midP);
+                    if (!votingResult) return null;
+
+                    let finalResult = { ...votingResult };
+
+                    if (votingResult.confidence < 80) {
+                        const parallaxResult = await this.method5(poseResult, cameraHeight, midP);
+                        if (parallaxResult) {
+                            finalResult.distance = 0.5 * votingResult.distance + 0.5 * parallaxResult.distance;
+                            finalResult.confidence = Math.max(votingResult.confidence, 75);
+                        }
+                    }
+
+                    return finalResult;
+                } catch (e) {
+                    console.error('Method 8 error:', e);
                     return null;
                 }
             },
         };
 
         // ============================================================================
-        // UI MANAGER
+        // MAIN PROCESSING LOOP
         // ============================================================================
 
-        const UIManager = {
-            frameCount: 0,
-            lastFpsTime: 0,
-            history: [],
-            maxHistoryItems: Config.maxHistoryItems,
-            smoothDistance: null,
-            smoothHReal: null,
+        async function processFrame() {
+            if (!State.isRunning) return;
 
-            init() {
-                // Navigation tabs
-                document.querySelectorAll('.nav-tab').forEach(tab => {
-                    tab.addEventListener('click', (e) => this.switchTab(e.target.dataset.tab));
-                });
-
-                // Method tabs
-                document.querySelectorAll('.method-tab').forEach(tab => {
-                    tab.addEventListener('click', (e) => this.switchMethodTab(e.target.dataset.method));
-                });
-
-                // Settings
-                document.getElementById('focalLengthMode').addEventListener('change', (e) => {
-                    const manualGroup = document.getElementById('manualFocalLengthGroup');
-                    manualGroup.style.display = e.target.value === 'manual' ? 'block' : 'none';
-                    this.saveSettings();
-                });
-
-                document.getElementById('smoothingFactor').addEventListener('change', (e) => {
-                    Config.processing.smoothingFactor = parseFloat(e.target.value);
-                    document.getElementById('smoothingValue').textContent = e.target.value;
-                    this.saveSettings();
-                });
-
-                document.getElementById('landmarkConfidence').addEventListener('change', (e) => {
-                    Config.detection.landmarkConfidenceThreshold = parseFloat(e.target.value);
-                    document.getElementById('landmarkValue').textContent = e.target.value;
-                    this.saveSettings();
-                });
-
-                document.getElementById('minDetectionArea').addEventListener('change', (e) => {
-                    Config.detection.minDetectionArea = parseFloat(e.target.value);
-                    document.getElementById('areaValue').textContent = e.target.value;
-                    this.saveSettings();
-                });
-
-                // Checkboxes
-                document.getElementById('useRearCamera').addEventListener('change', (e) => {
-                    Config.camera.useRearCamera = e.target.checked;
-                    this.saveSettings();
-                });
-
-                document.getElementById('enableAutofocus').addEventListener('change', (e) => {
-                    Config.camera.enableAutofocus = e.target.checked;
-                    this.saveSettings();
-                });
-
-                document.getElementById('showDetectionBox').addEventListener('change', (e) => {
-                    Config.display.showDetectionBox = e.target.checked;
-                    this.saveSettings();
-                });
-
-                document.getElementById('showFpsCounter').addEventListener('change', (e) => {
-                    Config.display.showFpsCounter = e.target.checked;
-                    document.getElementById('statusBar').style.display = e.target.checked ? 'flex' : 'none';
-                    this.saveSettings();
-                });
-
-                // History buttons
-                document.getElementById('clearHistoryBtn').addEventListener('click', () => this.clearHistory());
-                document.getElementById('exportHistoryBtn').addEventListener('click', () => this.exportHistory());
-                document.getElementById('resetSettingsBtn').addEventListener('click', () => this.resetSettings());
-
-                this.loadSettings();
-                this.loadHistory();
-            },
-
-            switchTab(tabName) {
-                document.querySelectorAll('.tab-content').forEach(tab => {
-                    tab.classList.remove('active');
-                });
-
-                document.querySelectorAll('.nav-tab').forEach(tab => {
-                    tab.classList.remove('active');
-                });
-
-                document.getElementById(tabName)?.classList.add('active');
-                document.querySelector(`.nav-tab[data-tab="${tabName}"]`)?.classList.add('active');
-            },
-
-            switchMethodTab(methodName) {
-                document.querySelectorAll('.method-tab').forEach(tab => {
-                    tab.classList.remove('active');
-                });
-
-                document.querySelector(`.method-tab[data-method="${methodName}"]`)?.classList.add('active');
-            },
-
-            updateStatus(message, type = 'normal') {
-                const statusLabel = document.getElementById('cameraStatus');
-                if (statusLabel) {
-                    statusLabel.textContent = message;
-                }
-            },
-
-            updateFps() {
+            try {
                 const now = Date.now();
-                const fpsElement = document.getElementById('fpsCounter');
+                const deltaTime = now - State.lastFrameTime;
+                const targetFrameTime = 1000 / parseInt(Config.processing.targetFps);
 
-                this.frameCount++;
+                if (deltaTime < targetFrameTime) {
+                    requestAnimationFrame(processFrame);
+                    return;
+                }
 
-                if (now - this.lastFpsTime >= 1000) {
-                    if (fpsElement) {
-                        fpsElement.textContent = this.frameCount;
+                State.lastFrameTime = now;
+
+                if (State.processingFrame) {
+                    requestAnimationFrame(processFrame);
+                    return;
+                }
+
+                State.processingFrame = true;
+
+                const video = document.getElementById('video');
+                if (!video || !video.videoWidth) {
+                    State.processingFrame = false;
+                    requestAnimationFrame(processFrame);
+                    return;
+                }
+
+                const canvas = document.getElementById('canvas');
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(video, 0, 0);
+
+                const cameraHeight = parseFloat(document.getElementById('cameraHeight').value);
+                const midP = canvas.height / 2;
+
+                // Process with MediaPipe
+                let segmentationResult = null;
+                let poseResult = null;
+
+                try {
+                    [segmentationResult, poseResult] = await Promise.all([
+                        new Promise((resolve) => {
+                            State.segmentation.onResults((results) => resolve(results));
+                            State.segmentation.send({ image: canvas });
+                        }),
+                        new Promise((resolve) => {
+                            State.pose.onResults((results) => resolve(results));
+                            State.pose.send({ image: canvas });
+                        }),
+                    ]);
+                } catch (e) {
+                    console.error('MediaPipe processing error:', e);
+                    State.processingFrame = false;
+                    requestAnimationFrame(processFrame);
+                    return;
+                }
+
+                // Run all methods
+                const m1 = await Methods.method1(segmentationResult, cameraHeight, midP);
+                const m2 = await Methods.method2(poseResult, cameraHeight, midP);
+                const m3 = await Methods.method3(segmentationResult, cameraHeight, midP);
+                const m4 = await Methods.method4(poseResult, cameraHeight, midP);
+                const m5 = await Methods.method5(poseResult, cameraHeight, midP);
+                const m6 = await Methods.method6(canvas, cameraHeight, midP);
+                const m7 = await Methods.method7(segmentationResult, poseResult, canvas, cameraHeight, midP);
+                const m8 = await Methods.method8(segmentationResult, poseResult, canvas, cameraHeight, midP);
+
+                // Store results
+                State.results = { mask: m1, landmarks: m2, fov: m3, homography: m4, parallax: m5, edge: m6, voting: m7, progressive: m8 };
+
+                // Display voting result (Method 7)
+                if (m7) {
+                    const smoothing = Config.processing.smoothingFactor;
+                    State.smoothDistance = State.smoothDistance ? 
+                        (1 - smoothing) * State.smoothDistance + smoothing * m7.distance : 
+                        m7.distance;
+                    State.smoothHReal = State.smoothHReal ? 
+                        (1 - smoothing) * State.smoothHReal + smoothing * m7.hreal : 
+                        m7.hreal;
+
+                    document.getElementById('resultHReal').textContent = State.smoothHReal.toFixed(1);
+                    document.getElementById('resultDistance').textContent = State.smoothDistance.toFixed(1);
+                    document.getElementById('resultConfidence').textContent = m7.confidence.toFixed(0);
+
+                    updateDetectionStatus('✓ Detected');
+                    clearError();
+
+                    // Add to history
+                    if (State.history.length === 0 || Date.now() - (State.lastHistoryTime || 0) > 5000) {
+                        State.history.unshift({
+                            timestamp: new Date(),
+                            hreal: State.smoothHReal,
+                            distance: State.smoothDistance,
+                            confidence: m7.confidence,
+                            method: 'Method 7'
+                        });
+                        State.lastHistoryTime = Date.now();
+
+                        if (State.history.length > Config.maxHistoryItems) {
+                            State.history.pop();
+                        }
+
+                        saveHistory();
                     }
-                    this.frameCount = 0;
-                    this.lastFpsTime = now;
-                }
-            },
-
-            displayResults(result, methodName = 'Method 7') {
-                if (!result) {
-                    this.updateStatus('No detection', 'error');
-                    return;
+                } else {
+                    updateDetectionStatus('✗ No detection');
                 }
 
-                const smoothing = Config.processing.smoothingFactor;
-                this.smoothDistance = this.smoothDistance ? 
-                    (1 - smoothing) * this.smoothDistance + smoothing * result.distance : 
-                    result.distance;
-                this.smoothHReal = this.smoothHReal ? 
-                    (1 - smoothing) * this.smoothHReal + smoothing * result.hreal : 
-                    result.hreal;
+                // Update current method display
+                updateMethodDisplay(State.currentMethod);
 
-                document.getElementById('resultHReal').textContent = this.smoothHReal.toFixed(1);
-                document.getElementById('resultDistance').textContent = this.smoothDistance.toFixed(1);
-                document.getElementById('resultConfidence').textContent = result.confidence ? result.confidence.toFixed(0) : '-';
-                document.getElementById('resultMethod').textContent = methodName;
+                updateFps();
+                State.processingFrame = false;
 
-                this.updateMethodResults(result);
+            } catch (error) {
+                console.error('Frame processing error:', error);
+                State.processingFrame = false;
+            }
 
-                this.addToHistory({
-                    timestamp: new Date(),
-                    hreal: this.smoothHReal,
-                    distance: this.smoothDistance,
-                    confidence: result.confidence || 0,
-                    method: methodName,
-                });
+            requestAnimationFrame(processFrame);
+        }
 
-                this.updateStatus('Measurement complete', 'success');
-            },
+        // ============================================================================
+        // SETTINGS & HISTORY
+        // ============================================================================
 
-            updateMethodResults(result) {
-                const methodResults = document.getElementById('methodResults');
-                if (!methodResults) return;
+        function saveSettings() {
+            const settings = {
+                camera: Config.camera,
+                processing: Config.processing,
+                detection: Config.detection,
+                display: Config.display,
+            };
+            localStorage.setItem(Config.storage.SETTINGS, JSON.stringify(settings));
+        }
 
-                let html = `
-                    <div class="method-card">
-                        <div class="method-name">Current Method</div>
-                        <div class="method-result-item">
-                            <label>H_real</label>
-                            <value>${result.hreal ? result.hreal.toFixed(1) : '-'} cm</value>
-                        </div>
-                        <div class="method-result-item">
-                            <label>Distance</label>
-                            <value>${result.distance ? result.distance.toFixed(1) : '-'} cm</value>
-                        </div>
-                `;
-
-                if (result.confidence !== undefined) {
-                    html += `
-                        <div class="method-result-item">
-                            <label>Confidence</label>
-                            <value>${result.confidence.toFixed(0)}%</value>
-                        </div>
-                    `;
+        function loadSettings() {
+            const saved = localStorage.getItem(Config.storage.SETTINGS);
+            if (saved) {
+                try {
+                    const settings = JSON.parse(saved);
+                    Object.assign(Config, settings);
+                } catch (e) {
+                    console.warn('Failed to load settings');
                 }
+            }
+        }
 
-                html += `</div>`;
-                methodResults.innerHTML = html;
-            },
+        function saveHistory() {
+            localStorage.setItem(Config.storage.HISTORY, JSON.stringify(State.history));
+            updateHistoryDisplay();
+        }
 
-            addToHistory(measurement) {
-                this.history.unshift(measurement);
-
-                if (this.history.length > this.maxHistoryItems) {
-                    this.history.pop();
+        function loadHistory() {
+            const saved = localStorage.getItem(Config.storage.HISTORY);
+            if (saved) {
+                try {
+                    State.history = JSON.parse(saved).map(item => ({
+                        ...item,
+                        timestamp: new Date(item.timestamp),
+                    }));
+                    updateHistoryDisplay();
+                } catch (e) {
+                    console.warn('Failed to load history');
                 }
+            }
+        }
 
-                this.saveHistory();
-                this.updateHistoryDisplay();
-            },
+        function updateHistoryDisplay() {
+            const container = document.getElementById('historyList');
 
-            updateHistoryDisplay() {
-                const historyList = document.getElementById('historyList');
-                if (!historyList) return;
+            if (State.history.length === 0) {
+                container.innerHTML = '<p class="placeholder">No measurements recorded yet</p>';
+                return;
+            }
 
-                if (this.history.length === 0) {
-                    historyList.innerHTML = '<p class="placeholder">No measurements recorded yet</p>';
-                    return;
-                }
-
-                let html = '';
-                this.history.forEach((item, index) => {
-                    html += `
-                        <div class="history-item">
-                            <div class="history-time">${item.timestamp.toLocaleTimeString()} - ${item.method}</div>
-                            <div class="history-values">
-                                <div class="history-value">
-                                    <span class="history-value-label">H_real:</span>
-                                    <span class="history-value-data">${item.hreal.toFixed(1)} cm</span>
-                                </div>
-                                <div class="history-value">
-                                    <span class="history-value-label">Distance:</span>
-                                    <span class="history-value-data">${item.distance.toFixed(1)} cm</span>
-                                </div>
+            let html = '';
+            State.history.forEach(item => {
+                html += `
+                    <div class="history-item">
+                        <div class="history-time">${item.timestamp.toLocaleTimeString()}</div>
+                        <div class="history-values">
+                            <div class="history-value">
+                                <span class="history-label">H: </span>
+                                <span class="history-data">${item.hreal.toFixed(1)}cm</span>
+                            </div>
+                            <div class="history-value">
+                                <span class="history-label">D: </span>
+                                <span class="history-data">${item.distance.toFixed(1)}cm</span>
                             </div>
                         </div>
-                    `;
-                });
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
 
-                historyList.innerHTML = html;
-            },
+        function clearHistory() {
+            if (confirm('Clear all measurements?')) {
+                State.history = [];
+                saveHistory();
+            }
+        }
 
-            clearHistory() {
-                if (confirm('Are you sure you want to clear all measurements?')) {
-                    this.history = [];
-                    this.saveHistory();
-                    this.updateHistoryDisplay();
-                    this.updateStatus('History cleared', 'success');
-                }
-            },
+        function exportHistory() {
+            if (State.history.length === 0) {
+                alert('No measurements to export');
+                return;
+            }
 
-            exportHistory() {
-                if (this.history.length === 0) {
-                    ErrorHandler.show('UNKNOWN_ERROR', 'No measurements to export');
-                    return;
-                }
+            let csv = 'Timestamp,H_real (cm),Distance (cm),Confidence (%),Method\n';
+            State.history.forEach(item => {
+                csv += `"${item.timestamp.toISOString()}",${item.hreal.toFixed(1)},${item.distance.toFixed(1)},${item.confidence.toFixed(0)},"${item.method}"\n`;
+            });
 
-                let csv = 'Timestamp,H_real (cm),Distance (cm),Confidence (%),Method\n';
-                this.history.forEach(item => {
-                    csv += `"${item.timestamp.toISOString()}",${item.hreal.toFixed(1)},${item.distance.toFixed(1)},${item.confidence.toFixed(0)},"${item.method}"\n`;
-                });
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `distance_${Date.now()}.csv`;
+            a.click();
+        }
 
-                const blob = new Blob([csv], { type: 'text/csv' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `distance_measurements_${Date.now()}.csv`;
-                a.click();
-
-                this.updateStatus('History exported', 'success');
-            },
-
-            saveSettings() {
-                const settings = {
-                    camera: Config.camera,
-                    processing: Config.processing,
-                    detection: Config.detection,
-                    display: Config.display,
-                };
-
-                localStorage.setItem(Config.storage.SETTINGS, JSON.stringify(settings));
-            },
-
-            loadSettings() {
-                const saved = localStorage.getItem(Config.storage.SETTINGS);
-                if (saved) {
-                    try {
-                        const settings = JSON.parse(saved);
-                        Object.assign(Config, settings);
-
-                        document.getElementById('useRearCamera').checked = Config.camera.useRearCamera;
-                        document.getElementById('enableAutofocus').checked = Config.camera.enableAutofocus;
-                        document.getElementById('targetFps').value = Config.processing.targetFps;
-                        document.getElementById('smoothingFactor').value = Config.processing.smoothingFactor;
-                        document.getElementById('smoothingValue').textContent = Config.processing.smoothingFactor;
-                        document.getElementById('landmarkConfidence').value = Config.detection.landmarkConfidenceThreshold;
-                        document.getElementById('landmarkValue').textContent = Config.detection.landmarkConfidenceThreshold;
-                        document.getElementById('showDetectionBox').checked = Config.display.showDetectionBox;
-                        document.getElementById('showFpsCounter').checked = Config.display.showFpsCounter;
-                    } catch (e) {
-                        console.warn('Failed to load settings:', e);
-                    }
-                }
-            },
-
-            resetSettings() {
-                if (confirm('Reset all settings to defaults?')) {
-                    localStorage.removeItem(Config.storage.SETTINGS);
-                    location.reload();
-                }
-            },
-
-            saveHistory() {
-                localStorage.setItem(Config.storage.HISTORY, JSON.stringify(this.history));
-            },
-
-            loadHistory() {
-                const saved = localStorage.getItem(Config.storage.HISTORY);
-                if (saved) {
-                    try {
-                        this.history = JSON.parse(saved).map(item => ({
-                            ...item,
-                            timestamp: new Date(item.timestamp),
-                        }));
-                        this.updateHistoryDisplay();
-                    } catch (e) {
-                        console.warn('Failed to load history:', e);
-                    }
-                }
-            },
-        };
+        function resetSettings() {
+            if (confirm('Reset all settings to defaults?')) {
+                localStorage.removeItem(Config.storage.SETTINGS);
+                location.reload();
+            }
+        }
 
         // ============================================================================
-        // MAIN APPLICATION
+        // EVENT LISTENERS & INITIALIZATION
         // ============================================================================
 
-        const App = {
-            isRunning: false,
-            processingFrame: false,
-            lastFrameTime: 0,
-            canvas: null,
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log('Page loaded, initializing...');
 
-            async init() {
-                try {
-                    console.log('Initializing Distance Estimator...');
+            loadSettings();
+            loadHistory();
 
-                    this.canvas = document.getElementById('canvas');
+            // Setup event listeners
+            document.getElementById('startBtn').addEventListener('click', startCamera);
+            document.getElementById('stopBtn').addEventListener('click', stopCamera);
+            document.getElementById('focusButton').addEventListener('click', () => {
+                updateStatus('Focus requested');
+            });
 
-                    UIManager.init();
+            document.getElementById('focalLengthMode').addEventListener('change', (e) => {
+                document.getElementById('manualFocalLengthGroup').style.display = 
+                    e.target.value === 'manual' ? 'block' : 'none';
+            });
 
-                    this.setupEventListeners();
+            document.getElementById('smoothingFactor').addEventListener('change', (e) => {
+                Config.processing.smoothingFactor = parseFloat(e.target.value);
+                document.getElementById('smoothingValue').textContent = e.target.value;
+                saveSettings();
+            });
 
-                    console.log('Loading MediaPipe...');
-                    await MediaPipeLoader.load();
+            document.getElementById('landmarkConfidence').addEventListener('change', (e) => {
+                Config.detection.landmarkConfidenceThreshold = parseFloat(e.target.value);
+                document.getElementById('landmarkValue').textContent = e.target.value;
+                saveSettings();
+            });
 
-                    console.log('Application ready!');
-                    UIManager.updateStatus('Ready', 'success');
+            document.getElementById('minDetectionArea').addEventListener('change', (e) => {
+                Config.detection.minDetectionArea = parseFloat(e.target.value);
+                document.getElementById('areaValue').textContent = e.target.value;
+                saveSettings();
+            });
 
-                } catch (error) {
-                    console.error('Initialization failed:', error);
-                    ErrorHandler.show('UNKNOWN_ERROR', error.message);
-                }
-            },
+            document.getElementById('useRearCamera').addEventListener('change', (e) => {
+                Config.camera.useRearCamera = e.target.checked;
+                saveSettings();
+            });
 
-            setupEventListeners() {
-                const startBtn = document.getElementById('startBtn');
-                const stopBtn = document.getElementById('stopBtn');
-                const focusButton = document.getElementById('focusButton');
-                const torchButton = document.getElementById('torchButton');
-                const cameraHeightInput = document.getElementById('cameraHeight');
+            document.getElementById('enableAutofocus').addEventListener('change', (e) => {
+                Config.camera.enableAutofocus = e.target.checked;
+                saveSettings();
+            });
 
-                startBtn.addEventListener('click', () => this.startMeasurement());
-                stopBtn.addEventListener('click', () => this.stopMeasurement());
-                focusButton.addEventListener('click', () => CameraManager.manualFocus());
-                torchButton.addEventListener('click', () => CameraManager.toggleTorch());
-                cameraHeightInput.addEventListener('change', (e) => {
-                    if (!ErrorHandler.validateCameraHeight(e.target.value)) {
-                        e.target.value = 150;
-                    }
-                    UIManager.saveSettings();
-                });
+            // Method tabs
+            document.querySelectorAll('.method-tab').forEach(tab => {
+                tab.addEventListener('click', (e) => switchMethodTab(e.target.dataset.method));
+            });
 
-                const videoContainer = document.querySelector('.video-wrapper');
-                if (videoContainer) {
-                    videoContainer.addEventListener('click', () => CameraManager.manualFocus());
-                }
-            },
+            // Initialize MediaPipe
+            console.log('Starting MediaPipe initialization...');
+            const ready = await initializeMediaPipe();
 
-            async startMeasurement() {
-                try {
-                    const cameraHeight = parseFloat(document.getElementById('cameraHeight').value);
-                    if (!ErrorHandler.validateCameraHeight(cameraHeight)) {
-                        return;
-                    }
+            if (ready) {
+                console.log('MediaPipe ready!');
+            } else {
+                console.error('MediaPipe initialization failed');
+            }
+        });
 
-                    console.log('Starting camera...');
-                    await CameraManager.initialize();
-
-                    this.isRunning = true;
-                    document.getElementById('startBtn').disabled = true;
-                    document.getElementById('startBtn').style.display = 'none';
-                    document.getElementById('stopBtn').disabled = false;
-                    document.getElementById('stopBtn').style.display = 'block';
-
-                    UIManager.updateStatus('Processing...', 'loading');
-                    this.processFrame();
-
-                } catch (error) {
-                    console.error('Failed to start measurement:', error);
-                }
-            },
-
-            stopMeasurement() {
-                this.isRunning = false;
-                CameraManager.stop();
-
-                document.getElementById('startBtn').disabled = false;
-                document.getElementById('startBtn').style.display = 'block';
-                document.getElementById('stopBtn').disabled = true;
-                document.getElementById('stopBtn').style.display = 'none';
-
-                UIManager.updateStatus('Stopped', 'normal');
-            },
-
-            async processFrame() {
-                if (!this.isRunning) return;
-
-                try {
-                    const now = Date.now();
-                    const deltaTime = now - this.lastFrameTime;
-                    const targetFrameTime = 1000 / parseInt(Config.processing.targetFps);
-
-                    if (deltaTime < targetFrameTime) {
-                        requestAnimationFrame(() => this.processFrame());
-                        return;
-                    }
-
-                    this.lastFrameTime = now;
-
-                    if (this.processingFrame) {
-                        requestAnimationFrame(() => this.processFrame());
-                        return;
-                    }
-
-                    this.processingFrame = true;
-
-                    const video = document.getElementById('video');
-                    if (!video || !video.videoWidth) {
-                        this.processingFrame = false;
-                        requestAnimationFrame(() => this.processFrame());
-                        return;
-                    }
-
-                    CameraManager.captureFrame(this.canvas);
-
-                    const cameraHeight = parseFloat(document.getElementById('cameraHeight').value);
-                    const dimensions = CameraManager.getVideoDimensions();
-                    const midP = dimensions.height / 2;
-
-                    const [segmentationResult, poseResult] = await Promise.all([
-                        MediaPipeLoader.segment(this.canvas),
-                        MediaPipeLoader.detectPose(this.canvas),
-                    ]);
-
-                    const result = await Methods.method7_voting(
-                        segmentationResult,
-                        poseResult,
-                        this.canvas,
-                        cameraHeight,
-                        midP
-                    );
-
-                    if (result) {
-                        UIManager.displayResults(result, 'Method 7: Voting');
-                    } else {
-                        UIManager.updateStatus('No person detected', 'error');
-                    }
-
-                    UIManager.updateFps();
-
-                    this.processingFrame = false;
-
-                } catch (error) {
-                    console.error('Frame processing error:', error);
-                    this.processingFrame = false;
-                }
-
-                requestAnimationFrame(() => this.processFrame());
-            },
-        };
-
-        /**
-         * Start application when DOM is ready
-         */
-        document.addEventListener('DOMContentLoaded', () => {
-            App.init();
+        document.getElementById('video').addEventListener('click', () => {
+            updateStatus('Focus requested');
         });
     </script>
 </body>

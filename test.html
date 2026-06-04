@@ -2,1201 +2,2158 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Human Distance Estimation System</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Distance Estimator - Professional Measurement System</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
+        :root {
+            --primary: #667eea;
+            --primary-dark: #5568d3;
+            --secondary: #764ba2;
+            --success: #2ecc71;
+            --warning: #f39c12;
+            --error: #e74c3c;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+            
+            --radius-sm: 4px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --radius-xl: 16px;
+            
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+        }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: var(--gray-900);
+            overflow-x: hidden;
+            position: fixed;
         }
-        
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
+
+        #app {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            background: white;
         }
-        
+
         .header {
-            text-align: center;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
             color: white;
-            margin-bottom: 30px;
+            padding: 20px;
+            padding-top: max(20px, env(safe-area-inset-top));
+            box-shadow: var(--shadow-lg);
+            flex-shrink: 0;
         }
-        
+
         .header h1 {
-            font-size: 32px;
-            margin-bottom: 10px;
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 4px;
         }
-        
-        .header p {
-            font-size: 14px;
+
+        .header .subtitle {
+            font-size: 13px;
             opacity: 0.9;
         }
-        
-        .main-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-bottom: 20px;
+
+        .main-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
         }
-        
-        .card {
+
+        .nav-tabs {
+            display: flex;
+            gap: 0;
+            border-bottom: 1px solid var(--gray-200);
             background: white;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow-x: auto;
+            flex-shrink: 0;
         }
-        
-        .card h2 {
-            font-size: 18px;
-            margin-bottom: 15px;
-            color: #333;
-        }
-        
-        .input-group {
-            margin-bottom: 15px;
-        }
-        
-        .input-group label {
-            display: block;
+
+        .nav-tab {
+            flex: 1;
+            min-width: 100px;
+            padding: 12px 16px;
+            border: none;
+            background: white;
+            color: var(--gray-600);
             font-size: 13px;
-            color: #666;
-            margin-bottom: 5px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+        }
+
+        .nav-tab:hover {
+            background: var(--gray-50);
+            color: var(--gray-700);
+        }
+
+        .nav-tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .tab-content {
+            display: none;
+            flex: 1;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .tab-content.active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        #measurement {
+            padding: 0;
+        }
+
+        .status-bar {
+            display: flex;
+            gap: 0;
+            background: var(--gray-50);
+            border-bottom: 1px solid var(--gray-200);
+            padding: 0;
+        }
+
+        .status-item {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            border-right: 1px solid var(--gray-200);
+        }
+
+        .status-item:last-child {
+            border-right: none;
+        }
+
+        .status-label {
+            display: block;
+            font-size: 11px;
+            color: var(--gray-500);
+            margin-bottom: 4px;
             font-weight: 500;
         }
-        
-        .input-group input, .input-group select {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-size: 14px;
+
+        .status-value {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--gray-900);
         }
-        
-        .input-group input:focus, .input-group select:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+
+        .video-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: auto;
+            -webkit-overflow-scrolling: touch;
         }
-        
-        #videoContainer {
-            width: 100%;
-            height: 400px;
-            background: #000;
-            border-radius: 6px;
-            overflow: hidden;
+
+        .video-wrapper {
             position: relative;
+            width: 100%;
+            aspect-ratio: 4 / 3;
+            background: #000;
+            flex-shrink: 0;
         }
-        
+
         #video {
             width: 100%;
             height: 100%;
             object-fit: cover;
+            display: block;
         }
-        
-        #canvas {
-            display: none;
+
+        .video-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
         }
-        
-        .button-group {
+
+        .crosshair {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40px;
+            height: 40px;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            opacity: 0.7;
+        }
+
+        .crosshair::before,
+        .crosshair::after {
+            content: '';
+            position: absolute;
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        .crosshair::before {
+            width: 20px;
+            height: 2px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .crosshair::after {
+            width: 2px;
+            height: 20px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .detection-box {
+            position: absolute;
+            border: 3px solid var(--success);
+            background: rgba(46, 204, 113, 0.1);
+            pointer-events: none;
+        }
+
+        .video-controls {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
             display: flex;
             gap: 10px;
-            margin-top: 15px;
         }
-        
-        button {
+
+        .btn-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.6);
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .btn-icon:active {
+            background: rgba(0, 0, 0, 0.8);
+            transform: scale(0.95);
+        }
+
+        .controls-section {
+            padding: 16px;
+            background: white;
+            border-bottom: 1px solid var(--gray-200);
+            flex-shrink: 0;
+        }
+
+        .control-group {
+            margin-bottom: 12px;
+        }
+
+        .control-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .control-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--gray-700);
+            margin-bottom: 6px;
+        }
+
+        .control-group input[type="number"],
+        .control-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--gray-300);
+            border-radius: var(--radius-md);
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        .control-group input:focus,
+        .control-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-wrapper input {
             flex: 1;
+            padding-right: 40px;
+        }
+
+        .input-unit {
+            position: absolute;
+            right: 12px;
+            font-size: 12px;
+            color: var(--gray-500);
+            font-weight: 500;
+            pointer-events: none;
+        }
+
+        .btn {
+            width: 100%;
             padding: 12px;
             border: none;
-            border-radius: 6px;
+            border-radius: var(--radius-md);
             font-size: 14px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
+            font-family: inherit;
         }
-        
+
         .btn-primary {
-            background: #667eea;
+            background: var(--primary);
             color: white;
         }
-        
-        .btn-primary:hover {
-            background: #5568d3;
+
+        .btn-primary:hover:not(:disabled) {
+            background: var(--primary-dark);
+            box-shadow: var(--shadow-lg);
             transform: translateY(-2px);
         }
-        
+
+        .btn-primary:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
         .btn-primary:disabled {
-            background: #ccc;
+            background: var(--gray-300);
             cursor: not-allowed;
-            transform: none;
         }
-        
+
         .btn-secondary {
-            background: #f0f0f0;
-            color: #333;
+            background: var(--gray-100);
+            color: var(--gray-700);
         }
-        
-        .btn-secondary:hover {
-            background: #e0e0e0;
+
+        .btn-secondary:hover:not(:disabled) {
+            background: var(--gray-200);
         }
-        
-        .status {
-            font-size: 12px;
-            margin-top: 10px;
-            padding: 10px;
-            border-radius: 6px;
-            background: #f5f5f5;
-            color: #666;
+
+        .results-section {
+            flex: 1;
+            padding: 16px;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
         }
-        
-        .status.loading {
-            background: #e3f2fd;
-            color: #1976d2;
+
+        .results-section h2 {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--gray-900);
+            margin-bottom: 16px;
         }
-        
-        .status.error {
-            background: #ffebee;
-            color: #c62828;
-        }
-        
-        .status.success {
-            background: #e8f5e9;
-            color: #2e7d32;
-        }
-        
+
         .results-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            grid-column: 1 / -1;
+            gap: 12px;
+            margin-bottom: 24px;
         }
-        
-        .result-item {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 15px;
-            border-radius: 8px;
-        }
-        
-        .result-label {
-            font-size: 12px;
-            opacity: 0.9;
-            margin-bottom: 5px;
-        }
-        
-        .result-value {
-            font-size: 24px;
-            font-weight: bold;
-        }
-        
-        .result-unit {
-            font-size: 12px;
-            opacity: 0.8;
-            margin-top: 5px;
-        }
-        
-        .methods-section {
+
+        .result-card {
             background: white;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        }
-        
-        .methods-section h2 {
-            font-size: 18px;
-            margin-bottom: 15px;
-            color: #333;
-        }
-        
-        .method-tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-        }
-        
-        .method-tab {
-            padding: 8px 14px;
-            border: 2px solid #ddd;
-            background: white;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 12px;
-            font-weight: 500;
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-lg);
+            padding: 16px;
+            text-align: center;
             transition: all 0.3s ease;
         }
-        
+
+        .result-card.primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            border: none;
+        }
+
+        .result-label {
+            font-size: 12px;
+            font-weight: 500;
+            opacity: 0.8;
+            margin-bottom: 8px;
+        }
+
+        .result-value {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .result-unit {
+            font-size: 11px;
+            font-weight: 500;
+            opacity: 0.7;
+        }
+
+        .error-container {
+            background: var(--gray-50);
+            border-left: 4px solid var(--error);
+            border-radius: var(--radius-md);
+            padding: 0;
+            margin-bottom: 16px;
+        }
+
+        .error-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 12px;
+        }
+
+        .error-icon {
+            font-size: 18px;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .error-content {
+            flex: 1;
+        }
+
+        .error-title {
+            font-weight: 600;
+            color: var(--error);
+            font-size: 13px;
+            margin-bottom: 2px;
+        }
+
+        .error-message {
+            font-size: 12px;
+            color: var(--gray-600);
+            line-height: 1.4;
+        }
+
+        .btn-close {
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: var(--gray-400);
+            cursor: pointer;
+            padding: 0;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .btn-close:hover {
+            color: var(--gray-600);
+        }
+
+        .methods-section {
+            margin-top: 24px;
+        }
+
+        .methods-section h3 {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--gray-900);
+            margin-bottom: 12px;
+        }
+
+        .method-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            padding-bottom: 8px;
+        }
+
+        .method-tab {
+            flex-shrink: 0;
+            padding: 8px 12px;
+            border: 1px solid var(--gray-300);
+            background: white;
+            border-radius: var(--radius-md);
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--gray-600);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .method-tab:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
         .method-tab.active {
-            border-color: #667eea;
-            background: #667eea;
+            background: var(--primary);
+            border-color: var(--primary);
             color: white;
         }
-        
-        .method-tab:hover {
-            border-color: #667eea;
-        }
-        
+
         .method-results {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 15px;
+            background: white;
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-lg);
+            padding: 12px;
         }
-        
-        .method-card {
-            background: #f9f9f9;
-            padding: 15px;
-            border-radius: 8px;
-            border-left: 4px solid #667eea;
-        }
-        
-        .method-name {
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 10px;
-            font-size: 13px;
-        }
-        
-        .method-result {
+
+        .method-result-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 8px 0;
-            font-size: 13px;
-            border-bottom: 1px solid #eee;
+            border-bottom: 1px solid var(--gray-100);
+            font-size: 12px;
         }
-        
-        .method-result:last-child {
+
+        .method-result-item:last-child {
             border-bottom: none;
         }
-        
-        .method-result label {
-            color: #666;
+
+        .method-result-item label {
+            font-weight: 500;
+            color: var(--gray-600);
         }
-        
-        .method-result value {
+
+        .method-result-item value {
             font-weight: 600;
-            color: #667eea;
+            color: var(--primary);
         }
-        
-        .confidence {
-            font-size: 12px;
-            color: #999;
-            margin-top: 8px;
-        }
-        
-        .calibration-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.5);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .calibration-modal.active {
-            display: flex;
-        }
-        
-        .calibration-content {
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            max-width: 400px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-        }
-        
-        .calibration-content h3 {
-            margin-bottom: 15px;
-            color: #333;
-        }
-        
-        .calibration-content p {
+
+        .placeholder {
+            text-align: center;
+            padding: 20px;
+            color: var(--gray-400);
             font-size: 13px;
-            color: #666;
-            margin-bottom: 15px;
-            line-height: 1.6;
         }
-        
-        @media (max-width: 1024px) {
-            .main-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .results-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .method-results {
-                grid-template-columns: 1fr;
-            }
+
+        .settings-panel,
+        .history-panel {
+            padding: 16px;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
         }
-        
-        .loading-spinner {
+
+        .settings-panel h2,
+        .history-panel h2 {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--gray-900);
+            margin-bottom: 16px;
+        }
+
+        .settings-group {
+            margin-bottom: 24px;
+            background: white;
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-lg);
+            padding: 16px;
+        }
+
+        .settings-group h3 {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--gray-900);
+            margin-bottom: 12px;
+        }
+
+        .setting-item {
+            margin-bottom: 16px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--gray-100);
+        }
+
+        .setting-item:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+        .setting-item label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--gray-900);
+            margin-bottom: 6px;
+            cursor: pointer;
+        }
+
+        .setting-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .setting-item input[type="number"],
+        .setting-item select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid var(--gray-300);
+            border-radius: var(--radius-md);
+            font-size: 13px;
+        }
+
+        .setting-item input[type="range"] {
+            width: 100%;
+            cursor: pointer;
+        }
+
+        .input-value {
             display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #667eea;
+            min-width: 30px;
+            text-align: right;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .setting-description {
+            font-size: 11px;
+            color: var(--gray-500);
+            margin-top: 4px;
+            line-height: 1.4;
+        }
+
+        .history-controls {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .history-controls .btn {
+            flex: 1;
+        }
+
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .history-item {
+            background: white;
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-lg);
+            padding: 12px;
+        }
+
+        .history-time {
+            font-size: 11px;
+            color: var(--gray-500);
+            margin-bottom: 4px;
+        }
+
+        .history-values {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            font-size: 12px;
+        }
+
+        .history-value {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .history-value-label {
+            color: var(--gray-600);
+        }
+
+        .history-value-data {
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        @media (min-width: 600px) {
+            .results-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        @media (min-width: 768px) {
+            #app {
+                max-width: 100%;
+                margin: 0 auto;
+            }
+            
+            .header {
+                padding: 24px;
+            }
+            
+            .video-wrapper {
+                aspect-ratio: 16 / 9;
+            }
+            
+            .controls-section {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+            }
+            
+            .controls-section .btn {
+                grid-column: 1 / -1;
+            }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid var(--gray-300);
+            border-top-color: var(--primary);
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
-        
+
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            to { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>🎥 Human Distance Estimation System</h1>
-            <p>Estimate distance of humans from camera using camera height input</p>
-        </div>
-        
-        <div class="main-grid">
-            <!-- Camera Input Section -->
-            <div class="card">
-                <h2>Camera Input</h2>
-                
-                <div class="input-group">
-                    <label>Camera Height from Ground (cm)</label>
-                    <input type="number" id="cameraHeight" placeholder="e.g., 150" value="150" min="10" max="300" step="5">
-                </div>
-                
-                <div class="input-group">
-                    <label>Focal Length (pixels)</label>
-                    <select id="focalLengthMode">
-                        <option value="auto">Auto-Detect (EXIF)</option>
-                        <option value="device">Device Lookup</option>
-                        <option value="manual">Manual Input</option>
-                    </select>
-                </div>
-                
-                <div class="input-group" id="manualFocalLength" style="display: none;">
-                    <label>Enter Focal Length</label>
-                    <input type="number" id="focalLengthManual" placeholder="e.g., 1200" value="1200" min="500" max="2000">
-                </div>
-                
-                <div class="button-group">
-                    <button class="btn-primary" id="startCamera">Start Camera</button>
-                    <button class="btn-secondary" id="stopCamera" disabled>Stop Camera</button>
-                </div>
-                
-                <div class="status" id="cameraStatus">Ready to start</div>
+    <div id="app" class="app">
+        <header class="header">
+            <div class="header-content">
+                <h1>📏 Distance Estimator</h1>
+                <p class="subtitle">Professional human distance measurement system</p>
             </div>
-            
-            <!-- Results Section -->
-            <div class="card">
-                <h2>Primary Results</h2>
-                
-                <div class="results-grid">
-                    <div class="result-item">
-                        <div class="result-label">Real Height (H_real)</div>
-                        <div class="result-value" id="resultHReal">-</div>
-                        <div class="result-unit">cm</div>
+        </header>
+
+        <main class="main-container">
+            <nav class="nav-tabs">
+                <button class="nav-tab active" data-tab="measurement">Measurement</button>
+                <button class="nav-tab" data-tab="settings">Settings</button>
+                <button class="nav-tab" data-tab="history">History</button>
+            </nav>
+
+            <section id="measurement" class="tab-content active">
+                <div id="statusBar" class="status-bar">
+                    <div class="status-item">
+                        <span class="status-label">Camera Status</span>
+                        <span class="status-value" id="cameraStatus">Idle</span>
                     </div>
+                    <div class="status-item">
+                        <span class="status-label">FPS</span>
+                        <span class="status-value" id="fpsCounter">0</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">Processing</span>
+                        <span class="status-value" id="processingStatus">Ready</span>
+                    </div>
+                </div>
+
+                <div class="video-section">
+                    <div class="video-wrapper">
+                        <video id="video" playsinline autoplay muted></video>
+                        <canvas id="canvas" style="display: none;"></canvas>
+                        <div class="video-overlay">
+                            <div class="crosshair"></div>
+                            <div class="detection-box" id="detectionBox" style="display: none;"></div>
+                        </div>
+                        <div class="video-controls">
+                            <button id="focusButton" class="btn-icon" title="Tap to Focus">📍</button>
+                            <button id="torchButton" class="btn-icon" title="Toggle Torch" style="display: none;">💡</button>
+                        </div>
+                    </div>
+
+                    <div class="controls-section">
+                        <div class="control-group">
+                            <label for="cameraHeight">Camera Height (cm)</label>
+                            <div class="input-wrapper">
+                                <input type="number" id="cameraHeight" min="10" max="300" step="5" value="150" required>
+                                <span class="input-unit">cm</span>
+                            </div>
+                        </div>
+
+                        <div class="control-group">
+                            <label for="focalLengthMode">Focal Length Mode</label>
+                            <select id="focalLengthMode">
+                                <option value="auto">Auto-Detect (Device)</option>
+                                <option value="manual">Manual</option>
+                            </select>
+                        </div>
+
+                        <div class="control-group" id="manualFocalLengthGroup" style="display: none;">
+                            <label for="focalLengthManual">Focal Length (px)</label>
+                            <div class="input-wrapper">
+                                <input type="number" id="focalLengthManual" min="500" max="2000" step="50" value="1200">
+                                <span class="input-unit">px</span>
+                            </div>
+                        </div>
+
+                        <button id="startBtn" class="btn btn-primary">Start Camera</button>
+                        <button id="stopBtn" class="btn btn-secondary" disabled style="display: none;">Stop Camera</button>
+                    </div>
+                </div>
+
+                <section class="results-section">
+                    <h2>Measurement Results</h2>
                     
-                    <div class="result-item">
-                        <div class="result-label">Distance (D)</div>
-                        <div class="result-value" id="resultDistance">-</div>
-                        <div class="result-unit">cm</div>
+                    <div class="results-grid">
+                        <div class="result-card primary">
+                            <div class="result-label">Real Height</div>
+                            <div class="result-value" id="resultHReal">-</div>
+                            <div class="result-unit">cm</div>
+                        </div>
+                        <div class="result-card primary">
+                            <div class="result-label">Distance</div>
+                            <div class="result-value" id="resultDistance">-</div>
+                            <div class="result-unit">cm</div>
+                        </div>
+                        <div class="result-card">
+                            <div class="result-label">Confidence</div>
+                            <div class="result-value" id="resultConfidence">-</div>
+                            <div class="result-unit">%</div>
+                        </div>
+                        <div class="result-card">
+                            <div class="result-label">Method</div>
+                            <div class="result-value" id="resultMethod" style="font-size: 14px;">-</div>
+                            <div class="result-unit"></div>
+                        </div>
                     </div>
-                    
-                    <div class="result-item">
-                        <div class="result-label">Confidence</div>
-                        <div class="result-value" id="resultConfidence">-</div>
-                        <div class="result-unit">%</div>
+
+                    <div id="errorContainer" class="error-container" style="display: none;">
+                        <div class="error-item">
+                            <span class="error-icon">⚠️</span>
+                            <div class="error-content">
+                                <div class="error-title" id="errorTitle">Error</div>
+                                <div class="error-message" id="errorMessage">Unknown error occurred</div>
+                            </div>
+                            <button class="btn-close" onclick="dismissError()">×</button>
+                        </div>
                     </div>
+
+                    <div class="methods-section">
+                        <h3>Method Breakdown</h3>
+                        <div class="method-tabs">
+                            <button class="method-tab active" data-method="voting">Method 7: Voting</button>
+                            <button class="method-tab" data-method="mask">Method 1: Mask</button>
+                            <button class="method-tab" data-method="landmarks">Method 2: Landmarks</button>
+                            <button class="method-tab" data-method="fov">Method 3: FOV</button>
+                        </div>
+                        <div class="method-results" id="methodResults">
+                            <p class="placeholder">Run measurement to see detailed results</p>
+                        </div>
+                    </div>
+                </section>
+            </section>
+
+            <section id="settings" class="tab-content">
+                <div class="settings-panel">
+                    <h2>Settings & Configuration</h2>
+
+                    <div class="settings-group">
+                        <h3>Camera Settings</h3>
+                        <div class="setting-item">
+                            <label>Use Rear Camera (Mobile)</label>
+                            <input type="checkbox" id="useRearCamera" checked>
+                            <p class="setting-description">Use back camera on mobile devices for better distance accuracy</p>
+                        </div>
+                        <div class="setting-item">
+                            <label>Enable Autofocus</label>
+                            <input type="checkbox" id="enableAutofocus" checked>
+                            <p class="setting-description">Continuously adjust focus for clearer detection</p>
+                        </div>
+                        <div class="setting-item">
+                            <label>Autofocus Interval (ms)</label>
+                            <div class="input-wrapper">
+                                <input type="number" id="autofocusInterval" min="100" max="5000" step="100" value="500">
+                                <span class="input-unit">ms</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="settings-group">
+                        <h3>Processing Settings</h3>
+                        <div class="setting-item">
+                            <label>Target FPS</label>
+                            <select id="targetFps">
+                                <option value="30">30 FPS</option>
+                                <option value="24">24 FPS</option>
+                                <option value="15">15 FPS</option>
+                            </select>
+                        </div>
+                        <div class="setting-item">
+                            <label>Smoothing Factor</label>
+                            <div class="input-wrapper">
+                                <input type="range" id="smoothingFactor" min="0" max="1" step="0.1" value="0.3">
+                                <span class="input-value" id="smoothingValue">0.3</span>
+                            </div>
+                            <p class="setting-description">Lower = more responsive, Higher = smoother</p>
+                        </div>
+                    </div>
+
+                    <div class="settings-group">
+                        <h3>Detection Settings</h3>
+                        <div class="setting-item">
+                            <label>Landmark Confidence Threshold</label>
+                            <div class="input-wrapper">
+                                <input type="range" id="landmarkConfidence" min="0" max="1" step="0.1" value="0.7">
+                                <span class="input-value" id="landmarkValue">0.7</span>
+                            </div>
+                        </div>
+                        <div class="setting-item">
+                            <label>Minimum Detection Area</label>
+                            <div class="input-wrapper">
+                                <input type="range" id="minDetectionArea" min="0.05" max="0.5" step="0.05" value="0.1">
+                                <span class="input-value" id="areaValue">0.1</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="settings-group">
+                        <h3>Display Settings</h3>
+                        <div class="setting-item">
+                            <label>Show Detection Box</label>
+                            <input type="checkbox" id="showDetectionBox" checked>
+                        </div>
+                        <div class="setting-item">
+                            <label>Show FPS Counter</label>
+                            <input type="checkbox" id="showFpsCounter" checked>
+                        </div>
+                    </div>
+
+                    <button id="resetSettingsBtn" class="btn btn-secondary">Reset to Defaults</button>
+                </div>
+            </section>
+
+            <section id="history" class="tab-content">
+                <div class="history-panel">
+                    <h2>Measurement History</h2>
                     
-                    <div class="result-item">
-                        <div class="result-label">Active Method</div>
-                        <div class="result-value" id="resultMethod" style="font-size: 16px;">-</div>
-                        <div class="result-unit"></div>
+                    <div class="history-controls">
+                        <button id="clearHistoryBtn" class="btn btn-secondary">Clear History</button>
+                        <button id="exportHistoryBtn" class="btn btn-secondary">Export CSV</button>
+                    </div>
+
+                    <div class="history-list" id="historyList">
+                        <p class="placeholder">No measurements recorded yet</p>
                     </div>
                 </div>
-            </div>
-        </div>
-        
-        <!-- Video Preview -->
-        <div class="card">
-            <h2>Live Camera Feed</h2>
-            <div id="videoContainer">
-                <video id="video" playsinline></video>
-                <canvas id="canvas"></canvas>
-            </div>
-            
-            <div class="button-group" style="margin-top: 15px;">
-                <button class="btn-primary" id="captureImage" disabled>Capture Image</button>
-                <button class="btn-secondary" id="uploadImage">Upload Image File</button>
-                <input type="file" id="imageInput" accept="image/*" style="display: none;">
-            </div>
-            
-            <div class="status" id="frameStatus">No video stream</div>
-        </div>
-        
-        <!-- Detailed Methods Results -->
-        <div class="methods-section">
-            <h2>Detailed Method Results</h2>
-            
-            <div class="method-tabs">
-                <button class="method-tab active" data-method="voting">Method 7: Voting</button>
-                <button class="method-tab" data-method="mask">Method 1: Mask</button>
-                <button class="method-tab" data-method="landmarks">Method 2: Landmarks</button>
-                <button class="method-tab" data-method="fov">Method 3: FOV</button>
-                <button class="method-tab" data-method="homography">Method 4: Homography</button>
-                <button class="method-tab" data-method="parallax">Method 5: Parallax</button>
-                <button class="method-tab" data-method="edge">Method 6: Edge Detect</button>
-                <button class="method-tab" data-method="progressive">Method 8: Progressive</button>
-            </div>
-            
-            <div class="method-results" id="methodResults">
-                <div class="method-card" id="votingResults">
-                    <div class="method-name">Method 7: Multi-Method Voting</div>
-                    <div class="method-result">
-                        <label>H_real</label>
-                        <value id="voting-hreal">-</value>
-                    </div>
-                    <div class="method-result">
-                        <label>Distance</label>
-                        <value id="voting-distance">-</value>
-                    </div>
-                    <div class="method-result">
-                        <label>Confidence</label>
-                        <value id="voting-confidence">-</value>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Calibration Modal -->
-    <div class="calibration-modal" id="calibrationModal">
-        <div class="calibration-content">
-            <h3>Focal Length Calibration</h3>
-            <p>📏 Hold a 15cm white card at exactly 30cm distance from your camera. Click "Detect Card" to calibrate.</p>
-            <div class="button-group">
-                <button class="btn-primary" id="detectCardBtn">Detect Card</button>
-                <button class="btn-secondary" id="skipCalibrationBtn">Skip</button>
-            </div>
-        </div>
+            </section>
+        </main>
     </div>
 
     <script async src="https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation@0.1/selfie_segmentation.js"></script>
     <script async src="https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.4/pose.js"></script>
+
     <script>
         // ============================================================================
-        // CONFIGURATION & GLOBALS
+        // CONFIGURATION
         // ============================================================================
-        
-        const config = {
-            videoWidth: 640,
-            videoHeight: 480,
-            targetFPS: 30,
-        };
-        
-        let state = {
-            cameraHeight: 150,
-            focalLength: null,
-            isRunning: false,
-            lastFrame: null,
-            frameCount: 0,
-            smoothDistance: null,
-            smoothHReal: null,
-            results: {
-                method1: { hreal: null, distance: null },
-                method2: { hreal: null, distance: null },
-                method3: { hreal: null, distance: null },
-                method4: { hreal: null, distance: null },
-                method5: { hreal: null, distance: null },
-                method6: { hreal: null, distance: null },
-                voting: { hreal: null, distance: null, confidence: 0 },
-            }
-        };
-        
-        // MediaPipe modules
-        let segmentation = null;
-        let pose = null;
-        
-        // ============================================================================
-        // UTILITY FUNCTIONS
-        // ============================================================================
-        
-        function showStatus(elementId, message, type = 'normal') {
-            const el = document.getElementById(elementId);
-            el.textContent = message;
-            el.className = 'status ' + type;
-        }
-        
-        function calculateHReal(topP, botP, midP, cameraHeight) {
-            if (!topP || !botP || !midP || !cameraHeight) return null;
-            const hreal = ((topP - botP) * cameraHeight) / (midP - botP);
-            return Math.max(hreal, 0);
-        }
-        
-        function calculateDistance(hreal, hpixel, focalLength, midP, botP) {
-            if (!hreal || !hpixel || !focalLength) return null;
-            if (hpixel === 0) return null;
-            const d = (focalLength * hreal) / hpixel;
-            return Math.max(d, 0);
-        }
-        
-        function getDeviceFocalLength() {
-            const userAgent = navigator.userAgent;
-            
-            const devices = {
+
+        const Config = {
+            camera: {
+                targetWidth: 640,
+                targetHeight: 480,
+                useRearCamera: true,
+                enableAutofocus: true,
+                autofocusInterval: 500,
+            },
+            processing: {
+                targetFps: 30,
+                smoothingFactor: 0.3,
+            },
+            detection: {
+                landmarkConfidenceThreshold: 0.7,
+                minDetectionArea: 0.1,
+                maskThreshold: 0.5,
+            },
+            display: {
+                showDetectionBox: true,
+                showFpsCounter: true,
+            },
+            focalLengthPresets: {
                 'iPhone': 1200,
                 'Pixel': 1050,
                 'Galaxy': 1100,
                 'SM-': 1100,
                 'Redmi': 1000,
                 'OnePlus': 1050,
-            };
-            
-            for (const [key, value] of Object.entries(devices)) {
-                if (userAgent.includes(key)) {
-                    return value;
+                'Xiaomi': 1000,
+            },
+            defaultFocalLength: 1100,
+            errors: {
+                CAMERA_NOT_FOUND: 'Camera not found. Make sure camera is available and permissions are granted.',
+                PERMISSION_DENIED: 'Camera permission denied. Please grant camera access in settings.',
+                NO_MEDIAPIPE: 'MediaPipe library failed to load. Check internet connection.',
+                NO_PERSON_DETECTED: 'No person detected in frame. Please move closer or adjust lighting.',
+                INVALID_CAMERA_HEIGHT: 'Camera height must be between 10-300 cm.',
+                INVALID_FOCAL_LENGTH: 'Focal length must be between 500-2000 pixels.',
+                AUTOFOCUS_FAILED: 'Autofocus is not supported on this device.',
+                TORCH_NOT_AVAILABLE: 'Torch is not available on this device.',
+                UNKNOWN_ERROR: 'An unknown error occurred. Please try again.',
+            },
+            storage: {
+                SETTINGS: 'distance_estimator_settings',
+                HISTORY: 'distance_estimator_history',
+            },
+            maxHistoryItems: 100,
+        };
+
+        // ============================================================================
+        // ERROR HANDLER
+        // ============================================================================
+
+        const ErrorHandler = {
+            errorQueue: [],
+            maxErrors: 5,
+
+            show(code, details = '') {
+                const message = Config.errors[code] || Config.errors.UNKNOWN_ERROR;
+                const error = {
+                    code,
+                    message,
+                    details,
+                    timestamp: new Date(),
+                    id: `error_${Date.now()}_${Math.random()}`,
+                };
+                this.errorQueue.push(error);
+                if (this.errorQueue.length > this.maxErrors) {
+                    this.errorQueue.shift();
                 }
-            }
-            
-            return 1100; // Default fallback
-        }
-        
-        async function getFocalLength() {
-            const mode = document.getElementById('focalLengthMode').value;
-            
-            if (mode === 'manual') {
-                return parseFloat(document.getElementById('focalLengthManual').value) || 1100;
-            } else if (mode === 'device') {
-                return getDeviceFocalLength();
-            }
-            
-            // Auto-detect from EXIF or use device
-            return getDeviceFocalLength();
-        }
-        
-        // ============================================================================
-        // METHOD 1: MASK BOUNDING BOX
-        // ============================================================================
-        
-        async function method1_maskBounding(segmentationResult, cameraHeight, midP) {
-            try {
-                const mask = segmentationResult.segmentationMask;
-                const data = mask.data;
-                const width = mask.width;
-                const height = mask.height;
-                
-                let topP = height, botP = 0;
-                
-                for (let i = 0; i < data.length; i++) {
-                    if (data[i] > 0.5) {
-                        const y = Math.floor(i / width);
-                        topP = Math.min(topP, y);
-                        botP = Math.max(botP, y);
+                this.displayError(error);
+                console.error(`[${code}] ${message}${details ? ': ' + details : ''}`);
+                return error.id;
+            },
+
+            displayError(error) {
+                const container = document.getElementById('errorContainer');
+                if (!container) return;
+                const title = document.getElementById('errorTitle');
+                const message = document.getElementById('errorMessage');
+                title.textContent = error.code.replace(/_/g, ' ');
+                message.textContent = error.details ? `${error.message} (${error.details})` : error.message;
+                container.style.display = 'block';
+            },
+
+            dismiss(errorId) {
+                this.errorQueue = this.errorQueue.filter(e => e.id !== errorId);
+                if (this.errorQueue.length === 0) {
+                    const container = document.getElementById('errorContainer');
+                    if (container) {
+                        container.style.display = 'none';
                     }
                 }
-                
-                if (topP === height || botP === 0) return null;
-                
-                const hreal = calculateHReal(topP, botP, midP, cameraHeight);
-                const hpixel = botP - topP;
-                const focalLength = await getFocalLength();
-                const distance = calculateDistance(hreal, hpixel, focalLength, midP, botP);
-                
-                return { hreal, distance, hpixel, topP, botP };
-            } catch (e) {
-                console.error('Method 1 error:', e);
-                return null;
+            },
+
+            clearAll() {
+                this.errorQueue = [];
+                const container = document.getElementById('errorContainer');
+                if (container) {
+                    container.style.display = 'none';
+                }
+            },
+
+            handleCameraError(error) {
+                if (error.name === 'NotAllowedError') {
+                    this.show('PERMISSION_DENIED', error.message);
+                } else if (error.name === 'NotFoundError') {
+                    this.show('CAMERA_NOT_FOUND', error.message);
+                } else if (error.name === 'NotReadableError') {
+                    this.show('CAMERA_NOT_FOUND', 'Camera is already in use or not accessible');
+                } else {
+                    this.show('UNKNOWN_ERROR', error.message);
+                }
+            },
+
+            validateCameraHeight(value) {
+                const num = parseFloat(value);
+                if (isNaN(num) || num < 10 || num > 300) {
+                    this.show('INVALID_CAMERA_HEIGHT');
+                    return false;
+                }
+                return true;
+            },
+
+            validateFocalLength(value) {
+                const num = parseFloat(value);
+                if (isNaN(num) || num < 500 || num > 2000) {
+                    this.show('INVALID_FOCAL_LENGTH');
+                    return false;
+                }
+                return true;
+            },
+
+            getLatestError() {
+                return this.errorQueue[this.errorQueue.length - 1] || null;
+            },
+        };
+
+        function dismissError() {
+            const error = ErrorHandler.getLatestError();
+            if (error) {
+                ErrorHandler.dismiss(error.id);
             }
         }
-        
+
         // ============================================================================
-        // METHOD 2: LANDMARKS HEIGHT
+        // MEDIAPIPE LOADER
         // ============================================================================
-        
-        async function method2_landmarksHeight(poseResult, cameraHeight, midP) {
-            try {
-                const landmarks = poseResult.landmarks;
-                if (!landmarks || landmarks.length < 28) return null;
-                
-                const nose = landmarks[0];
-                const ankleL = landmarks[27];
-                const ankleR = landmarks[28];
-                
-                if (!nose || !ankleL || !ankleR) return null;
-                if (nose.visibility < 0.7 || ankleL.visibility < 0.3 || ankleR.visibility < 0.3) return null;
-                
-                const topP = nose.y;
-                const botP = Math.max(ankleL.y, ankleR.y);
-                
-                if (topP >= botP) return null;
-                
-                const hreal = calculateHReal(topP, botP, midP, cameraHeight);
-                const hpixel = botP - topP;
-                const focalLength = await getFocalLength();
-                const distance = calculateDistance(hreal, hpixel, focalLength, midP, botP);
-                
-                return { hreal, distance, hpixel, topP, botP };
-            } catch (e) {
-                console.error('Method 2 error:', e);
-                return null;
-            }
-        }
-        
-        // ============================================================================
-        // METHOD 3: FOV ANGLE
-        // ============================================================================
-        
-        async function method3_fovAngle(segmentationResult, cameraHeight, midP) {
-            try {
-                const mask = segmentationResult.segmentationMask;
-                const data = mask.data;
-                const width = mask.width;
-                
-                let topP = segmentationResult.segmentationMask.height, botP = 0;
-                
-                for (let i = 0; i < data.length; i++) {
-                    if (data[i] > 0.5) {
-                        const y = Math.floor(i / width);
-                        topP = Math.min(topP, y);
-                        botP = Math.max(botP, y);
+
+        const MediaPipeLoader = {
+            isLoading: false,
+            isLoaded: false,
+            segmentation: null,
+            pose: null,
+
+            async load() {
+                if (this.isLoaded) return true;
+                if (this.isLoading) return this.waitForLoad();
+
+                this.isLoading = true;
+
+                try {
+                    await this.waitForGlobals();
+                    await this.initializeSegmentation();
+                    await this.initializePose();
+                    this.isLoaded = true;
+                    this.isLoading = false;
+                    return true;
+                } catch (error) {
+                    this.isLoading = false;
+                    ErrorHandler.show('NO_MEDIAPIPE', error.message);
+                    throw error;
+                }
+            },
+
+            async waitForGlobals(timeout = 10000) {
+                const startTime = Date.now();
+                while (!window.SelfieSegmentation || !window.Pose) {
+                    if (Date.now() - startTime > timeout) {
+                        throw new Error('MediaPipe libraries failed to load within timeout');
                     }
+                    await new Promise(r => setTimeout(r, 100));
                 }
-                
-                if (topP === segmentationResult.segmentationMask.height) return null;
-                
-                const hreal = calculateHReal(topP, botP, midP, cameraHeight);
-                const hpixel = botP - topP;
-                const focalLength = await getFocalLength();
-                
-                const angle = 2 * Math.atan(hpixel / (2 * focalLength));
-                const distance = hreal / Math.tan(angle);
-                
-                return { hreal, distance, hpixel, topP, botP };
-            } catch (e) {
-                console.error('Method 3 error:', e);
-                return null;
-            }
-        }
-        
-        // ============================================================================
-        // METHOD 4: HOMOGRAPHY GROUND PLANE
-        // ============================================================================
-        
-        async function method4_homography(poseResult, cameraHeight, midP) {
-            try {
-                const landmarks = poseResult.landmarks;
-                if (!landmarks || landmarks.length < 28) return null;
-                
-                const ankleL = landmarks[27];
-                const ankleR = landmarks[28];
-                if (!ankleL || !ankleR) return null;
-                
-                // Use average ankle position
-                const botP = (ankleL.y + ankleR.y) / 2;
-                const topP = landmarks[0].y;
-                
-                if (topP >= botP) return null;
-                
-                const hreal = calculateHReal(topP, botP, midP, cameraHeight);
-                
-                // Without pitch known, use approximation
-                // Distance based on foot position relative to camera height
-                const pixelsAboveCenter = midP - botP;
-                const realHeightAboveCamera = cameraHeight;
-                const distance = (pixelsAboveCenter * realHeightAboveCamera) / (midP - botP);
-                
-                return { hreal, distance, hpixel: botP - topP, topP, botP };
-            } catch (e) {
-                console.error('Method 4 error:', e);
-                return null;
-            }
-        }
-        
-        // ============================================================================
-        // METHOD 5: STEREO PARALLAX (Simplified - requires frame history)
-        // ============================================================================
-        
-        let parallaxHistory = { positions: [], timestamps: [] };
-        
-        async function method5_parallax(poseResult, cameraHeight, midP) {
-            try {
-                const landmarks = poseResult.landmarks;
-                if (!landmarks || landmarks.length < 1) return null;
-                
-                const nose = landmarks[0];
-                if (!nose || nose.visibility < 0.7) return null;
-                
-                const now = Date.now();
-                parallaxHistory.positions.push(nose.x);
-                parallaxHistory.timestamps.push(now);
-                
-                // Keep only last 10 positions (500ms at 20fps)
-                if (parallaxHistory.positions.length > 10) {
-                    parallaxHistory.positions.shift();
-                    parallaxHistory.timestamps.shift();
+            },
+
+            async initializeSegmentation() {
+                return new Promise((resolve, reject) => {
+                    this.segmentation = new window.SelfieSegmentation({
+                        locateFile: (file) => {
+                            return `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation@0.1/${file}`;
+                        }
+                    });
+
+                    this.segmentation.setOptions({
+                        modelSelection: 1,
+                        selfieMode: true,
+                    });
+
+                    this.segmentation.onResults((results) => {
+                        resolve();
+                    });
+
+                    const canvas = document.createElement('canvas');
+                    canvas.width = 1;
+                    canvas.height = 1;
+                    this.segmentation.send({ image: canvas });
+                });
+            },
+
+            async initializePose() {
+                return new Promise((resolve, reject) => {
+                    this.pose = new window.Pose({
+                        locateFile: (file) => {
+                            return `https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.4/${file}`;
+                        }
+                    });
+
+                    this.pose.setOptions({
+                        modelComplexity: 1,
+                        smoothLandmarks: true,
+                        enableSegmentation: false,
+                        minDetectionConfidence: 0.5,
+                        minTrackingConfidence: 0.5,
+                    });
+
+                    this.pose.onResults((results) => {
+                        resolve();
+                    });
+
+                    const canvas = document.createElement('canvas');
+                    canvas.width = 1;
+                    canvas.height = 1;
+                    this.pose.send({ image: canvas });
+                });
+            },
+
+            async segment(imageData) {
+                if (!this.isLoaded) {
+                    throw new Error('MediaPipe not loaded');
                 }
-                
-                if (parallaxHistory.positions.length < 3) return null;
-                
-                // Calculate disparity
-                const positions = parallaxHistory.positions;
-                const minX = Math.min(...positions);
-                const maxX = Math.max(...positions);
-                const disparity = maxX - minX;
-                
-                if (disparity < 5) return null; // Need significant motion
-                
-                const baseline = 10; // cm - assume 10cm movement
-                const focalLength = await getFocalLength();
-                const distance = (baseline * focalLength) / disparity;
-                
-                const ankleL = landmarks[27];
-                const botP = ankleL ? ankleL.y : 0;
-                const topP = landmarks[0].y;
-                const hreal = calculateHReal(topP, botP, midP, cameraHeight);
-                
-                return { hreal, distance, hpixel: disparity, topP, botP };
-            } catch (e) {
-                console.error('Method 5 error:', e);
-                return null;
-            }
-        }
-        
+                return new Promise((resolve, reject) => {
+                    this.segmentation.onResults((results) => {
+                        resolve(results);
+                    });
+                    this.segmentation.send({ image: imageData }).catch(reject);
+                });
+            },
+
+            async detectPose(imageData) {
+                if (!this.isLoaded) {
+                    throw new Error('MediaPipe not loaded');
+                }
+                return new Promise((resolve, reject) => {
+                    this.pose.onResults((results) => {
+                        resolve(results);
+                    });
+                    this.pose.send({ image: imageData }).catch(reject);
+                });
+            },
+
+            waitForLoad() {
+                return new Promise((resolve) => {
+                    const checkLoaded = () => {
+                        if (this.isLoaded) {
+                            resolve(true);
+                        } else {
+                            setTimeout(checkLoaded, 100);
+                        }
+                    };
+                    checkLoaded();
+                });
+            },
+
+            isReady() {
+                return this.isLoaded && this.segmentation && this.pose;
+            },
+        };
+
         // ============================================================================
-        // METHOD 6: EDGE DETECTION FALLBACK
+        // CAMERA MANAGER
         // ============================================================================
-        
-        async function method6_edgeDetection(frame, cameraHeight, midP) {
-            try {
-                const canvas = document.getElementById('canvas');
+
+        const CameraManager = {
+            stream: null,
+            videoElement: null,
+            hasAutofocus: false,
+            torchAvailable: false,
+            autofocusInterval: null,
+
+            async initialize() {
+                this.videoElement = document.getElementById('video');
+                if (!this.videoElement) {
+                    throw new Error('Video element not found');
+                }
+
+                try {
+                    const constraints = this.buildConstraints();
+                    this.stream = await navigator.mediaDevices.getUserMedia(constraints);
+                    this.videoElement.srcObject = this.stream;
+
+                    await new Promise((resolve) => {
+                        this.videoElement.onloadedmetadata = resolve;
+                        this.videoElement.play();
+                    });
+
+                    await this.checkCapabilities();
+
+                    if (Config.camera.enableAutofocus) {
+                        this.startAutofocus();
+                    }
+
+                    UIManager.updateStatus('Camera started', 'success');
+                    return true;
+
+                } catch (error) {
+                    ErrorHandler.handleCameraError(error);
+                    throw error;
+                }
+            },
+
+            buildConstraints() {
+                const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                const useRear = Config.camera.useRearCamera && isMobile;
+
+                return {
+                    video: {
+                        width: { ideal: Config.camera.targetWidth },
+                        height: { ideal: Config.camera.targetHeight },
+                        facingMode: useRear ? { exact: 'environment' } : 'user',
+                        focusMode: 'continuous',
+                        autoFocus: Config.camera.enableAutofocus,
+                    },
+                    audio: false,
+                };
+            },
+
+            async checkCapabilities() {
+                try {
+                    if (!this.stream || !this.stream.getTracks()[0]) {
+                        return;
+                    }
+
+                    const track = this.stream.getVideoTracks()[0];
+                    if (!track) return;
+
+                    const settings = track.getSettings();
+                    const capabilities = track.getCapabilities();
+
+                    this.hasAutofocus = capabilities && capabilities.focusMode && 
+                                       capabilities.focusMode.includes('continuous');
+
+                    try {
+                        this.torchAvailable = capabilities && capabilities.torch;
+                        if (this.torchAvailable) {
+                            document.getElementById('torchButton').style.display = 'block';
+                        }
+                    } catch (e) {
+                        this.torchAvailable = false;
+                    }
+
+                } catch (error) {
+                    console.warn('Could not check camera capabilities:', error);
+                }
+            },
+
+            startAutofocus() {
+                if (!this.hasAutofocus) {
+                    ErrorHandler.show('AUTOFOCUS_FAILED', 'Not supported on this device');
+                    return;
+                }
+
+                this.stopAutofocus();
+
+                const autofocusInterval = parseInt(Config.camera.autofocusInterval) || 500;
+
+                this.autofocusInterval = setInterval(() => {
+                    this.triggerAutofocus();
+                }, autofocusInterval);
+            },
+
+            async triggerAutofocus() {
+                try {
+                    if (!this.stream) return;
+
+                    const track = this.stream.getVideoTracks()[0];
+                    if (!track) return;
+
+                    const capabilities = track.getCapabilities();
+                    if (!capabilities || !capabilities.focusMode || !capabilities.focusMode.includes('continuous')) {
+                        return;
+                    }
+
+                    const constraints = {
+                        advanced: [{
+                            focusMode: 'continuous',
+                            focusDistance: undefined,
+                        }]
+                    };
+
+                    await track.applyConstraints(constraints);
+
+                } catch (error) {
+                    console.debug('Autofocus error:', error);
+                }
+            },
+
+            stopAutofocus() {
+                if (this.autofocusInterval) {
+                    clearInterval(this.autofocusInterval);
+                    this.autofocusInterval = null;
+                }
+            },
+
+            async manualFocus() {
+                await this.triggerAutofocus();
+                UIManager.updateStatus('Focus requested', 'success');
+            },
+
+            async toggleTorch() {
+                if (!this.torchAvailable || !this.stream) {
+                    ErrorHandler.show('TORCH_NOT_AVAILABLE');
+                    return;
+                }
+
+                try {
+                    const track = this.stream.getVideoTracks()[0];
+                    if (!track) return;
+
+                    const settings = track.getSettings();
+                    const currentTorch = settings.torch || false;
+
+                    await track.applyConstraints({
+                        advanced: [{ torch: !currentTorch }]
+                    });
+
+                    UIManager.updateStatus(
+                        !currentTorch ? 'Torch ON' : 'Torch OFF',
+                        'success'
+                    );
+
+                } catch (error) {
+                    ErrorHandler.show('TORCH_NOT_AVAILABLE', error.message);
+                }
+            },
+
+            getVideoDimensions() {
+                if (!this.videoElement) {
+                    return { width: Config.camera.targetWidth, height: Config.camera.targetHeight };
+                }
+
+                return {
+                    width: this.videoElement.videoWidth || Config.camera.targetWidth,
+                    height: this.videoElement.videoHeight || Config.camera.targetHeight,
+                };
+            },
+
+            captureFrame(canvas) {
+                if (!this.videoElement || !canvas) {
+                    throw new Error('Video element or canvas not available');
+                }
+
+                canvas.width = this.videoElement.videoWidth;
+                canvas.height = this.videoElement.videoHeight;
+
                 const ctx = canvas.getContext('2d');
-                canvas.width = frame.width;
-                canvas.height = frame.height;
-                
-                ctx.drawImage(frame, 0, 0);
-                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                const data = imageData.data;
-                
-                // Simple edge detection (Sobel-like)
-                const edges = new Uint8Array(canvas.width * canvas.height);
-                let topP = canvas.height, botP = 0;
-                
-                for (let y = 1; y < canvas.height - 1; y++) {
-                    for (let x = 1; x < canvas.width - 1; x++) {
-                        const idx = (y * canvas.width + x) * 4;
-                        
-                        const gx = (-data[(y-1)*canvas.width*4 + (x-1)*4] + data[(y-1)*canvas.width*4 + (x+1)*4] +
-                                   -2*data[y*canvas.width*4 + (x-1)*4] + 2*data[y*canvas.width*4 + (x+1)*4] +
-                                   -data[(y+1)*canvas.width*4 + (x-1)*4] + data[(y+1)*canvas.width*4 + (x+1)*4]) / 8;
-                        
-                        if (Math.abs(gx) > 50) {
-                            edges[y * canvas.width + x] = 255;
+                ctx.drawImage(this.videoElement, 0, 0);
+
+                return canvas;
+            },
+
+            stop() {
+                this.stopAutofocus();
+
+                if (this.stream) {
+                    this.stream.getTracks().forEach(track => track.stop());
+                    this.stream = null;
+                }
+
+                if (this.videoElement) {
+                    this.videoElement.srcObject = null;
+                }
+
+                UIManager.updateStatus('Camera stopped', 'normal');
+            },
+
+            isRunning() {
+                return this.stream !== null && this.stream.active;
+            },
+        };
+
+        // ============================================================================
+        // DISTANCE METHODS
+        // ============================================================================
+
+        const Methods = {
+            parallaxHistory: {
+                positions: [],
+                timestamps: [],
+                maxSize: 10,
+            },
+
+            calculateHReal(topP, botP, midP, cameraHeight) {
+                if (!topP || !botP || !midP || !cameraHeight) return null;
+
+                const denominator = midP - botP;
+                if (Math.abs(denominator) < 1) return null;
+
+                const hreal = ((topP - botP) * cameraHeight) / denominator;
+                return Math.max(hreal, 0);
+            },
+
+            calculateDistance(hreal, hpixel, focalLength, midP, botP) {
+                if (!hreal || !hpixel || !focalLength) return null;
+                if (hpixel === 0) return null;
+
+                const distance = (focalLength * hreal) / hpixel;
+                return Math.max(distance, 0);
+            },
+
+            async getFocalLength() {
+                const mode = document.getElementById('focalLengthMode')?.value || 'auto';
+
+                if (mode === 'manual') {
+                    const manual = parseFloat(document.getElementById('focalLengthManual')?.value || Config.defaultFocalLength);
+                    if (ErrorHandler.validateFocalLength(manual)) {
+                        return manual;
+                    }
+                    return Config.defaultFocalLength;
+                }
+
+                return this.getDeviceFocalLength();
+            },
+
+            getDeviceFocalLength() {
+                const userAgent = navigator.userAgent;
+
+                for (const [key, value] of Object.entries(Config.focalLengthPresets)) {
+                    if (userAgent.includes(key)) {
+                        return value;
+                    }
+                }
+
+                return Config.defaultFocalLength;
+            },
+
+            async method1_maskBounding(segmentationResult, cameraHeight, midP) {
+                try {
+                    if (!segmentationResult || !segmentationResult.segmentationMask) return null;
+
+                    const mask = segmentationResult.segmentationMask;
+                    const data = mask.data;
+                    const width = mask.width;
+                    const height = mask.height;
+
+                    let topP = height, botP = 0;
+
+                    for (let i = 0; i < data.length; i++) {
+                        if (data[i] > Config.detection.maskThreshold) {
+                            const y = Math.floor(i / width);
                             topP = Math.min(topP, y);
                             botP = Math.max(botP, y);
                         }
                     }
+
+                    if (topP === height || botP === 0) return null;
+
+                    const maskArea = (botP - topP) / height;
+                    if (maskArea < Config.detection.minDetectionArea) return null;
+
+                    const hreal = this.calculateHReal(topP, botP, midP, cameraHeight);
+                    const hpixel = botP - topP;
+                    const focalLength = await this.getFocalLength();
+                    const distance = this.calculateDistance(hreal, hpixel, focalLength, midP, botP);
+
+                    return { hreal, distance, hpixel, topP, botP };
+                } catch (error) {
+                    console.error('Method 1 error:', error);
+                    return null;
                 }
-                
-                if (topP === canvas.height || botP === 0) return null;
-                
-                const hreal = calculateHReal(topP, botP, midP, cameraHeight);
-                const hpixel = botP - topP;
-                const focalLength = await getFocalLength();
-                const distance = calculateDistance(hreal, hpixel, focalLength, midP, botP);
-                
-                return { hreal, distance, hpixel, topP, botP };
-            } catch (e) {
-                console.error('Method 6 error:', e);
-                return null;
-            }
-        }
-        
-        // ============================================================================
-        // METHOD 7: MULTI-METHOD VOTING
-        // ============================================================================
-        
-        async function method7_voting(segmentationResult, poseResult, frame, cameraHeight, midP) {
-            try {
-                const results = [];
-                
-                const m1 = await method1_maskBounding(segmentationResult, cameraHeight, midP);
-                if (m1) results.push(m1.distance);
-                
-                const m2 = await method2_landmarksHeight(poseResult, cameraHeight, midP);
-                if (m2) results.push(m2.distance);
-                
-                const m3 = await method3_fovAngle(segmentationResult, cameraHeight, midP);
-                if (m3) results.push(m3.distance);
-                
-                if (results.length === 0) return null;
-                
-                results.sort((a, b) => a - b);
-                const median = results.length % 2 === 0
-                    ? (results[results.length / 2 - 1] + results[results.length / 2]) / 2
-                    : results[Math.floor(results.length / 2)];
-                
-                const variance = Math.sqrt(results.reduce((sq, n) => sq + Math.pow(n - median, 2), 0) / results.length);
-                const confidence = Math.max(0, Math.min(100, 100 / (1 + variance / 100)));
-                
-                // Use method 1 for hreal
-                const hreal = m1 ? m1.hreal : (m2 ? m2.hreal : (m3 ? m3.hreal : null));
-                
-                return { hreal, distance: median, confidence, methodCount: results.length };
-            } catch (e) {
-                console.error('Method 7 error:', e);
-                return null;
-            }
-        }
-        
-        // ============================================================================
-        // METHOD 8: PROGRESSIVE REFINEMENT
-        // ============================================================================
-        
-        async function method8_progressive(segmentationResult, poseResult, frame, cameraHeight, midP) {
-            try {
-                // Step 1: Quick estimate using voting
-                const votingResult = await method7_voting(segmentationResult, poseResult, frame, cameraHeight, midP);
-                if (!votingResult) return null;
-                
-                // Step 2: If confidence low, try parallax
-                let finalResult = votingResult;
-                if (votingResult.confidence < 80) {
-                    const parallaxResult = await method5_parallax(poseResult, cameraHeight, midP);
-                    if (parallaxResult) {
-                        // Fuse results
-                        finalResult.distance = 0.5 * votingResult.distance + 0.5 * parallaxResult.distance;
-                        finalResult.confidence = Math.max(votingResult.confidence, parallaxResult.hreal ? 75 : 0);
-                    }
+            },
+
+            async method2_landmarksHeight(poseResult, cameraHeight, midP) {
+                try {
+                    if (!poseResult || !poseResult.landmarks || poseResult.landmarks.length < 28) return null;
+
+                    const landmarks = poseResult.landmarks;
+                    const nose = landmarks[0];
+                    const ankleL = landmarks[27];
+                    const ankleR = landmarks[28];
+
+                    if (!nose || !ankleL || !ankleR) return null;
+                    if (nose.visibility < Config.detection.landmarkConfidenceThreshold) return null;
+                    if (ankleL.visibility < 0.3 || ankleR.visibility < 0.3) return null;
+
+                    const topP = nose.y;
+                    const botP = Math.max(ankleL.y, ankleR.y);
+
+                    if (topP >= botP) return null;
+
+                    const hreal = this.calculateHReal(topP, botP, midP, cameraHeight);
+                    const hpixel = botP - topP;
+                    const focalLength = await this.getFocalLength();
+                    const distance = this.calculateDistance(hreal, hpixel, focalLength, midP, botP);
+
+                    return { hreal, distance, hpixel, topP, botP };
+                } catch (error) {
+                    console.error('Method 2 error:', error);
+                    return null;
                 }
-                
-                return finalResult;
-            } catch (e) {
-                console.error('Method 8 error:', e);
-                return null;
-            }
-        }
-        
-        // ============================================================================
-        // MEDIAPIPE INITIALIZATION
-        // ============================================================================
-        
-        async function initializeMediaPipe() {
-            try {
-                // Initialize Selfie Segmentation
-                segmentation = new SelfieSegmentation({
-                    locateFile: (file) => {
-                        return `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation@0.1/${file}`;
+            },
+
+            async method3_fovAngle(segmentationResult, cameraHeight, midP) {
+                try {
+                    if (!segmentationResult || !segmentationResult.segmentationMask) return null;
+
+                    const mask = segmentationResult.segmentationMask;
+                    const data = mask.data;
+                    const width = mask.width;
+                    const height = mask.height;
+
+                    let topP = height, botP = 0;
+
+                    for (let i = 0; i < data.length; i++) {
+                        if (data[i] > Config.detection.maskThreshold) {
+                            const y = Math.floor(i / width);
+                            topP = Math.min(topP, y);
+                            botP = Math.max(botP, y);
+                        }
                     }
-                });
-                
-                segmentation.setOptions({
-                    modelSelection: 1,
-                    selfieMode: true,
-                });
-                
-                // Initialize Pose
-                pose = new Pose({
-                    locateFile: (file) => {
-                        return `https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.4/${file}`;
-                    }
-                });
-                
-                pose.setOptions({
-                    modelComplexity: 1,
-                    smoothLandmarks: true,
-                    minDetectionConfidence: 0.5,
-                    minTrackingConfidence: 0.5,
-                });
-                
-                showStatus('cameraStatus', 'MediaPipe loaded successfully', 'success');
-                return true;
-            } catch (e) {
-                showStatus('cameraStatus', 'Failed to load MediaPipe: ' + e.message, 'error');
-                console.error('MediaPipe init error:', e);
-                return false;
-            }
-        }
-        
-        // ============================================================================
-        // CAMERA & FRAME PROCESSING
-        // ============================================================================
-        
-        async function processFrame(video) {
-            if (!video.videoWidth || !video.videoHeight) return;
-            
-            try {
-                const canvas = document.getElementById('canvas');
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
-                
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(video, 0, 0);
-                
-                const midP = canvas.height / 2;
-                const cameraHeight = parseFloat(document.getElementById('cameraHeight').value) || 150;
-                
-                // Run MediaPipe
-                const segmentationResult = segmentation ? await segmentation.send({ image: canvas }) : null;
-                const poseResult = pose ? await pose.send({ image: canvas }) : null;
-                
-                // Run all methods
-                const m1 = segmentationResult ? await method1_maskBounding(segmentationResult, cameraHeight, midP) : null;
-                const m2 = poseResult ? await method2_landmarksHeight(poseResult, cameraHeight, midP) : null;
-                const m3 = segmentationResult ? await method3_fovAngle(segmentationResult, cameraHeight, midP) : null;
-                const m4 = poseResult ? await method4_homography(poseResult, cameraHeight, midP) : null;
-                const m5 = poseResult ? await method5_parallax(poseResult, cameraHeight, midP) : null;
-                const m6 = m1 === null && canvas ? await method6_edgeDetection(video, cameraHeight, midP) : null;
-                const m7 = segmentationResult && poseResult ? await method7_voting(segmentationResult, poseResult, video, cameraHeight, midP) : null;
-                const m8 = segmentationResult && poseResult ? await method8_progressive(segmentationResult, poseResult, video, cameraHeight, midP) : null;
-                
-                // Store results
-                state.results.method1 = m1 || state.results.method1;
-                state.results.method2 = m2 || state.results.method2;
-                state.results.method3 = m3 || state.results.method3;
-                state.results.method4 = m4 || state.results.method4;
-                state.results.method5 = m5 || state.results.method5;
-                state.results.method6 = m6 || state.results.method6;
-                state.results.voting = m7 || state.results.voting;
-                
-                // Use voting result as primary
-                if (m7) {
-                    state.smoothDistance = state.smoothDistance ? 0.7 * state.smoothDistance + 0.3 * m7.distance : m7.distance;
-                    state.smoothHReal = state.smoothHReal ? 0.7 * state.smoothHReal + 0.3 * m7.hreal : m7.hreal;
-                    
-                    // Update main display
-                    document.getElementById('resultHReal').textContent = state.smoothHReal ? state.smoothHReal.toFixed(1) : '-';
-                    document.getElementById('resultDistance').textContent = state.smoothDistance ? state.smoothDistance.toFixed(1) : '-';
-                    document.getElementById('resultConfidence').textContent = m7.confidence ? m7.confidence.toFixed(0) : '-';
-                    document.getElementById('resultMethod').textContent = 'Method 7';
-                    
-                    // Update detailed results
-                    updateDetailedResults('voting', m7);
+
+                    if (topP === height) return null;
+
+                    const hreal = this.calculateHReal(topP, botP, midP, cameraHeight);
+                    const hpixel = botP - topP;
+                    const focalLength = await this.getFocalLength();
+
+                    const angle = 2 * Math.atan(hpixel / (2 * focalLength));
+                    const distance = hreal / Math.tan(angle);
+
+                    return { hreal, distance, hpixel, topP, botP };
+                } catch (error) {
+                    console.error('Method 3 error:', error);
+                    return null;
                 }
-                
-                // Update other methods
-                if (m1) updateDetailedResults('mask', m1);
-                if (m2) updateDetailedResults('landmarks', m2);
-                if (m3) updateDetailedResults('fov', m3);
-                if (m4) updateDetailedResults('homography', m4);
-                if (m5) updateDetailedResults('parallax', m5);
-                if (m6) updateDetailedResults('edge', m6);
-                if (m8) updateDetailedResults('progressive', m8);
-                
-                state.frameCount++;
-                showStatus('frameStatus', `Frame ${state.frameCount} processed`, 'success');
-                
-            } catch (e) {
-                console.error('Frame processing error:', e);
-                showStatus('frameStatus', 'Error processing frame: ' + e.message, 'error');
-            }
-            
-            if (state.isRunning) {
-                requestAnimationFrame(() => processFrame(video));
-            }
-        }
-        
-        function updateDetailedResults(methodId, result) {
-            if (!result) return;
-            
-            const hreal = result.hreal ? result.hreal.toFixed(1) : '-';
-            const distance = result.distance ? result.distance.toFixed(1) : '-';
-            const confidence = result.confidence ? result.confidence.toFixed(0) : '-';
-            
-            // Update or create results for this method
-            const methodCard = document.querySelector(`[data-method="${methodId}"]`);
-            if (methodCard) {
+            },
+
+            async method7_voting(segmentationResult, poseResult, canvas, cameraHeight, midP) {
+                try {
+                    const results = [];
+
+                    const m1 = await this.method1_maskBounding(segmentationResult, cameraHeight, midP);
+                    if (m1) results.push(m1.distance);
+
+                    const m2 = await this.method2_landmarksHeight(poseResult, cameraHeight, midP);
+                    if (m2) results.push(m2.distance);
+
+                    const m3 = await this.method3_fovAngle(segmentationResult, cameraHeight, midP);
+                    if (m3) results.push(m3.distance);
+
+                    if (results.length === 0) return null;
+
+                    results.sort((a, b) => a - b);
+                    const median = results.length % 2 === 0
+                        ? (results[results.length / 2 - 1] + results[results.length / 2]) / 2
+                        : results[Math.floor(results.length / 2)];
+
+                    const variance = Math.sqrt(results.reduce((sq, n) => sq + Math.pow(n - median, 2), 0) / results.length);
+                    const confidence = Math.max(0, Math.min(100, 100 / (1 + variance / 100)));
+
+                    const hreal = m1 ? m1.hreal : (m2 ? m2.hreal : (m3 ? m3.hreal : null));
+
+                    return { hreal, distance: median, confidence, methodCount: results.length };
+                } catch (error) {
+                    console.error('Method 7 error:', error);
+                    return null;
+                }
+            },
+        };
+
+        // ============================================================================
+        // UI MANAGER
+        // ============================================================================
+
+        const UIManager = {
+            frameCount: 0,
+            lastFpsTime: 0,
+            history: [],
+            maxHistoryItems: Config.maxHistoryItems,
+            smoothDistance: null,
+            smoothHReal: null,
+
+            init() {
+                // Navigation tabs
+                document.querySelectorAll('.nav-tab').forEach(tab => {
+                    tab.addEventListener('click', (e) => this.switchTab(e.target.dataset.tab));
+                });
+
+                // Method tabs
+                document.querySelectorAll('.method-tab').forEach(tab => {
+                    tab.addEventListener('click', (e) => this.switchMethodTab(e.target.dataset.method));
+                });
+
+                // Settings
+                document.getElementById('focalLengthMode').addEventListener('change', (e) => {
+                    const manualGroup = document.getElementById('manualFocalLengthGroup');
+                    manualGroup.style.display = e.target.value === 'manual' ? 'block' : 'none';
+                    this.saveSettings();
+                });
+
+                document.getElementById('smoothingFactor').addEventListener('change', (e) => {
+                    Config.processing.smoothingFactor = parseFloat(e.target.value);
+                    document.getElementById('smoothingValue').textContent = e.target.value;
+                    this.saveSettings();
+                });
+
+                document.getElementById('landmarkConfidence').addEventListener('change', (e) => {
+                    Config.detection.landmarkConfidenceThreshold = parseFloat(e.target.value);
+                    document.getElementById('landmarkValue').textContent = e.target.value;
+                    this.saveSettings();
+                });
+
+                document.getElementById('minDetectionArea').addEventListener('change', (e) => {
+                    Config.detection.minDetectionArea = parseFloat(e.target.value);
+                    document.getElementById('areaValue').textContent = e.target.value;
+                    this.saveSettings();
+                });
+
+                // Checkboxes
+                document.getElementById('useRearCamera').addEventListener('change', (e) => {
+                    Config.camera.useRearCamera = e.target.checked;
+                    this.saveSettings();
+                });
+
+                document.getElementById('enableAutofocus').addEventListener('change', (e) => {
+                    Config.camera.enableAutofocus = e.target.checked;
+                    this.saveSettings();
+                });
+
+                document.getElementById('showDetectionBox').addEventListener('change', (e) => {
+                    Config.display.showDetectionBox = e.target.checked;
+                    this.saveSettings();
+                });
+
+                document.getElementById('showFpsCounter').addEventListener('change', (e) => {
+                    Config.display.showFpsCounter = e.target.checked;
+                    document.getElementById('statusBar').style.display = e.target.checked ? 'flex' : 'none';
+                    this.saveSettings();
+                });
+
+                // History buttons
+                document.getElementById('clearHistoryBtn').addEventListener('click', () => this.clearHistory());
+                document.getElementById('exportHistoryBtn').addEventListener('click', () => this.exportHistory());
+                document.getElementById('resetSettingsBtn').addEventListener('click', () => this.resetSettings());
+
+                this.loadSettings();
+                this.loadHistory();
+            },
+
+            switchTab(tabName) {
+                document.querySelectorAll('.tab-content').forEach(tab => {
+                    tab.classList.remove('active');
+                });
+
+                document.querySelectorAll('.nav-tab').forEach(tab => {
+                    tab.classList.remove('active');
+                });
+
+                document.getElementById(tabName)?.classList.add('active');
+                document.querySelector(`.nav-tab[data-tab="${tabName}"]`)?.classList.add('active');
+            },
+
+            switchMethodTab(methodName) {
+                document.querySelectorAll('.method-tab').forEach(tab => {
+                    tab.classList.remove('active');
+                });
+
+                document.querySelector(`.method-tab[data-method="${methodName}"]`)?.classList.add('active');
+            },
+
+            updateStatus(message, type = 'normal') {
+                const statusLabel = document.getElementById('cameraStatus');
+                if (statusLabel) {
+                    statusLabel.textContent = message;
+                }
+            },
+
+            updateFps() {
+                const now = Date.now();
+                const fpsElement = document.getElementById('fpsCounter');
+
+                this.frameCount++;
+
+                if (now - this.lastFpsTime >= 1000) {
+                    if (fpsElement) {
+                        fpsElement.textContent = this.frameCount;
+                    }
+                    this.frameCount = 0;
+                    this.lastFpsTime = now;
+                }
+            },
+
+            displayResults(result, methodName = 'Method 7') {
+                if (!result) {
+                    this.updateStatus('No detection', 'error');
+                    return;
+                }
+
+                const smoothing = Config.processing.smoothingFactor;
+                this.smoothDistance = this.smoothDistance ? 
+                    (1 - smoothing) * this.smoothDistance + smoothing * result.distance : 
+                    result.distance;
+                this.smoothHReal = this.smoothHReal ? 
+                    (1 - smoothing) * this.smoothHReal + smoothing * result.hreal : 
+                    result.hreal;
+
+                document.getElementById('resultHReal').textContent = this.smoothHReal.toFixed(1);
+                document.getElementById('resultDistance').textContent = this.smoothDistance.toFixed(1);
+                document.getElementById('resultConfidence').textContent = result.confidence ? result.confidence.toFixed(0) : '-';
+                document.getElementById('resultMethod').textContent = methodName;
+
+                this.updateMethodResults(result);
+
+                this.addToHistory({
+                    timestamp: new Date(),
+                    hreal: this.smoothHReal,
+                    distance: this.smoothDistance,
+                    confidence: result.confidence || 0,
+                    method: methodName,
+                });
+
+                this.updateStatus('Measurement complete', 'success');
+            },
+
+            updateMethodResults(result) {
+                const methodResults = document.getElementById('methodResults');
+                if (!methodResults) return;
+
                 let html = `
                     <div class="method-card">
-                        <div class="method-name">Method: ${methodId}</div>
-                        <div class="method-result">
+                        <div class="method-name">Current Method</div>
+                        <div class="method-result-item">
                             <label>H_real</label>
-                            <value>${hreal} cm</value>
+                            <value>${result.hreal ? result.hreal.toFixed(1) : '-'} cm</value>
                         </div>
-                        <div class="method-result">
+                        <div class="method-result-item">
                             <label>Distance</label>
-                            <value>${distance} cm</value>
+                            <value>${result.distance ? result.distance.toFixed(1) : '-'} cm</value>
                         </div>
                 `;
-                if (confidence !== '-') {
+
+                if (result.confidence !== undefined) {
                     html += `
-                        <div class="method-result">
+                        <div class="method-result-item">
                             <label>Confidence</label>
-                            <value>${confidence}%</value>
+                            <value>${result.confidence.toFixed(0)}%</value>
                         </div>
                     `;
                 }
+
                 html += `</div>`;
-            }
-        }
-        
-        // ============================================================================
-        // UI EVENT HANDLERS
-        // ============================================================================
-        
-        document.getElementById('focalLengthMode').addEventListener('change', (e) => {
-            document.getElementById('manualFocalLength').style.display = e.target.value === 'manual' ? 'block' : 'none';
-        });
-        
-        document.getElementById('startCamera').addEventListener('click', async () => {
-            try {
-                showStatus('cameraStatus', 'Requesting camera...', 'loading');
-                
-                const stream = await navigator.mediaDevices.getUserMedia({
-                    video: { width: config.videoWidth, height: config.videoHeight, facingMode: 'user' },
-                    audio: false
+                methodResults.innerHTML = html;
+            },
+
+            addToHistory(measurement) {
+                this.history.unshift(measurement);
+
+                if (this.history.length > this.maxHistoryItems) {
+                    this.history.pop();
+                }
+
+                this.saveHistory();
+                this.updateHistoryDisplay();
+            },
+
+            updateHistoryDisplay() {
+                const historyList = document.getElementById('historyList');
+                if (!historyList) return;
+
+                if (this.history.length === 0) {
+                    historyList.innerHTML = '<p class="placeholder">No measurements recorded yet</p>';
+                    return;
+                }
+
+                let html = '';
+                this.history.forEach((item, index) => {
+                    html += `
+                        <div class="history-item">
+                            <div class="history-time">${item.timestamp.toLocaleTimeString()} - ${item.method}</div>
+                            <div class="history-values">
+                                <div class="history-value">
+                                    <span class="history-value-label">H_real:</span>
+                                    <span class="history-value-data">${item.hreal.toFixed(1)} cm</span>
+                                </div>
+                                <div class="history-value">
+                                    <span class="history-value-label">Distance:</span>
+                                    <span class="history-value-data">${item.distance.toFixed(1)} cm</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
                 });
-                
-                const video = document.getElementById('video');
-                video.srcObject = stream;
-                
-                video.onloadedmetadata = () => {
-                    video.play();
-                    state.isRunning = true;
-                    document.getElementById('startCamera').disabled = true;
-                    document.getElementById('stopCamera').disabled = false;
-                    document.getElementById('captureImage').disabled = false;
-                    
-                    showStatus('cameraStatus', 'Camera started, processing frames...', 'success');
-                    processFrame(video);
-                };
-                
-            } catch (e) {
-                showStatus('cameraStatus', 'Camera error: ' + e.message, 'error');
-            }
-        });
-        
-        document.getElementById('stopCamera').addEventListener('click', () => {
-            state.isRunning = false;
-            const video = document.getElementById('video');
-            video.srcObject.getTracks().forEach(track => track.stop());
-            document.getElementById('startCamera').disabled = false;
-            document.getElementById('stopCamera').disabled = true;
-            document.getElementById('captureImage').disabled = true;
-            showStatus('cameraStatus', 'Camera stopped', 'normal');
-        });
-        
-        document.getElementById('captureImage').addEventListener('click', () => {
-            const video = document.getElementById('video');
-            const canvas = document.getElementById('canvas');
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(video, 0, 0);
-            
-            canvas.toBlob((blob) => {
+
+                historyList.innerHTML = html;
+            },
+
+            clearHistory() {
+                if (confirm('Are you sure you want to clear all measurements?')) {
+                    this.history = [];
+                    this.saveHistory();
+                    this.updateHistoryDisplay();
+                    this.updateStatus('History cleared', 'success');
+                }
+            },
+
+            exportHistory() {
+                if (this.history.length === 0) {
+                    ErrorHandler.show('UNKNOWN_ERROR', 'No measurements to export');
+                    return;
+                }
+
+                let csv = 'Timestamp,H_real (cm),Distance (cm),Confidence (%),Method\n';
+                this.history.forEach(item => {
+                    csv += `"${item.timestamp.toISOString()}",${item.hreal.toFixed(1)},${item.distance.toFixed(1)},${item.confidence.toFixed(0)},"${item.method}"\n`;
+                });
+
+                const blob = new Blob([csv], { type: 'text/csv' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = 'capture_' + Date.now() + '.jpg';
+                a.download = `distance_measurements_${Date.now()}.csv`;
                 a.click();
-            });
-            
-            showStatus('frameStatus', 'Image captured', 'success');
-        });
-        
-        document.getElementById('uploadImage').addEventListener('click', () => {
-            document.getElementById('imageInput').click();
-        });
-        
-        document.getElementById('imageInput').addEventListener('change', async (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-            
-            const reader = new FileReader();
-            reader.onload = async (event) => {
-                const img = new Image();
-                img.onload = async () => {
-                    showStatus('frameStatus', 'Processing uploaded image...', 'loading');
-                    
-                    const canvas = document.getElementById('canvas');
-                    canvas.width = img.width;
-                    canvas.height = img.height;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0);
-                    
-                    // Process single frame
-                    const midP = canvas.height / 2;
-                    const cameraHeight = parseFloat(document.getElementById('cameraHeight').value) || 150;
-                    
-                    try {
-                        const segmentationResult = segmentation ? await segmentation.send({ image: canvas }) : null;
-                        const poseResult = pose ? await pose.send({ image: canvas }) : null;
-                        
-                        if (segmentationResult && poseResult) {
-                            const m7 = await method7_voting(segmentationResult, poseResult, canvas, cameraHeight, midP);
-                            if (m7) {
-                                document.getElementById('resultHReal').textContent = m7.hreal.toFixed(1);
-                                document.getElementById('resultDistance').textContent = m7.distance.toFixed(1);
-                                document.getElementById('resultConfidence').textContent = m7.confidence.toFixed(0);
-                                document.getElementById('resultMethod').textContent = 'Method 7 (Uploaded)';
-                                showStatus('frameStatus', 'Image processed successfully', 'success');
-                            }
-                        } else {
-                            showStatus('frameStatus', 'Could not detect person in image', 'error');
-                        }
-                    } catch (err) {
-                        showStatus('frameStatus', 'Error processing image: ' + err.message, 'error');
-                    }
+
+                this.updateStatus('History exported', 'success');
+            },
+
+            saveSettings() {
+                const settings = {
+                    camera: Config.camera,
+                    processing: Config.processing,
+                    detection: Config.detection,
+                    display: Config.display,
                 };
-                img.src = event.target.result;
-            };
-            reader.readAsDataURL(file);
-        });
-        
-        // Method tab switching
-        document.querySelectorAll('.method-tab').forEach(tab => {
-            tab.addEventListener('click', (e) => {
-                document.querySelectorAll('.method-tab').forEach(t => t.classList.remove('active'));
-                e.target.classList.add('active');
-                
-                const method = e.target.dataset.method;
-                const methodResults = document.getElementById('methodResults');
-                
-                let html = '';
-                const result = state.results[method];
-                
-                if (result && result.distance) {
-                    html = `
-                        <div class="method-card">
-                            <div class="method-name">Method: ${method}</div>
-                            <div class="method-result">
-                                <label>H_real</label>
-                                <value>${result.hreal ? result.hreal.toFixed(1) : '-'} cm</value>
-                            </div>
-                            <div class="method-result">
-                                <label>Distance</label>
-                                <value>${result.distance.toFixed(1)} cm</value>
-                            </div>
-                            ${result.confidence ? `
-                            <div class="method-result">
-                                <label>Confidence</label>
-                                <value>${result.confidence.toFixed(0)}%</value>
-                            </div>
-                            ` : ''}
-                        </div>
-                    `;
-                } else {
-                    html = `<div class="method-card"><div class="method-name">${method}</div><p>No results yet</p></div>`;
+
+                localStorage.setItem(Config.storage.SETTINGS, JSON.stringify(settings));
+            },
+
+            loadSettings() {
+                const saved = localStorage.getItem(Config.storage.SETTINGS);
+                if (saved) {
+                    try {
+                        const settings = JSON.parse(saved);
+                        Object.assign(Config, settings);
+
+                        document.getElementById('useRearCamera').checked = Config.camera.useRearCamera;
+                        document.getElementById('enableAutofocus').checked = Config.camera.enableAutofocus;
+                        document.getElementById('targetFps').value = Config.processing.targetFps;
+                        document.getElementById('smoothingFactor').value = Config.processing.smoothingFactor;
+                        document.getElementById('smoothingValue').textContent = Config.processing.smoothingFactor;
+                        document.getElementById('landmarkConfidence').value = Config.detection.landmarkConfidenceThreshold;
+                        document.getElementById('landmarkValue').textContent = Config.detection.landmarkConfidenceThreshold;
+                        document.getElementById('showDetectionBox').checked = Config.display.showDetectionBox;
+                        document.getElementById('showFpsCounter').checked = Config.display.showFpsCounter;
+                    } catch (e) {
+                        console.warn('Failed to load settings:', e);
+                    }
                 }
-                
-                methodResults.innerHTML = html;
-            });
-        });
-        
-        // Initialize
-        window.addEventListener('load', async () => {
-            await initializeMediaPipe();
+            },
+
+            resetSettings() {
+                if (confirm('Reset all settings to defaults?')) {
+                    localStorage.removeItem(Config.storage.SETTINGS);
+                    location.reload();
+                }
+            },
+
+            saveHistory() {
+                localStorage.setItem(Config.storage.HISTORY, JSON.stringify(this.history));
+            },
+
+            loadHistory() {
+                const saved = localStorage.getItem(Config.storage.HISTORY);
+                if (saved) {
+                    try {
+                        this.history = JSON.parse(saved).map(item => ({
+                            ...item,
+                            timestamp: new Date(item.timestamp),
+                        }));
+                        this.updateHistoryDisplay();
+                    } catch (e) {
+                        console.warn('Failed to load history:', e);
+                    }
+                }
+            },
+        };
+
+        // ============================================================================
+        // MAIN APPLICATION
+        // ============================================================================
+
+        const App = {
+            isRunning: false,
+            processingFrame: false,
+            lastFrameTime: 0,
+            canvas: null,
+
+            async init() {
+                try {
+                    console.log('Initializing Distance Estimator...');
+
+                    this.canvas = document.getElementById('canvas');
+
+                    UIManager.init();
+
+                    this.setupEventListeners();
+
+                    console.log('Loading MediaPipe...');
+                    await MediaPipeLoader.load();
+
+                    console.log('Application ready!');
+                    UIManager.updateStatus('Ready', 'success');
+
+                } catch (error) {
+                    console.error('Initialization failed:', error);
+                    ErrorHandler.show('UNKNOWN_ERROR', error.message);
+                }
+            },
+
+            setupEventListeners() {
+                const startBtn = document.getElementById('startBtn');
+                const stopBtn = document.getElementById('stopBtn');
+                const focusButton = document.getElementById('focusButton');
+                const torchButton = document.getElementById('torchButton');
+                const cameraHeightInput = document.getElementById('cameraHeight');
+
+                startBtn.addEventListener('click', () => this.startMeasurement());
+                stopBtn.addEventListener('click', () => this.stopMeasurement());
+                focusButton.addEventListener('click', () => CameraManager.manualFocus());
+                torchButton.addEventListener('click', () => CameraManager.toggleTorch());
+                cameraHeightInput.addEventListener('change', (e) => {
+                    if (!ErrorHandler.validateCameraHeight(e.target.value)) {
+                        e.target.value = 150;
+                    }
+                    UIManager.saveSettings();
+                });
+
+                const videoContainer = document.querySelector('.video-wrapper');
+                if (videoContainer) {
+                    videoContainer.addEventListener('click', () => CameraManager.manualFocus());
+                }
+            },
+
+            async startMeasurement() {
+                try {
+                    const cameraHeight = parseFloat(document.getElementById('cameraHeight').value);
+                    if (!ErrorHandler.validateCameraHeight(cameraHeight)) {
+                        return;
+                    }
+
+                    console.log('Starting camera...');
+                    await CameraManager.initialize();
+
+                    this.isRunning = true;
+                    document.getElementById('startBtn').disabled = true;
+                    document.getElementById('startBtn').style.display = 'none';
+                    document.getElementById('stopBtn').disabled = false;
+                    document.getElementById('stopBtn').style.display = 'block';
+
+                    UIManager.updateStatus('Processing...', 'loading');
+                    this.processFrame();
+
+                } catch (error) {
+                    console.error('Failed to start measurement:', error);
+                }
+            },
+
+            stopMeasurement() {
+                this.isRunning = false;
+                CameraManager.stop();
+
+                document.getElementById('startBtn').disabled = false;
+                document.getElementById('startBtn').style.display = 'block';
+                document.getElementById('stopBtn').disabled = true;
+                document.getElementById('stopBtn').style.display = 'none';
+
+                UIManager.updateStatus('Stopped', 'normal');
+            },
+
+            async processFrame() {
+                if (!this.isRunning) return;
+
+                try {
+                    const now = Date.now();
+                    const deltaTime = now - this.lastFrameTime;
+                    const targetFrameTime = 1000 / parseInt(Config.processing.targetFps);
+
+                    if (deltaTime < targetFrameTime) {
+                        requestAnimationFrame(() => this.processFrame());
+                        return;
+                    }
+
+                    this.lastFrameTime = now;
+
+                    if (this.processingFrame) {
+                        requestAnimationFrame(() => this.processFrame());
+                        return;
+                    }
+
+                    this.processingFrame = true;
+
+                    const video = document.getElementById('video');
+                    if (!video || !video.videoWidth) {
+                        this.processingFrame = false;
+                        requestAnimationFrame(() => this.processFrame());
+                        return;
+                    }
+
+                    CameraManager.captureFrame(this.canvas);
+
+                    const cameraHeight = parseFloat(document.getElementById('cameraHeight').value);
+                    const dimensions = CameraManager.getVideoDimensions();
+                    const midP = dimensions.height / 2;
+
+                    const [segmentationResult, poseResult] = await Promise.all([
+                        MediaPipeLoader.segment(this.canvas),
+                        MediaPipeLoader.detectPose(this.canvas),
+                    ]);
+
+                    const result = await Methods.method7_voting(
+                        segmentationResult,
+                        poseResult,
+                        this.canvas,
+                        cameraHeight,
+                        midP
+                    );
+
+                    if (result) {
+                        UIManager.displayResults(result, 'Method 7: Voting');
+                    } else {
+                        UIManager.updateStatus('No person detected', 'error');
+                    }
+
+                    UIManager.updateFps();
+
+                    this.processingFrame = false;
+
+                } catch (error) {
+                    console.error('Frame processing error:', error);
+                    this.processingFrame = false;
+                }
+
+                requestAnimationFrame(() => this.processFrame());
+            },
+        };
+
+        /**
+         * Start application when DOM is ready
+         */
+        document.addEventListener('DOMContentLoaded', () => {
+            App.init();
         });
     </script>
 </body>

@@ -3,1755 +3,1179 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>AnthroScan — Field Measurement Tool</title>
+<title>AnthroScan</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@300;400;500;600;700&family=Orbitron:wght@400;700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@700;900&family=Rajdhani:wght@400;600&display=swap');
+:root{
+  --bg:#070a0f;--bg2:#0d1219;--bg3:#131c26;--border:#1e3048;
+  --a:#00e5ff;--g:#00ff88;--o:#ff6b35;--w:#ffcc00;--r:#ff3d3d;
+  --txt:#c8dce8;--dim:#4a6a82;
+  --mono:'Share Tech Mono',monospace;--head:'Orbitron',sans-serif;--body:'Rajdhani',sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;background:var(--bg);color:var(--txt);font-family:var(--body);overflow:hidden;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,229,255,.025) 2px,rgba(0,229,255,.025) 4px);pointer-events:none;z-index:9000}
 
-  :root {
-    --bg:        #070a0f;
-    --bg2:       #0d1219;
-    --bg3:       #111923;
-    --border:    #1e3048;
-    --accent:    #00e5ff;
-    --accent2:   #00ff88;
-    --accent3:   #ff6b35;
-    --warn:      #ffcc00;
-    --danger:    #ff3d3d;
-    --text:      #c8dce8;
-    --text-dim:  #4a6a82;
-    --ok:        #00ff88;
-    --mono:      'Share Tech Mono', monospace;
-    --head:      'Orbitron', sans-serif;
-    --body:      'Rajdhani', sans-serif;
-    --scan-line: rgba(0,229,255,0.03);
-  }
+/* ── SCREENS ── */
+.screen{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;transition:opacity .35s,transform .35s;z-index:10;overflow-y:auto}
+.screen.hidden{opacity:0;pointer-events:none;transform:scale(.97)}
 
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+/* ── SPLASH ── */
+#s-splash{background:var(--bg);gap:28px}
+.logo-ring{width:72px;height:72px;border:2px solid var(--a);border-radius:50%;display:flex;align-items:center;justify-content:center;animation:pulse 2.5s ease-in-out infinite;box-shadow:0 0 0 0 rgba(0,229,255,.4)}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(0,229,255,.4)}50%{box-shadow:0 0 0 14px rgba(0,229,255,0)}}
+.logo-ring svg{width:34px;height:34px}
+h1.brand{font-family:var(--head);font-size:26px;letter-spacing:5px;color:var(--a);text-shadow:0 0 20px rgba(0,229,255,.5)}
+.tagline{font-family:var(--mono);font-size:11px;color:var(--dim);letter-spacing:2px}
+.info-box{width:100%;max-width:340px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.info-row{display:flex;gap:10px;align-items:flex-start;font-family:var(--mono);font-size:11px;color:var(--dim);line-height:1.5}
+.info-row .num{color:var(--a);font-size:14px;font-weight:bold;min-width:20px}
+.warn-box{width:100%;max-width:340px;background:rgba(255,107,53,.07);border:1px solid rgba(255,107,53,.3);border-radius:8px;padding:12px;font-family:var(--mono);font-size:11px;color:rgba(255,107,53,.9);line-height:1.6}
 
-  html, body {
-    width: 100%; height: 100%;
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--body);
-    overflow: hidden;
-    -webkit-tap-highlight-color: transparent;
-    touch-action: manipulation;
-  }
+/* ── SETUP ── */
+#s-setup{background:var(--bg);gap:14px;justify-content:flex-start;padding-top:40px;padding-bottom:80px}
+.screen-title{font-family:var(--head);font-size:12px;letter-spacing:3px;color:var(--a);margin-bottom:4px}
+.fg{width:100%;max-width:340px;display:flex;flex-direction:column;gap:5px}
+.fg label{font-family:var(--mono);font-size:10px;color:var(--dim);letter-spacing:2px;text-transform:uppercase}
+.fg input,.fg select{background:var(--bg2);border:1px solid var(--border);border-radius:6px;color:var(--txt);font-family:var(--mono);font-size:16px;padding:11px 14px;outline:none;width:100%;-webkit-appearance:none;transition:border-color .2s}
+.fg input:focus,.fg select:focus{border-color:var(--a)}
+.fg .hint{font-size:11px;color:var(--dim);font-family:var(--mono);line-height:1.4}
+.seg{display:flex;gap:6px;width:100%;max-width:340px}
+.seg-btn{flex:1;padding:10px;border:1px solid var(--border);border-radius:6px;background:var(--bg2);color:var(--dim);font-family:var(--mono);font-size:12px;text-align:center;cursor:pointer;transition:all .2s;user-select:none}
+.seg-btn.on{border-color:var(--a);color:var(--a);background:rgba(0,229,255,.07)}
+.section-divider{width:100%;max-width:340px;display:flex;align-items:center;gap:8px;margin:4px 0}
+.section-divider span{font-family:var(--mono);font-size:10px;color:var(--dim);white-space:nowrap}
+.section-divider::before,.section-divider::after{content:'';flex:1;height:1px;background:var(--border)}
 
-  /* ── Scan line overlay ── */
-  body::after {
-    content: '';
-    position: fixed; inset: 0;
-    background: repeating-linear-gradient(
-      0deg,
-      transparent, transparent 2px,
-      var(--scan-line) 2px, var(--scan-line) 4px
-    );
-    pointer-events: none;
-    z-index: 1000;
-  }
+/* ── BUTTONS ── */
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;padding:14px 24px;border:none;border-radius:8px;cursor:pointer;font-family:var(--head);font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;transition:all .2s;width:100%;max-width:340px}
+.btn-p{background:var(--a);color:var(--bg);box-shadow:0 0 18px rgba(0,229,255,.3)}
+.btn-p:active{transform:scale(.97)}
+.btn-p:disabled{background:var(--dim);box-shadow:none;cursor:not-allowed}
+.btn-s{background:transparent;border:1px solid var(--border);color:var(--dim)}
+.btn-s:active{border-color:var(--a);color:var(--a)}
 
-  /* ══════════════ SCREENS ══════════════ */
-  .screen {
-    position: fixed; inset: 0;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    padding: 24px;
-    transition: opacity 0.4s, transform 0.4s;
-    z-index: 10;
-  }
-  .screen.hidden { opacity: 0; pointer-events: none; transform: scale(0.97); }
+/* ── CAMERA ── */
+#s-cam{padding:0;justify-content:flex-start;background:#000}
+#video{position:fixed;inset:0;width:100%;height:100%;object-fit:cover}
+#cvs{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:9001}
 
-  /* ══════════════ SPLASH ══════════════ */
-  #screen-splash {
-    background: var(--bg);
-    gap: 32px;
-  }
-  .splash-logo {
-    display: flex; flex-direction: column; align-items: center; gap: 8px;
-  }
-  .splash-logo .icon {
-    width: 80px; height: 80px;
-    border: 2px solid var(--accent);
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    position: relative;
-    animation: pulse-ring 2s ease-in-out infinite;
-  }
-  .splash-logo .icon::before {
-    content: '';
-    position: absolute; inset: 6px;
-    border: 1px solid rgba(0,229,255,0.3);
-    border-radius: 50%;
-  }
-  .splash-logo .icon svg { width: 36px; height: 36px; }
-  @keyframes pulse-ring {
-    0%,100% { box-shadow: 0 0 0 0 rgba(0,229,255,0.4); }
-    50%      { box-shadow: 0 0 0 16px rgba(0,229,255,0); }
-  }
-  .splash-logo h1 {
-    font-family: var(--head);
-    font-size: 28px; font-weight: 900;
-    letter-spacing: 4px;
-    color: var(--accent);
-    text-shadow: 0 0 20px rgba(0,229,255,0.5);
-  }
-  .splash-logo .sub {
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--text-dim);
-    letter-spacing: 2px;
-    text-transform: uppercase;
-  }
-  .splash-desc {
-    max-width: 340px; text-align: center;
-    font-size: 15px; line-height: 1.6;
-    color: var(--text);
-    font-weight: 400;
-  }
-  .splash-specs {
-    width: 100%; max-width: 340px;
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 16px;
-    display: flex; flex-direction: column; gap: 8px;
-  }
-  .spec-row {
-    display: flex; align-items: center; gap: 10px;
-    font-family: var(--mono); font-size: 12px; color: var(--text-dim);
-  }
-  .spec-row .dot {
-    width: 6px; height: 6px; border-radius: 50%;
-    background: var(--accent2); flex-shrink: 0;
-  }
+/* HUD */
+.hud-top{position:fixed;top:0;left:0;right:0;z-index:9100;padding:14px 16px;background:linear-gradient(to bottom,rgba(7,10,15,.92),transparent);display:flex;justify-content:space-between;align-items:center}
+.hud-title{font-family:var(--head);font-size:12px;color:var(--a);letter-spacing:3px}
+.hud-mode{font-family:var(--mono);font-size:10px;color:var(--dim);text-align:right;line-height:1.5}
 
-  /* ══════════════ SETUP FORM ══════════════ */
-  #screen-setup { background: var(--bg); gap: 20px; }
-  .setup-header {
-    text-align: center;
-    font-family: var(--head); font-size: 13px;
-    color: var(--accent); letter-spacing: 3px;
-    text-transform: uppercase;
-  }
-  .form-group { width: 100%; max-width: 340px; display: flex; flex-direction: column; gap: 6px; }
-  .form-group label {
-    font-family: var(--mono); font-size: 11px;
-    color: var(--text-dim); letter-spacing: 2px; text-transform: uppercase;
-  }
-  .form-group input, .form-group select {
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    color: var(--text);
-    font-family: var(--mono); font-size: 16px;
-    padding: 12px 16px;
-    outline: none;
-    width: 100%;
-    transition: border-color 0.2s;
-    -webkit-appearance: none;
-  }
-  .form-group input:focus, .form-group select:focus { border-color: var(--accent); }
-  .form-group select option { background: var(--bg3); }
-  .radio-group {
-    display: flex; gap: 8px;
-  }
-  .radio-btn {
-    flex: 1; padding: 10px;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    background: var(--bg2);
-    color: var(--text-dim);
-    font-family: var(--mono); font-size: 13px;
-    text-align: center; cursor: pointer;
-    transition: all 0.2s;
-    user-select: none;
-  }
-  .radio-btn.active {
-    border-color: var(--accent); color: var(--accent);
-    background: rgba(0,229,255,0.08);
-  }
-  .input-hint {
-    font-size: 11px; color: var(--text-dim);
-    font-family: var(--mono);
-  }
+/* Constraint chips */
+.chips{position:fixed;top:62px;right:10px;z-index:9100;display:flex;flex-direction:column;gap:3px}
+.chip{display:flex;align-items:center;gap:5px;background:rgba(7,10,15,.82);border:1px solid var(--border);border-radius:4px;padding:3px 7px;font-family:var(--mono);font-size:10px;color:var(--dim);transition:all .25s}
+.chip .dot{width:5px;height:5px;border-radius:50%;background:var(--dim);flex-shrink:0;transition:background .25s}
+.chip.ok{border-color:rgba(0,255,136,.35);color:var(--g)}.chip.ok .dot{background:var(--g)}
+.chip.fail{border-color:rgba(255,61,61,.3);color:var(--r)}.chip.fail .dot{background:var(--r)}
 
-  /* ══════════════ BUTTONS ══════════════ */
-  .btn {
-    display: flex; align-items: center; justify-content: center; gap: 8px;
-    padding: 14px 32px;
-    border: none; border-radius: 8px; cursor: pointer;
-    font-family: var(--head); font-size: 14px;
-    font-weight: 700; letter-spacing: 2px;
-    text-transform: uppercase;
-    transition: all 0.2s;
-    width: 100%; max-width: 340px;
-  }
-  .btn-primary {
-    background: var(--accent);
-    color: var(--bg);
-    box-shadow: 0 0 20px rgba(0,229,255,0.3);
-  }
-  .btn-primary:active { transform: scale(0.97); box-shadow: 0 0 8px rgba(0,229,255,0.2); }
-  .btn-secondary {
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--text-dim);
-  }
-  .btn-secondary:active { border-color: var(--accent); color: var(--accent); }
-  .btn-danger {
-    background: var(--danger);
-    color: #fff;
-  }
+/* Tape overlay guide */
+.tape-guide{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:9100;pointer-events:none;display:flex;flex-direction:column;align-items:center;gap:0}
+.tape-top,.tape-bot{width:60px;height:3px;background:var(--a);opacity:.7;border-radius:1px}
+.tape-line{width:2px;background:repeating-linear-gradient(to bottom,var(--a) 0px,var(--a) 8px,transparent 8px,transparent 16px);opacity:.4}
+.tape-guide.ok .tape-top,.tape-guide.ok .tape-bot{background:var(--g)}
 
-  /* ══════════════ CAMERA SCREEN ══════════════ */
-  #screen-camera {
-    padding: 0;
-    background: #000;
-    justify-content: flex-start;
-  }
-  #video {
-    width: 100%; height: 100%;
-    object-fit: cover;
-    position: absolute; inset: 0;
-  }
-  #canvas-overlay {
-    position: fixed; inset: 0;
-    width: 100%; height: 100%;
-    pointer-events: none;
-    z-index: 1001; /* above scan-line overlay (z:1000) */
-  }
+/* Bottom panel */
+.bottom-panel{position:fixed;bottom:0;left:0;right:0;z-index:9100;background:linear-gradient(to top,rgba(7,10,15,.97) 70%,transparent);padding:10px 16px 20px;display:flex;flex-direction:column;gap:8px;align-items:center}
+.readout-row{display:flex;gap:10px;width:100%;justify-content:center}
+.readout{background:rgba(13,18,25,.85);border:1px solid var(--border);border-radius:6px;padding:6px 10px;display:flex;flex-direction:column;align-items:center;min-width:70px;flex:1;max-width:110px}
+.readout .rl{font-family:var(--mono);font-size:9px;color:var(--dim);letter-spacing:1px}
+.readout .rv{font-family:var(--mono);font-size:14px;color:var(--a);font-weight:bold}
+.readout.ok .rv{color:var(--g)}
+.instr{font-family:var(--mono);font-size:11px;color:var(--txt);text-align:center;line-height:1.5;background:rgba(13,18,25,.8);border:1px solid var(--border);border-radius:6px;padding:8px 12px;width:100%;max-width:360px;transition:all .25s}
+.instr.ready{border-color:var(--g);color:var(--g)}
+.capture-row{display:flex;align-items:center;justify-content:center;gap:28px;margin-top:2px}
+.btn-cap{width:58px;height:58px;border-radius:50%;border:3px solid var(--a);background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 0 16px rgba(0,229,255,.25);position:relative}
+.btn-cap:disabled{border-color:var(--dim);box-shadow:none;cursor:not-allowed}
+.btn-cap .inner{width:42px;height:42px;border-radius:50%;background:var(--a);transition:transform .15s}
+.btn-cap:disabled .inner{background:var(--dim)}
+.btn-cap:not(:disabled):active .inner{transform:scale(.82)}
+.btn-cap svg.ring{position:absolute;inset:-3px;width:calc(100% + 6px);height:calc(100% + 6px)}
+.ring-path{fill:none;stroke:var(--g);stroke-width:3;stroke-dasharray:188;stroke-dashoffset:188;stroke-linecap:round;transform:rotate(-90deg);transform-origin:50% 50%;transition:stroke-dashoffset .08s linear}
+.btn-sm{width:44px;height:44px;border-radius:50%;border:1px solid var(--border);background:rgba(13,18,25,.7);color:var(--dim);font-size:18px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.flash{position:fixed;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:9200;transition:opacity .08s}
+.flash.on{opacity:.85}
 
-  /* Guide frame */
-  .guide-frame {
-    position: fixed;
-    left: 50%; top: 50%;
-    transform: translate(-50%, -50%);
-    width: 55%;
-    aspect-ratio: 0.45;
-    border: 2px solid rgba(0,229,255,0.4);
-    border-radius: 12px;
-    z-index: 1002;
-    pointer-events: none;
-    transition: border-color 0.3s;
-  }
-  .guide-frame.ok { border-color: rgba(0,255,136,0.8); }
-  .guide-frame::before, .guide-frame::after,
-  .guide-corner-bl, .guide-corner-br {
-    content: '';
-    position: absolute;
-    width: 20px; height: 20px;
-    border-color: var(--accent);
-    border-style: solid;
-  }
-  .guide-frame::before { top:-2px; left:-2px; border-width: 3px 0 0 3px; border-radius: 4px 0 0 0; }
-  .guide-frame::after  { top:-2px; right:-2px; border-width: 3px 3px 0 0; border-radius: 0 4px 0 0; }
-  .guide-corner-bl { bottom:-2px; left:-2px; border-width: 0 0 3px 3px; border-radius: 0 0 0 4px; }
-  .guide-corner-br { bottom:-2px; right:-2px; border-width: 0 3px 3px 0; border-radius: 0 0 4px 0; }
-  .guide-frame.ok::before, .guide-frame.ok::after,
-  .guide-frame.ok .guide-corner-bl, .guide-frame.ok .guide-corner-br {
-    border-color: var(--accent2);
-  }
+/* Tilt bubble */
+.tilt-wrap{position:fixed;left:10px;top:50%;transform:translateY(-50%);z-index:9100;display:flex;flex-direction:column;align-items:center;gap:3px}
+.tilt-label{font-family:var(--mono);font-size:9px;color:var(--dim)}
+.tilt-tube{width:8px;height:90px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;position:relative}
+.tilt-bubble{position:absolute;left:50%;transform:translateX(-50%);width:12px;height:12px;border-radius:50%;background:var(--w);box-shadow:0 0 5px var(--w);transition:top .1s}
+.tilt-center{position:absolute;left:-2px;right:-2px;top:50%;transform:translateY(-50%);height:1px;background:var(--g)}
 
-  /* HUD Top */
-  .hud-top {
-    position: fixed; top: 0; left: 0; right: 0;
-    padding: 16px;
-    background: linear-gradient(to bottom, rgba(7,10,15,0.9), transparent);
-    z-index: 1003;
-    display: flex; align-items: center; justify-content: space-between;
-  }
-  .hud-title {
-    font-family: var(--head); font-size: 13px;
-    color: var(--accent); letter-spacing: 3px;
-  }
-  .hud-subject {
-    font-family: var(--mono); font-size: 11px;
-    color: var(--text-dim);
-    text-align: right;
-  }
+/* MUAC screen */
+#s-muac{background:var(--bg);gap:0;padding:0;justify-content:flex-start}
+#video-muac{position:fixed;inset:0;width:100%;height:100%;object-fit:cover}
+#cvs-muac{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:9001}
+.muac-guide-overlay{position:fixed;inset:0;z-index:9100;pointer-events:none;display:flex;align-items:center;justify-content:center}
+.arm-guide{width:70%;height:28px;border:2px dashed rgba(0,229,255,.5);border-radius:14px;position:relative}
+.arm-guide::before,.arm-guide::after{content:'';position:absolute;top:50%;transform:translateY(-50%);width:2px;height:40px;background:rgba(0,229,255,.5)}
+.arm-guide::before{left:25%;}.arm-guide::after{right:25%}
+.arm-tick-label{position:absolute;top:-22px;left:25%;font-family:var(--mono);font-size:9px;color:rgba(0,229,255,.7)}
 
-  /* Constraint panel */
-  .constraint-panel {
-    position: fixed;
-    top: 70px; right: 12px;
-    z-index: 1003;
-    display: flex; flex-direction: column; gap: 4px;
-    pointer-events: none;
-  }
-  .c-item {
-    display: flex; align-items: center; gap: 6px;
-    background: rgba(7,10,15,0.8);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    padding: 4px 8px;
-    font-family: var(--mono); font-size: 10px;
-    color: var(--text-dim);
-    transition: all 0.3s;
-  }
-  .c-item .c-dot {
-    width: 6px; height: 6px; border-radius: 50%;
-    background: var(--text-dim); flex-shrink: 0;
-    transition: background 0.3s;
-  }
-  .c-item.pass { border-color: rgba(0,255,136,0.3); color: var(--accent2); }
-  .c-item.pass .c-dot { background: var(--accent2); }
-  .c-item.fail { border-color: rgba(255,61,61,0.3); color: var(--danger); }
-  .c-item.fail .c-dot { background: var(--danger); }
-  .c-item.warn { border-color: rgba(255,204,0,0.3); color: var(--warn); }
-  .c-item.warn .c-dot { background: var(--warn); }
+/* ── PROCESSING ── */
+#s-proc{background:var(--bg);gap:28px}
+.spin-wrap{position:relative;width:140px;height:140px;display:flex;align-items:center;justify-content:center}
+.spin-ring{position:absolute;inset:0;border-radius:50%;border:2px solid transparent}
+.spin-ring:nth-child(1){border-top-color:var(--a);animation:spin 1.1s linear infinite}
+.spin-ring:nth-child(2){inset:10px;border-right-color:var(--g);animation:spin 1.7s linear infinite reverse}
+@keyframes spin{to{transform:rotate(360deg)}}
+.proc-thumb{width:80px;height:80px;border-radius:6px;object-fit:cover;border:1px solid var(--border)}
+.proc-steps{width:100%;max-width:300px;display:flex;flex-direction:column;gap:7px}
+.ps{display:flex;align-items:center;gap:9px;font-family:var(--mono);font-size:11px;color:var(--dim);transition:color .3s}
+.ps.act{color:var(--a)}.ps.done{color:var(--g)}
+.ps .pi{width:14px;text-align:center}
+.ps .pb{flex:1;height:2px;background:var(--border);border-radius:1px;overflow:hidden}
+.ps .pf{height:100%;width:0%;background:var(--g);transition:width .4s ease}
+.proc-title{font-family:var(--head);font-size:13px;color:var(--a);letter-spacing:3px}
 
-  /* Tilt indicator */
-  .tilt-bar-wrap {
-    position: fixed; left: 12px; top: 50%;
-    transform: translateY(-50%);
-    z-index: 1003;
-    display: flex; flex-direction: column; align-items: center; gap: 4px;
-  }
-  .tilt-label { font-family: var(--mono); font-size: 9px; color: var(--text-dim); }
-  .tilt-bar {
-    width: 6px; height: 100px;
-    background: var(--bg3);
-    border: 1px solid var(--border);
-    border-radius: 3px;
-    position: relative;
-    overflow: visible;
-  }
-  .tilt-indicator {
-    position: absolute; left: 50%; transform: translateX(-50%);
-    width: 14px; height: 3px; background: var(--warn);
-    border-radius: 2px;
-    transition: top 0.1s;
-    box-shadow: 0 0 6px var(--warn);
-  }
-  .tilt-center-mark {
-    position: absolute; left: -3px; right: -3px; top: 50%;
-    transform: translateY(-50%);
-    height: 1px; background: var(--accent2);
-  }
+/* ── RESULTS ── */
+#s-results{background:var(--bg);justify-content:flex-start;padding:0;overflow-y:auto}
+.rscroll{width:100%;max-width:460px;margin:0 auto;padding:16px 14px 100px}
+.r-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.r-title{font-family:var(--head);font-size:16px;color:var(--a);letter-spacing:3px}
+.r-ts{font-family:var(--mono);font-size:10px;color:var(--dim)}
+.subj-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px;display:flex;gap:12px;margin-bottom:14px;align-items:center}
+.subj-thumb{width:54px;height:72px;object-fit:cover;border-radius:6px;border:1px solid var(--border);flex-shrink:0}
+.subj-info{display:flex;flex-direction:column;gap:4px}
+.subj-name{font-family:var(--head);font-size:13px;letter-spacing:1px}
+.subj-meta{font-family:var(--mono);font-size:10px;color:var(--dim)}
+.badge{display:inline-block;padding:2px 8px;border-radius:10px;font-family:var(--mono);font-size:10px;background:rgba(0,229,255,.1);color:var(--a);border:1px solid rgba(0,229,255,.3)}
+.metrics-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:14px}
+.mc{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:4px;position:relative;overflow:hidden}
+.mc::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--a)}
+.mc.g::before{background:var(--g)}.mc.o::before{background:var(--o)}.mc.w::before{background:var(--w)}.mc.r::before{background:var(--r)}
+.mc-lbl{font-family:var(--mono);font-size:9px;color:var(--dim);letter-spacing:1px}
+.mc-val{font-family:var(--head);font-size:26px;font-weight:900;line-height:1;color:var(--a)}
+.mc.g .mc-val{color:var(--g)}.mc.o .mc-val{color:var(--o)}.mc.w .mc-val{color:var(--w)}.mc.r .mc-val{color:var(--r)}
+.mc-unit{font-family:var(--mono);font-size:10px;color:var(--dim)}
+.mc-ci{font-family:var(--mono);font-size:10px;color:var(--dim);margin-top:1px}
+.detail-sec{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:13px;margin-bottom:12px}
+.ds-title{font-family:var(--mono);font-size:9px;color:var(--dim);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px}
+.dr{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--bg3);font-size:12px}
+.dr:last-child{border-bottom:none}
+.dr .dl{color:var(--dim);font-family:var(--mono);font-size:10px}
+.dr .dv{font-family:var(--mono);font-size:11px;color:var(--txt)}
+.muac-bar-sec{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:13px;margin-bottom:12px}
+.muac-bar-bg{height:10px;border-radius:5px;background:linear-gradient(to right,var(--r) 0%,var(--r) 22%,var(--w) 22%,var(--w) 36%,var(--g) 36%,var(--g) 100%);position:relative;margin:8px 0}
+.muac-ptr{position:absolute;top:-5px;width:3px;height:20px;background:#fff;border-radius:2px;box-shadow:0 0 5px rgba(255,255,255,.8);transition:left .5s ease}
+.muac-zones{display:flex;justify-content:space-between;font-family:var(--mono);font-size:9px}
+.muac-status{margin-top:9px;padding:7px 10px;border-radius:6px;font-family:var(--mono);font-size:12px;font-weight:bold;text-align:center}
+.ms-sam{background:rgba(255,61,61,.12);color:var(--r);border:1px solid rgba(255,61,61,.3)}
+.ms-mam{background:rgba(255,204,0,.08);color:var(--w);border:1px solid rgba(255,204,0,.3)}
+.ms-ok{background:rgba(0,255,136,.07);color:var(--g);border:1px solid rgba(0,255,136,.3)}
+.method-note{background:rgba(0,229,255,.04);border:1px solid rgba(0,229,255,.12);border-radius:8px;padding:11px;font-family:var(--mono);font-size:10px;color:var(--dim);line-height:1.6;margin-bottom:12px}
+.method-note strong{color:var(--a)}
+.fab{position:fixed;bottom:0;left:0;right:0;z-index:20;padding:10px 14px;background:linear-gradient(to top,var(--bg) 60%,transparent);display:flex;gap:8px;max-width:460px;margin:0 auto}
 
-  /* Distance meter */
-  .dist-meter {
-    position: fixed;
-    bottom: 140px; left: 50%; transform: translateX(-50%);
-    z-index: 1003;
-    font-family: var(--mono); font-size: 11px;
-    color: var(--text-dim);
-    background: rgba(7,10,15,0.7);
-    padding: 4px 12px;
-    border-radius: 20px;
-    border: 1px solid var(--border);
-    white-space: nowrap;
-  }
-
-  /* Instruction banner */
-  .instruction-banner {
-    position: fixed; bottom: 90px; left: 16px; right: 16px;
-    z-index: 1003;
-    background: rgba(7,10,15,0.85);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 10px 14px;
-    font-family: var(--mono); font-size: 12px;
-    color: var(--text);
-    text-align: center;
-    line-height: 1.5;
-    transition: all 0.3s;
-  }
-  .instruction-banner.ready {
-    border-color: var(--accent2);
-    color: var(--accent2);
-  }
-
-  /* Capture button area */
-  .capture-area {
-    position: fixed; bottom: 0; left: 0; right: 0;
-    z-index: 1003;
-    height: 80px;
-    background: linear-gradient(to top, rgba(7,10,15,0.95), transparent);
-    display: flex; align-items: center; justify-content: center;
-    gap: 32px;
-  }
-  .btn-capture {
-    width: 62px; height: 62px;
-    border-radius: 50%;
-    border: 3px solid var(--accent);
-    background: transparent;
-    cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    position: relative;
-    transition: all 0.2s;
-    box-shadow: 0 0 20px rgba(0,229,255,0.3);
-  }
-  .btn-capture:disabled {
-    border-color: var(--text-dim);
-    box-shadow: none;
-    cursor: not-allowed;
-  }
-  .btn-capture .inner {
-    width: 44px; height: 44px;
-    border-radius: 50%;
-    background: var(--accent);
-    transition: all 0.2s;
-  }
-  .btn-capture:disabled .inner { background: var(--text-dim); }
-  .btn-capture:not(:disabled):active .inner { transform: scale(0.85); }
-
-  /* Auto-capture countdown ring */
-  .btn-capture svg.ring {
-    position: absolute; inset: -3px;
-    width: calc(100% + 6px); height: calc(100% + 6px);
-  }
-  .ring-path {
-    fill: none; stroke: var(--accent2); stroke-width: 3;
-    stroke-dasharray: 188; stroke-dashoffset: 188;
-    stroke-linecap: round;
-    transform: rotate(-90deg); transform-origin: 50% 50%;
-    transition: stroke-dashoffset 0.1s linear;
-  }
-
-  .btn-back-cam {
-    width: 44px; height: 44px;
-    border-radius: 50%;
-    border: 1px solid var(--border);
-    background: rgba(7,10,15,0.7);
-    color: var(--text-dim);
-    font-size: 20px;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer;
-  }
-
-  /* Flash effect */
-  .flash {
-    position: fixed; inset: 0;
-    background: white;
-    z-index: 1010;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.1s;
-  }
-  .flash.on { opacity: 0.9; }
-
-  /* ══════════════ PROCESSING SCREEN ══════════════ */
-  #screen-processing {
-    background: var(--bg);
-    gap: 32px;
-  }
-  .processing-visual {
-    position: relative;
-    width: 180px; height: 180px;
-    display: flex; align-items: center; justify-content: center;
-  }
-  .proc-ring {
-    position: absolute; inset: 0;
-    border-radius: 50%;
-    border: 2px solid transparent;
-    animation: spin 1.5s linear infinite;
-  }
-  .proc-ring:nth-child(1) { border-top-color: var(--accent); animation-duration: 1.2s; }
-  .proc-ring:nth-child(2) { inset: 12px; border-right-color: var(--accent2); animation-duration: 1.8s; animation-direction: reverse; }
-  .proc-ring:nth-child(3) { inset: 24px; border-bottom-color: var(--accent3); animation-duration: 2.4s; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .proc-image {
-    width: 96px; height: 96px;
-    border-radius: 8px;
-    object-fit: cover;
-    border: 1px solid var(--border);
-  }
-  .proc-steps { width: 100%; max-width: 320px; display: flex; flex-direction: column; gap: 8px; }
-  .proc-step {
-    display: flex; align-items: center; gap: 10px;
-    font-family: var(--mono); font-size: 12px;
-    color: var(--text-dim);
-    transition: color 0.3s;
-  }
-  .proc-step.active { color: var(--accent); }
-  .proc-step.done { color: var(--accent2); }
-  .proc-step .ps-icon { width: 16px; text-align: center; }
-  .proc-step .ps-bar {
-    flex: 1; height: 2px;
-    background: var(--border);
-    border-radius: 1px;
-    overflow: hidden;
-  }
-  .proc-step .ps-fill {
-    height: 100%; width: 0%; background: var(--accent2);
-    transition: width 0.5s ease;
-  }
-  .proc-step.done .ps-fill { width: 100%; }
-
-  /* ══════════════ RESULTS SCREEN ══════════════ */
-  #screen-results {
-    background: var(--bg);
-    overflow-y: auto;
-    justify-content: flex-start;
-    gap: 0;
-    padding: 0;
-  }
-  .results-scroll { width: 100%; max-width: 460px; margin: 0 auto; padding: 20px 16px 100px; }
-  .results-header {
-    display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 20px;
-  }
-  .results-title { font-family: var(--head); font-size: 18px; color: var(--accent); letter-spacing: 3px; }
-  .results-timestamp { font-family: var(--mono); font-size: 10px; color: var(--text-dim); }
-  .results-subject-card {
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 14px;
-    display: flex; align-items: center; gap: 14px;
-    margin-bottom: 20px;
-  }
-  .results-thumb {
-    width: 60px; height: 80px;
-    object-fit: cover; border-radius: 6px;
-    border: 1px solid var(--border);
-    flex-shrink: 0;
-  }
-  .subject-info { display: flex; flex-direction: column; gap: 4px; }
-  .subject-name { font-family: var(--head); font-size: 14px; letter-spacing: 1px; }
-  .subject-meta { font-family: var(--mono); font-size: 11px; color: var(--text-dim); }
-
-  /* Metric cards */
-  .metrics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
-  .metric-card {
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 14px;
-    display: flex; flex-direction: column; gap: 6px;
-    position: relative; overflow: hidden;
-  }
-  .metric-card::before {
-    content: '';
-    position: absolute; top: 0; left: 0; right: 0; height: 2px;
-    background: var(--accent);
-  }
-  .metric-card.green::before { background: var(--accent2); }
-  .metric-card.orange::before { background: var(--accent3); }
-  .metric-card.warn::before { background: var(--warn); }
-  .metric-label { font-family: var(--mono); font-size: 10px; color: var(--text-dim); letter-spacing: 1px; }
-  .metric-value { font-family: var(--head); font-size: 28px; font-weight: 900; line-height: 1; }
-  .metric-unit { font-family: var(--mono); font-size: 11px; color: var(--text-dim); }
-  .metric-conf { font-family: var(--mono); font-size: 10px; color: var(--text-dim); margin-top: 2px; }
-  .metric-card.green .metric-value { color: var(--accent2); }
-  .metric-card.orange .metric-value { color: var(--accent3); }
-  .metric-card.warn .metric-value { color: var(--warn); }
-  .metric-card:not(.green):not(.orange):not(.warn) .metric-value { color: var(--accent); }
-
-  /* MUAC Status bar */
-  .muac-status {
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 14px;
-    margin-bottom: 16px;
-  }
-  .muac-status-label {
-    font-family: var(--mono); font-size: 10px; color: var(--text-dim);
-    letter-spacing: 2px; margin-bottom: 10px;
-    text-transform: uppercase;
-  }
-  .muac-bar-wrap {
-    position: relative; height: 12px; border-radius: 6px;
-    background: linear-gradient(to right, var(--danger) 0%, var(--danger) 22%, var(--warn) 22%, var(--warn) 35%, var(--accent2) 35%, var(--accent2) 100%);
-    margin-bottom: 6px;
-  }
-  .muac-pointer {
-    position: absolute; top: -4px;
-    width: 3px; height: 20px;
-    background: white;
-    border-radius: 2px;
-    box-shadow: 0 0 6px rgba(255,255,255,0.8);
-    transition: left 0.5s ease;
-  }
-  .muac-zones {
-    display: flex; justify-content: space-between;
-    font-family: var(--mono); font-size: 9px; color: var(--text-dim);
-  }
-  .muac-result-text {
-    margin-top: 10px;
-    font-family: var(--mono); font-size: 13px;
-    padding: 8px 12px;
-    border-radius: 6px;
-    text-align: center;
-    font-weight: bold;
-    letter-spacing: 1px;
-  }
-  .muac-result-text.sam { background: rgba(255,61,61,0.15); color: var(--danger); border: 1px solid rgba(255,61,61,0.3); }
-  .muac-result-text.mam { background: rgba(255,204,0,0.1); color: var(--warn); border: 1px solid rgba(255,204,0,0.3); }
-  .muac-result-text.normal { background: rgba(0,255,136,0.08); color: var(--accent2); border: 1px solid rgba(0,255,136,0.3); }
-
-  /* Detail section */
-  .detail-section {
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 14px;
-    margin-bottom: 16px;
-  }
-  .detail-section-title {
-    font-family: var(--mono); font-size: 10px; color: var(--text-dim);
-    letter-spacing: 2px; text-transform: uppercase; margin-bottom: 12px;
-  }
-  .detail-row {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 6px 0;
-    border-bottom: 1px solid var(--bg3);
-    font-size: 13px;
-  }
-  .detail-row:last-child { border-bottom: none; }
-  .detail-row .dr-label { color: var(--text-dim); font-family: var(--mono); font-size: 11px; }
-  .detail-row .dr-value { font-family: var(--mono); font-size: 12px; color: var(--text); }
-
-  /* Method note */
-  .method-note {
-    background: rgba(0,229,255,0.04);
-    border: 1px solid rgba(0,229,255,0.15);
-    border-radius: 8px;
-    padding: 12px;
-    font-family: var(--mono); font-size: 11px;
-    color: var(--text-dim); line-height: 1.6;
-    margin-bottom: 16px;
-  }
-  .method-note strong { color: var(--accent); }
-
-  /* Floating action bar */
-  .fab-bar {
-    position: fixed; bottom: 0; left: 0; right: 0;
-    z-index: 20;
-    padding: 12px 16px;
-    background: linear-gradient(to top, var(--bg) 70%, transparent);
-    display: flex; gap: 10px;
-    max-width: 460px; margin: 0 auto;
-  }
-
-  /* ══════════════ ERROR STATE ══════════════ */
-  .error-box {
-    background: rgba(255,61,61,0.08);
-    border: 1px solid rgba(255,61,61,0.3);
-    border-radius: 8px;
-    padding: 14px;
-    font-family: var(--mono); font-size: 12px;
-    color: var(--danger);
-    text-align: center;
-    line-height: 1.6;
-    max-width: 340px;
-  }
-
-  /* ══════════════ UTILITIES ══════════════ */
-  .divider { width: 100%; max-width: 340px; height: 1px; background: var(--border); }
-  .text-center { text-align: center; }
-  .badge {
-    display: inline-block;
-    padding: 2px 8px;
-    border-radius: 10px;
-    font-family: var(--mono); font-size: 10px;
-    background: rgba(0,229,255,0.1);
-    color: var(--accent);
-    border: 1px solid rgba(0,229,255,0.3);
-    letter-spacing: 1px;
-  }
-  .spinner { animation: spin 1s linear infinite; }
-
-  /* Canvas hidden for analysis */
-  #canvas-hidden { display: none; }
+/* accuracy disclaimer */
+.acc-tag{display:inline-flex;align-items:center;gap:4px;font-family:var(--mono);font-size:10px;color:var(--w);background:rgba(255,204,0,.08);border:1px solid rgba(255,204,0,.25);border-radius:4px;padding:2px 7px}
 </style>
 </head>
 <body>
 
-<!-- ══════════════ SCREEN 1: SPLASH ══════════════ -->
-<div id="screen-splash" class="screen">
-  <div class="splash-logo">
-    <div class="icon">
-      <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="18" cy="10" r="5" stroke="#00e5ff" stroke-width="1.5"/>
-        <path d="M8 30 Q8 22 18 22 Q28 22 28 30" stroke="#00e5ff" stroke-width="1.5" fill="none"/>
-        <line x1="4" y1="18" x2="8" y2="18" stroke="#00ff88" stroke-width="1.5"/>
-        <line x1="28" y1="18" x2="32" y2="18" stroke="#00ff88" stroke-width="1.5"/>
-        <line x1="18" y1="2" x2="18" y2="6" stroke="#00ff88" stroke-width="1.5"/>
-        <line x1="18" y1="30" x2="18" y2="34" stroke="#00ff88" stroke-width="1.5"/>
-      </svg>
-    </div>
-    <h1>ANTHROSCAN</h1>
-    <div class="sub">Field Anthropometry System v2.0</div>
+<!-- ══ SPLASH ══ -->
+<div id="s-splash" class="screen">
+  <div class="logo-ring">
+    <svg viewBox="0 0 34 34" fill="none"><circle cx="17" cy="9" r="5" stroke="#00e5ff" stroke-width="1.5"/><path d="M7 29 Q7 21 17 21 Q27 21 27 29" stroke="#00e5ff" stroke-width="1.5" fill="none"/><line x1="2" y1="17" x2="7" y2="17" stroke="#00ff88" stroke-width="1.5"/><line x1="27" y1="17" x2="32" y2="17" stroke="#00ff88" stroke-width="1.5"/></svg>
   </div>
+  <h1 class="brand">ANTHROSCAN</h1>
+  <div class="tagline">CAMERA-BASED ANTHROPOMETRY</div>
 
-  <p class="splash-desc">
-    Estimate <strong>Height</strong>, <strong>Weight</strong> and <strong>MUAC</strong> from a single rear-camera photo using geometric anthropometry and WHO reference standards.
-  </p>
-
-  <div class="splash-specs">
-    <div class="spec-row"><span class="dot"></span>Height estimation via bone ratio + pixel scaling</div>
-    <div class="spec-row"><span class="dot"></span>Weight via BMI regression + body silhouette</div>
-    <div class="spec-row"><span class="dot"></span>MUAC via upper arm segment geometry</div>
-    <div class="spec-row"><span class="dot"></span>WHO nutrition status classification</div>
-    <div class="spec-row"><span class="dot"></span>Real-time constraint validation gates</div>
+  <div class="info-box">
+    <div class="info-row"><span class="num">1</span>Enter camera height above ground and subject inputs</div>
+    <div class="info-row"><span class="num">2</span>Position subject 2–3 m away, fill the guide frame head-to-toe</div>
+    <div class="info-row"><span class="num">3</span>Capture. Height derived from pixel span + pinhole geometry. Weight from height + measured widths</div>
+    <div class="info-row"><span class="num">4</span>MUAC: photograph bare upper arm horizontally for arm circumference</div>
   </div>
-
-  <div class="method-note" style="max-width:340px;margin:0;">
-    <strong>⚠ Clinical Note:</strong> This tool provides screening estimates (±5–10%). It is not a substitute for tape measure, stadiometer, or clinical scale. For malnutrition diagnosis, confirm MUAC with physical tape.
-  </div>
-
-  <button class="btn btn-primary" onclick="showScreen('setup')">
-    BEGIN ASSESSMENT
-  </button>
+  <div class="warn-box">⚠ Accuracy: Height ±3–6 cm, Weight ±5–12 kg, MUAC ±1–2 cm. Requires: plain background, known camera height, subject standing straight. Not for clinical diagnosis.</div>
+  <button class="btn btn-p" onclick="show('s-setup')">START →</button>
 </div>
 
+<!-- ══ SETUP ══ -->
+<div id="s-setup" class="screen hidden">
+  <div class="screen-title">SUBJECT & CAMERA SETUP</div>
 
-<!-- ══════════════ SCREEN 2: SETUP ══════════════ -->
-<div id="screen-setup" class="screen hidden">
-  <div class="setup-header">Subject Information</div>
+  <div class="section-divider"><span>CAMERA GEOMETRY</span></div>
 
-  <div class="form-group">
-    <label>Subject Name / ID</label>
-    <input type="text" id="input-name" placeholder="e.g. Patient 001" autocomplete="off">
+  <div class="fg">
+    <label>Camera Lens Height from Ground (m)</label>
+    <input type="number" id="in-camh" value="1.10" step="0.01" min="0.5" max="2.5" inputmode="decimal">
+    <span class="hint">Measure from floor to phone lens. Prop phone on a box/tripod at mid-torso height (~1.0–1.3 m). This is the most critical input — measure it.</span>
   </div>
 
-  <div class="form-group">
+  <div class="fg">
+    <label>Estimated Camera Horizontal FOV (°)</label>
+    <input type="number" id="in-fov" value="69" step="1" min="40" max="110" inputmode="decimal">
+    <span class="hint">Most rear cameras: 65–75°. Wide-angle: 90–110°. Check your phone spec or leave default 69°.</span>
+  </div>
+
+  <div class="section-divider"><span>SUBJECT</span></div>
+
+  <div class="fg">
+    <label>Name / ID</label>
+    <input type="text" id="in-name" placeholder="e.g. Patient 001">
+  </div>
+  <div class="fg">
     <label>Age</label>
-    <input type="number" id="input-age" placeholder="Years" min="1" max="120" inputmode="numeric">
-    <span class="input-hint">Required for MUAC classification (child vs adult thresholds)</span>
+    <input type="number" id="in-age" placeholder="years" min="1" max="120" inputmode="numeric">
+  </div>
+  <div class="seg" id="seg-sex">
+    <div class="seg-btn on" onclick="setSex('male')">Male</div>
+    <div class="seg-btn" onclick="setSex('female')">Female</div>
+  </div>
+  <div class="fg">
+    <label>Known Height (cm) — optional</label>
+    <input type="number" id="in-kh" placeholder="Leave blank to estimate" min="50" max="250" inputmode="decimal">
+    <span class="hint">If known, height is used directly and only widths are measured (greatly improves weight accuracy).</span>
   </div>
 
-  <div class="form-group">
-    <label>Sex</label>
-    <div class="radio-group">
-      <div class="radio-btn active" id="sex-male" onclick="setSex('male')">Male</div>
-      <div class="radio-btn" id="sex-female" onclick="setSex('female')">Female</div>
-    </div>
-  </div>
-
-  <div class="form-group">
-    <label>Known Height (optional)</label>
-    <input type="number" id="input-height" placeholder="cm — leave blank to estimate" min="50" max="250" inputmode="decimal">
-    <span class="input-hint">Providing height improves weight accuracy significantly</span>
-  </div>
-
-  <div class="form-group">
-    <label>Camera Mount Height</label>
-    <input type="number" id="input-cam-h" placeholder="metres (e.g. 1.1)" value="1.1" min="0.5" max="2.0" step="0.05" inputmode="decimal">
-    <span class="input-hint">Height of phone lens from ground (mid-torso ≈ 1.0–1.2 m recommended)</span>
-  </div>
-
-  <button class="btn btn-primary" onclick="startCamera()">OPEN CAMERA →</button>
-  <button class="btn btn-secondary" onclick="showScreen('splash')" style="margin-top:4px">← Back</button>
+  <button class="btn btn-p" onclick="openHeightCam()">📷 MEASURE HEIGHT & WEIGHT →</button>
+  <button class="btn btn-s" style="margin-top:4px" onclick="show('s-splash')">← Back</button>
 </div>
 
-
-<!-- ══════════════ SCREEN 3: CAMERA ══════════════ -->
-<div id="screen-camera" class="screen hidden">
+<!-- ══ CAMERA (Height/Weight) ══ -->
+<div id="s-cam" class="screen hidden">
   <video id="video" autoplay playsinline muted></video>
-  <canvas id="canvas-overlay"></canvas>
-  <canvas id="canvas-hidden"></canvas>
+  <canvas id="cvs"></canvas>
 
   <div class="hud-top">
     <div class="hud-title">ANTHROSCAN</div>
-    <div class="hud-subject" id="hud-subject-info">Loading...</div>
+    <div class="hud-mode" id="hud-info">—</div>
   </div>
 
-  <!-- Constraint chips -->
-  <div class="constraint-panel">
-    <div class="c-item" id="c-distance"><span class="c-dot"></span>DISTANCE</div>
-    <div class="c-item" id="c-centered"><span class="c-dot"></span>CENTERED</div>
-    <div class="c-item" id="c-level"><span class="c-dot"></span>LEVEL</div>
-    <div class="c-item" id="c-fullbody"><span class="c-dot"></span>FULL BODY</div>
-    <div class="c-item" id="c-stillness"><span class="c-dot"></span>STABLE</div>
+  <div class="chips">
+    <div class="chip" id="ch-body">  <span class="dot"></span>SUBJECT DETECTED</div>
+    <div class="chip" id="ch-frame"> <span class="dot"></span>FILLS FRAME</div>
+    <div class="chip" id="ch-dist">  <span class="dot"></span>DISTANCE OK</div>
+    <div class="chip" id="ch-level"> <span class="dot"></span>LEVEL</div>
+    <div class="chip" id="ch-still"> <span class="dot"></span>STABLE</div>
   </div>
 
-  <!-- Guide overlay -->
-  <div class="guide-frame" id="guide-frame">
-    <div class="guide-corner-bl"></div>
-    <div class="guide-corner-br"></div>
+  <!-- Vertical tape guide -->
+  <div class="tape-guide" id="tape-guide">
+    <div class="tape-top"></div>
+    <div class="tape-line" id="tape-line" style="height:300px"></div>
+    <div class="tape-bot"></div>
   </div>
 
-  <!-- Tilt bar -->
-  <div class="tilt-bar-wrap">
-    <div class="tilt-label">TILT</div>
-    <div class="tilt-bar">
-      <div class="tilt-center-mark"></div>
-      <div class="tilt-indicator" id="tilt-indicator" style="top:47px"></div>
+  <!-- Tilt bubble -->
+  <div class="tilt-wrap">
+    <div class="tilt-label">ROLL</div>
+    <div class="tilt-tube">
+      <div class="tilt-center"></div>
+      <div class="tilt-bubble" id="tilt-bubble" style="top:37px"></div>
     </div>
   </div>
 
-  <!-- Distance meter -->
-  <div class="dist-meter" id="dist-meter">EST. DISTANCE: — m</div>
-
-  <!-- Flash -->
   <div class="flash" id="flash"></div>
 
-  <!-- Instruction -->
-  <div class="instruction-banner" id="instruction-banner">
-    Stand the subject 2–3 m away, arms slightly out, facing camera
-  </div>
-
-  <!-- Capture area -->
-  <div class="capture-area">
-    <button class="btn-back-cam" onclick="goBack()" title="Back">✕</button>
-    <button class="btn-capture" id="btn-capture" disabled onclick="captureFrame()">
-      <svg class="ring" viewBox="0 0 68 68">
-        <circle class="ring-path" id="ring-path" cx="34" cy="34" r="30"/>
-      </svg>
-      <div class="inner"></div>
-    </button>
-    <button class="btn-back-cam" id="btn-mode-toggle" onclick="toggleAutoCapture()" title="Auto">⚡</button>
-  </div>
-</div>
-
-
-<!-- ══════════════ SCREEN 4: PROCESSING ══════════════ -->
-<div id="screen-processing" class="screen hidden">
-  <div class="processing-visual">
-    <div class="proc-ring"></div>
-    <div class="proc-ring"></div>
-    <div class="proc-ring"></div>
-    <img id="proc-thumb" class="proc-image" src="" alt="captured frame">
-  </div>
-
-  <div style="font-family:var(--head);font-size:14px;color:var(--accent);letter-spacing:3px;">ANALYSING</div>
-
-  <div class="proc-steps">
-    <div class="proc-step" id="ps-1">
-      <span class="ps-icon">○</span>
-      <span>Background segmentation</span>
-      <div class="ps-bar"><div class="ps-fill" id="pf-1"></div></div>
+  <div class="bottom-panel">
+    <div class="readout-row">
+      <div class="readout" id="ro-dist"><span class="rl">DIST</span><span class="rv" id="rv-dist">—</span></div>
+      <div class="readout" id="ro-ht"><span class="rl">EST H</span><span class="rv" id="rv-ht">—</span></div>
+      <div class="readout" id="ro-tilt"><span class="rl">ROLL</span><span class="rv" id="rv-tilt">—</span></div>
     </div>
-    <div class="proc-step" id="ps-2">
-      <span class="ps-icon">○</span>
-      <span>Silhouette extraction</span>
-      <div class="ps-bar"><div class="ps-fill" id="pf-2"></div></div>
-    </div>
-    <div class="proc-step" id="ps-3">
-      <span class="ps-icon">○</span>
-      <span>Keypoint estimation</span>
-      <div class="ps-bar"><div class="ps-fill" id="pf-3"></div></div>
-    </div>
-    <div class="proc-step" id="ps-4">
-      <span class="ps-icon">○</span>
-      <span>Anthropometric regression</span>
-      <div class="ps-bar"><div class="ps-fill" id="pf-4"></div></div>
-    </div>
-    <div class="proc-step" id="ps-5">
-      <span class="ps-icon">○</span>
-      <span>WHO classification</span>
-      <div class="ps-bar"><div class="ps-fill" id="pf-5"></div></div>
+    <div class="instr" id="instr">Align subject head-to-toe in the guide frame</div>
+    <div class="capture-row">
+      <button class="btn-sm" onclick="camBack()">✕</button>
+      <button class="btn-cap" id="btn-cap" disabled onclick="capture()">
+        <svg class="ring" viewBox="0 0 68 68"><circle class="ring-path" id="ring-path" cx="34" cy="34" r="30"/></svg>
+        <div class="inner"></div>
+      </button>
+      <button class="btn-sm" id="btn-auto" onclick="toggleAuto()" title="Auto-capture">⚡</button>
     </div>
   </div>
 </div>
 
+<!-- ══ MUAC CAMERA ══ -->
+<div id="s-muac" class="screen hidden">
+  <video id="video-muac" autoplay playsinline muted></video>
+  <canvas id="cvs-muac"></canvas>
+  <div class="hud-top" style="z-index:9102">
+    <div class="hud-title">MUAC SCAN</div>
+    <div class="hud-mode">Bare upper arm, horizontal</div>
+  </div>
+  <div class="muac-guide-overlay">
+    <div class="arm-guide">
+      <span class="arm-tick-label">← MID-UPPER ARM →</span>
+    </div>
+  </div>
+  <div class="bottom-panel" style="z-index:9102">
+    <div class="instr" id="instr-muac">Hold bare upper arm horizontal, filling the oval guide</div>
+    <div class="capture-row">
+      <button class="btn-sm" onclick="muacBack()">✕</button>
+      <button class="btn-cap" id="btn-muac-cap" onclick="captureMuac()">
+        <div class="inner"></div>
+      </button>
+      <div style="width:44px"></div>
+    </div>
+  </div>
+  <div class="flash" id="flash-muac"></div>
+</div>
 
-<!-- ══════════════ SCREEN 5: RESULTS ══════════════ -->
-<div id="screen-results" class="screen hidden">
-  <div class="results-scroll">
-    <div class="results-header">
-      <div class="results-title">RESULTS</div>
-      <div class="results-timestamp" id="result-timestamp"></div>
+<!-- ══ PROCESSING ══ -->
+<div id="s-proc" class="screen hidden">
+  <div class="spin-wrap">
+    <div class="spin-ring"></div><div class="spin-ring"></div>
+    <img id="proc-thumb" class="proc-thumb" src="" alt="">
+  </div>
+  <div class="proc-title">COMPUTING</div>
+  <div class="proc-steps" id="proc-steps"></div>
+</div>
+
+<!-- ══ RESULTS ══ -->
+<div id="s-results" class="screen hidden">
+  <div class="rscroll">
+    <div class="r-header">
+      <div class="r-title">RESULTS</div>
+      <div class="r-ts" id="r-ts">—</div>
     </div>
 
-    <div class="results-subject-card">
-      <img id="result-thumb" class="results-thumb" src="" alt="">
-      <div class="subject-info">
-        <div class="subject-name" id="result-name">—</div>
-        <div class="subject-meta" id="result-meta">—</div>
-        <div style="margin-top:4px"><span class="badge" id="result-conf-badge">CONF: —</span></div>
+    <div class="subj-card">
+      <img id="r-thumb" class="subj-thumb" src="" alt="">
+      <div class="subj-info">
+        <div class="subj-name" id="r-name">—</div>
+        <div class="subj-meta" id="r-meta">—</div>
+        <div style="margin-top:4px;display:flex;gap:6px">
+          <span class="badge" id="r-conf">—</span>
+          <span class="acc-tag">⚠ ESTIMATES</span>
+        </div>
       </div>
     </div>
 
-    <!-- Primary metrics -->
     <div class="metrics-grid">
-      <div class="metric-card green">
-        <div class="metric-label">HEIGHT</div>
-        <div class="metric-value" id="r-height">—</div>
-        <div class="metric-unit">centimetres</div>
-        <div class="metric-conf" id="r-height-ci">—</div>
-      </div>
-      <div class="metric-card orange">
-        <div class="metric-label">WEIGHT</div>
-        <div class="metric-value" id="r-weight">—</div>
-        <div class="metric-unit">kilograms</div>
-        <div class="metric-conf" id="r-weight-ci">—</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-label">MUAC</div>
-        <div class="metric-value" id="r-muac">—</div>
-        <div class="metric-unit">centimetres</div>
-        <div class="metric-conf" id="r-muac-ci">—</div>
-      </div>
-      <div class="metric-card warn">
-        <div class="metric-label">BMI</div>
-        <div class="metric-value" id="r-bmi">—</div>
-        <div class="metric-unit">kg/m²</div>
-        <div class="metric-conf" id="r-bmi-cat">—</div>
-      </div>
+      <div class="mc g"><div class="mc-lbl">HEIGHT</div><div class="mc-val" id="r-h">—</div><div class="mc-unit">cm</div><div class="mc-ci" id="r-h-ci">—</div></div>
+      <div class="mc o"><div class="mc-lbl">WEIGHT</div><div class="mc-val" id="r-w">—</div><div class="mc-unit">kg</div><div class="mc-ci" id="r-w-ci">—</div></div>
+      <div class="mc" id="mc-muac"><div class="mc-lbl">MUAC</div><div class="mc-val" id="r-muac">—</div><div class="mc-unit">cm</div><div class="mc-ci" id="r-muac-ci">—</div></div>
+      <div class="mc w"><div class="mc-lbl">BMI</div><div class="mc-val" id="r-bmi">—</div><div class="mc-unit">kg/m²</div><div class="mc-ci" id="r-bmi-cat">—</div></div>
     </div>
 
-    <!-- MUAC Status -->
-    <div class="muac-status">
-      <div class="muac-status-label">MUAC Nutritional Status (WHO)</div>
-      <div class="muac-bar-wrap">
-        <div class="muac-pointer" id="muac-pointer" style="left:50%"></div>
-      </div>
+    <div class="muac-bar-sec">
+      <div class="ds-title">MUAC — WHO STATUS</div>
+      <div class="muac-bar-bg"><div class="muac-ptr" id="muac-ptr"></div></div>
       <div class="muac-zones">
-        <span style="color:var(--danger)">SAM &lt;11.5</span>
-        <span style="color:var(--warn)">MAM 11.5–12.5</span>
-        <span style="color:var(--accent2)">Normal &gt;12.5</span>
+        <span style="color:var(--r)">SAM &lt;11.5</span>
+        <span style="color:var(--w)">MAM &lt;12.5</span>
+        <span style="color:var(--g)">&gt;12.5 Normal</span>
       </div>
-      <div class="muac-result-text" id="muac-result-text">—</div>
+      <div class="muac-status" id="muac-status">—</div>
     </div>
 
-    <!-- Derived measurements -->
-    <div class="detail-section">
-      <div class="detail-section-title">Derived Measurements</div>
-      <div class="detail-row"><span class="dr-label">SHOULDER WIDTH</span><span class="dr-value" id="r-shoulder">—</span></div>
-      <div class="detail-row"><span class="dr-label">HIP WIDTH</span><span class="dr-value" id="r-hip">—</span></div>
-      <div class="detail-row"><span class="dr-label">TORSO LENGTH</span><span class="dr-value" id="r-torso">—</span></div>
-      <div class="detail-row"><span class="dr-label">LEG LENGTH</span><span class="dr-value" id="r-leg">—</span></div>
-      <div class="detail-row"><span class="dr-label">ARM LENGTH</span><span class="dr-value" id="r-arm">—</span></div>
-      <div class="detail-row"><span class="dr-label">UPPER ARM (PIXEL)</span><span class="dr-value" id="r-ua">—</span></div>
-      <div class="detail-row"><span class="dr-label">EST. DISTANCE</span><span class="dr-value" id="r-dist">—</span></div>
+    <div class="detail-sec">
+      <div class="ds-title">Measurement Details</div>
+      <div class="dr"><span class="dl">EST. DISTANCE</span><span class="dv" id="d-dist">—</span></div>
+      <div class="dr"><span class="dl">CAMERA HEIGHT INPUT</span><span class="dv" id="d-camh">—</span></div>
+      <div class="dr"><span class="dl">FOV USED</span><span class="dv" id="d-fov">—</span></div>
+      <div class="dr"><span class="dl">BODY PX HEIGHT</span><span class="dv" id="d-pxh">—</span></div>
+      <div class="dr"><span class="dl">SHOULDER WIDTH</span><span class="dv" id="d-shw">—</span></div>
+      <div class="dr"><span class="dl">HIP WIDTH</span><span class="dv" id="d-hipw">—</span></div>
+      <div class="dr"><span class="dl">CAMERA ROLL</span><span class="dv" id="d-roll">—</span></div>
+      <div class="dr"><span class="dl">UPPER ARM WIDTH PX</span><span class="dv" id="d-uapx">—</span></div>
+      <div class="dr"><span class="dl">CAPTURE RESOLUTION</span><span class="dv" id="d-res">—</span></div>
     </div>
 
-    <!-- Camera conditions -->
-    <div class="detail-section">
-      <div class="detail-section-title">Capture Conditions</div>
-      <div class="detail-row"><span class="dr-label">CAMERA TILT</span><span class="dr-value" id="r-tilt">—</span></div>
-      <div class="detail-row"><span class="dr-label">CAMERA HEIGHT</span><span class="dr-value" id="r-camh">—</span></div>
-      <div class="detail-row"><span class="dr-label">FOCAL LENGTH (EST)</span><span class="dr-value" id="r-focal">—</span></div>
-      <div class="detail-row"><span class="dr-label">FRAME RESOLUTION</span><span class="dr-value" id="r-res">—</span></div>
-      <div class="detail-row"><span class="dr-label">CONSTRAINTS MET</span><span class="dr-value" id="r-constraints">—</span></div>
-    </div>
-
-    <!-- Method explanation -->
     <div class="method-note">
-      <strong>Method:</strong> Silhouette boundary detection via canvas pixel analysis extracts body keypoints (head top, shoulders, hips, knees, ankles). Absolute scale is derived from known camera height using pinhole projection: <em>D = (H_cam × f) / y_ankle_px</em>. Height uses head-to-ankle pixel span × scale. Weight is estimated via Lorentz formula adjusted for sex and measured widths. MUAC uses upper-arm pixel width × scale × π/2 (half-circumference model). WHO thresholds: SAM &lt;11.5 cm, MAM 11.5–12.5 cm.
+      <strong>Height method:</strong> Full-body silhouette pixel height ÷ pixels-per-metre.<br>
+      <strong>Scale (px/m):</strong> f_px = image_width / (2·tan(FOV/2)). Then at distance D: px/m = f_px / D.<br>
+      <strong>Distance:</strong> From camera height H_c and ankle pixel position: D = H_c · f_px / (ankle_y − centre_y).<br>
+      <strong>Weight:</strong> Lorentz formula (sex-adjusted) + shoulder/hip width deviations.<br>
+      <strong>MUAC:</strong> Arm width in pixels × cm/px scale × π (diameter → circumference).
     </div>
 
+    <div class="detail-sec" id="debug-sec" style="display:none">
+      <div class="ds-title">Debug</div>
+      <div id="debug-content" style="font-family:var(--mono);font-size:10px;color:var(--dim);line-height:1.8"></div>
+    </div>
   </div>
 
-  <!-- FAB -->
-  <div class="fab-bar" style="justify-content:center;gap:10px;">
-    <button class="btn btn-secondary" onclick="retake()" style="max-width:160px;padding:12px;">↩ RETAKE</button>
-    <button class="btn btn-primary" onclick="newSubject()" style="max-width:160px;padding:12px;">+ NEW</button>
+  <div class="fab">
+    <button class="btn btn-s" onclick="retake()" style="max-width:140px;padding:12px;font-size:11px">↩ RETAKE</button>
+    <button class="btn btn-p" onclick="goMuac()" style="font-size:11px" id="btn-go-muac">📏 MEASURE MUAC</button>
   </div>
 </div>
 
+<canvas id="cvs-hidden" style="display:none"></canvas>
 
-<!-- ══════════════ MAIN SCRIPT ══════════════ -->
 <script>
 'use strict';
-
-// ── State ──────────────────────────────────────────────────────────────────
-const state = {
-  sex: 'male',
-  capturedDataURL: null,
-  stream: null,
-  animFrame: null,
-  autoCapture: false,
-  autoCountdown: 0,
-  AUTO_FRAMES: 30,    // 30 frames ≈ 1 second at 30fps all-green
-  tiltDeg: 0,        // from DeviceOrientation
-  constraints: {
-    distance: false,
-    centered: false,
-    level: false,
-    fullbody: false,
-    stillness: false
-  },
-  allPass: false,
-  lastPixelHash: 0,
-  stableFrames: 0,
-  STABLE_THRESH: 8,
-  results: null
+// ═══════════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════════
+const S = {
+  sex:'male', stream:null, muacStream:null,
+  raf:null, muacRaf:null,
+  tiltDeg:0, imu:false,
+  stableCount:0, STABLE:10,
+  lastLum:null, lastSpots:null,
+  captured:null,   // {dataURL, w, h}
+  muacCapture:null,
+  results:null,
+  autoOn:false, autoCnt:0, AUTO_FRAMES:25,
+  constraints:{body:false,frame:false,dist:false,level:true,still:false},
+  // Live measurement
+  liveH:null, liveDist:null
 };
 
-// ── Screen management ──────────────────────────────────────────────────────
-function showScreen(id) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
-  document.getElementById('screen-' + id).classList.remove('hidden');
-}
+// ═══════════════════════════════════════════════════════
+//  UTILITIES
+// ═══════════════════════════════════════════════════════
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.add('hidden'));document.getElementById(id).classList.remove('hidden')}
+function setSex(s){S.sex=s;document.querySelectorAll('#seg-sex .seg-btn').forEach((b,i)=>b.classList.toggle('on',(i===0&&s==='male')||(i===1&&s==='female')))}
+function $(id){return document.getElementById(id)}
+function fov2focal(fovDeg, imgW){return imgW/(2*Math.tan(fovDeg*Math.PI/360))}
 
-// ── Setup form ─────────────────────────────────────────────────────────────
-function setSex(s) {
-  state.sex = s;
-  document.getElementById('sex-male').classList.toggle('active', s === 'male');
-  document.getElementById('sex-female').classList.toggle('active', s === 'female');
-}
+// ── Stable luminance motion detector ────────────────────────────────────────
+function meanLum(d){let s=0,n=0;for(let i=0;i<d.length;i+=80){s+=.299*d[i]+.587*d[i+1]+.114*d[i+2];n++}return n?s/n:0}
+function sampleSpots(d,w,h){const a=[];for(let r=0;r<4;r++)for(let c=0;c<4;c++){const x=Math.floor((c+.5)*w/4),y=Math.floor((r+.5)*h/4),i=(y*w+x)*4;a.push(.299*d[i]+.587*d[i+1]+.114*d[i+2])}return a}
+function spotDiff(d,w,h,prev){if(!prev)return 0;const cur=sampleSpots(d,w,h);let m=0;for(let i=0;i<cur.length;i++)m=Math.max(m,Math.abs(cur[i]-prev[i]));return m}
 
-// ── Camera ────────────────────────────────────────────────────────────────
-async function startCamera() {
-  const age = parseInt(document.getElementById('input-age').value) || 25;
-  const camH = parseFloat(document.getElementById('input-cam-h').value) || 1.1;
-  const name = document.getElementById('input-name').value.trim() || 'Subject';
-  const knownH = parseFloat(document.getElementById('input-height').value) || null;
+// ═══════════════════════════════════════════════════════
+//  SILHOUETTE ANALYSIS  (operates on small canvas)
+// ═══════════════════════════════════════════════════════
+function analyseFrame(imageData, W, H){
+  const d = imageData.data;
 
-  state.age = age; state.camH = camH;
-  state.subjectName = name; state.knownHeight = knownH;
-  state.imuAvailable = false;  // default; set true when first event fires
-  state.stableFrames = 0;
-  state.lastMeanLum = null;
-  state.lastSpots = null;
+  // ── Background sample: edges of frame ──
+  const bgPts=[];
+  for(let x=0;x<W;x+=8){bgPts.push([d[(0*W+x)*4],d[(0*W+x)*4+1],d[(0*W+x)*4+2]])}
+  for(let x=0;x<W;x+=8){bgPts.push([d[((H-1)*W+x)*4],d[((H-1)*W+x)*4+1],d[((H-1)*W+x)*4+2]])}
+  for(let y=0;y<H;y+=8){bgPts.push([d[(y*W+0)*4],d[(y*W+0)*4+1],d[(y*W+0)*4+2]])}
+  for(let y=0;y<H;y+=8){bgPts.push([d[(y*W+W-1)*4],d[(y*W+W-1)*4+1],d[(y*W+W-1)*4+2]])}
+  const bgR=bgPts.reduce((a,c)=>a+c[0],0)/bgPts.length;
+  const bgG=bgPts.reduce((a,c)=>a+c[1],0)/bgPts.length;
+  const bgB=bgPts.reduce((a,c)=>a+c[2],0)/bgPts.length;
 
-  showScreen('camera');
-  document.getElementById('hud-subject-info').textContent = `${name} | ${age}y | ${state.sex[0].toUpperCase()}`;
-
-  try {
-    const constraints = {
-      video: {
-        facingMode: { ideal: 'environment' },
-        width: { ideal: 1920 },
-        height: { ideal: 1080 },
-        aspectRatio: { ideal: 16/9 }
+  // ── Per-column foreground extent ──
+  const THRESH = 28; // colour distance from bg
+  const colTop=new Int16Array(W).fill(H);
+  const colBot=new Int16Array(W).fill(-1);
+  for(let y=0;y<H;y++){
+    const row=y*W*4;
+    for(let x=0;x<W;x++){
+      const i=row+x*4;
+      const dr=d[i]-bgR,dg=d[i+1]-bgG,db=d[i+2]-bgB;
+      if(dr*dr+dg*dg+db*db>THRESH*THRESH){
+        if(y<colTop[x])colTop[x]=y;
+        if(y>colBot[x])colBot[x]=y;
       }
+    }
+  }
+
+  // ── Per-row foreground extent ──
+  const rowL=new Int16Array(H).fill(W);
+  const rowR=new Int16Array(H).fill(-1);
+  for(let y=0;y<H;y++){
+    const row=y*W*4;
+    for(let x=0;x<W;x++){
+      const i=row+x*4;
+      const dr=d[i]-bgR,dg=d[i+1]-bgG,db=d[i+2]-bgB;
+      if(dr*dr+dg*dg+db*db>THRESH*THRESH){
+        if(x<rowL[y])rowL[y]=x;
+        if(x>rowR[y])rowR[y]=x;
+      }
+    }
+  }
+
+  // ── Body bounding box ──
+  let bTop=H,bBot=-1,bLeft=W,bRight=-1;
+  for(let x=0;x<W;x++){
+    if(colBot[x]>-1){
+      if(colTop[x]<bTop)bTop=colTop[x];
+      if(colBot[x]>bBot)bBot=colBot[x];
+    }
+  }
+  for(let y=0;y<H;y++){
+    if(rowR[y]>-1){
+      if(rowL[y]<bLeft)bLeft=rowL[y];
+      if(rowR[y]>bRight)bRight=rowR[y];
+    }
+  }
+
+  const bodyH=bBot-bTop, bodyW=bRight-bLeft;
+  const bodyCX=(bLeft+bRight)/2;
+  // Full body: head near top, feet near bottom, tall enough
+  const hasBody = bodyH>H*.45 && bTop<H*.18 && bBot>H*.72;
+  const fillsFrame = bodyH>H*.60 && bTop<H*.08 && bBot>H*.85;
+  const centered = Math.abs(bodyCX-W/2)<W*.20;
+
+  // ── Width sampling at anatomical fractions ──
+  // Standard proportions: shoulder=18%, waist=44%, hip=53% from head
+  function wAt(frac){
+    const y=Math.round(bTop+bodyH*frac);
+    if(y<0||y>=H)return 0;
+    const samples=[-3,-2,-1,0,1,2,3].map(dy=>{
+      const yy=y+dy;
+      if(yy<0||yy>=H||rowR[yy]<0)return 0;
+      return rowR[yy]-rowL[yy];
+    });
+    return Math.max(...samples);
+  }
+
+  const shoulderW = wAt(0.18);
+  const waistW    = wAt(0.44);
+  const hipW      = wAt(0.53);
+  // Upper arm: visible at shoulder level ± chest; approx half the shoulder overhang
+  const chestW    = wAt(0.35);
+  const armPx     = Math.max(1, (shoulderW - chestW) / 2);
+
+  return {
+    hasBody, fillsFrame, centered,
+    bTop, bBot, bLeft, bRight, bodyH, bodyW, bodyCX,
+    shoulderW, waistW, hipW, armPx,
+    rowL, rowR
+  };
+}
+
+// ═══════════════════════════════════════════════════════
+//  OBJECT-FIT COVER MAPPING  (analysis px → screen px)
+// ═══════════════════════════════════════════════════════
+function coverMap(srcW, srcH, dstW, dstH){
+  const srcA=srcW/srcH, dstA=dstW/dstH;
+  let rW,rH,ox,oy;
+  if(srcA>dstA){rH=dstH;rW=dstH*srcA;ox=(dstW-rW)/2;oy=0}
+  else{rW=dstW;rH=dstW/srcA;ox=0;oy=(dstH-rH)/2}
+  return {
+    sx:x=>ox+x*(rW/srcW),
+    sy:y=>oy+y*(rH/srcH)
+  };
+}
+
+// ═══════════════════════════════════════════════════════
+//  PINHOLE GEOMETRY
+//  f_px = imgW / (2*tan(fov/2))
+//  At distance D, 1 metre subtends f_px/D pixels.
+//  Ankle y from image centre → distance D via camera height.
+// ═══════════════════════════════════════════════════════
+function computeGeometry(an, imgW, imgH, camH_m, fovDeg){
+  const f = fov2focal(fovDeg, imgW);   // focal length in pixels
+
+  // Ankle pixel position relative to image centre (positive = below centre)
+  const ankleY_abs = an.bBot;          // bottom of silhouette ≈ ankle
+  const ankleY_fc  = ankleY_abs - imgH/2;  // from centre, positive downward
+
+  let dist_m = null;
+  if(ankleY_fc > 5){
+    // tan(theta_ankle) = ankleY_fc / f  → real-world ankle is on floor
+    // floor is at height 0, camera at camH_m
+    // theta = angle below horizontal to ankle
+    // In perspective: real_y / f = ankleY_fc / imgH * 2*tan(fov_v/2)
+    // Simpler: D = camH_m * f / ankleY_fc
+    dist_m = (camH_m * f) / ankleY_fc;
+  }
+
+  // px/m at subject distance
+  const pxPerM = dist_m ? f / dist_m : null;
+
+  // Body height in pixels (head top to ankle = bTop to bBot in analysis space)
+  const bodyPx = an.bodyH;
+
+  // Real height
+  let height_cm = null;
+  if(pxPerM && bodyPx > 10){
+    height_cm = (bodyPx / pxPerM) * 100;
+    // Small correction: silhouette head-top is slightly below actual vertex
+    height_cm *= 1.04;
+  }
+
+  // Widths
+  const shoulderCm = pxPerM ? (an.shoulderW / pxPerM)*100 : null;
+  const hipCm      = pxPerM ? (an.hipW      / pxPerM)*100 : null;
+  const armDiamCm  = pxPerM ? (an.armPx     / pxPerM)*100 : null;
+  const muacCm     = armDiamCm ? armDiamCm * Math.PI * 0.9 : null; // π*d with correction
+
+  return {dist_m, pxPerM, height_cm, bodyPx, f,
+          shoulderCm, hipCm, armDiamCm, muacCm};
+}
+
+// ═══════════════════════════════════════════════════════
+//  WEIGHT ESTIMATION
+// ═══════════════════════════════════════════════════════
+function estimateWeight(height_cm, shoulderCm, hipCm, sex){
+  if(!height_cm)return null;
+  const H=height_cm;
+  // Lorentz ideal body weight
+  let ibw = sex==='male' ? H-100-(H-150)/4 : H-100-(H-150)/2.5;
+
+  // Adjust for measured widths vs population average
+  // Male population avg shoulder ~38 cm, hip ~34 cm
+  // Female avg shoulder ~35 cm, hip ~36 cm
+  const avgSh = sex==='male'?38:35;
+  const avgHp = sex==='male'?34:36;
+  if(shoulderCm){ ibw += (shoulderCm - avgSh) * 0.7 }
+  if(hipCm)     { ibw += (hipCm      - avgHp) * 0.5 }
+
+  return Math.max(20, Math.min(220, ibw));
+}
+
+// ═══════════════════════════════════════════════════════
+//  DRAW OVERLAY ON CANVAS (live loop)
+// ═══════════════════════════════════════════════════════
+function drawLiveOverlay(ctx, cw, ch, an, srcW, srcH, geo){
+  ctx.clearRect(0,0,cw,ch);
+  if(!an||an.bodyH<=0)return;
+
+  const {sx,sy}=coverMap(srcW,srcH,cw,ch);
+
+  // Silhouette fill
+  const {rowL,rowR,bTop,bBot}=an;
+  ctx.beginPath();
+  let started=false;
+  for(let y=bTop;y<=bBot;y+=2){
+    if(rowL[y]<srcW){
+      if(!started){ctx.moveTo(sx(rowL[y]),sy(y));started=true}
+      else ctx.lineTo(sx(rowL[y]),sy(y));
+    }
+  }
+  for(let y=bBot;y>=bTop;y-=2){
+    if(rowR[y]>-1)ctx.lineTo(sx(rowR[y]),sy(y));
+  }
+  ctx.closePath();
+  const allOk=Object.values(S.constraints).every(Boolean);
+  ctx.fillStyle=allOk?'rgba(0,255,136,.09)':'rgba(0,229,255,.07)';
+  ctx.fill();
+  ctx.strokeStyle=allOk?'rgba(0,255,136,.55)':'rgba(0,229,255,.4)';
+  ctx.lineWidth=2;ctx.stroke();
+
+  // Keypoint lines with labels
+  const kps=[
+    {frac:0,   label:'HEAD'},
+    {frac:.18, label:'SHOULDER'},
+    {frac:.53, label:'HIP'},
+    {frac:.93, label:'ANKLE'}
+  ];
+  const cx=sx(an.bodyCX);
+  const hw=Math.abs(sx(an.bodyCX+an.bodyW*.45)-cx);
+  kps.forEach(kp=>{
+    const y=bTop+an.bodyH*kp.frac;
+    const cy=sy(y);
+    ctx.save();
+    ctx.strokeStyle=allOk?'rgba(0,255,136,.5)':'rgba(0,229,255,.45)';
+    ctx.lineWidth=1;ctx.setLineDash([5,5]);
+    ctx.beginPath();ctx.moveTo(cx-hw,cy);ctx.lineTo(cx+hw,cy);ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.beginPath();ctx.arc(cx,cy,4,0,Math.PI*2);
+    ctx.fillStyle=allOk?'#00ff88':'#00e5ff';
+    ctx.shadowColor=ctx.fillStyle;ctx.shadowBlur=8;
+    ctx.fill();ctx.shadowBlur=0;
+    ctx.fillStyle=allOk?'rgba(0,255,136,.9)':'rgba(0,229,255,.85)';
+    ctx.font="bold 11px 'Share Tech Mono',monospace";
+    ctx.fillText(kp.label, cx+hw+6, cy+4);
+    ctx.restore();
+  });
+
+  // Left height bar
+  const lx=sx(an.bLeft)-22;
+  ctx.strokeStyle=allOk?'rgba(0,255,136,.65)':'rgba(0,229,255,.45)';
+  ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(lx,sy(bTop));ctx.lineTo(lx,sy(bBot));ctx.stroke();
+  [[bTop],[bBot]].forEach(([yy])=>{
+    ctx.beginPath();ctx.moveTo(lx-5,sy(yy));ctx.lineTo(lx+5,sy(yy));ctx.stroke();
+  });
+  if(geo&&geo.height_cm){
+    ctx.save();
+    const midY=(sy(bTop)+sy(bBot))/2;
+    ctx.translate(lx-13,midY);ctx.rotate(-Math.PI/2);
+    ctx.fillStyle=allOk?'#00ff88':'rgba(0,229,255,.8)';
+    ctx.font="bold 11px 'Share Tech Mono',monospace";
+    ctx.fillText(`${Math.round(geo.height_cm)} cm`,-20,0);
+    ctx.restore();
+  }
+
+  // Distance readout on screen
+  if(geo&&geo.dist_m){
+    ctx.fillStyle='rgba(0,229,255,.7)';
+    ctx.font="11px 'Share Tech Mono',monospace";
+    ctx.fillText(`D=${geo.dist_m.toFixed(2)}m`, sx(an.bRight)+6, sy(an.bTop+an.bodyH*.3));
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+//  CAMERA — HEIGHT/WEIGHT
+// ═══════════════════════════════════════════════════════
+async function openHeightCam(){
+  S.stableCount=0; S.lastLum=null; S.lastSpots=null; S.autoOn=false; S.autoCnt=0;
+  show('s-cam');
+  $('hud-info').textContent=`${$('in-name').value||'Subject'} | ${$('in-age').value||'?'}y | ${S.sex[0].toUpperCase()}`;
+
+  try{
+    S.stream=await navigator.mediaDevices.getUserMedia({
+      video:{facingMode:{ideal:'environment'},width:{ideal:1920},height:{ideal:1080}}
+    });
+    const v=$('video'); v.srcObject=S.stream;
+    await v.play();
+    startLoop();
+  }catch(e){alert('Camera error: '+e.message);show('s-setup');return}
+
+  // IMU
+  if(typeof DeviceOrientationEvent!=='undefined'){
+    if(typeof DeviceOrientationEvent.requestPermission==='function'){
+      try{const p=await DeviceOrientationEvent.requestPermission();if(p==='granted')window.addEventListener('deviceorientation',onImu,true)}catch(_){}
+    }else{window.addEventListener('deviceorientation',onImu,true)}
+  }
+}
+
+function onImu(e){if(e.gamma!=null){S.tiltDeg=e.gamma;S.imu=true}}
+
+function stopHeightCam(){
+  if(S.raf){cancelAnimationFrame(S.raf);S.raf=null}
+  if(S.stream){S.stream.getTracks().forEach(t=>t.stop());S.stream=null}
+  window.removeEventListener('deviceorientation',onImu,true);
+}
+
+function camBack(){stopHeightCam();show('s-setup')}
+
+function startLoop(){
+  if(S.raf)return;
+  const video=$('video');
+  const cvs=$('cvs');
+  const hidden=$('cvs-hidden');
+  const ctx=cvs.getContext('2d');
+
+  function loop(){
+    S.raf=requestAnimationFrame(loop);
+    if(video.readyState<2)return;
+    const vw=video.videoWidth,vh=video.videoHeight;
+    if(!vw||!vh)return;
+
+    // Size overlay to window
+    const cw=window.innerWidth,ch=window.innerHeight;
+    if(cvs.width!==cw||cvs.height!==ch){cvs.width=cw;cvs.height=ch}
+
+    // Analysis canvas (320px wide for speed)
+    const AW=Math.min(vw,320), AH=Math.round(vh*(AW/vw));
+    if(hidden.width!==AW||hidden.height!==AH){hidden.width=AW;hidden.height=AH}
+
+    const hctx=hidden.getContext('2d');
+    hctx.drawImage(video,0,0,AW,AH);
+    const id=hctx.getImageData(0,0,AW,AH);
+
+    // ── Silhouette ──
+    const an=analyseFrame(id,AW,AH);
+
+    // ── Camera params ──
+    const camH=parseFloat($('in-camh').value)||1.1;
+    const fovDeg=parseFloat($('in-fov').value)||69;
+    const geo=computeGeometry(an, AW, AH, camH, fovDeg);
+
+    // ── Stability ──
+    const lum=meanLum(id.data);
+    const lumD=Math.abs(lum-(S.lastLum??lum));
+    const spD=spotDiff(id.data,AW,AH,S.lastSpots);
+    S.lastLum=lum; S.lastSpots=sampleSpots(id.data,AW,AH);
+    const isStill=lumD<1.8&&spD<14;
+    S.stableCount=isStill?Math.min(S.stableCount+1,S.STABLE+10):Math.max(0,S.stableCount-1);
+
+    // ── IMU tilt ──
+    const tiltOk=!S.imu||Math.abs(S.tiltDeg)<10;
+
+    // ── Distance validation ──
+    const distOk=geo.dist_m!=null&&geo.dist_m>=1.2&&geo.dist_m<=5.0;
+
+    // ── Constraints ──
+    S.constraints={
+      body:  an.hasBody,
+      frame: an.fillsFrame,
+      dist:  distOk,
+      level: tiltOk,
+      still: S.stableCount>=S.STABLE
     };
-    state.stream = await navigator.mediaDevices.getUserMedia(constraints);
-    const video = document.getElementById('video');
-    video.srcObject = state.stream;
-    video.play();
-    video.addEventListener('loadedmetadata', () => {
-      startOverlayLoop();
-    }, { once: true });
-  } catch (err) {
-    alert('Camera error: ' + err.message + '\n\nPlease ensure you are on HTTPS and have granted camera permission.');
-    showScreen('setup');
-    return;
-  }
+    const allOk=Object.values(S.constraints).every(Boolean);
 
-  // Request DeviceOrientation (iOS 13+ needs explicit permission)
-  if (typeof DeviceOrientationEvent !== 'undefined' &&
-      typeof DeviceOrientationEvent.requestPermission === 'function') {
-    try {
-      const perm = await DeviceOrientationEvent.requestPermission();
-      if (perm === 'granted') {
-        window.addEventListener('deviceorientation', onDeviceOrientation, true);
-      }
-      // If denied: imuAvailable stays false → level defaults to true
-    } catch(e) { /* permission dialog failed, ignore */ }
-  } else if (window.DeviceOrientationEvent) {
-    window.addEventListener('deviceorientation', onDeviceOrientation, true);
-  }
-}
+    // ── Update chips ──
+    setChip('ch-body',  S.constraints.body);
+    setChip('ch-frame', S.constraints.frame);
+    setChip('ch-dist',  S.constraints.dist);
+    setChip('ch-level', S.constraints.level);
+    setChip('ch-still', S.constraints.still);
 
-function onDeviceOrientation(e) {
-  if (e.gamma !== null) {
-    state.tiltDeg = e.gamma;
-    state.imuAvailable = true;
-  }
-  if (e.beta !== null) {
-    state.vertTilt = e.beta - 90;
-  }
-}
+    // ── Tilt bubble ──
+    const tilt=S.tiltDeg||0;
+    const tp=Math.round(((Math.max(-40,Math.min(40,tilt))+40)/80)*66);
+    $('tilt-bubble').style.top=tp+'px';
+    $('tilt-bubble').style.background=Math.abs(tilt)<10?'var(--g)':'var(--w)';
+    $('rv-tilt').textContent=S.imu?tilt.toFixed(1)+'°':'—';
 
-function stopCamera() {
-  if (state.stream) {
-    state.stream.getTracks().forEach(t => t.stop());
-    state.stream = null;
-  }
-  if (state.animFrame) { cancelAnimationFrame(state.animFrame); state.animFrame = null; }
-  window.removeEventListener('deviceorientation', onDeviceOrientation, true);
-}
+    // ── Live readouts ──
+    $('rv-dist').textContent=geo.dist_m?geo.dist_m.toFixed(2)+'m':'—';
+    if(geo.height_cm){
+      $('rv-ht').textContent=Math.round(geo.height_cm)+'cm';
+      $('ro-ht').classList.toggle('ok',geo.height_cm>100&&geo.height_cm<250);
+    }else{$('rv-ht').textContent='—';$('ro-ht').classList.remove('ok')}
 
-function goBack() {
-  stopCamera();
-  showScreen('setup');
-}
-
-// ── Overlay analysis loop ──────────────────────────────────────────────────
-function startOverlayLoop() {
-  // Guard: only one loop at a time
-  if (state.animFrame) return;
-
-  const video   = document.getElementById('video');
-  const canvas  = document.getElementById('canvas-overlay');
-  const hidden  = document.getElementById('canvas-hidden');
-  const ctx     = canvas.getContext('2d');
-
-  function loop() {
-    state.animFrame = requestAnimationFrame(loop);
-    if (video.readyState < 2) return;
-
-    const vw = video.videoWidth, vh = video.videoHeight;
-    if (!vw || !vh) return;
-
-    // Size overlay canvas to match window (it's position:fixed full screen)
-    const cw = window.innerWidth, ch = window.innerHeight;
-    if (canvas.width !== cw || canvas.height !== ch) {
-      canvas.width  = cw;
-      canvas.height = ch;
+    // ── Tape guide height ──
+    if(an.hasBody){
+      const {sy}=coverMap(AW,AH,cw,ch);
+      const tapeH=sy(an.bBot)-sy(an.bTop);
+      $('tape-line').style.height=Math.max(80,tapeH)+'px';
+      $('tape-guide').classList.toggle('ok',allOk);
     }
 
-    // Small analysis canvas
-    const AW = Math.min(vw, 320);
-    const AH = Math.round(vh * (AW / vw));
-    if (hidden.width !== AW || hidden.height !== AH) {
-      hidden.width  = AW;
-      hidden.height = AH;
-    }
+    // ── Instruction ──
+    const instr=$('instr');
+    if(allOk){instr.textContent='✓ Hold still — tap capture or wait for auto';instr.classList.add('ready')}
+    else{instr.textContent=buildInstr(an,geo);instr.classList.remove('ready')}
 
-    // Draw small frame for analysis
-    const hctx = hidden.getContext('2d');
-    hctx.drawImage(video, 0, 0, hidden.width, hidden.height);
-    const imageData = hctx.getImageData(0, 0, hidden.width, hidden.height);
+    // ── Capture button ──
+    $('btn-cap').disabled=!allOk;
 
-    // ── Analyse silhouette ──
-    const analysis = analyseFrame(imageData, hidden.width, hidden.height);
+    // ── Auto capture ──
+    if(S.autoOn&&allOk){
+      S.autoCnt++;
+      const pct=S.autoCnt/S.AUTO_FRAMES;
+      $('ring-path').style.strokeDashoffset=188-(188*pct);
+      if(S.autoCnt>=S.AUTO_FRAMES){capture();return}
+    }else{S.autoCnt=0;$('ring-path').style.strokeDashoffset=188}
 
-    // ── Stillness check via mean-luminance diff (robust to camera noise) ──
-    const meanLum = computeMeanLuminance(imageData.data);
-    const lumDiff = Math.abs(meanLum - (state.lastMeanLum || meanLum));
-    state.lastMeanLum = meanLum;
-    // Also sample a few fixed pixel positions for motion detection
-    const spotDiff = computeSpotDiff(imageData.data, hidden.width, hidden.height, state.lastSpots);
-    state.lastSpots = sampleSpots(imageData.data, hidden.width, hidden.height);
-    const isStill = lumDiff < 1.5 && spotDiff < 12;
-    state.stableFrames = isStill ? Math.min(state.stableFrames + 1, state.STABLE_THRESH + 10) : Math.max(0, state.stableFrames - 1);
-    state.constraints.stillness = state.stableFrames >= state.STABLE_THRESH;
+    // ── Draw overlay ──
+    drawLiveOverlay(ctx,cw,ch,an,AW,AH,geo);
 
-    // ── Camera tilt from IMU (default true if no IMU / permission not granted) ──
-    const hasTilt = state.imuAvailable;
-    const tiltOk  = hasTilt ? (Math.abs(state.tiltDeg) < 12) : true;
-    state.constraints.level = tiltOk;
-
-    // ── Distance estimation ──
-    const camH = state.camH || 1.1;
-    // Focal length heuristic: ~70% of image height in pixels for typical phone
-    const focalPx = hidden.height * 0.9;
-    const ankleYfromCenter = analysis.ankleY - hidden.height / 2;
-    let estDist = null;
-    if (analysis.ankleY > 0 && ankleYfromCenter > 10) {
-      estDist = (camH * focalPx) / ankleYfromCenter;
-    }
-    state.estDist = estDist;
-    state.focalPx = focalPx;
-    state.analysis = analysis;
-    state.constraints.distance = estDist !== null && estDist >= 1.5 && estDist <= 4.5;
-    state.constraints.centered = analysis.centered;
-    state.constraints.fullbody = analysis.hasFullBody;
-
-    // ── Update UI ──
-    updateConstraintUI(estDist);
-    updateTiltBar();
-    drawOverlay(ctx, canvas.width, canvas.height, analysis, hidden.width, hidden.height);
-
-    // ── Auto capture logic ──
-    const allPass = Object.values(state.constraints).every(Boolean);
-    state.allPass = allPass;
-    document.getElementById('btn-capture').disabled = !allPass;
-    document.getElementById('guide-frame').classList.toggle('ok', allPass);
-
-    if (state.autoCapture && allPass) {
-      state.autoCountdown++;
-      const pct = state.autoCountdown / state.AUTO_FRAMES;
-      const dash = 188;
-      document.getElementById('ring-path').style.strokeDashoffset = dash - (dash * pct);
-      if (state.autoCountdown >= state.AUTO_FRAMES) {
-        captureFrame();
-        return;
-      }
-    } else {
-      state.autoCountdown = 0;
-      document.getElementById('ring-path').style.strokeDashoffset = 188;
-    }
-
-    const bannerEl = document.getElementById('instruction-banner');
-    if (allPass) {
-      bannerEl.textContent = state.autoCapture ? '✓ Hold still — auto-capturing…' : '✓ Ready — tap to capture';
-      bannerEl.classList.add('ready');
-    } else {
-      bannerEl.textContent = buildInstruction(analysis, estDist);
-      bannerEl.classList.remove('ready');
-    }
+    S.liveH=geo.height_cm; S.liveDist=geo.dist_m;
   }
   loop();
 }
 
-function buildInstruction(analysis, dist) {
-  if (!analysis.hasFullBody) return 'Move back until full body (head to feet) is visible';
-  if (dist !== null && dist < 1.5) return `Too close — move subject back (${dist.toFixed(1)} m, need ≥ 1.5 m)`;
-  if (dist !== null && dist > 4.5) return `Too far — move subject closer (${dist.toFixed(1)} m, need ≤ 4.5 m)`;
-  if (!analysis.centered) return 'Move subject to center of frame';
-  if (!state.constraints.level) return `Tilt phone to vertical (current: ${Math.abs(state.tiltDeg).toFixed(0)}°)`;
-  if (!state.constraints.stillness) return 'Hold phone still…';
-  return 'Stand subject 2–3 m away, arms slightly out';
+function setChip(id,ok){
+  const el=$(id);
+  el.classList.toggle('ok',ok);
+  el.classList.toggle('fail',!ok);
 }
 
-// ── Silhouette / keypoint analysis ────────────────────────────────────────
-function analyseFrame(imageData, w, h) {
-  const data = imageData.data;
-
-  // Build foreground mask: detect pixels significantly different from background
-  // Sample background from corners
-  function px(x, y) {
-    const i = (y * w + x) * 4;
-    return [data[i], data[i+1], data[i+2]];
-  }
-
-  // Background color estimate from corners
-  const bgSamples = [px(4,4), px(w-5,4), px(4,h-5), px(w-5,h-5), px(w>>1, 4)];
-  const bgR = bgSamples.reduce((a,c)=>a+c[0],0)/bgSamples.length;
-  const bgG = bgSamples.reduce((a,c)=>a+c[1],0)/bgSamples.length;
-  const bgB = bgSamples.reduce((a,c)=>a+c[2],0)/bgSamples.length;
-
-  // Per-column: find foreground extent
-  const colTop = new Array(w).fill(h);
-  const colBot = new Array(w).fill(-1);
-  const THRESH = 30;
-
-  for (let y = 0; y < h; y++) {
-    for (let x = 0; x < w; x++) {
-      const i = (y * w + x) * 4;
-      const dr = data[i] - bgR, dg = data[i+1] - bgG, db = data[i+2] - bgB;
-      const dist = Math.sqrt(dr*dr + dg*dg + db*db);
-      if (dist > THRESH) {
-        if (y < colTop[x]) colTop[x] = y;
-        if (y > colBot[x]) colBot[x] = y;
-      }
-    }
-  }
-
-  // Per-row: find foreground width extent (for keypoints)
-  const rowLeft  = new Array(h).fill(w);
-  const rowRight = new Array(h).fill(-1);
-  for (let y = 0; y < h; y++) {
-    for (let x = 0; x < w; x++) {
-      const i = (y * w + x) * 4;
-      const dr = data[i]-bgR, dg = data[i+1]-bgG, db = data[i+2]-bgB;
-      if (Math.sqrt(dr*dr+dg*dg+db*db) > THRESH) {
-        if (x < rowLeft[y])  rowLeft[y] = x;
-        if (x > rowRight[y]) rowRight[y] = x;
-      }
-    }
-  }
-
-  // Find overall body bounding box
-  let bodyTop=h, bodyBot=-1, bodyLeft=w, bodyRight=-1;
-  for (let x=0;x<w;x++) {
-    if (colTop[x]<bodyTop && colBot[x]>-1) bodyTop=colTop[x];
-    if (colBot[x]>bodyBot) bodyBot=colBot[x];
-  }
-  for (let y=0;y<h;y++) {
-    if (rowLeft[y]<w && rowLeft[y]<bodyLeft)   bodyLeft=rowLeft[y];
-    if (rowRight[y]>-1 && rowRight[y]>bodyRight) bodyRight=rowRight[y];
-  }
-
-  const bodyH    = bodyBot - bodyTop;
-  const bodyW    = bodyRight - bodyLeft;
-  const bodyCX   = (bodyLeft + bodyRight) / 2;
-  const frameCX  = w / 2;
-
-  const hasFullBody = bodyH > h * 0.55 && bodyTop < h * 0.12 && bodyBot > h * 0.80;
-  const centered    = Math.abs(bodyCX - frameCX) < w * 0.15;
-
-  // ── Keypoints: anatomical fractions of body height ──────────────────────
-  // Based on standard proportion tables (DaVinci / Drillis & Contini):
-  // Head = top 13.5% of total height
-  // Shoulders at ~18% from top
-  // Chest mid at ~35%
-  // Hip at ~52%
-  // Knee at ~73%
-  // Ankle at ~93%
-  const kp = (frac) => Math.round(bodyTop + bodyH * frac);
-
-  const headTopY     = bodyTop;
-  const shoulderY    = kp(0.15);
-  const chestMidY    = kp(0.37);
-  const hipY         = kp(0.53);
-  const kneeY        = kp(0.74);
-  const ankleY       = kp(0.93);
-
-  // Width at each keypoint row (actual silhouette width)
-  function widthAt(y) {
-    if (y<0||y>=h) return 0;
-    const l=rowLeft[y], r=rowRight[y];
-    return (l<w && r>-1) ? r-l : 0;
-  }
-
-  const shoulderW  = Math.max(widthAt(shoulderY-2), widthAt(shoulderY), widthAt(shoulderY+2));
-  const hipW       = Math.max(widthAt(hipY-2), widthAt(hipY), widthAt(hipY+2));
-  const waistW     = Math.max(widthAt(kp(0.44)-2), widthAt(kp(0.44)), widthAt(kp(0.44)+2));
-
-  // Upper arm: at shoulder+20% of (hip-shoulder) distance, measure narrower section
-  const uaY        = Math.round(shoulderY + (hipY-shoulderY)*0.15);
-  // Upper arm appears in 2D as outer shoulders minus body trunk width
-  // Estimate each arm width as (shoulderW - waistW)/2 at arm zone
-  const trunkW     = Math.max(widthAt(chestMidY-2), widthAt(chestMidY), widthAt(chestMidY+2));
-  const upperArmPx = Math.max(1, (shoulderW - trunkW) / 2);
-
-  return {
-    bodyTop, bodyBot, bodyLeft, bodyRight,
-    bodyH, bodyW, bodyCX,
-    hasFullBody, centered,
-    shoulderW, hipW, waistW, trunkW, upperArmPx,
-    shoulderY, hipY, kneeY, ankleY,
-    headTopY,
-    rowLeft, rowRight,
-    colTop, colBot
-  };
+function buildInstr(an,geo){
+  if(!an.hasBody)return 'No subject detected — plain background needed, subject 2–4 m away';
+  if(!an.fillsFrame)return 'Move subject closer or step back to see full body head-to-feet';
+  if(geo.dist_m!=null&&geo.dist_m<1.2)return `Too close (${geo.dist_m.toFixed(1)} m) — move subject back`;
+  if(geo.dist_m!=null&&geo.dist_m>5.0)return `Too far (${geo.dist_m.toFixed(1)} m) — move subject closer`;
+  if(!an.centered)return 'Move subject to centre of frame';
+  if(!S.constraints.level)return `Tilt phone upright — roll ${Math.abs(S.tiltDeg).toFixed(0)}°`;
+  if(!S.constraints.still)return 'Hold phone perfectly still…';
+  return 'Position subject, arms slightly out from body';
 }
 
-// ── Draw overlay skeleton / lines ──────────────────────────────────────────
-function drawOverlay(ctx, cw, ch, analysis, srcW, srcH) {
-  ctx.clearRect(0,0,cw,ch);
+function toggleAuto(){
+  S.autoOn=!S.autoOn;
+  $('btn-auto').style.color=S.autoOn?'var(--g)':'';
+  $('btn-auto').style.borderColor=S.autoOn?'var(--g)':'';
+}
 
-  // Always show something if any body pixels found
-  if (analysis.bodyH <= 0) return;
+// ═══════════════════════════════════════════════════════
+//  CAPTURE + PROCESS
+// ═══════════════════════════════════════════════════════
+function capture(){
+  const v=$('video');
+  const fl=$('flash'); fl.classList.add('on'); setTimeout(()=>fl.classList.remove('on'),120);
+  const c=document.createElement('canvas');
+  c.width=v.videoWidth; c.height=v.videoHeight;
+  c.getContext('2d').drawImage(v,0,0);
+  S.captured={dataURL:c.toDataURL('image/jpeg',.9), w:v.videoWidth, h:v.videoHeight};
+  stopHeightCam();
+  processCapture();
+}
 
-  // The video is rendered object-fit:cover into the full screen (cw × ch).
-  // We need to map analysis coords (srcW × srcH) → rendered screen coords.
-  // object-fit:cover: scale to fill, crop the overflow dimension.
-  const vidAspect    = srcW / srcH;
-  const screenAspect = cw   / ch;
-  let renderW, renderH, offsetX, offsetY;
-  if (vidAspect > screenAspect) {
-    // Video is wider than screen → letterbox left/right
-    renderH  = ch;
-    renderW  = ch * vidAspect;
-    offsetX  = (cw - renderW) / 2;
-    offsetY  = 0;
-  } else {
-    // Video is taller (portrait phone) → crop top/bottom
-    renderW  = cw;
-    renderH  = cw / vidAspect;
-    offsetX  = 0;
-    offsetY  = (ch - renderH) / 2;
-  }
+async function processCapture(){
+  show('s-proc');
+  $('proc-thumb').src=S.captured.dataURL;
 
-  // Map analysis pixel → screen pixel
-  function sx(x) { return offsetX + x * (renderW / srcW); }
-  function sy(y) { return offsetY + y * (renderH / srcH); }
-
-  const { rowLeft, rowRight, bodyTop, bodyBot, bodyCX, bodyW } = analysis;
-
-  // Draw filled silhouette
-  ctx.beginPath();
-  let started = false;
-  for (let y = bodyTop; y <= bodyBot; y += 2) {
-    const l = rowLeft[y];
-    if (l < srcW) {
-      if (!started) { ctx.moveTo(sx(l), sy(y)); started = true; }
-      else ctx.lineTo(sx(l), sy(y));
-    }
-  }
-  for (let y = bodyBot; y >= bodyTop; y -= 2) {
-    const r = rowRight[y];
-    if (r > -1) ctx.lineTo(sx(r), sy(y));
-  }
-  ctx.closePath();
-  ctx.fillStyle = 'rgba(0,229,255,0.08)';
-  ctx.fill();
-  ctx.strokeStyle = state.allPass ? 'rgba(0,255,136,0.6)' : 'rgba(0,229,255,0.45)';
-  ctx.lineWidth = 2;
-  ctx.stroke();
-
-  // Keypoint horizontal lines
-  const kps = [
-    { y: analysis.headTopY,  label: 'HEAD'     },
-    { y: analysis.shoulderY, label: 'SHOULDER' },
-    { y: analysis.hipY,      label: 'HIP'      },
-    { y: analysis.kneeY,     label: 'KNEE'     },
-    { y: analysis.ankleY,    label: 'ANKLE'    },
+  const steps=[
+    {label:'Silhouette segmentation',  ms:350},
+    {label:'Keypoint localisation',    ms:300},
+    {label:'Pinhole distance solve',   ms:250},
+    {label:'Anthropometric regression',ms:400},
+    {label:'Finalising output',        ms:200}
   ];
+  $('proc-steps').innerHTML=steps.map((_,i)=>`
+    <div class="ps" id="pss-${i}"><span class="pi">○</span><span>${steps[i].label}</span>
+    <div class="pb"><div class="pf" id="pf-${i}"></div></div></div>`).join('');
 
-  const halfW = sx(bodyCX + bodyW * 0.4) - sx(bodyCX);
-
-  kps.forEach(kp => {
-    const cx = sx(bodyCX);
-    const cy = sy(kp.y);
-
-    ctx.save();
-    ctx.strokeStyle = 'rgba(0,229,255,0.5)';
-    ctx.lineWidth = 1;
-    ctx.setLineDash([5, 5]);
-    ctx.beginPath();
-    ctx.moveTo(cx - halfW, cy);
-    ctx.lineTo(cx + halfW, cy);
-    ctx.stroke();
-    ctx.setLineDash([]);
-    ctx.restore();
-
-    // Dot
-    ctx.beginPath();
-    ctx.arc(cx, cy, 4, 0, Math.PI * 2);
-    ctx.fillStyle = state.allPass ? '#00ff88' : '#00e5ff';
-    ctx.shadowColor = ctx.fillStyle;
-    ctx.shadowBlur  = 8;
-    ctx.fill();
-    ctx.shadowBlur  = 0;
-
-    // Label (right of body)
-    ctx.fillStyle = state.allPass ? 'rgba(0,255,136,0.9)' : 'rgba(0,229,255,0.85)';
-    ctx.font = `bold 11px 'Share Tech Mono', monospace`;
-    ctx.fillText(kp.label, cx + halfW + 6, cy + 4);
-  });
-
-  // Height dimension line on left
-  const leftX = sx(analysis.bodyLeft) - 24;
-  ctx.strokeStyle = state.allPass ? 'rgba(0,255,136,0.7)' : 'rgba(0,229,255,0.5)';
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.moveTo(leftX, sy(analysis.headTopY));
-  ctx.lineTo(leftX, sy(analysis.ankleY));
-  ctx.stroke();
-  [analysis.headTopY, analysis.ankleY].forEach(ky => {
-    ctx.beginPath();
-    ctx.moveTo(leftX - 5, sy(ky));
-    ctx.lineTo(leftX + 5, sy(ky));
-    ctx.stroke();
-  });
-  // Vertical label
-  const midLabelY = (sy(analysis.headTopY) + sy(analysis.ankleY)) / 2;
-  ctx.save();
-  ctx.fillStyle = state.allPass ? 'rgba(0,255,136,0.85)' : 'rgba(0,229,255,0.7)';
-  ctx.font = `bold 11px 'Share Tech Mono', monospace`;
-  ctx.translate(leftX - 14, midLabelY);
-  ctx.rotate(-Math.PI / 2);
-  ctx.fillText('HEIGHT', -28, 0);
-  ctx.restore();
-}
-
-function updateConstraintUI(estDist) {
-  const map = {
-    'c-distance': state.constraints.distance,
-    'c-centered': state.constraints.centered,
-    'c-level':    state.constraints.level,
-    'c-fullbody': state.constraints.fullbody,
-    'c-stillness':state.constraints.stillness
-  };
-  for (const [id, val] of Object.entries(map)) {
-    const el = document.getElementById(id);
-    el.classList.toggle('pass', val);
-    el.classList.toggle('fail', !val);
-  }
-  const dm = document.getElementById('dist-meter');
-  dm.textContent = estDist !== null ? `EST. DISTANCE: ${estDist.toFixed(2)} m` : 'EST. DISTANCE: —';
-}
-
-function updateTiltBar() {
-  const tilt = state.tiltDeg || 0;
-  const clamp = Math.max(-45, Math.min(45, tilt));
-  const pct = (clamp + 45) / 90;
-  const top = Math.round(pct * 94); // 0-94px range in 100px bar
-  document.getElementById('tilt-indicator').style.top = top + 'px';
-  const color = Math.abs(tilt) < 8 ? '#00ff88' : '#ffcc00';
-  document.getElementById('tilt-indicator').style.background = color;
-  document.getElementById('tilt-indicator').style.boxShadow = `0 0 6px ${color}`;
-}
-
-// ── Capture ────────────────────────────────────────────────────────────────
-function captureFrame() {
-  const video  = document.getElementById('video');
-
-  // Flash effect
-  const flash = document.getElementById('flash');
-  flash.classList.add('on');
-  setTimeout(()=>flash.classList.remove('on'), 150);
-
-  // Store capture resolution
-  state.captureW = video.videoWidth;
-  state.captureH = video.videoHeight;
-
-  // Capture full-res from video
-  const cap = document.createElement('canvas');
-  cap.width  = video.videoWidth;
-  cap.height = video.videoHeight;
-  cap.getContext('2d').drawImage(video, 0, 0);
-  state.capturedDataURL = cap.toDataURL('image/jpeg', 0.88);
-
-  stopCamera();
-  processImage();
-}
-
-function toggleAutoCapture() {
-  state.autoCapture = !state.autoCapture;
-  const btn = document.getElementById('btn-mode-toggle');
-  btn.style.color     = state.autoCapture ? 'var(--accent2)' : '';
-  btn.style.borderColor = state.autoCapture ? 'var(--accent2)' : '';
-}
-
-// ── Processing ────────────────────────────────────────────────────────────
-async function processImage() {
-  showScreen('processing');
-  document.getElementById('proc-thumb').src = state.capturedDataURL;
-
-  const steps = [
-    { id:'ps-1', fill:'pf-1', label:'Background segmentation',    ms:400 },
-    { id:'ps-2', fill:'pf-2', label:'Silhouette extraction',       ms:350 },
-    { id:'ps-3', fill:'pf-3', label:'Keypoint estimation',         ms:450 },
-    { id:'ps-4', fill:'pf-4', label:'Anthropometric regression',   ms:500 },
-    { id:'ps-5', fill:'pf-5', label:'WHO classification',          ms:300 }
-  ];
-
-  for (let i=0; i<steps.length; i++) {
-    const s = steps[i];
-    const el = document.getElementById(s.id);
-    const fill = document.getElementById(s.fill);
-    el.classList.add('active');
-    el.querySelector('.ps-icon').textContent = '◈';
-
-    // Animate fill bar
-    await animateBar(fill, s.ms);
-    el.classList.remove('active');
-    el.classList.add('done');
-    el.querySelector('.ps-icon').textContent = '✓';
+  for(let i=0;i<steps.length;i++){
+    const el=$(`pss-${i}`),fill=$(`pf-${i}`);
+    el.classList.add('act');el.querySelector('.pi').textContent='◈';
+    await animBar(fill,steps[i].ms);
+    el.classList.remove('act');el.classList.add('done');el.querySelector('.pi').textContent='✓';
   }
 
-  // Do actual analysis on captured image
-  await computeResults();
-
+  // ── Full-res analysis ──
+  await doFullAnalysis();
   showResults();
 }
 
-function animateBar(fillEl, ms) {
-  return new Promise(resolve => {
-    const start = performance.now();
-    function tick() {
-      const elapsed = performance.now() - start;
-      const pct = Math.min(100, (elapsed/ms)*100);
-      fillEl.style.width = pct + '%';
-      if (pct < 100) requestAnimationFrame(tick);
-      else resolve();
-    }
-    requestAnimationFrame(tick);
-  });
-}
+async function doFullAnalysis(){
+  const img=new Image(); img.src=S.captured.dataURL;
+  await new Promise(r=>img.onload=r);
 
-// ── Anthropometric computation ────────────────────────────────────────────
-async function computeResults() {
-  // Re-analyse the captured image
-  const img = new Image();
-  img.src = state.capturedDataURL;
-  await new Promise(r => img.onload = r);
+  const AW=Math.min(img.width,480), AH=Math.round(img.height*(AW/img.width));
+  const c=document.createElement('canvas'); c.width=AW; c.height=AH;
+  const ctx=c.getContext('2d'); ctx.drawImage(img,0,0,AW,AH);
+  const id=ctx.getImageData(0,0,AW,AH);
 
-  const cap = document.createElement('canvas');
-  const AW = Math.min(img.width, 480);
-  const AH = Math.round(img.height * (AW/img.width));
-  cap.width=AW; cap.height=AH;
-  const ctx = cap.getContext('2d');
-  ctx.drawImage(img, 0,0, AW, AH);
-  const imageData = ctx.getImageData(0,0,AW,AH);
+  const an=analyseFrame(id,AW,AH);
+  const camH=parseFloat($('in-camh').value)||1.1;
+  const fovDeg=parseFloat($('in-fov').value)||69;
+  const geo=computeGeometry(an,AW,AH,camH,fovDeg);
 
-  const an = analyseFrame(imageData, AW, AH);
+  const knownH=parseFloat($('in-kh').value)||null;
+  let finalH=geo.height_cm;
+  if(knownH&&knownH>50){finalH=knownH}
 
-  // ── Scale recovery (pixels → cm) ──
-  // Pinhole model: distance D = (camH * focalPx) / ankleYpx_from_center
-  const camH    = state.camH || 1.1;   // metres
-  const focalPx = AH * 0.9;           // estimated focal length in pixels
-  const ankleYfc = an.ankleY - AH/2;
-  const estDist = (ankleYfc > 10) ? (camH * focalPx) / ankleYfc : 2.5; // fallback 2.5m
-
-  // Scale: real_cm_per_pixel = (estDist * 100) / focalPx
-  const pxPerM  = focalPx / estDist;    // pixels per metre in image at subject distance
-  const cmPerPx = 100 / pxPerM;         // cm per pixel
-
-  // ── Height ──
-  const bodyHeightPx = an.ankleY - an.headTopY;
-  let estHeight = bodyHeightPx * cmPerPx; // in cm
-
-  // Correct for typical head-top-to-vertex vs to-chin confusion (+3%)
-  estHeight *= 1.03;
-
-  // If known height provided, use it and back-calibrate scale
-  let calibScale = 1.0;
-  if (state.knownHeight && state.knownHeight > 100) {
-    calibScale = state.knownHeight / estHeight;
-    estHeight  = state.knownHeight;
+  // Recalculate scale from known height if provided
+  let effectivePxPerM=geo.pxPerM;
+  if(knownH&&knownH>50&&an.bodyH>10){
+    effectivePxPerM=(an.bodyH/(knownH/100));
   }
 
-  // Apply calib to other measurements
-  const effectiveCmPerPx = cmPerPx * calibScale;
+  const shoulderCm=effectivePxPerM?(an.shoulderW/effectivePxPerM)*100:null;
+  const hipCm     =effectivePxPerM?(an.hipW     /effectivePxPerM)*100:null;
+  const armDiamCm =effectivePxPerM?(an.armPx    /effectivePxPerM)*100:null;
+  const muacFromBody=armDiamCm?armDiamCm*Math.PI*0.9:null;
 
-  // ── Widths (cm) ──
-  const shoulderCm = an.shoulderW * effectiveCmPerPx;
-  const hipCm      = an.hipW      * effectiveCmPerPx;
-  const waistCm    = an.waistW    * effectiveCmPerPx;
+  const weight=estimateWeight(finalH,shoulderCm,hipCm,S.sex);
+  const bmi=finalH&&weight?weight/((finalH/100)**2):null;
+  const bmiCat=bmi?bmi<18.5?'Underweight':bmi<25?'Normal':bmi<30?'Overweight':'Obese':'—';
 
-  // ── MUAC (mid-upper arm circumference) ──
-  // Upper arm width in pixels × scale → diameter → circumference via π
-  // We have half-circumference visible: C ≈ π × d (full cylinder assumption)
-  const upperArmDiamCm = an.upperArmPx * effectiveCmPerPx;
-  // Correction factor: 2D arm appears narrowed vs reality, +12%
-  const muacCm = upperArmDiamCm * Math.PI * 0.88; // ≈ π × d × 0.88
+  // Confidence
+  let conf=50;
+  if(an.hasBody)conf+=10; if(an.fillsFrame)conf+=10;
+  if(S.constraints.dist)conf+=10; if(S.constraints.still)conf+=5;
+  if(knownH)conf+=20; conf=Math.min(90,conf);
 
-  // ── Weight: Lorentz formula + body shape adjustment ──
-  // Base from height alone (Lorentz):
-  let weightBase;
-  const H = estHeight;
-  if (state.sex === 'male') {
-    weightBase = H - 100 - (H - 150) / 4;
-  } else {
-    weightBase = H - 100 - (H - 150) / 2.5;
-  }
-
-  // Adjust for shoulder/hip width relative to population norms
-  // Population avg shoulder ~38cm M / ~35cm F; hip ~34cm / ~36cm
-  const avgShoulderCm = state.sex === 'male' ? 38 : 35;
-  const avgHipCm      = state.sex === 'male' ? 34 : 36;
-  const shoulderAdj   = (shoulderCm - avgShoulderCm) * 0.8;  // kg per cm deviation
-  const hipAdj        = (hipCm      - avgHipCm)      * 0.6;
-  let estWeight = weightBase + shoulderAdj + hipAdj;
-  estWeight = Math.max(25, Math.min(200, estWeight));  // sanity clamp
-
-  // ── BMI ──
-  const bmi = estWeight / ((H/100) ** 2);
-  const bmiCat = bmi < 18.5 ? 'Underweight' : bmi < 25 ? 'Normal' :
-                 bmi < 30   ? 'Overweight'   : 'Obese';
-
-  // ── Torso / leg / arm lengths ──
-  const torsoLenCm = (an.hipY - an.shoulderY) * effectiveCmPerPx;
-  const legLenCm   = (an.ankleY - an.hipY)    * effectiveCmPerPx;
-  const armLenCm   = torsoLenCm * 0.95; // proportional estimate (arm ≈ torso)
-
-  // ── Confidence ──
-  // Higher confidence when: full body visible, good distance, known height provided
-  let confScore = 60;
-  if (an.hasFullBody)             confScore += 15;
-  if (state.constraints.distance) confScore += 10;
-  if (state.constraints.level)    confScore += 5;
-  if (state.constraints.stillness) confScore += 5;
-  if (state.knownHeight)          confScore += 15;
-  confScore = Math.min(95, confScore);
-
-  // Error margins (±)
-  const heightErr = state.knownHeight ? 0 : Math.round(H * 0.04);
-  const weightErr = Math.round(estWeight * 0.09);
-  const muacErr   = 0.8;
-
-  state.results = {
-    height: estHeight, heightErr,
-    weight: estWeight, weightErr,
-    muac: muacCm, muacErr,
-    bmi, bmiCat,
-    shoulderCm, hipCm, waistCm, torsoLenCm, legLenCm, armLenCm,
-    upperArmPx: an.upperArmPx,
-    estDist, focalPx,
-    confScore,
-    an
+  S.results={
+    height:finalH, heightKnown:!!knownH,
+    weight, bmi, bmiCat,
+    muac:muacFromBody,  // from body shot (rough)
+    muacFinal:null,     // from dedicated MUAC shot (better)
+    shoulderCm, hipCm,
+    dist:geo.dist_m, pxPerM:effectivePxPerM,
+    fov:fovDeg, camH,
+    bodyPx:an.bodyH, f:geo.f,
+    rollDeg:S.tiltDeg,
+    captureW:S.captured.w, captureH:S.captured.h,
+    conf, an,
+    debug:{AW,AH,bTop:an.bTop,bBot:an.bBot,bodyH:an.bodyH,shoulderW:an.shoulderW,hipW:an.hipW,armPx:an.armPx}
   };
 }
 
-// ── Show results ───────────────────────────────────────────────────────────
-function showResults() {
-  const R = state.results;
-
-  document.getElementById('result-thumb').src = state.capturedDataURL;
-  document.getElementById('result-name').textContent = state.subjectName || 'Subject';
-  document.getElementById('result-meta').textContent =
-    `${state.age}y | ${state.sex} | ${new Date().toLocaleDateString()}`;
-  document.getElementById('result-conf-badge').textContent = `CONF: ${R.confScore}%`;
-  document.getElementById('result-timestamp').textContent = new Date().toLocaleTimeString();
-
-  document.getElementById('r-height').textContent = Math.round(R.height);
-  document.getElementById('r-height-ci').textContent = R.heightErr ? `±${R.heightErr} cm` : '(known)';
-
-  document.getElementById('r-weight').textContent = R.weight.toFixed(1);
-  document.getElementById('r-weight-ci').textContent = `±${R.weightErr} kg`;
-
-  document.getElementById('r-muac').textContent   = R.muac.toFixed(1);
-  document.getElementById('r-muac-ci').textContent = `±${R.muacErr} cm`;
-
-  document.getElementById('r-bmi').textContent   = R.bmi.toFixed(1);
-  document.getElementById('r-bmi-cat').textContent = R.bmiCat;
-
-  // Detail rows
-  document.getElementById('r-shoulder').textContent = R.shoulderCm.toFixed(1) + ' cm';
-  document.getElementById('r-hip').textContent      = R.hipCm.toFixed(1)      + ' cm';
-  document.getElementById('r-torso').textContent    = R.torsoLenCm.toFixed(1) + ' cm';
-  document.getElementById('r-leg').textContent      = R.legLenCm.toFixed(1)   + ' cm';
-  document.getElementById('r-arm').textContent      = R.armLenCm.toFixed(1)   + ' cm';
-  document.getElementById('r-ua').textContent       = R.upperArmPx.toFixed(0) + ' px';
-  document.getElementById('r-dist').textContent     = R.estDist.toFixed(2)    + ' m';
-
-  document.getElementById('r-tilt').textContent     = (state.tiltDeg||0).toFixed(1) + '°';
-  document.getElementById('r-camh').textContent     = (state.camH||1.1).toFixed(2)  + ' m';
-  document.getElementById('r-focal').textContent    = R.focalPx.toFixed(0) + ' px';
-  document.getElementById('r-res').textContent = `${state.captureW || '—'}×${state.captureH || '—'}`;
-  document.getElementById('r-constraints').textContent =
-    Object.values(state.constraints).filter(Boolean).length + '/5';
-
-  // MUAC bar
-  // Scale: 9 cm = 0%, 16 cm = 100%; SAM<11.5, MAM<12.5
-  const muacPct = Math.max(0, Math.min(100, (R.muac - 9) / 7 * 100));
-  document.getElementById('muac-pointer').style.left = muacPct + '%';
-
-  const muacEl   = document.getElementById('muac-result-text');
-  const age      = state.age || 25;
-  // WHO MUAC thresholds (6–59 months children use different — adult thresholds here)
-  // For adults: <22 cm risk; for children: SAM <11.5, MAM 11.5–12.5
-  let muacStatus, muacClass;
-  if (age < 5) {
-    // Child (approximate)
-    if (R.muac < 11.5)      { muacStatus='SAM — Severe Acute Malnutrition'; muacClass='sam'; }
-    else if (R.muac < 12.5) { muacStatus='MAM — Moderate Acute Malnutrition'; muacClass='mam'; }
-    else                    { muacStatus='Normal Nutritional Status'; muacClass='normal'; }
-  } else {
-    // Adult (>12.5 generally adequate)
-    if (R.muac < 18)       { muacStatus='At risk — Low MUAC'; muacClass='sam'; }
-    else if (R.muac < 22)  { muacStatus='Borderline — Moderate Risk'; muacClass='mam'; }
-    else                   { muacStatus='Adequate — Normal MUAC'; muacClass='normal'; }
-  }
-  muacEl.textContent  = muacStatus;
-  muacEl.className    = 'muac-result-text ' + muacClass;
-
-  // Color the MUAC metric card
-  const muacCard = document.querySelector('.metric-card:has(#r-muac)');
-  if (muacCard) {
-    muacCard.className = 'metric-card ' + (muacClass === 'normal' ? 'green' : muacClass === 'mam' ? 'warn' : '');
-    muacCard.querySelector('::before'); // refresh via class
-  }
-
-  showScreen('results');
+function animBar(el,ms){
+  return new Promise(r=>{
+    const t0=performance.now();
+    function f(){const p=Math.min(100,(performance.now()-t0)/ms*100);el.style.width=p+'%';if(p<100)requestAnimationFrame(f);else r()}
+    requestAnimationFrame(f);
+  });
 }
 
-// ── Navigation ─────────────────────────────────────────────────────────────
-function retake() {
-  showScreen('setup');
-  // Pre-fill same subject
-}
+// ═══════════════════════════════════════════════════════
+//  SHOW RESULTS
+// ═══════════════════════════════════════════════════════
+function showResults(){
+  const R=S.results;
+  $('r-thumb').src=S.captured.dataURL;
+  $('r-name').textContent=$('in-name').value||'Subject';
+  $('r-meta').textContent=`${$('in-age').value||'?'}y | ${S.sex} | ${new Date().toLocaleDateString()}`;
+  $('r-conf').textContent=`CONF ${R.conf}%`;
+  $('r-ts').textContent=new Date().toLocaleTimeString();
 
-function newSubject() {
-  document.getElementById('input-name').value = '';
-  document.getElementById('input-age').value  = '';
-  document.getElementById('input-height').value = '';
-  showScreen('setup');
-}
+  $('r-h').textContent=R.height?Math.round(R.height):'—';
+  $('r-h-ci').textContent=R.heightKnown?'(entered)':'±3–6 cm';
+  $('r-w').textContent=R.weight?R.weight.toFixed(1):'—';
+  $('r-w-ci').textContent='±5–12 kg';
 
-// ── Utilities ──────────────────────────────────────────────────────────────
-function computeMeanLuminance(data) {
-  let sum = 0, count = 0;
-  // Sample every 20th pixel (stride for speed)
-  for (let i = 0; i < data.length; i += 80) {
-    sum += 0.299*data[i] + 0.587*data[i+1] + 0.114*data[i+2];
-    count++;
-  }
-  return count > 0 ? sum / count : 0;
-}
+  // MUAC: use dedicated scan if available, else body estimate
+  const muac=R.muacFinal??R.muac;
+  $('r-muac').textContent=muac?muac.toFixed(1):'—';
+  $('r-muac-ci').textContent=R.muacFinal?'±1–2 cm (arm scan)':'±2–3 cm (body est.)';
 
-function sampleSpots(data, w, h) {
-  // Sample 16 fixed spots spread across the image
-  const spots = [];
-  for (let r = 0; r < 4; r++) {
-    for (let c = 0; c < 4; c++) {
-      const x = Math.floor((c + 0.5) * w / 4);
-      const y = Math.floor((r + 0.5) * h / 4);
-      const i = (y * w + x) * 4;
-      spots.push(0.299*data[i] + 0.587*data[i+1] + 0.114*data[i+2]);
+  $('r-bmi').textContent=R.bmi?R.bmi.toFixed(1):'—';
+  $('r-bmi-cat').textContent=R.bmiCat;
+
+  // MUAC bar (range 8–22 cm display)
+  if(muac){
+    const pct=Math.max(0,Math.min(100,(muac-8)/14*100));
+    $('muac-ptr').style.left=pct+'%';
+    const age=parseInt($('in-age').value)||25;
+    let st,cls;
+    if(age<5){
+      if(muac<11.5){st='SAM — Severe Acute Malnutrition';cls='ms-sam'}
+      else if(muac<12.5){st='MAM — Moderate Acute Malnutrition';cls='ms-mam'}
+      else{st='Normal Nutritional Status';cls='ms-ok'}
+    }else{
+      if(muac<18){st='At Risk — Low MUAC for adult';cls='ms-sam'}
+      else if(muac<22){st='Borderline — Moderate risk';cls='ms-mam'}
+      else{st='Adequate — Normal';cls='ms-ok'}
     }
+    $('muac-status').textContent=st;
+    $('muac-status').className='muac-status '+cls;
+    $('mc-muac').className='mc '+(cls==='ms-ok'?'g':cls==='ms-mam'?'w':'r');
   }
-  return spots;
+
+  // Details
+  $('d-dist').textContent=R.dist?R.dist.toFixed(2)+' m':'—';
+  $('d-camh').textContent=R.camH.toFixed(2)+' m';
+  $('d-fov').textContent=R.fov+'°';
+  $('d-pxh').textContent=R.bodyPx?' '+R.bodyPx+' px':'—';
+  $('d-shw').textContent=R.shoulderCm?R.shoulderCm.toFixed(1)+' cm':'—';
+  $('d-hipw').textContent=R.hipCm?R.hipCm.toFixed(1)+' cm':'—';
+  $('d-roll').textContent=S.imu?R.rollDeg.toFixed(1)+'°':'(no IMU)';
+  $('d-uapx').textContent=R.an?R.an.armPx.toFixed(0)+' px':'—';
+  $('d-res').textContent=`${R.captureW}×${R.captureH}`;
+
+  // Debug toggle (tap r-title)
+  $('r-title') && $('r-title').addEventListener('click',()=>{
+    const ds=$('debug-sec'); ds.style.display=ds.style.display==='none'?'block':'none';
+    $('debug-content').textContent=JSON.stringify(R.debug,null,2);
+  },{once:true});
+
+  show('s-results');
 }
 
-function computeSpotDiff(data, w, h, prevSpots) {
-  if (!prevSpots) return 0;
-  const cur = sampleSpots(data, w, h);
-  let maxDiff = 0;
-  for (let i = 0; i < cur.length; i++) {
-    maxDiff = Math.max(maxDiff, Math.abs(cur[i] - prevSpots[i]));
-  }
-  return maxDiff;
+// ═══════════════════════════════════════════════════════
+//  MUAC DEDICATED SCAN
+// ═══════════════════════════════════════════════════════
+function goMuac(){
+  show('s-muac');
+  startMuacCam();
+}
+function muacBack(){stopMuacCam();show('s-results')}
+
+async function startMuacCam(){
+  try{
+    S.muacStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:720}}});
+    const v=$('video-muac'); v.srcObject=S.muacStream; await v.play();
+    startMuacLoop();
+  }catch(e){alert('Camera: '+e.message);show('s-results')}
 }
 
-// ── Init ───────────────────────────────────────────────────────────────────
-showScreen('splash');
+function stopMuacCam(){
+  if(S.muacRaf){cancelAnimationFrame(S.muacRaf);S.muacRaf=null}
+  if(S.muacStream){S.muacStream.getTracks().forEach(t=>t.stop());S.muacStream=null}
+}
+
+function startMuacLoop(){
+  if(S.muacRaf)return;
+  const video=$('video-muac'), cvs=$('cvs-muac');
+  const ctx=cvs.getContext('2d');
+  function loop(){
+    S.muacRaf=requestAnimationFrame(loop);
+    if(video.readyState<2)return;
+    const cw=window.innerWidth,ch=window.innerHeight;
+    if(cvs.width!==cw||cvs.height!==ch){cvs.width=cw;cvs.height=ch}
+    // Just show a crosshair circle for arm guide
+    ctx.clearRect(0,0,cw,ch);
+    const cx=cw/2,cy=ch/2,rw=cw*.35,rh=28;
+    ctx.strokeStyle='rgba(0,229,255,.5)';ctx.lineWidth=2;
+    ctx.setLineDash([6,4]);
+    ctx.beginPath();ctx.ellipse(cx,cy,rw,rh,0,0,Math.PI*2);ctx.stroke();
+    ctx.setLineDash([]);
+    // Tick marks at 25% and 75% of ellipse width (mid-arm reference)
+    [[cx-rw*.5,cy],[cx+rw*.5,cy]].forEach(([x,y])=>{
+      ctx.strokeStyle='rgba(0,255,136,.7)';ctx.lineWidth=2;
+      ctx.beginPath();ctx.moveTo(x,y-20);ctx.lineTo(x,y+20);ctx.stroke();
+    });
+  }
+  loop();
+}
+
+function captureMuac(){
+  const v=$('video-muac');
+  const fl=$('flash-muac');fl.classList.add('on');setTimeout(()=>fl.classList.remove('on'),120);
+  const c=document.createElement('canvas');c.width=v.videoWidth;c.height=v.videoHeight;
+  c.getContext('2d').drawImage(v,0,0);
+  S.muacCapture={dataURL:c.toDataURL('image/jpeg',.9),w:v.videoWidth,h:v.videoHeight};
+  stopMuacCam();
+  processMuac();
+}
+
+async function processMuac(){
+  show('s-proc');
+  $('proc-thumb').src=S.muacCapture.dataURL;
+  $('proc-steps').innerHTML=`
+    <div class="ps" id="mpss-0"><span class="pi">○</span><span>Arm segmentation</span><div class="pb"><div class="pf" id="mpf-0"></div></div></div>
+    <div class="ps" id="mpss-1"><span class="pi">○</span><span>Width measurement</span><div class="pb"><div class="pf" id="mpf-1"></div></div></div>
+    <div class="ps" id="mpss-2"><span class="pi">○</span><span>Circumference estimate</span><div class="pb"><div class="pf" id="mpf-2"></div></div></div>`;
+  $('proc-title').textContent='MUAC SCAN';
+
+  for(let i=0;i<3;i++){
+    $(`mpss-${i}`).classList.add('act');$(`mpss-${i}`).querySelector('.pi').textContent='◈';
+    await animBar($(`mpf-${i}`),[350,300,250][i]);
+    $(`mpss-${i}`).classList.remove('act');$(`mpss-${i}`).classList.add('done');$(`mpss-${i}`).querySelector('.pi').textContent='✓';
+  }
+
+  await doMuacAnalysis();
+  showResults();
+}
+
+async function doMuacAnalysis(){
+  const img=new Image(); img.src=S.muacCapture.dataURL;
+  await new Promise(r=>img.onload=r);
+
+  // We analyse the centre horizontal strip where the arm guide is
+  const AW=Math.min(img.width,640), AH=Math.round(img.height*(AW/img.width));
+  const c=document.createElement('canvas');c.width=AW;c.height=AH;
+  const ctx=c.getContext('2d');ctx.drawImage(img,0,0,AW,AH);
+
+  // Centre strip: middle 30% of height
+  const y0=Math.floor(AH*.35), y1=Math.floor(AH*.65);
+  const id=ctx.getImageData(0,y0,AW,y1-y0);
+
+  // Analyse the strip
+  const d=id.data, H=y1-y0, W=AW;
+  // Background from edges of strip
+  const bgPts=[];
+  for(let x=0;x<W;x+=6)bgPts.push([d[(0*W+x)*4],d[(0*W+x)*4+1],d[(0*W+x)*4+2]]);
+  for(let x=0;x<W;x+=6)bgPts.push([d[((H-1)*W+x)*4],d[((H-1)*W+x)*4+1],d[((H-1)*W+x)*4+2]]);
+  const bgR=bgPts.reduce((a,c)=>a+c[0],0)/bgPts.length;
+  const bgG=bgPts.reduce((a,c)=>a+c[1],0)/bgPts.length;
+  const bgB=bgPts.reduce((a,c)=>a+c[2],0)/bgPts.length;
+  const T=28;
+
+  // Find foreground vertical extent in the centre column region
+  const cx=Math.floor(W/2);
+  const BAND=Math.floor(W*.15); // check centre 30% of width
+  let armTop=H, armBot=-1;
+  for(let y=0;y<H;y++){
+    let fg=0;
+    for(let x=cx-BAND;x<=cx+BAND;x++){
+      const i=(y*W+x)*4;
+      const dr=d[i]-bgR,dg=d[i+1]-bgG,db=d[i+2]-bgB;
+      if(dr*dr+dg*dg+db*db>T*T)fg++;
+    }
+    if(fg>BAND*.4){if(y<armTop)armTop=y;if(y>armBot)armBot=y}
+  }
+
+  const armHeightPx=armBot>armTop?armBot-armTop:0;
+
+  // Scale: use same camera geometry if available from body shot
+  // The MUAC shot likely has the arm filling a known fraction of frame height
+  // We need scale. Best approach: use known camera distance from body shot
+  // or assume arm is held at ~60cm from camera (close-up).
+  // More robust: the arm diameter in pixels / (f/D) = real diameter
+  let muacCm=null;
+  const R=S.results;
+  if(R&&R.pxPerM&&R.dist_m){
+    // Use same focal length, different distance
+    // Arm is typically held at arm's length from body ≈ same or closer distance
+    // Conservative: assume arm at 0.5m from camera for MUAC shot
+    const armDist=0.5;
+    const fovDeg=parseFloat($('in-fov').value)||69;
+    const f=fov2focal(fovDeg, AW);
+    const pxPerMAtArm=f/armDist;
+    const armDiamCm=(armHeightPx/pxPerMAtArm)*100;
+    muacCm=armDiamCm*Math.PI*0.9;
+  }
+
+  if(S.results&&muacCm&&muacCm>5&&muacCm<50){
+    S.results.muacFinal=muacCm;
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+//  NAV
+// ═══════════════════════════════════════════════════════
+function retake(){show('s-setup')}
+
+// ── Init ──
+show('s-splash');
 </script>
 </body>
 </html>

@@ -216,22 +216,22 @@
     position: absolute; inset: 0;
   }
   #canvas-overlay {
-    position: absolute; inset: 0;
+    position: fixed; inset: 0;
     width: 100%; height: 100%;
     pointer-events: none;
-    z-index: 5;
+    z-index: 1001; /* above scan-line overlay (z:1000) */
   }
 
   /* Guide frame */
   .guide-frame {
-    position: absolute;
+    position: fixed;
     left: 50%; top: 50%;
     transform: translate(-50%, -50%);
-    width: 55%; /* will be set by JS for portrait */
+    width: 55%;
     aspect-ratio: 0.45;
     border: 2px solid rgba(0,229,255,0.4);
     border-radius: 12px;
-    z-index: 6;
+    z-index: 1002;
     pointer-events: none;
     transition: border-color 0.3s;
   }
@@ -255,10 +255,10 @@
 
   /* HUD Top */
   .hud-top {
-    position: absolute; top: 0; left: 0; right: 0;
+    position: fixed; top: 0; left: 0; right: 0;
     padding: 16px;
     background: linear-gradient(to bottom, rgba(7,10,15,0.9), transparent);
-    z-index: 10;
+    z-index: 1003;
     display: flex; align-items: center; justify-content: space-between;
   }
   .hud-title {
@@ -273,9 +273,9 @@
 
   /* Constraint panel */
   .constraint-panel {
-    position: absolute;
+    position: fixed;
     top: 70px; right: 12px;
-    z-index: 10;
+    z-index: 1003;
     display: flex; flex-direction: column; gap: 4px;
     pointer-events: none;
   }
@@ -303,9 +303,9 @@
 
   /* Tilt indicator */
   .tilt-bar-wrap {
-    position: absolute; left: 12px; top: 50%;
+    position: fixed; left: 12px; top: 50%;
     transform: translateY(-50%);
-    z-index: 10;
+    z-index: 1003;
     display: flex; flex-direction: column; align-items: center; gap: 4px;
   }
   .tilt-label { font-family: var(--mono); font-size: 9px; color: var(--text-dim); }
@@ -332,8 +332,9 @@
 
   /* Distance meter */
   .dist-meter {
-    position: absolute; bottom: 140px; left: 50%; transform: translateX(-50%);
-    z-index: 10;
+    position: fixed;
+    bottom: 140px; left: 50%; transform: translateX(-50%);
+    z-index: 1003;
     font-family: var(--mono); font-size: 11px;
     color: var(--text-dim);
     background: rgba(7,10,15,0.7);
@@ -345,8 +346,8 @@
 
   /* Instruction banner */
   .instruction-banner {
-    position: absolute; bottom: 90px; left: 16px; right: 16px;
-    z-index: 10;
+    position: fixed; bottom: 90px; left: 16px; right: 16px;
+    z-index: 1003;
     background: rgba(7,10,15,0.85);
     border: 1px solid var(--border);
     border-radius: 8px;
@@ -364,8 +365,8 @@
 
   /* Capture button area */
   .capture-area {
-    position: absolute; bottom: 0; left: 0; right: 0;
-    z-index: 10;
+    position: fixed; bottom: 0; left: 0; right: 0;
+    z-index: 1003;
     height: 80px;
     background: linear-gradient(to top, rgba(7,10,15,0.95), transparent);
     display: flex; align-items: center; justify-content: center;
@@ -422,9 +423,9 @@
 
   /* Flash effect */
   .flash {
-    position: absolute; inset: 0;
+    position: fixed; inset: 0;
     background: white;
-    z-index: 50;
+    z-index: 1010;
     pointer-events: none;
     opacity: 0;
     transition: opacity 0.1s;
@@ -960,7 +961,7 @@ const state = {
   allPass: false,
   lastPixelHash: 0,
   stableFrames: 0,
-  STABLE_THRESH: 1,
+  STABLE_THRESH: 8,
   results: null
 };
 
@@ -986,6 +987,10 @@ async function startCamera() {
 
   state.age = age; state.camH = camH;
   state.subjectName = name; state.knownHeight = knownH;
+  state.imuAvailable = false;  // default; set true when first event fires
+  state.stableFrames = 0;
+  state.lastMeanLum = null;
+  state.lastSpots = null;
 
   showScreen('camera');
   document.getElementById('hud-subject-info').textContent = `${name} | ${age}y | ${state.sex[0].toUpperCase()}`;
@@ -993,7 +998,7 @@ async function startCamera() {
   try {
     const constraints = {
       video: {
-        facingMode: { ideal: 'environment' },  // rear camera
+        facingMode: { ideal: 'environment' },
         width: { ideal: 1920 },
         height: { ideal: 1080 },
         aspectRatio: { ideal: 16/9 }
@@ -1005,28 +1010,35 @@ async function startCamera() {
     video.play();
     video.addEventListener('loadedmetadata', () => {
       startOverlayLoop();
-    });
+    }, { once: true });
   } catch (err) {
     alert('Camera error: ' + err.message + '\n\nPlease ensure you are on HTTPS and have granted camera permission.');
     showScreen('setup');
+    return;
   }
 
-  // DeviceOrientation for tilt
-  if (window.DeviceOrientationEvent) {
+  // Request DeviceOrientation (iOS 13+ needs explicit permission)
+  if (typeof DeviceOrientationEvent !== 'undefined' &&
+      typeof DeviceOrientationEvent.requestPermission === 'function') {
+    try {
+      const perm = await DeviceOrientationEvent.requestPermission();
+      if (perm === 'granted') {
+        window.addEventListener('deviceorientation', onDeviceOrientation, true);
+      }
+      // If denied: imuAvailable stays false → level defaults to true
+    } catch(e) { /* permission dialog failed, ignore */ }
+  } else if (window.DeviceOrientationEvent) {
     window.addEventListener('deviceorientation', onDeviceOrientation, true);
   }
 }
 
 function onDeviceOrientation(e) {
-  // beta = front-back tilt (0 = flat, 90 = upright portrait)
-  // gamma = left-right tilt
   if (e.gamma !== null) {
-    state.tiltDeg = e.gamma; // left-right tilt (should be ~0 when held upright portrait)
+    state.tiltDeg = e.gamma;
+    state.imuAvailable = true;
   }
   if (e.beta !== null) {
-    // For vertical tilt: beta≈90 means phone upright
-    // We care about deviation from 90
-    state.vertTilt = e.beta - 90; // 0 = perfectly upright
+    state.vertTilt = e.beta - 90;
   }
 }
 
@@ -1046,6 +1058,9 @@ function goBack() {
 
 // ── Overlay analysis loop ──────────────────────────────────────────────────
 function startOverlayLoop() {
+  // Guard: only one loop at a time
+  if (state.animFrame) return;
+
   const video   = document.getElementById('video');
   const canvas  = document.getElementById('canvas-overlay');
   const hidden  = document.getElementById('canvas-hidden');
@@ -1056,10 +1071,22 @@ function startOverlayLoop() {
     if (video.readyState < 2) return;
 
     const vw = video.videoWidth, vh = video.videoHeight;
-    canvas.width  = canvas.offsetWidth;
-    canvas.height = canvas.offsetHeight;
-    hidden.width  = Math.min(vw, 320);
-    hidden.height = Math.round(vh * (hidden.width / vw));
+    if (!vw || !vh) return;
+
+    // Size overlay canvas to match window (it's position:fixed full screen)
+    const cw = window.innerWidth, ch = window.innerHeight;
+    if (canvas.width !== cw || canvas.height !== ch) {
+      canvas.width  = cw;
+      canvas.height = ch;
+    }
+
+    // Small analysis canvas
+    const AW = Math.min(vw, 320);
+    const AH = Math.round(vh * (AW / vw));
+    if (hidden.width !== AW || hidden.height !== AH) {
+      hidden.width  = AW;
+      hidden.height = AH;
+    }
 
     // Draw small frame for analysis
     const hctx = hidden.getContext('2d');
@@ -1069,16 +1096,20 @@ function startOverlayLoop() {
     // ── Analyse silhouette ──
     const analysis = analyseFrame(imageData, hidden.width, hidden.height);
 
-    // ── Stillness check via pixel hash ──
-    const hash = quickHash(imageData.data);
-    const diff = Math.abs(hash - state.lastPixelHash);
-    state.lastPixelHash = hash;
-    const isStill = diff < 800000;
-    state.stableFrames = isStill ? Math.min(state.stableFrames + 1, state.STABLE_THRESH + 5) : 0;
+    // ── Stillness check via mean-luminance diff (robust to camera noise) ──
+    const meanLum = computeMeanLuminance(imageData.data);
+    const lumDiff = Math.abs(meanLum - (state.lastMeanLum || meanLum));
+    state.lastMeanLum = meanLum;
+    // Also sample a few fixed pixel positions for motion detection
+    const spotDiff = computeSpotDiff(imageData.data, hidden.width, hidden.height, state.lastSpots);
+    state.lastSpots = sampleSpots(imageData.data, hidden.width, hidden.height);
+    const isStill = lumDiff < 1.5 && spotDiff < 12;
+    state.stableFrames = isStill ? Math.min(state.stableFrames + 1, state.STABLE_THRESH + 10) : Math.max(0, state.stableFrames - 1);
     state.constraints.stillness = state.stableFrames >= state.STABLE_THRESH;
 
-    // ── Camera tilt from IMU or analysis ──
-    const tiltOk = Math.abs(state.tiltDeg) < 15; // ±8° tolerance
+    // ── Camera tilt from IMU (default true if no IMU / permission not granted) ──
+    const hasTilt = state.imuAvailable;
+    const tiltOk  = hasTilt ? (Math.abs(state.tiltDeg) < 12) : true;
     state.constraints.level = tiltOk;
 
     // ── Distance estimation ──
@@ -1261,96 +1292,121 @@ function analyseFrame(imageData, w, h) {
 // ── Draw overlay skeleton / lines ──────────────────────────────────────────
 function drawOverlay(ctx, cw, ch, analysis, srcW, srcH) {
   ctx.clearRect(0,0,cw,ch);
-  if (!analysis.hasFullBody) return;
 
-  const scX = cw / srcW;
-  const scY = ch / srcH;
+  // Always show something if any body pixels found
+  if (analysis.bodyH <= 0) return;
 
-  function lx(x) { return x * scX; }
-  function ly(y) { return y * scY; }
+  // The video is rendered object-fit:cover into the full screen (cw × ch).
+  // We need to map analysis coords (srcW × srcH) → rendered screen coords.
+  // object-fit:cover: scale to fill, crop the overflow dimension.
+  const vidAspect    = srcW / srcH;
+  const screenAspect = cw   / ch;
+  let renderW, renderH, offsetX, offsetY;
+  if (vidAspect > screenAspect) {
+    // Video is wider than screen → letterbox left/right
+    renderH  = ch;
+    renderW  = ch * vidAspect;
+    offsetX  = (cw - renderW) / 2;
+    offsetY  = 0;
+  } else {
+    // Video is taller (portrait phone) → crop top/bottom
+    renderW  = cw;
+    renderH  = cw / vidAspect;
+    offsetX  = 0;
+    offsetY  = (ch - renderH) / 2;
+  }
 
-  // Draw silhouette outline (sampled)
-  const { rowLeft, rowRight, bodyTop, bodyBot, bodyH, bodyCX } = analysis;
+  // Map analysis pixel → screen pixel
+  function sx(x) { return offsetX + x * (renderW / srcW); }
+  function sy(y) { return offsetY + y * (renderH / srcH); }
+
+  const { rowLeft, rowRight, bodyTop, bodyBot, bodyCX, bodyW } = analysis;
+
+  // Draw filled silhouette
   ctx.beginPath();
-  for (let y=bodyTop; y<=bodyBot; y+=2) {
-    const l=rowLeft[y], r=rowRight[y];
-    if (l<srcW && r>-1) {
-      if (y===bodyTop) ctx.moveTo(lx(l), ly(y));
-      else ctx.lineTo(lx(l), ly(y));
+  let started = false;
+  for (let y = bodyTop; y <= bodyBot; y += 2) {
+    const l = rowLeft[y];
+    if (l < srcW) {
+      if (!started) { ctx.moveTo(sx(l), sy(y)); started = true; }
+      else ctx.lineTo(sx(l), sy(y));
     }
   }
-  for (let y=bodyBot; y>=bodyTop; y-=2) {
-    const l=rowLeft[y], r=rowRight[y];
-    if (l<srcW && r>-1) ctx.lineTo(lx(r), ly(y));
+  for (let y = bodyBot; y >= bodyTop; y -= 2) {
+    const r = rowRight[y];
+    if (r > -1) ctx.lineTo(sx(r), sy(y));
   }
   ctx.closePath();
-  ctx.fillStyle = 'rgba(0,229,255,0.06)';
+  ctx.fillStyle = 'rgba(0,229,255,0.08)';
   ctx.fill();
-  ctx.strokeStyle = state.allPass ? 'rgba(0,255,136,0.5)' : 'rgba(0,229,255,0.35)';
-  ctx.lineWidth = 1.5;
+  ctx.strokeStyle = state.allPass ? 'rgba(0,255,136,0.6)' : 'rgba(0,229,255,0.45)';
+  ctx.lineWidth = 2;
   ctx.stroke();
 
-  // Keypoint lines
+  // Keypoint horizontal lines
   const kps = [
-    { y: analysis.headTopY,   label: 'HEAD',      frac: 0.13 },
-    { y: analysis.shoulderY,  label: 'SHOULDER',  frac: 0.15 },
-    { y: analysis.hipY,       label: 'HIP',       frac: 0.53 },
-    { y: analysis.kneeY,      label: 'KNEE',      frac: 0.74 },
-    { y: analysis.ankleY,     label: 'ANKLE',     frac: 0.93 }
+    { y: analysis.headTopY,  label: 'HEAD'     },
+    { y: analysis.shoulderY, label: 'SHOULDER' },
+    { y: analysis.hipY,      label: 'HIP'      },
+    { y: analysis.kneeY,     label: 'KNEE'     },
+    { y: analysis.ankleY,    label: 'ANKLE'    },
   ];
 
-  kps.forEach(kp => {
-    const cy = ly(kp.y);
-    const w2 = lx(analysis.bodyW / 2);
-    const cx = lx(analysis.bodyCX);
+  const halfW = sx(bodyCX + bodyW * 0.4) - sx(bodyCX);
 
-    ctx.beginPath();
-    ctx.moveTo(cx - w2 * 0.55, cy);
-    ctx.lineTo(cx + w2 * 0.55, cy);
-    ctx.strokeStyle = 'rgba(0,229,255,0.4)';
+  kps.forEach(kp => {
+    const cx = sx(bodyCX);
+    const cy = sy(kp.y);
+
+    ctx.save();
+    ctx.strokeStyle = 'rgba(0,229,255,0.5)';
     ctx.lineWidth = 1;
-    ctx.setLineDash([4,4]);
+    ctx.setLineDash([5, 5]);
+    ctx.beginPath();
+    ctx.moveTo(cx - halfW, cy);
+    ctx.lineTo(cx + halfW, cy);
     ctx.stroke();
     ctx.setLineDash([]);
+    ctx.restore();
 
     // Dot
     ctx.beginPath();
-    ctx.arc(cx, cy, 3, 0, Math.PI*2);
+    ctx.arc(cx, cy, 4, 0, Math.PI * 2);
     ctx.fillStyle = state.allPass ? '#00ff88' : '#00e5ff';
+    ctx.shadowColor = ctx.fillStyle;
+    ctx.shadowBlur  = 8;
     ctx.fill();
+    ctx.shadowBlur  = 0;
 
-    // Label
-    ctx.fillStyle = 'rgba(0,229,255,0.7)';
-    ctx.font = `10px 'Share Tech Mono', monospace`;
-    ctx.fillText(kp.label, cx + lx(analysis.shoulderW/2) + 4, cy + 3);
+    // Label (right of body)
+    ctx.fillStyle = state.allPass ? 'rgba(0,255,136,0.9)' : 'rgba(0,229,255,0.85)';
+    ctx.font = `bold 11px 'Share Tech Mono', monospace`;
+    ctx.fillText(kp.label, cx + halfW + 6, cy + 4);
   });
 
-  // Dimension arrows
-  if (state.allPass) {
-    const leftX = lx(analysis.bodyLeft) - 20;
-    ctx.strokeStyle = 'rgba(0,255,136,0.6)';
-    ctx.lineWidth = 1.5;
+  // Height dimension line on left
+  const leftX = sx(analysis.bodyLeft) - 24;
+  ctx.strokeStyle = state.allPass ? 'rgba(0,255,136,0.7)' : 'rgba(0,229,255,0.5)';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(leftX, sy(analysis.headTopY));
+  ctx.lineTo(leftX, sy(analysis.ankleY));
+  ctx.stroke();
+  [analysis.headTopY, analysis.ankleY].forEach(ky => {
     ctx.beginPath();
-    ctx.moveTo(leftX, ly(analysis.headTopY));
-    ctx.lineTo(leftX, ly(analysis.ankleY));
+    ctx.moveTo(leftX - 5, sy(ky));
+    ctx.lineTo(leftX + 5, sy(ky));
     ctx.stroke();
-    // Ticks
-    [[analysis.headTopY],[analysis.ankleY]].forEach(([y]) => {
-      ctx.beginPath();
-      ctx.moveTo(leftX-4, ly(y));
-      ctx.lineTo(leftX+4, ly(y));
-      ctx.stroke();
-    });
-    // Height label
-    const midY = ly((analysis.headTopY + analysis.ankleY)/2);
-    ctx.fillStyle = '#00ff88';
-    ctx.font = `bold 11px 'Share Tech Mono', monospace`;
-    ctx.save();
-    ctx.translate(leftX - 12, midY);
-    ctx.rotate(-Math.PI/2);
-    ctx.fillText('HEIGHT', -20, 0);
-    ctx.restore();
-  }
+  });
+  // Vertical label
+  const midLabelY = (sy(analysis.headTopY) + sy(analysis.ankleY)) / 2;
+  ctx.save();
+  ctx.fillStyle = state.allPass ? 'rgba(0,255,136,0.85)' : 'rgba(0,229,255,0.7)';
+  ctx.font = `bold 11px 'Share Tech Mono', monospace`;
+  ctx.translate(leftX - 14, midLabelY);
+  ctx.rotate(-Math.PI / 2);
+  ctx.fillText('HEIGHT', -28, 0);
+  ctx.restore();
 }
 
 function updateConstraintUI(estDist) {
@@ -1384,12 +1440,15 @@ function updateTiltBar() {
 // ── Capture ────────────────────────────────────────────────────────────────
 function captureFrame() {
   const video  = document.getElementById('video');
-  const hidden = document.getElementById('canvas-hidden');
 
   // Flash effect
   const flash = document.getElementById('flash');
   flash.classList.add('on');
   setTimeout(()=>flash.classList.remove('on'), 150);
+
+  // Store capture resolution
+  state.captureW = video.videoWidth;
+  state.captureH = video.videoHeight;
 
   // Capture full-res from video
   const cap = document.createElement('canvas');
@@ -1605,7 +1664,7 @@ function showResults() {
   document.getElementById('r-tilt').textContent     = (state.tiltDeg||0).toFixed(1) + '°';
   document.getElementById('r-camh').textContent     = (state.camH||1.1).toFixed(2)  + ' m';
   document.getElementById('r-focal').textContent    = R.focalPx.toFixed(0) + ' px';
-  document.getElementById('r-res').textContent      = `${document.getElementById('canvas-hidden').width}×${document.getElementById('canvas-hidden').height}`;
+  document.getElementById('r-res').textContent = `${state.captureW || '—'}×${state.captureH || '—'}`;
   document.getElementById('r-constraints').textContent =
     Object.values(state.constraints).filter(Boolean).length + '/5';
 
@@ -1657,13 +1716,38 @@ function newSubject() {
 }
 
 // ── Utilities ──────────────────────────────────────────────────────────────
-function quickHash(arr) {
-  // Fast pixel similarity hash (sample every 97th byte)
-  let h = 0;
-  for (let i=0; i<arr.length; i+=97) {
-    h = ((h << 5) - h + arr[i]) | 0;
+function computeMeanLuminance(data) {
+  let sum = 0, count = 0;
+  // Sample every 20th pixel (stride for speed)
+  for (let i = 0; i < data.length; i += 80) {
+    sum += 0.299*data[i] + 0.587*data[i+1] + 0.114*data[i+2];
+    count++;
   }
-  return Math.abs(h);
+  return count > 0 ? sum / count : 0;
+}
+
+function sampleSpots(data, w, h) {
+  // Sample 16 fixed spots spread across the image
+  const spots = [];
+  for (let r = 0; r < 4; r++) {
+    for (let c = 0; c < 4; c++) {
+      const x = Math.floor((c + 0.5) * w / 4);
+      const y = Math.floor((r + 0.5) * h / 4);
+      const i = (y * w + x) * 4;
+      spots.push(0.299*data[i] + 0.587*data[i+1] + 0.114*data[i+2]);
+    }
+  }
+  return spots;
+}
+
+function computeSpotDiff(data, w, h, prevSpots) {
+  if (!prevSpots) return 0;
+  const cur = sampleSpots(data, w, h);
+  let maxDiff = 0;
+  for (let i = 0; i < cur.length; i++) {
+    maxDiff = Math.max(maxDiff, Math.abs(cur[i] - prevSpots[i]));
+  }
+  return maxDiff;
 }
 
 // ── Init ───────────────────────────────────────────────────────────────────

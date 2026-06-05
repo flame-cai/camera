@@ -1,1791 +1,533 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Distance Estimator - Professional Measurement System</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        :root {
-            --primary: #667eea;
-            --primary-dark: #5568d3;
-            --secondary: #764ba2;
-            --success: #2ecc71;
-            --warning: #f39c12;
-            --error: #e74c3c;
-            --gray-50: #f9fafb;
-            --gray-100: #f3f4f6;
-            --gray-200: #e5e7eb;
-            --gray-300: #d1d5db;
-            --gray-400: #9ca3af;
-            --gray-500: #6b7280;
-            --gray-600: #4b5563;
-            --gray-700: #374151;
-            --gray-800: #1f2937;
-            --gray-900: #111827;
-        }
-
-        html, body {
-            width: 100%;
-            height: 100%;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #f5f5f5;
-            color: var(--gray-900);
-            overflow: hidden;
-        }
-
-        #app {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .header {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-            color: white;
-            padding: 12px 16px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            flex-shrink: 0;
-        }
-
-        .header h1 {
-            font-size: 20px;
-            font-weight: 600;
-            margin-bottom: 2px;
-        }
-
-        .header .subtitle {
-            font-size: 12px;
-            opacity: 0.9;
-        }
-
-        .main-container {
-            flex: 1;
-            display: flex;
-            overflow: hidden;
-        }
-
-        .sidebar {
-            width: 320px;
-            background: white;
-            border-right: 1px solid var(--gray-200);
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .sidebar-section {
-            padding: 16px;
-            border-bottom: 1px solid var(--gray-200);
-        }
-
-        .sidebar-section h3 {
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--gray-700);
-            margin-bottom: 12px;
-        }
-
-        .control-group {
-            margin-bottom: 12px;
-        }
-
-        .control-group label {
-            display: block;
-            font-size: 12px;
-            font-weight: 500;
-            color: var(--gray-700);
-            margin-bottom: 4px;
-        }
-
-        .control-group input,
-        .control-group select {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid var(--gray-300);
-            border-radius: 6px;
-            font-size: 13px;
-            font-family: inherit;
-        }
-
-        .control-group input:focus,
-        .control-group select:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
-        }
-
-        .input-wrapper {
-            position: relative;
-        }
-
-        .input-unit {
-            position: absolute;
-            right: 8px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 11px;
-            color: var(--gray-500);
-            pointer-events: none;
-        }
-
-        .input-wrapper input {
-            padding-right: 30px;
-        }
-
-        .btn {
-            width: 100%;
-            padding: 10px;
-            border: none;
-            border-radius: 6px;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-family: inherit;
-            margin-top: 8px;
-        }
-
-        .btn-primary {
-            background: var(--primary);
-            color: white;
-        }
-
-        .btn-primary:hover:not(:disabled) {
-            background: var(--primary-dark);
-        }
-
-        .btn-primary:disabled {
-            background: var(--gray-300);
-            cursor: not-allowed;
-        }
-
-        .btn-secondary {
-            background: var(--gray-100);
-            color: var(--gray-700);
-        }
-
-        .btn-secondary:hover {
-            background: var(--gray-200);
-        }
-
-        .btn-small {
-            padding: 6px 12px;
-            font-size: 12px;
-            margin-top: 4px;
-        }
-
-        .video-container {
-            flex: 1;
-            background: #000;
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-        }
-
-        #video {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            display: block;
-        }
-
-        .video-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-        }
-
-        .crosshair {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 50px;
-            height: 50px;
-            border: 2px solid rgba(255, 255, 255, 0.6);
-            border-radius: 50%;
-        }
-
-        .crosshair::before,
-        .crosshair::after {
-            content: '';
-            position: absolute;
-            background: rgba(255, 255, 255, 0.6);
-        }
-
-        .crosshair::before {
-            width: 25px;
-            height: 2px;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-        }
-
-        .crosshair::after {
-            width: 2px;
-            height: 25px;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-        }
-
-        .detection-box {
-            position: absolute;
-            border: 3px solid var(--success);
-            background: rgba(46, 204, 113, 0.1);
-            pointer-events: none;
-        }
-
-        .video-controls {
-            position: absolute;
-            bottom: 16px;
-            right: 16px;
-            display: flex;
-            gap: 8px;
-            z-index: 10;
-        }
-
-        .btn-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            background: rgba(0, 0, 0, 0.7);
-            border: none;
-            color: white;
-            font-size: 20px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-        }
-
-        .btn-icon:hover {
-            background: rgba(0, 0, 0, 0.9);
-        }
-
-        .btn-icon:active {
-            transform: scale(0.95);
-        }
-
-        .status-overlay {
-            position: absolute;
-            top: 12px;
-            left: 12px;
-            background: rgba(0, 0, 0, 0.7);
-            color: white;
-            padding: 8px 12px;
-            border-radius: 6px;
-            font-size: 12px;
-            z-index: 10;
-        }
-
-        .status-bar {
-            position: absolute;
-            top: 12px;
-            right: 12px;
-            display: flex;
-            gap: 8px;
-            z-index: 10;
-        }
-
-        .status-badge {
-            background: rgba(0, 0, 0, 0.7);
-            color: white;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 11px;
-            min-width: 50px;
-            text-align: center;
-        }
-
-        .results-panel {
-            width: 280px;
-            background: white;
-            border-left: 1px solid var(--gray-200);
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .results-header {
-            padding: 16px;
-            border-bottom: 1px solid var(--gray-200);
-        }
-
-        .results-header h2 {
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--gray-900);
-        }
-
-        .results-content {
-            padding: 16px;
-            flex: 1;
-            overflow-y: auto;
-        }
-
-        .result-card {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-            color: white;
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 12px;
-            text-align: center;
-        }
-
-        .result-label {
-            font-size: 11px;
-            opacity: 0.8;
-            margin-bottom: 4px;
-        }
-
-        .result-value {
-            font-size: 24px;
-            font-weight: 700;
-            margin-bottom: 2px;
-        }
-
-        .result-unit {
-            font-size: 10px;
-            opacity: 0.7;
-        }
-
-        .error-box {
-            background: #fee;
-            border: 1px solid var(--error);
-            border-radius: 6px;
-            padding: 10px;
-            margin-bottom: 12px;
-            display: none;
-        }
-
-        .error-box.show {
-            display: block;
-        }
-
-        .error-title {
-            font-weight: 600;
-            color: var(--error);
-            font-size: 12px;
-            margin-bottom: 2px;
-        }
-
-        .error-message {
-            font-size: 11px;
-            color: #c41e3a;
-            line-height: 1.4;
-        }
-
-        .method-tabs {
-            display: flex;
-            gap: 4px;
-            margin-bottom: 12px;
-            overflow-x: auto;
-            padding-bottom: 8px;
-        }
-
-        .method-tab {
-            flex-shrink: 0;
-            padding: 6px 10px;
-            border: 1px solid var(--gray-300);
-            background: white;
-            border-radius: 4px;
-            font-size: 10px;
-            font-weight: 500;
-            color: var(--gray-600);
-            cursor: pointer;
-            transition: all 0.2s;
-            white-space: nowrap;
-        }
-
-        .method-tab:hover {
-            border-color: var(--primary);
-            color: var(--primary);
-        }
-
-        .method-tab.active {
-            background: var(--primary);
-            border-color: var(--primary);
-            color: white;
-        }
-
-        .method-result {
-            background: white;
-            border: 1px solid var(--gray-200);
-            border-radius: 6px;
-            padding: 10px;
-            margin-bottom: 8px;
-        }
-
-        .method-result-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 4px 0;
-            font-size: 11px;
-            border-bottom: 1px solid var(--gray-100);
-        }
-
-        .method-result-item:last-child {
-            border-bottom: none;
-        }
-
-        .method-result-label {
-            color: var(--gray-600);
-            font-weight: 500;
-        }
-
-        .method-result-value {
-            font-weight: 600;
-            color: var(--primary);
-        }
-
-        .history-item {
-            background: var(--gray-50);
-            border: 1px solid var(--gray-200);
-            border-radius: 6px;
-            padding: 8px;
-            margin-bottom: 8px;
-            font-size: 11px;
-        }
-
-        .history-time {
-            color: var(--gray-500);
-            margin-bottom: 4px;
-        }
-
-        .history-values {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 4px;
-        }
-
-        .history-value {
-            display: flex;
-            justify-content: space-between;
-        }
-
-        .history-label {
-            color: var(--gray-600);
-        }
-
-        .history-data {
-            font-weight: 600;
-            color: var(--primary);
-        }
-
-        .loading-spinner {
-            display: inline-block;
-            width: 14px;
-            height: 14px;
-            border: 2px solid var(--gray-300);
-            border-top-color: var(--primary);
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        .placeholder {
-            text-align: center;
-            padding: 20px;
-            color: var(--gray-400);
-            font-size: 12px;
-        }
-
-        @media (max-width: 1200px) {
-            .sidebar {
-                width: 280px;
-            }
-
-            .results-panel {
-                width: 240px;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .main-container {
-                flex-direction: column;
-            }
-
-            .sidebar {
-                width: 100%;
-                max-height: 150px;
-                border-right: none;
-                border-bottom: 1px solid var(--gray-200);
-            }
-
-            .results-panel {
-                width: 100%;
-                max-height: 200px;
-                border-left: none;
-                border-top: 1px solid var(--gray-200);
-            }
-
-            .video-container {
-                height: 400px;
-            }
-        }
-
-        .tabs-container {
-            display: flex;
-            border-bottom: 1px solid var(--gray-200);
-            background: white;
-            flex-shrink: 0;
-        }
-
-        .tab-btn {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            background: white;
-            color: var(--gray-600);
-            font-size: 12px;
-            font-weight: 500;
-            cursor: pointer;
-            border-bottom: 3px solid transparent;
-            transition: all 0.2s;
-        }
-
-        .tab-btn:hover {
-            background: var(--gray-50);
-        }
-
-        .tab-btn.active {
-            color: var(--primary);
-            border-bottom-color: var(--primary);
-            background: var(--gray-50);
-        }
-
-        .tab-content {
-            display: none;
-            flex: 1;
-            overflow-y: auto;
-        }
-
-        .tab-content.active {
-            display: flex;
-            flex-direction: column;
-        }
-
-        #settings {
-            flex-direction: column;
-        }
-
-        .settings-grid {
-            padding: 16px;
-        }
-
-        .setting-group {
-            margin-bottom: 16px;
-            background: white;
-            border: 1px solid var(--gray-200);
-            border-radius: 6px;
-            padding: 12px;
-        }
-
-        .setting-group h4 {
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--gray-900);
-            margin-bottom: 8px;
-        }
-
-        .setting-item {
-            margin-bottom: 8px;
-            padding-bottom: 8px;
-            border-bottom: 1px solid var(--gray-100);
-        }
-
-        .setting-item:last-child {
-            margin-bottom: 0;
-            padding-bottom: 0;
-            border-bottom: none;
-        }
-
-        .setting-item label {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 12px;
-            cursor: pointer;
-        }
-
-        .setting-item input[type="checkbox"] {
-            width: 16px;
-            height: 16px;
-        }
-    </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+<meta name="theme-color" content="#0a0b0c" />
+<meta name="mobile-web-app-capable" content="yes" />
+<title>PARALLAX · Monocular Distance Estimator</title>
+
+<!--
+  PARALLAX — Human Distance Estimator   (Android Chrome / GitHub Pages build)
+  ===========================================================================
+  HOSTING: drop this file in a repo as index.html, enable GitHub Pages.
+  It serves over HTTPS (a secure context) so getUserMedia, sensors, WebXR and
+  Wake Lock all work directly on Android Chrome — no local server needed.
+
+  ASSUMPTIONS that make the math exact:
+    • Phone held VERTICALLY UPRIGHT  -> rear-camera axis horizontal
+                                      -> horizon == image centre (MidP)
+                                      -> H_real formula is EXACT.
+    • REAR camera, subject standing on flat ground, feet in frame.
+
+  Geometry (verified):
+    H_real   = (TopP - BotP) * H_cam / (MidP - BotP)     [f & D cancel: exact]
+    D_ground = f * H_cam / (BotP - MidP)                 [needs f]
+    D_height = f * H_real / (BotP - TopP)                [needs f]
+
+  METHODS:
+    M1 mask bbox · M2 landmarks · M3 vfov angle · M7 voting(median, default)
+    M8 phase-1 (=voting).  Plus, NOT in the original spec:
+    AR-DEPTH (beta): WebXR + ARCore depth sensing reads TRUE metric distance at
+                     a centre reticle — no focal length, no level assumption.
+                     Only on ARCore depth-capable devices.
+    Omitted: M4 homography, M5 handheld parallax, M6 OpenCV edge (see prior notes).
+
+  ANDROID FEATURES USED:
+    devicemotion (gravity tilt + zero), Screen Wake Lock, MediaStreamTrack torch,
+    Fullscreen, track.getCapabilities/getSettings readout, WebXR immersive-ar.
+-->
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+<style>
+:root{
+  --bg:#0a0b0c;--bg2:#0f1113;--panel:#121518;--panel2:#171b1f;
+  --line:#262c31;--line2:#323a41;--txt:#e9e7df;--muted:#8b938c;--dim:#5d655f;
+  --amber:#ffb454;--amber-dim:#a9742d;--cyan:#52d6c4;
+  --ok:#7cfc9b;--warn:#ffcf5c;--bad:#ff6a6a;--grid:rgba(255,255,255,.025);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%}
+body{
+  background:
+    radial-gradient(1200px 700px at 78% -8%,rgba(255,180,84,.07),transparent 60%),
+    radial-gradient(900px 600px at -6% 108%,rgba(82,214,196,.06),transparent 55%),
+    linear-gradient(180deg,var(--bg),var(--bg2));
+  color:var(--txt);font-family:"IBM Plex Mono",ui-monospace,monospace;
+  -webkit-font-smoothing:antialiased;min-height:100%;
+}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:34px 34px;mask-image:radial-gradient(circle at 50% 35%,#000,transparent 90%)}
+.wrap{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding:20px 14px calc(60px + env(safe-area-inset-bottom))}
+
+header{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:15px}
+.brand{display:flex;align-items:baseline;gap:13px;flex-wrap:wrap}
+.logo{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;letter-spacing:-.04em;font-size:clamp(28px,8vw,50px);line-height:.9}
+.logo .dot{color:var(--amber)}
+.tag{font-size:10.5px;letter-spacing:.3em;text-transform:uppercase;color:var(--dim)}
+.subtitle{font-size:12px;color:var(--muted);max-width:440px;line-height:1.5}
+
+.grid-main{display:grid;grid-template-columns:1.55fr 1fr;gap:16px;margin-top:18px}
+@media (max-width:900px){.grid-main{grid-template-columns:1fr}}
+
+.card{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:0 1px 0 rgba(255,255,255,.02) inset,0 18px 40px -28px rgba(0,0,0,.9)}
+.card-h{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 14px;border-bottom:1px solid var(--line);background:rgba(255,255,255,.012)}
+.card-h h2{margin:0;font-family:"Bricolage Grotesque",sans-serif;font-weight:600;font-size:14px;letter-spacing:.02em}
+.card-h .hint{font-size:10px;color:var(--dim);letter-spacing:.13em;text-transform:uppercase}
+.card-b{padding:14px}
+
+.stage{position:relative;background:#000;aspect-ratio:9/16;max-height:72vh;margin:0 auto;display:flex;align-items:center;justify-content:center}
+video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0}
+canvas#draw{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.stage .ghost{color:var(--dim);font-size:12px;text-align:center;padding:26px;line-height:1.7;max-width:330px}
+.badge-live{position:absolute;top:9px;left:9px;display:flex;align-items:center;gap:7px;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);background:rgba(0,0,0,.5);border:1px solid var(--line2);padding:5px 9px;border-radius:30px;backdrop-filter:blur(4px)}
+.badge-live .pulse{width:7px;height:7px;border-radius:50%;background:var(--dim)}
+.badge-live.on .pulse{background:var(--bad);animation:pulse 1.6s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(255,106,106,.55)}70%{box-shadow:0 0 0 7px rgba(255,106,106,0)}100%{box-shadow:0 0 0 0 rgba(255,106,106,0)}}
+.stage-tools{position:absolute;top:9px;right:9px;display:flex;gap:6px}
+.tool{font-size:14px;line-height:1;background:rgba(0,0,0,.5);border:1px solid var(--line2);color:var(--muted);border-radius:9px;padding:7px 9px;backdrop-filter:blur(4px);cursor:pointer}
+.tool.on{color:var(--amber);border-color:var(--amber-dim)}
+.vert{position:absolute;bottom:9px;left:9px;font-size:10px;letter-spacing:.1em;text-transform:uppercase;background:rgba(0,0,0,.5);border:1px solid var(--line2);padding:5px 9px;border-radius:8px;backdrop-filter:blur(4px);color:var(--muted)}
+.vert b{color:var(--cyan)} .vert.good b{color:var(--ok)} .vert.bad b{color:var(--bad)}
+
+.read{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.metric{position:relative;border:1px solid var(--line);border-radius:11px;padding:12px;background:rgba(255,255,255,.014);overflow:hidden}
+.metric .lab{font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim)}
+.metric .val{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;letter-spacing:-.03em;line-height:1;margin-top:7px;font-variant-numeric:tabular-nums}
+.metric .unit{font-family:"IBM Plex Mono",monospace;font-weight:500;font-size:.42em;color:var(--muted);margin-left:5px;letter-spacing:0}
+.metric .sub{font-size:10px;color:var(--muted);margin-top:6px;min-height:12px}
+.metric.dist{grid-column:1/-1}
+.metric.dist .val{font-size:clamp(38px,11vw,58px);color:var(--amber);text-shadow:0 0 26px rgba(255,180,84,.22)}
+.metric.h .val{font-size:28px;color:var(--cyan)} .metric.conf .val{font-size:28px}
+.confbar{height:5px;border-radius:4px;background:var(--line);margin-top:8px;overflow:hidden}
+.confbar>i{display:block;height:100%;width:0%;background:linear-gradient(90deg,var(--bad),var(--warn),var(--ok));transition:width .25s}
+
+.field{margin-bottom:12px}
+.field>label{display:block;font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.field .row{display:flex;gap:8px}
+input[type=number],select{width:100%;background:var(--bg);color:var(--txt);border:1px solid var(--line2);border-radius:9px;padding:11px 12px;font-family:"IBM Plex Mono",monospace;font-size:15px;outline:none}
+input:focus,select:focus{border-color:var(--amber-dim);box-shadow:0 0 0 3px rgba(255,180,84,.1)}
+.seg{display:flex;border:1px solid var(--line2);border-radius:9px;overflow:hidden}
+.seg button{flex:1;background:transparent;color:var(--muted);border:0;padding:10px 5px;font-family:"IBM Plex Mono",monospace;font-size:11.5px;cursor:pointer}
+.seg button.on{background:var(--amber);color:#241500;font-weight:600}
+.seg button+button{border-left:1px solid var(--line2)}
+button.act{width:100%;cursor:pointer;border:1px solid var(--line2);border-radius:10px;padding:13px;font-family:"Bricolage Grotesque",sans-serif;font-weight:600;font-size:14px;background:var(--amber);color:#241500;transition:.15s}
+button.act:hover{filter:brightness(1.06)} button.act.ghost{background:transparent;color:var(--txt)}
+button.act.ghost:hover{border-color:var(--amber-dim);color:var(--amber)} button.act:disabled{opacity:.45;cursor:not-allowed}
+button.act.cyan{background:var(--cyan);color:#04201c}
+.btn-row{display:flex;gap:8px}
+.note{font-size:11px;color:var(--dim);line-height:1.55;margin-top:4px}.note b{color:var(--muted);font-weight:600}
+.diag{font-size:11.5px;color:var(--muted);display:grid;grid-template-columns:auto 1fr;gap:4px 14px;align-items:baseline}
+.diag dt{color:var(--dim)} .diag dd{margin:0;color:var(--txt);font-variant-numeric:tabular-nums;text-align:right}
+.diag dd.flag-bad{color:var(--bad)} .diag dd.flag-ok{color:var(--ok)} .diag dd.flag-warn{color:var(--warn)}
+.banner{border-radius:10px;padding:11px 13px;font-size:11.5px;line-height:1.5;margin-bottom:12px;border:1px solid}
+.banner.info{border-color:var(--line2);background:rgba(82,214,196,.06);color:var(--cyan)}
+.banner.warn{border-color:rgba(255,207,92,.4);background:rgba(255,207,92,.07);color:var(--warn)}
+.banner.bad{border-color:rgba(255,106,106,.4);background:rgba(255,106,106,.08);color:var(--bad)}
+.banner.hidden{display:none}
+.methods{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.chip{font-size:10px;border:1px solid var(--line2);border-radius:30px;padding:5px 10px;color:var(--muted)}
+.chip.on{border-color:var(--amber-dim);color:var(--amber);background:rgba(255,180,84,.07)}
+footer{margin-top:22px;font-size:11px;color:var(--dim);line-height:1.65;border-top:1px solid var(--line);padding-top:15px}
+footer b{color:var(--muted)} a{color:var(--cyan);text-decoration:none}
+
+/* WebXR AR overlay */
+#arOverlay{position:fixed;inset:0;z-index:50;display:none;color:#fff;font-family:"IBM Plex Mono",monospace}
+#arOverlay.on{display:block}
+#arReticle{position:absolute;top:50%;left:50%;width:46px;height:46px;margin:-23px 0 0 -23px;border:2px solid var(--amber);border-radius:50%;box-shadow:0 0 0 1px rgba(0,0,0,.5)}
+#arReticle::after{content:"";position:absolute;top:50%;left:50%;width:6px;height:6px;margin:-3px 0 0 -3px;background:var(--amber);border-radius:50%}
+#arReadout{position:absolute;left:0;right:0;bottom:calc(36px + env(safe-area-inset-bottom));text-align:center}
+#arReadout .big{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:13vw;color:var(--amber);text-shadow:0 2px 18px rgba(0,0,0,.7)}
+#arReadout .sm{font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.8)}
+#arExit{position:absolute;top:calc(14px + env(safe-area-inset-top));right:14px;background:rgba(0,0,0,.55);border:1px solid var(--amber-dim);color:var(--amber);border-radius:10px;padding:10px 14px;font-family:"Bricolage Grotesque",sans-serif;font-weight:600;font-size:14px}
+.kbd{font-size:10.5px;background:var(--bg);border:1px solid var(--line2);border-radius:5px;padding:1px 6px;color:var(--muted)}
+</style>
 </head>
 <body>
-    <div id="app" class="app">
-        <header class="header">
-            <h1>📏 Distance Estimator Pro</h1>
-            <p class="subtitle">8-Method Professional Distance Measurement System</p>
-        </header>
-
-        <div class="tabs-container">
-            <button class="tab-btn active" onclick="switchTab('measurement')">Measurement</button>
-            <button class="tab-btn" onclick="switchTab('settings')">Settings</button>
-            <button class="tab-btn" onclick="switchTab('history')">History</button>
-        </div>
-
-        <div class="main-container">
-            <!-- Measurement Tab -->
-            <div id="measurement" class="tab-content active">
-                <div class="sidebar">
-                    <div class="sidebar-section">
-                        <h3>📸 Camera Setup</h3>
-                        <div class="control-group">
-                            <label>Camera Height (cm)</label>
-                            <div class="input-wrapper">
-                                <input type="number" id="cameraHeight" min="10" max="300" step="5" value="150">
-                                <span class="input-unit">cm</span>
-                            </div>
-                        </div>
-
-                        <div class="control-group">
-                            <label>Focal Length Mode</label>
-                            <select id="focalLengthMode">
-                                <option value="auto">Auto-Detect</option>
-                                <option value="manual">Manual</option>
-                            </select>
-                        </div>
-
-                        <div class="control-group" id="manualFocalLengthGroup" style="display: none;">
-                            <label>Focal Length (px)</label>
-                            <div class="input-wrapper">
-                                <input type="number" id="focalLengthManual" min="500" max="2000" step="50" value="1200">
-                                <span class="input-unit">px</span>
-                            </div>
-                        </div>
-
-                        <button id="startBtn" class="btn btn-primary">▶ Start Camera</button>
-                        <button id="stopBtn" class="btn btn-secondary" style="display: none;">⏹ Stop Camera</button>
-                    </div>
-
-                    <div class="sidebar-section">
-                        <h3>⚙️ Quick Settings</h3>
-                        <div class="setting-item">
-                            <label>
-                                <input type="checkbox" id="useRearCamera" checked>
-                                Rear Camera (Mobile)
-                            </label>
-                        </div>
-                        <div class="setting-item">
-                            <label>
-                                <input type="checkbox" id="enableAutofocus" checked>
-                                Autofocus
-                            </label>
-                        </div>
-                        <div class="setting-item">
-                            <label>
-                                <input type="checkbox" id="showDetectionBox" checked>
-                                Show Detection
-                            </label>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="video-container">
-                    <video id="video" playsinline autoplay muted></video>
-                    <canvas id="canvas" style="display: none;"></canvas>
-                    
-                    <div class="video-overlay">
-                        <div class="crosshair"></div>
-                        <div class="detection-box" id="detectionBox" style="display: none;"></div>
-                    </div>
-
-                    <div class="status-overlay" id="statusOverlay">
-                        <span class="loading-spinner"></span>
-                        <span id="statusText" style="margin-left: 8px;">Loading...</span>
-                    </div>
-
-                    <div class="status-bar">
-                        <div class="status-badge" id="fpsDisplay">FPS: 0</div>
-                        <div class="status-badge" id="detectionStatus">Idle</div>
-                    </div>
-
-                    <div class="video-controls">
-                        <button id="focusButton" class="btn-icon" title="Manual Focus">📍</button>
-                        <button id="torchButton" class="btn-icon" title="Torch" style="display: none;">💡</button>
-                    </div>
-                </div>
-
-                <div class="results-panel">
-                    <div class="results-header">
-                        <h2>📊 Results</h2>
-                    </div>
-
-                    <div class="results-content">
-                        <div class="error-box" id="errorBox">
-                            <div class="error-title" id="errorTitle">Error</div>
-                            <div class="error-message" id="errorMessage">Unknown error</div>
-                        </div>
-
-                        <div class="result-card">
-                            <div class="result-label">Real Height</div>
-                            <div class="result-value" id="resultHReal">-</div>
-                            <div class="result-unit">cm</div>
-                        </div>
-
-                        <div class="result-card">
-                            <div class="result-label">Distance</div>
-                            <div class="result-value" id="resultDistance">-</div>
-                            <div class="result-unit">cm</div>
-                        </div>
-
-                        <div class="result-card">
-                            <div class="result-label">Confidence</div>
-                            <div class="result-value" id="resultConfidence">-</div>
-                            <div class="result-unit">%</div>
-                        </div>
-
-                        <h3 style="font-size: 12px; font-weight: 600; margin: 16px 0 8px 0; color: var(--gray-700);">Method Details</h3>
-                        
-                        <div class="method-tabs">
-                            <button class="method-tab active" data-method="voting">M7: Voting</button>
-                            <button class="method-tab" data-method="mask">M1: Mask</button>
-                            <button class="method-tab" data-method="landmarks">M2: Landmarks</button>
-                            <button class="method-tab" data-method="fov">M3: FOV</button>
-                            <button class="method-tab" data-method="homography">M4: Homography</button>
-                            <button class="method-tab" data-method="parallax">M5: Parallax</button>
-                            <button class="method-tab" data-method="edge">M6: Edge</button>
-                            <button class="method-tab" data-method="progressive">M8: Progressive</button>
-                        </div>
-
-                        <div id="methodResults" class="method-result">
-                            <p class="placeholder">Waiting for measurements...</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Settings Tab -->
-            <div id="settings" class="tab-content">
-                <div class="settings-grid">
-                    <div class="setting-group">
-                        <h4>Camera Settings</h4>
-                        <div class="setting-item">
-                            <label>
-                                <input type="checkbox" id="useRearCamera2" checked>
-                                Use Rear Camera (Mobile)
-                            </label>
-                        </div>
-                        <div class="setting-item">
-                            <label>
-                                <input type="checkbox" id="enableAutofocus2" checked>
-                                Enable Autofocus
-                            </label>
-                        </div>
-                        <div class="control-group">
-                            <label>Autofocus Interval (ms)</label>
-                            <input type="number" id="autofocusInterval" min="100" max="5000" value="500">
-                        </div>
-                    </div>
-
-                    <div class="setting-group">
-                        <h4>Processing Settings</h4>
-                        <div class="control-group">
-                            <label>Target FPS</label>
-                            <select id="targetFps">
-                                <option value="30">30 FPS</option>
-                                <option value="24">24 FPS</option>
-                                <option value="15">15 FPS</option>
-                            </select>
-                        </div>
-                        <div class="control-group">
-                            <label>Smoothing Factor: <span id="smoothingValue">0.3</span></label>
-                            <input type="range" id="smoothingFactor" min="0" max="1" step="0.1" value="0.3">
-                        </div>
-                    </div>
-
-                    <div class="setting-group">
-                        <h4>Detection Settings</h4>
-                        <div class="control-group">
-                            <label>Landmark Confidence: <span id="landmarkValue">0.7</span></label>
-                            <input type="range" id="landmarkConfidence" min="0" max="1" step="0.1" value="0.7">
-                        </div>
-                        <div class="control-group">
-                            <label>Min Detection Area: <span id="areaValue">0.1</span></label>
-                            <input type="range" id="minDetectionArea" min="0.05" max="0.5" step="0.05" value="0.1">
-                        </div>
-                    </div>
-
-                    <button class="btn btn-secondary btn-small" onclick="resetSettings()">Reset to Defaults</button>
-                </div>
-            </div>
-
-            <!-- History Tab -->
-            <div id="history" class="tab-content">
-                <div style="padding: 16px; flex: 1; overflow-y: auto;">
-                    <div style="margin-bottom: 12px;">
-                        <button class="btn btn-secondary btn-small" onclick="exportHistory()">Export CSV</button>
-                        <button class="btn btn-secondary btn-small" onclick="clearHistory()">Clear History</button>
-                    </div>
-                    <div id="historyList" class="placeholder">No measurements recorded yet</div>
-                </div>
-            </div>
-        </div>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <div class="logo">PARALLAX<span class="dot">.</span></div>
+      <div>
+        <div class="tag">Monocular distance instrument · Android</div>
+        <div class="subtitle">Hold the phone upright in portrait, rear camera facing the subject. That keeps the horizon on the centre line and makes the height solution exact.</div>
+      </div>
     </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation@0.1/selfie_segmentation.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.4/pose.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
-
-    <script>
-        // ============================================================================
-        // CONFIGURATION
-        // ============================================================================
-
-        const Config = {
-            camera: {
-                targetWidth: 640,
-                targetHeight: 480,
-                useRearCamera: true,
-                enableAutofocus: true,
-                autofocusInterval: 500,
-            },
-            processing: {
-                targetFps: 30,
-                smoothingFactor: 0.3,
-            },
-            detection: {
-                landmarkConfidenceThreshold: 0.7,
-                minDetectionArea: 0.1,
-                maskThreshold: 0.5,
-            },
-            display: {
-                showDetectionBox: true,
-                showFpsCounter: true,
-            },
-            focalLengthPresets: {
-                'iPhone': 1200,
-                'Pixel': 1050,
-                'Galaxy': 1100,
-                'SM-': 1100,
-                'Redmi': 1000,
-                'OnePlus': 1050,
-                'Xiaomi': 1000,
-            },
-            defaultFocalLength: 1100,
-            errors: {
-                CAMERA_NOT_FOUND: 'Camera not found. Please grant camera permission.',
-                PERMISSION_DENIED: 'Camera permission denied.',
-                NO_MEDIAPIPE: 'Failed to load MediaPipe. Check your internet connection.',
-                NO_PERSON_DETECTED: 'No person detected. Move closer or improve lighting.',
-                INVALID_INPUT: 'Invalid input value.',
-                UNKNOWN_ERROR: 'An error occurred. Please try again.',
-            },
-            storage: {
-                SETTINGS: 'distance_estimator_settings',
-                HISTORY: 'distance_estimator_history',
-            },
-            maxHistoryItems: 100,
-        };
-
-        // ============================================================================
-        // STATE
-        // ============================================================================
-
-        let State = {
-            isRunning: false,
-            processingFrame: false,
-            lastFrameTime: 0,
-            frameCount: 0,
-            lastFpsTime: 0,
-            smoothDistance: null,
-            smoothHReal: null,
-            history: [],
-            results: {},
-            mediapikeReady: false,
-            stream: null,
-            currentMethod: 'voting',
-        };
-
-        // ============================================================================
-        // ERROR HANDLER
-        // ============================================================================
-
-        function showError(code, details = '') {
-            const box = document.getElementById('errorBox');
-            const title = document.getElementById('errorTitle');
-            const message = document.getElementById('errorMessage');
-
-            title.textContent = code;
-            message.textContent = Config.errors[code] || 'Unknown error';
-
-            if (details) {
-                message.textContent += ' (' + details + ')';
-            }
-
-            box.classList.add('show');
-            console.error(`[${code}] ${Config.errors[code]}${details ? ': ' + details : ''}`);
-        }
-
-        function clearError() {
-            document.getElementById('errorBox').classList.remove('show');
-        }
-
-        // ============================================================================
-        // UI FUNCTIONS
-        // ============================================================================
-
-        function switchTab(tab) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-
-            document.getElementById(tab)?.classList.add('active');
-            document.querySelector(`.tab-btn[onclick="switchTab('${tab}')"]`)?.classList.add('active');
-        }
-
-        function updateStatus(text) {
-            document.getElementById('statusText').textContent = text;
-        }
-
-        function switchMethodTab(method) {
-            State.currentMethod = method;
-            document.querySelectorAll('.method-tab').forEach(el => el.classList.remove('active'));
-            document.querySelector(`.method-tab[data-method="${method}"]`)?.classList.add('active');
-            updateMethodDisplay(method);
-        }
-
-        function updateMethodDisplay(method) {
-            const result = State.results[method];
-            const container = document.getElementById('methodResults');
-
-            if (!result) {
-                container.innerHTML = '<p class="placeholder">No data for this method</p>';
-                return;
-            }
-
-            let html = '<div class="method-result-item">';
-            html += '<span class="method-result-label">H_real</span>';
-            html += `<span class="method-result-value">${result.hreal ? result.hreal.toFixed(1) : '-'} cm</span>`;
-            html += '</div>';
-
-            html += '<div class="method-result-item">';
-            html += '<span class="method-result-label">Distance</span>';
-            html += `<span class="method-result-value">${result.distance ? result.distance.toFixed(1) : '-'} cm</span>`;
-            html += '</div>';
-
-            if (result.confidence !== undefined) {
-                html += '<div class="method-result-item">';
-                html += '<span class="method-result-label">Confidence</span>';
-                html += `<span class="method-result-value">${result.confidence.toFixed(0)}%</span>`;
-                html += '</div>';
-            }
-
-            container.innerHTML = html;
-        }
-
-        function updateFps() {
-            const now = Date.now();
-            State.frameCount++;
-
-            if (now - State.lastFpsTime >= 1000) {
-                document.getElementById('fpsDisplay').textContent = `FPS: ${State.frameCount}`;
-                State.frameCount = 0;
-                State.lastFpsTime = now;
-            }
-        }
-
-        function updateDetectionStatus(status) {
-            document.getElementById('detectionStatus').textContent = status;
-        }
-
-        // ============================================================================
-        // MEDIAPIPE INITIALIZATION
-        // ============================================================================
-
-        async function initializeMediaPipe() {
-            try {
-                updateStatus('Loading MediaPipe...');
-
-                await new Promise((resolve) => {
-                    const checkReady = () => {
-                        if (window.SelfieSegmentation && window.Pose) {
-                            resolve();
-                        } else {
-                            setTimeout(checkReady, 100);
-                        }
-                    };
-                    checkReady();
-                });
-
-                console.log('Initializing Selfie Segmentation...');
-                const segmentation = new SelfieSegmentation({
-                    locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation@0.1/${file}`
-                });
-
-                segmentation.setOptions({
-                    modelSelection: 1,
-                    selfieMode: true,
-                });
-
-                State.segmentation = segmentation;
-
-                console.log('Initializing Pose...');
-                const pose = new Pose({
-                    locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.4/${file}`
-                });
-
-                pose.setOptions({
-                    modelComplexity: 1,
-                    smoothLandmarks: true,
-                    enableSegmentation: false,
-                    minDetectionConfidence: 0.5,
-                    minTrackingConfidence: 0.5,
-                });
-
-                State.pose = pose;
-
-                // Wait for models to actually load by sending a test frame
-                const canvas = document.createElement('canvas');
-                canvas.width = 1;
-                canvas.height = 1;
-
-                let segmentationReady = false;
-                let poseReady = false;
-
-                segmentation.onResults(() => {
-                    segmentationReady = true;
-                });
-
-                pose.onResults(() => {
-                    poseReady = true;
-                });
-
-                segmentation.send({ image: canvas });
-                pose.send({ image: canvas });
-
-                // Wait for both to be ready
-                await new Promise((resolve) => {
-                    const checkBoth = () => {
-                        if (segmentationReady && poseReady) {
-                            resolve();
-                        } else {
-                            setTimeout(checkBoth, 100);
-                        }
-                    };
-                    checkBoth();
-                });
-
-                State.mediapikeReady = true;
-                updateStatus('Ready');
-                clearError();
-
-                console.log('MediaPipe initialized successfully');
-                return true;
-
-            } catch (error) {
-                console.error('MediaPipe init error:', error);
-                showError('NO_MEDIAPIPE', error.message);
-                return false;
-            }
-        }
-
-        // ============================================================================
-        // CAMERA MANAGER
-        // ============================================================================
-
-        async function startCamera() {
-            try {
-                updateStatus('Requesting camera...');
-
-                const constraints = {
-                    video: {
-                        width: { ideal: Config.camera.targetWidth },
-                        height: { ideal: Config.camera.targetHeight },
-                        facingMode: Config.camera.useRearCamera ? { exact: 'environment' } : 'user',
-                    },
-                    audio: false,
-                };
-
-                State.stream = await navigator.mediaDevices.getUserMedia(constraints);
-
-                const video = document.getElementById('video');
-                video.srcObject = State.stream;
-
-                await new Promise((resolve) => {
-                    video.onloadedmetadata = () => {
-                        video.play();
-                        resolve();
-                    };
-                });
-
-                State.isRunning = true;
-                document.getElementById('startBtn').style.display = 'none';
-                document.getElementById('stopBtn').style.display = 'block';
-
-                updateStatus('Processing...');
-                clearError();
-
-                processFrame();
-
-            } catch (error) {
-                console.error('Camera error:', error);
-                if (error.name === 'NotAllowedError') {
-                    showError('PERMISSION_DENIED');
-                } else if (error.name === 'NotFoundError') {
-                    showError('CAMERA_NOT_FOUND');
-                } else {
-                    showError('UNKNOWN_ERROR', error.message);
-                }
-            }
-        }
-
-        function stopCamera() {
-            State.isRunning = false;
-
-            if (State.stream) {
-                State.stream.getTracks().forEach(track => track.stop());
-                State.stream = null;
-            }
-
-            const video = document.getElementById('video');
-            video.srcObject = null;
-
-            document.getElementById('startBtn').style.display = 'block';
-            document.getElementById('stopBtn').style.display = 'none';
-
-            updateStatus('Stopped');
-        }
-
-        // ============================================================================
-        // DISTANCE CALCULATION METHODS
-        // ============================================================================
-
-        const Methods = {
-            calculateHReal(topP, botP, midP, cameraHeight) {
-                if (!topP || topP === undefined || !botP || botP === undefined || !midP || !cameraHeight) return null;
-
-                const denominator = midP - botP;
-                if (Math.abs(denominator) < 1) return null;
-
-                const hreal = ((topP - botP) * cameraHeight) / denominator;
-                return Math.max(hreal, 0);
-            },
-
-            calculateDistance(hreal, hpixel, focalLength, midP, botP) {
-                if (!hreal || !hpixel || !focalLength) return null;
-                if (hpixel === 0) return null;
-
-                const distance = (focalLength * hreal) / hpixel;
-                return Math.max(distance, 0);
-            },
-
-            async getFocalLength() {
-                const mode = document.getElementById('focalLengthMode').value;
-
-                if (mode === 'manual') {
-                    return parseFloat(document.getElementById('focalLengthManual').value) || Config.defaultFocalLength;
-                }
-
-                const userAgent = navigator.userAgent;
-                for (const [key, value] of Object.entries(Config.focalLengthPresets)) {
-                    if (userAgent.includes(key)) {
-                        return value;
-                    }
-                }
-
-                return Config.defaultFocalLength;
-            },
-
-            // Method 1: Mask Bounding Box
-            async method1(segmentationResult, cameraHeight, midP) {
-                try {
-                    if (!segmentationResult || !segmentationResult.segmentationMask) return null;
-
-                    const mask = segmentationResult.segmentationMask;
-                    const data = mask.data;
-                    const width = mask.width;
-                    const height = mask.height;
-
-                    let topP = height, botP = 0;
-
-                    for (let i = 0; i < data.length; i++) {
-                        if (data[i] > Config.detection.maskThreshold) {
-                            const y = Math.floor(i / width);
-                            topP = Math.min(topP, y);
-                            botP = Math.max(botP, y);
-                        }
-                    }
-
-                    if (topP === height || botP === 0) return null;
-
-                    const hreal = this.calculateHReal(topP, botP, midP, cameraHeight);
-                    const hpixel = botP - topP;
-                    const focalLength = await this.getFocalLength();
-                    const distance = this.calculateDistance(hreal, hpixel, focalLength, midP, botP);
-
-                    return { hreal, distance, hpixel, topP, botP };
-                } catch (e) {
-                    console.error('Method 1 error:', e);
-                    return null;
-                }
-            },
-
-            // Method 2: Landmarks Height
-            async method2(poseResult, cameraHeight, midP) {
-                try {
-                    if (!poseResult || !poseResult.landmarks || poseResult.landmarks.length < 28) return null;
-
-                    const landmarks = poseResult.landmarks;
-                    const nose = landmarks[0];
-                    const ankleL = landmarks[27];
-                    const ankleR = landmarks[28];
-
-                    if (!nose || !ankleL || !ankleR) return null;
-                    if (nose.visibility < Config.detection.landmarkConfidenceThreshold) return null;
-
-                    const topP = nose.y;
-                    const botP = Math.max(ankleL.y, ankleR.y);
-
-                    if (topP >= botP) return null;
-
-                    const hreal = this.calculateHReal(topP, botP, midP, cameraHeight);
-                    const hpixel = botP - topP;
-                    const focalLength = await this.getFocalLength();
-                    const distance = this.calculateDistance(hreal, hpixel, focalLength, midP, botP);
-
-                    return { hreal, distance, hpixel, topP, botP };
-                } catch (e) {
-                    console.error('Method 2 error:', e);
-                    return null;
-                }
-            },
-
-            // Method 3: FOV Angle
-            async method3(segmentationResult, cameraHeight, midP) {
-                try {
-                    if (!segmentationResult || !segmentationResult.segmentationMask) return null;
-
-                    const mask = segmentationResult.segmentationMask;
-                    const data = mask.data;
-                    const width = mask.width;
-                    const height = mask.height;
-
-                    let topP = height, botP = 0;
-
-                    for (let i = 0; i < data.length; i++) {
-                        if (data[i] > Config.detection.maskThreshold) {
-                            const y = Math.floor(i / width);
-                            topP = Math.min(topP, y);
-                            botP = Math.max(botP, y);
-                        }
-                    }
-
-                    if (topP === height) return null;
-
-                    const hreal = this.calculateHReal(topP, botP, midP, cameraHeight);
-                    const hpixel = botP - topP;
-                    const focalLength = await this.getFocalLength();
-
-                    const angle = 2 * Math.atan(hpixel / (2 * focalLength));
-                    const distance = hreal / Math.tan(angle);
-
-                    return { hreal, distance, hpixel, topP, botP };
-                } catch (e) {
-                    console.error('Method 3 error:', e);
-                    return null;
-                }
-            },
-
-            // Method 4: Homography
-            async method4(poseResult, cameraHeight, midP) {
-                try {
-                    if (!poseResult || !poseResult.landmarks || poseResult.landmarks.length < 28) return null;
-
-                    const landmarks = poseResult.landmarks;
-                    const ankleL = landmarks[27];
-                    const ankleR = landmarks[28];
-
-                    if (!ankleL || !ankleR) return null;
-
-                    const botP = (ankleL.y + ankleR.y) / 2;
-                    const topP = landmarks[0]?.y || botP;
-
-                    if (topP >= botP) return null;
-
-                    const hreal = this.calculateHReal(topP, botP, midP, cameraHeight);
-                    const pixelsAboveCenter = midP - botP;
-                    const distance = (pixelsAboveCenter * cameraHeight) / (midP - botP);
-
-                    return { hreal, distance, hpixel: botP - topP, topP, botP };
-                } catch (e) {
-                    console.error('Method 4 error:', e);
-                    return null;
-                }
-            },
-
-            // Method 5: Stereo Parallax
-            parallaxHistory: { positions: [], timestamps: [] },
-
-            async method5(poseResult, cameraHeight, midP) {
-                try {
-                    if (!poseResult || !poseResult.landmarks || poseResult.landmarks.length < 1) return null;
-
-                    const nose = poseResult.landmarks[0];
-                    if (!nose || nose.visibility < Config.detection.landmarkConfidenceThreshold) return null;
-
-                    const now = Date.now();
-                    this.parallaxHistory.positions.push(nose.x);
-                    this.parallaxHistory.timestamps.push(now);
-
-                    if (this.parallaxHistory.positions.length > 10) {
-                        this.parallaxHistory.positions.shift();
-                        this.parallaxHistory.timestamps.shift();
-                    }
-
-                    if (this.parallaxHistory.positions.length < 3) return null;
-
-                    const positions = this.parallaxHistory.positions;
-                    const minX = Math.min(...positions);
-                    const maxX = Math.max(...positions);
-                    const disparity = maxX - minX;
-
-                    if (disparity < 5) return null;
-
-                    const baseline = 10;
-                    const focalLength = await this.getFocalLength();
-                    const distance = (baseline * focalLength) / disparity;
-
-                    const ankleL = poseResult.landmarks[27];
-                    const botP = ankleL ? ankleL.y : 0;
-                    const topP = poseResult.landmarks[0]?.y || botP;
-                    const hreal = this.calculateHReal(topP, botP, midP, cameraHeight);
-
-                    return { hreal, distance, hpixel: disparity, topP, botP };
-                } catch (e) {
-                    console.error('Method 5 error:', e);
-                    return null;
-                }
-            },
-
-            // Method 6: Edge Detection
-            async method6(canvas, cameraHeight, midP) {
-                try {
-                    if (!canvas) return null;
-
-                    const ctx = canvas.getContext('2d');
-                    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                    const data = imageData.data;
-
-                    let topP = canvas.height, botP = 0;
-
-                    for (let y = 1; y < canvas.height - 1; y++) {
-                        for (let x = 1; x < canvas.width - 1; x++) {
-                            const gx = (-data[(y-1)*canvas.width*4 + (x-1)*4] + data[(y-1)*canvas.width*4 + (x+1)*4] +
-                                       -2*data[y*canvas.width*4 + (x-1)*4] + 2*data[y*canvas.width*4 + (x+1)*4] +
-                                       -data[(y+1)*canvas.width*4 + (x-1)*4] + data[(y+1)*canvas.width*4 + (x+1)*4]) / 8;
-
-                            if (Math.abs(gx) > 50) {
-                                topP = Math.min(topP, y);
-                                botP = Math.max(botP, y);
-                            }
-                        }
-                    }
-
-                    if (topP === canvas.height) return null;
-
-                    const hreal = this.calculateHReal(topP, botP, midP, cameraHeight);
-                    const hpixel = botP - topP;
-                    const focalLength = await this.getFocalLength();
-                    const distance = this.calculateDistance(hreal, hpixel, focalLength, midP, botP);
-
-                    return { hreal, distance, hpixel, topP, botP };
-                } catch (e) {
-                    console.error('Method 6 error:', e);
-                    return null;
-                }
-            },
-
-            // Method 7: Voting
-            async method7(segmentationResult, poseResult, canvas, cameraHeight, midP) {
-                try {
-                    const results = [];
-
-                    const m1 = await this.method1(segmentationResult, cameraHeight, midP);
-                    if (m1 && m1.distance > 0) results.push(m1.distance);
-
-                    const m2 = await this.method2(poseResult, cameraHeight, midP);
-                    if (m2 && m2.distance > 0) results.push(m2.distance);
-
-                    const m3 = await this.method3(segmentationResult, cameraHeight, midP);
-                    if (m3 && m3.distance > 0) results.push(m3.distance);
-
-                    if (results.length === 0) return null;
-
-                    results.sort((a, b) => a - b);
-                    const median = results.length % 2 === 0
-                        ? (results[results.length / 2 - 1] + results[results.length / 2]) / 2
-                        : results[Math.floor(results.length / 2)];
-
-                    const variance = Math.sqrt(results.reduce((sq, n) => sq + Math.pow(n - median, 2), 0) / results.length);
-                    const confidence = Math.max(0, Math.min(100, 100 / (1 + variance / 100)));
-
-                    const hreal = m1 ? m1.hreal : (m2 ? m2.hreal : (m3 ? m3.hreal : null));
-
-                    return { hreal, distance: median, confidence };
-                } catch (e) {
-                    console.error('Method 7 error:', e);
-                    return null;
-                }
-            },
-
-            // Method 8: Progressive
-            async method8(segmentationResult, poseResult, canvas, cameraHeight, midP) {
-                try {
-                    const votingResult = await this.method7(segmentationResult, poseResult, canvas, cameraHeight, midP);
-                    if (!votingResult) return null;
-
-                    let finalResult = { ...votingResult };
-
-                    if (votingResult.confidence < 80) {
-                        const parallaxResult = await this.method5(poseResult, cameraHeight, midP);
-                        if (parallaxResult) {
-                            finalResult.distance = 0.5 * votingResult.distance + 0.5 * parallaxResult.distance;
-                            finalResult.confidence = Math.max(votingResult.confidence, 75);
-                        }
-                    }
-
-                    return finalResult;
-                } catch (e) {
-                    console.error('Method 8 error:', e);
-                    return null;
-                }
-            },
-        };
-
-        // ============================================================================
-        // MAIN PROCESSING LOOP
-        // ============================================================================
-
-        async function processFrame() {
-            if (!State.isRunning) return;
-
-            try {
-                const now = Date.now();
-                const deltaTime = now - State.lastFrameTime;
-                const targetFrameTime = 1000 / parseInt(Config.processing.targetFps);
-
-                if (deltaTime < targetFrameTime) {
-                    requestAnimationFrame(processFrame);
-                    return;
-                }
-
-                State.lastFrameTime = now;
-
-                if (State.processingFrame) {
-                    requestAnimationFrame(processFrame);
-                    return;
-                }
-
-                State.processingFrame = true;
-
-                const video = document.getElementById('video');
-                if (!video || !video.videoWidth) {
-                    State.processingFrame = false;
-                    requestAnimationFrame(processFrame);
-                    return;
-                }
-
-                const canvas = document.getElementById('canvas');
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
-
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(video, 0, 0);
-
-                const cameraHeight = parseFloat(document.getElementById('cameraHeight').value);
-                const midP = canvas.height / 2;
-
-                // Process with MediaPipe
-                let segmentationResult = null;
-                let poseResult = null;
-
-                try {
-                    [segmentationResult, poseResult] = await Promise.all([
-                        new Promise((resolve) => {
-                            State.segmentation.onResults((results) => resolve(results));
-                            State.segmentation.send({ image: canvas });
-                        }),
-                        new Promise((resolve) => {
-                            State.pose.onResults((results) => resolve(results));
-                            State.pose.send({ image: canvas });
-                        }),
-                    ]);
-                } catch (e) {
-                    console.error('MediaPipe processing error:', e);
-                    State.processingFrame = false;
-                    requestAnimationFrame(processFrame);
-                    return;
-                }
-
-                // Run all methods
-                const m1 = await Methods.method1(segmentationResult, cameraHeight, midP);
-                const m2 = await Methods.method2(poseResult, cameraHeight, midP);
-                const m3 = await Methods.method3(segmentationResult, cameraHeight, midP);
-                const m4 = await Methods.method4(poseResult, cameraHeight, midP);
-                const m5 = await Methods.method5(poseResult, cameraHeight, midP);
-                const m6 = await Methods.method6(canvas, cameraHeight, midP);
-                const m7 = await Methods.method7(segmentationResult, poseResult, canvas, cameraHeight, midP);
-                const m8 = await Methods.method8(segmentationResult, poseResult, canvas, cameraHeight, midP);
-
-                // Store results
-                State.results = { mask: m1, landmarks: m2, fov: m3, homography: m4, parallax: m5, edge: m6, voting: m7, progressive: m8 };
-
-                // Display voting result (Method 7)
-                if (m7) {
-                    const smoothing = Config.processing.smoothingFactor;
-                    State.smoothDistance = State.smoothDistance ? 
-                        (1 - smoothing) * State.smoothDistance + smoothing * m7.distance : 
-                        m7.distance;
-                    State.smoothHReal = State.smoothHReal ? 
-                        (1 - smoothing) * State.smoothHReal + smoothing * m7.hreal : 
-                        m7.hreal;
-
-                    document.getElementById('resultHReal').textContent = State.smoothHReal.toFixed(1);
-                    document.getElementById('resultDistance').textContent = State.smoothDistance.toFixed(1);
-                    document.getElementById('resultConfidence').textContent = m7.confidence.toFixed(0);
-
-                    updateDetectionStatus('✓ Detected');
-                    clearError();
-
-                    // Add to history
-                    if (State.history.length === 0 || Date.now() - (State.lastHistoryTime || 0) > 5000) {
-                        State.history.unshift({
-                            timestamp: new Date(),
-                            hreal: State.smoothHReal,
-                            distance: State.smoothDistance,
-                            confidence: m7.confidence,
-                            method: 'Method 7'
-                        });
-                        State.lastHistoryTime = Date.now();
-
-                        if (State.history.length > Config.maxHistoryItems) {
-                            State.history.pop();
-                        }
-
-                        saveHistory();
-                    }
-                } else {
-                    updateDetectionStatus('✗ No detection');
-                }
-
-                // Update current method display
-                updateMethodDisplay(State.currentMethod);
-
-                updateFps();
-                State.processingFrame = false;
-
-            } catch (error) {
-                console.error('Frame processing error:', error);
-                State.processingFrame = false;
-            }
-
-            requestAnimationFrame(processFrame);
-        }
-
-        // ============================================================================
-        // SETTINGS & HISTORY
-        // ============================================================================
-
-        function saveSettings() {
-            const settings = {
-                camera: Config.camera,
-                processing: Config.processing,
-                detection: Config.detection,
-                display: Config.display,
-            };
-            localStorage.setItem(Config.storage.SETTINGS, JSON.stringify(settings));
-        }
-
-        function loadSettings() {
-            const saved = localStorage.getItem(Config.storage.SETTINGS);
-            if (saved) {
-                try {
-                    const settings = JSON.parse(saved);
-                    Object.assign(Config, settings);
-                } catch (e) {
-                    console.warn('Failed to load settings');
-                }
-            }
-        }
-
-        function saveHistory() {
-            localStorage.setItem(Config.storage.HISTORY, JSON.stringify(State.history));
-            updateHistoryDisplay();
-        }
-
-        function loadHistory() {
-            const saved = localStorage.getItem(Config.storage.HISTORY);
-            if (saved) {
-                try {
-                    State.history = JSON.parse(saved).map(item => ({
-                        ...item,
-                        timestamp: new Date(item.timestamp),
-                    }));
-                    updateHistoryDisplay();
-                } catch (e) {
-                    console.warn('Failed to load history');
-                }
-            }
-        }
-
-        function updateHistoryDisplay() {
-            const container = document.getElementById('historyList');
-
-            if (State.history.length === 0) {
-                container.innerHTML = '<p class="placeholder">No measurements recorded yet</p>';
-                return;
-            }
-
-            let html = '';
-            State.history.forEach(item => {
-                html += `
-                    <div class="history-item">
-                        <div class="history-time">${item.timestamp.toLocaleTimeString()}</div>
-                        <div class="history-values">
-                            <div class="history-value">
-                                <span class="history-label">H: </span>
-                                <span class="history-data">${item.hreal.toFixed(1)}cm</span>
-                            </div>
-                            <div class="history-value">
-                                <span class="history-label">D: </span>
-                                <span class="history-data">${item.distance.toFixed(1)}cm</span>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            });
-            container.innerHTML = html;
-        }
-
-        function clearHistory() {
-            if (confirm('Clear all measurements?')) {
-                State.history = [];
-                saveHistory();
-            }
-        }
-
-        function exportHistory() {
-            if (State.history.length === 0) {
-                alert('No measurements to export');
-                return;
-            }
-
-            let csv = 'Timestamp,H_real (cm),Distance (cm),Confidence (%),Method\n';
-            State.history.forEach(item => {
-                csv += `"${item.timestamp.toISOString()}",${item.hreal.toFixed(1)},${item.distance.toFixed(1)},${item.confidence.toFixed(0)},"${item.method}"\n`;
-            });
-
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `distance_${Date.now()}.csv`;
-            a.click();
-        }
-
-        function resetSettings() {
-            if (confirm('Reset all settings to defaults?')) {
-                localStorage.removeItem(Config.storage.SETTINGS);
-                location.reload();
-            }
-        }
-
-        // ============================================================================
-        // EVENT LISTENERS & INITIALIZATION
-        // ============================================================================
-
-        document.addEventListener('DOMContentLoaded', async () => {
-            console.log('Page loaded, initializing...');
-
-            loadSettings();
-            loadHistory();
-
-            // Setup event listeners
-            document.getElementById('startBtn').addEventListener('click', startCamera);
-            document.getElementById('stopBtn').addEventListener('click', stopCamera);
-            document.getElementById('focusButton').addEventListener('click', () => {
-                updateStatus('Focus requested');
-            });
-
-            document.getElementById('focalLengthMode').addEventListener('change', (e) => {
-                document.getElementById('manualFocalLengthGroup').style.display = 
-                    e.target.value === 'manual' ? 'block' : 'none';
-            });
-
-            document.getElementById('smoothingFactor').addEventListener('change', (e) => {
-                Config.processing.smoothingFactor = parseFloat(e.target.value);
-                document.getElementById('smoothingValue').textContent = e.target.value;
-                saveSettings();
-            });
-
-            document.getElementById('landmarkConfidence').addEventListener('change', (e) => {
-                Config.detection.landmarkConfidenceThreshold = parseFloat(e.target.value);
-                document.getElementById('landmarkValue').textContent = e.target.value;
-                saveSettings();
-            });
-
-            document.getElementById('minDetectionArea').addEventListener('change', (e) => {
-                Config.detection.minDetectionArea = parseFloat(e.target.value);
-                document.getElementById('areaValue').textContent = e.target.value;
-                saveSettings();
-            });
-
-            document.getElementById('useRearCamera').addEventListener('change', (e) => {
-                Config.camera.useRearCamera = e.target.checked;
-                saveSettings();
-            });
-
-            document.getElementById('enableAutofocus').addEventListener('change', (e) => {
-                Config.camera.enableAutofocus = e.target.checked;
-                saveSettings();
-            });
-
-            // Method tabs
-            document.querySelectorAll('.method-tab').forEach(tab => {
-                tab.addEventListener('click', (e) => switchMethodTab(e.target.dataset.method));
-            });
-
-            // Initialize MediaPipe
-            console.log('Starting MediaPipe initialization...');
-            const ready = await initializeMediaPipe();
-
-            if (ready) {
-                console.log('MediaPipe ready!');
-            } else {
-                console.error('MediaPipe initialization failed');
-            }
-        });
-
-        document.getElementById('video').addEventListener('click', () => {
-            updateStatus('Focus requested');
-        });
-    </script>
+  </header>
+
+  <div class="grid-main">
+    <section>
+      <div class="card">
+        <div class="card-h"><h2>Live viewport</h2><span class="hint" id="fpsLabel">— fps</span></div>
+        <div class="card-b" style="padding:0">
+          <div class="stage" id="stage">
+            <video id="video" playsinline muted></video>
+            <canvas id="draw"></canvas>
+            <div class="ghost" id="ghost">Camera idle.<br/>Set camera height, then press <b>Start camera</b>.<br/><br/>Stand the subject upright on flat ground, feet in frame.</div>
+            <div class="badge-live" id="liveBadge"><span class="pulse"></span><span>standby</span></div>
+            <div class="stage-tools">
+              <button class="tool" id="torchBtn" title="Torch" style="display:none">⚡</button>
+              <button class="tool" id="fsBtn" title="Fullscreen">⛶</button>
+            </div>
+            <div class="vert" id="vertBadge">tilt <b>—</b></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:14px">
+        <div class="card-h"><h2>Readout</h2><span class="hint" id="methodLabel">method · voting</span></div>
+        <div class="card-b">
+          <div class="read">
+            <div class="metric dist"><div class="lab">Distance to subject</div><div class="val"><span id="distVal">—</span><span class="unit" id="distUnit">cm</span></div><div class="sub" id="distSub">awaiting detection</div></div>
+            <div class="metric h"><div class="lab">H_real (derived)</div><div class="val"><span id="hrealVal">—</span><span class="unit">cm</span></div><div class="sub">geometry, no proportions</div></div>
+            <div class="metric conf"><div class="lab">Confidence</div><div class="val"><span id="confVal">—</span><span class="unit">%</span></div><div class="confbar"><i id="confBar"></i></div><div class="sub" id="confSub">—</div></div>
+          </div>
+          <div class="methods" id="methodChips"></div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="card">
+        <div class="card-h"><h2>Setup</h2><span class="hint">required</span></div>
+        <div class="card-b">
+          <div class="banner info" id="secNote">Hosted on HTTPS — camera, sensors and WebXR work directly. Allow camera access when prompted.</div>
+
+          <div class="field">
+            <label>Camera height from ground · H_cam</label>
+            <div class="row">
+              <input id="hcam" type="number" value="120" min="10" max="300" step="0.5" inputmode="decimal"/>
+              <select id="hcamUnit" style="max-width:84px"><option value="1">cm</option><option value="2.54">in</option></select>
+            </div>
+            <div class="note">Lens centre height above the floor. The most important input.</div>
+          </div>
+
+          <div class="field">
+            <label>Focal length source · f (for distance)</label>
+            <div class="seg" id="fMode">
+              <button data-m="cal" class="on">Calibrate</button>
+              <button data-m="fov">Field of view</button>
+              <button data-m="man">Manual</button>
+            </div>
+          </div>
+          <div class="field" id="fov-box" style="display:none">
+            <label>Vertical field of view</label>
+            <div class="row"><input id="vfov" type="number" value="60" min="20" max="120" step="0.5" inputmode="decimal"/><span style="display:flex;align-items:center;color:var(--muted)">deg</span></div>
+            <div class="note">Rough start (~55–65° for phone main cameras in portrait). Prefer Calibrate.</div>
+          </div>
+          <div class="field" id="man-box" style="display:none">
+            <label>Focal length</label>
+            <div class="row"><input id="fman" type="number" value="900" min="100" max="6000" step="1" inputmode="numeric"/><span style="display:flex;align-items:center;color:var(--muted)">px</span></div>
+          </div>
+          <div class="field" id="cal-box">
+            <label>One-shot calibration</label>
+            <div class="row"><input id="cald" type="number" value="300" min="50" max="2000" step="1" inputmode="numeric"/><span style="display:flex;align-items:center;color:var(--muted)">cm</span></div>
+            <button class="act ghost" id="calBtn" style="margin-top:9px" disabled>Capture at this distance</button>
+            <div class="note" id="calStatus">Put a subject's feet at a measured distance, keep the phone upright, capture. Solves <b>f = (BotP−MidP)·D₀ / H_cam</b>.</div>
+          </div>
+
+          <div class="field">
+            <label>Estimation method</label>
+            <select id="method">
+              <option value="vote">M7 · Voting (median) — recommended</option>
+              <option value="ground">Ground plane (feet only)</option>
+              <option value="mask">M1 · Mask bounding box</option>
+              <option value="lm">M2 · Landmarks (nose→ankle)</option>
+              <option value="vfov">M3 · Vertical FoV angle</option>
+            </select>
+          </div>
+
+          <div class="btn-row">
+            <button class="act" id="startBtn">Start camera</button>
+            <button class="act ghost" id="tiltBtn" style="max-width:128px">Tilt sensor</button>
+          </div>
+          <button class="act ghost" id="zeroBtn" style="margin-top:8px;display:none">Set current pose as upright (0°)</button>
+          <button class="act cyan" id="arBtn" style="margin-top:8px;display:none">AR depth (true distance · beta)</button>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:14px">
+        <div class="card-h"><h2>Diagnostics</h2><span class="hint">per frame</span></div>
+        <div class="card-b">
+          <div class="banner warn hidden" id="diagBanner"></div>
+          <dl class="diag" id="diag">
+            <dt>TopP / BotP</dt><dd id="d_tb">— / —</dd>
+            <dt>MidP (horizon)</dt><dd id="d_mid">—</dd>
+            <dt>feet margin</dt><dd id="d_marg">—</dd>
+            <dt>f (px)</dt><dd id="d_f">—</dd>
+            <dt>tilt (vs upright)</dt><dd id="d_pitch">sensor off</dd>
+            <dt>nose vis</dt><dd id="d_nose">—</dd>
+            <dt>ankle vis</dt><dd id="d_ankle">—</dd>
+            <dt>D_ground / D_height</dt><dd id="d_dgh">— / —</dd>
+            <dt>capture res</dt><dd id="d_res">—</dd>
+            <dt>AR depth</dt><dd id="d_xr">checking…</dd>
+          </dl>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <footer>
+    <b>Honesty note.</b> H_real is exact only while the phone is upright (horizon on the centre line) with feet on flat ground in frame; the tilt badge guards that. Distance always needs a focal length — calibrate it. M1/M2/M3 share one geometry, so their agreement is a detection-quality check, not independent confirmation. The <b>AR-depth</b> method is independent of all that — it reads ARCore's metric depth at the centre reticle — but only runs on depth-capable devices. M4/M5/M6 and M8-phase-2 from the spec are omitted (browser inputs can't hit their claimed accuracy).
+  </footer>
+</div>
+
+<!-- WebXR AR overlay (dom-overlay root) -->
+<div id="arOverlay">
+  <div id="arReticle"></div>
+  <div id="arReadout"><div class="big" id="arDist">— m</div><div class="sm" id="arHint">point reticle at the subject</div></div>
+  <button id="arExit">Exit AR</button>
+</div>
+
+<script type="module">
+import { PoseLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.20/vision_bundle.mjs";
+const V="0.10.20";
+const $=id=>document.getElementById(id);
+
+const state={running:false,landmarker:null,fMode:"cal",method:"vote",
+  f:null,fFromCal:false,tiltOn:false,pitchRaw:null,pitchZero:0,
+  vw:0,vh:0,frames:0,fpsT:0,ema:{d:null,h:null},track:null,torch:false,wake:null,_snap:null};
+
+/* ---- UI wiring ---- */
+const seg=$("fMode");
+seg.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;
+  state.fMode=b.dataset.m;[...seg.children].forEach(x=>x.classList.toggle("on",x===b));
+  $("fov-box").style.display=state.fMode==="fov"?"block":"none";
+  $("man-box").style.display=state.fMode==="man"?"block":"none";
+  $("cal-box").style.display=state.fMode==="cal"?"block":"none";recomputeF();});
+$("method").addEventListener("change",e=>{state.method=e.target.value;$("methodLabel").textContent="method · "+e.target.selectedOptions[0].text.split("·").pop().trim().toLowerCase();});
+$("vfov").addEventListener("input",recomputeF);$("fman").addEventListener("input",recomputeF);
+const hcamCm=()=>parseFloat($("hcam").value||"0")*parseFloat($("hcamUnit").value||"1");
+function recomputeF(){if(!state.vh)return;
+  if(state.fMode==="fov"){const v=parseFloat($("vfov").value||"60")*Math.PI/180;state.f=(state.vh/2)/Math.tan(v/2);state.fFromCal=false;}
+  else if(state.fMode==="man"){state.f=parseFloat($("fman").value||"0");state.fFromCal=false;}
+  $("d_f").textContent=state.f?state.f.toFixed(0)+(state.fFromCal?" (cal)":""):"—";}
+
+/* ---- camera ---- */
+const video=$("video"),canvas=$("draw"),ctx=canvas.getContext("2d");
+$("startBtn").addEventListener("click",()=>state.running?stop():start());
+
+async function start(){
+  enableTilt(); // user gesture -> good time to request motion sensor
+  setBanner("info","Loading pose model…");
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"},width:{ideal:1280},height:{ideal:720}},audio:false});
+    video.srcObject=stream;await video.play();
+    state.track=stream.getVideoTracks()[0];
+    state.vw=video.videoWidth;state.vh=video.videoHeight;canvas.width=state.vw;canvas.height=state.vh;
+    setupTrackExtras();
+  }catch(err){setBanner("bad","Camera blocked: "+err.message+". On Android Chrome, tap the address-bar lock → Permissions → Camera → Allow, then reload.");return;}
+  try{
+    const fs=await FilesetResolver.forVisionTasks(`https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${V}/wasm`);
+    state.landmarker=await PoseLandmarker.createFromOptions(fs,{
+      baseOptions:{modelAssetPath:"https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task",delegate:"GPU"},
+      runningMode:"VIDEO",numPoses:1,minPoseDetectionConfidence:0.5,minPosePresenceConfidence:0.5,minTrackingConfidence:0.5,outputSegmentationMasks:true});
+  }catch(err){setBanner("bad","Model load failed: "+err.message+". Check connectivity or edit @"+V+" in the script.");return;}
+  recomputeF();await acquireWake();
+  state.running=true;$("startBtn").textContent="Stop camera";$("calBtn").disabled=false;$("ghost").style.display="none";
+  $("liveBadge").classList.add("on");$("liveBadge").querySelector("span:last-child").textContent="live";
+  setBanner("info","Tracking. Keep the phone upright, subject's feet in frame.");loop();
+}
+function stop(){state.running=false;
+  if(video.srcObject){video.srcObject.getTracks().forEach(t=>t.stop());video.srcObject=null;}
+  state.track=null;$("torchBtn").style.display="none";releaseWake();
+  $("startBtn").textContent="Start camera";$("calBtn").disabled=true;
+  $("liveBadge").classList.remove("on");$("liveBadge").querySelector("span:last-child").textContent="standby";}
+
+function setupTrackExtras(){
+  const s=state.track.getSettings?.()||{};$("d_res").textContent=(s.width||state.vw)+"×"+(s.height||state.vh);
+  const caps=state.track.getCapabilities?.()||{};
+  if(caps.torch){$("torchBtn").style.display="block";}
+}
+$("torchBtn").addEventListener("click",async()=>{if(!state.track)return;state.torch=!state.torch;
+  try{await state.track.applyConstraints({advanced:[{torch:state.torch}]});$("torchBtn").classList.toggle("on",state.torch);}catch(e){}});
+
+/* ---- main loop ---- */
+const LM={NOSE:0,L_ANKLE:27,R_ANKLE:28,L_HEEL:29,R_HEEL:30,L_FOOT:31,R_FOOT:32};
+function loop(){if(!state.running)return;const now=performance.now();
+  state.frames++;if(now-state.fpsT>500){$("fpsLabel").textContent=Math.round(state.frames*1000/(now-state.fpsT))+" fps";state.frames=0;state.fpsT=now;}
+  let res=null;try{res=state.landmarker.detectForVideo(video,now);}catch(e){}
+  ctx.drawImage(video,0,0,canvas.width,canvas.height);
+  if(res&&res.landmarks&&res.landmarks.length){const m=res.segmentationMasks&&res.segmentationMasks[0];process(res.landmarks[0],m);if(m&&m.close)m.close();}
+  else annotateNone();
+  requestAnimationFrame(loop);}
+
+function maskBBox(mask){const w=mask.width,h=mask.height,arr=mask.getAsFloat32Array(),TH=0.5,MINROW=3;
+  let top=-1,bot=-1,left=w,right=0;const stepX=Math.max(1,Math.floor(w/220));
+  for(let y=0;y<h;y++){let cnt=0,lx=w,rx=0;const base=y*w;
+    for(let x=0;x<w;x+=stepX){if(arr[base+x]>TH){cnt++;if(x<lx)lx=x;if(x>rx)rx=x;}}
+    if(cnt>=MINROW){if(top<0)top=y;bot=y;if(lx<left)left=lx;if(rx>right)right=rx;}}
+  if(top<0)return null;const sy=state.vh/h,sx=state.vw/w;
+  return{top:top*sy,bot:bot*sy,left:left*sx,right:right*sx};}
+
+function pitchDeg(){return state.pitchRaw==null?null:(state.pitchRaw-state.pitchZero);}
+
+function process(lms,mask){
+  const Himg=state.vh,MidP=Himg/2;
+  const bb=mask?maskBBox(mask):null;
+  let TopP,BotP,feetClipped=false;
+  const noseY=lms[LM.NOSE].y*Himg,noseVis=lms[LM.NOSE].visibility??0;
+  const footIdx=[LM.L_ANKLE,LM.R_ANKLE,LM.L_HEEL,LM.R_HEEL,LM.L_FOOT,LM.R_FOOT];
+  let lmBot=-1,ankleVis=0;
+  footIdx.forEach(i=>{const p=lms[i];if(p){const v=p.visibility??0;if(v>0.2){const y=p.y*Himg;if(y>lmBot)lmBot=y;}if((i===LM.L_ANKLE||i===LM.R_ANKLE)&&v>ankleVis)ankleVis=v;}});
+  if(bb){TopP=bb.top;BotP=bb.bot;feetClipped=bb.bot>=Himg*0.985;}
+  else{if(lmBot<0){annotateNone();return;}TopP=noseY;BotP=lmBot;}
+
+  const Hcam=hcamCm(),denomH=(MidP-BotP);
+  const Hreal=denomH!==0?(TopP-BotP)*Hcam/denomH:null;
+  const f=state.f,feetMargin=BotP-MidP;
+  let Dg=null,Dh=null,Dvf=null;
+  if(f&&feetMargin>1){Dg=f*Hcam/feetMargin;
+    if(Hreal&&(BotP-TopP)>1)Dh=f*Hreal/(BotP-TopP);
+    if(Hreal){const ang=2*Math.atan((BotP-TopP)/(2*f));Dvf=Hreal/(2*Math.tan(ang/2));}}
+  let Dlm=null;if(f&&Hreal&&lmBot>0&&(lmBot-noseY)>1)Dlm=f*Hreal/(lmBot-noseY)*0.94;
+
+  let D=null,used="—",spread=null;
+  const pick=k=>({ground:Dg,mask:Dh,vfov:Dvf,lm:Dlm}[k]);
+  if(state.method==="vote"){const vals=[Dg,Dh,Dvf].filter(v=>v!=null).sort((a,b)=>a-b);
+    if(vals.length){D=vals.length%2?vals[(vals.length-1)/2]:(vals[vals.length/2-1]+vals[vals.length/2])/2;used="voting";spread=vals.length>1?vals[vals.length-1]-vals[0]:0;}}
+  else D=pick(state.method),used=state.method;
+
+  let conf=100,reason="ok",p=pitchDeg();
+  if(!f){conf=0;reason="set focal length";}
+  else{const mf=feetMargin/Himg;
+    if(feetClipped){conf-=55;reason="feet clipped at frame edge";}
+    if(ankleVis<0.5){conf-=Math.round((0.5-ankleVis)*120);if(reason==="ok")reason="feet not clearly visible";}
+    if(noseVis<0.5){conf-=15;if(reason==="ok")reason="head not clearly visible";}
+    if(mf<0.04){conf-=40;if(reason==="ok")reason="subject near/above horizon";}else if(mf<0.10)conf-=15;
+    if(Dg!=null&&Dh!=null){const rel=Math.abs(Dg-Dh)/((Dg+Dh)/2);if(rel>0.12){conf-=Math.min(25,Math.round(rel*100));if(reason==="ok")reason="mask/ground disagree";}}
+    if(p!=null){const a=Math.abs(p);if(a>8){conf-=Math.min(40,Math.round((a-8)*4));if(reason==="ok")reason="phone not upright";}else if(a>3)conf-=Math.round((a-3)*3);}}
+  conf=Math.max(0,Math.min(100,Math.round(conf)));
+
+  if(D!=null)state.ema.d=state.ema.d==null?D:state.ema.d*0.7+D*0.3;
+  if(Hreal!=null&&isFinite(Hreal))state.ema.h=state.ema.h==null?Hreal:state.ema.h*0.7+Hreal*0.3;
+
+  drawOverlay(TopP,BotP,MidP,bb,lms);
+  updateReadout(state.ema.d,state.ema.h,conf,reason,used);
+  updateDiag({TopP,BotP,MidP,feetMargin,f,Dg,Dh,noseVis,ankleVis,feetClipped});
+  updateChips([Dg!=null&&"ground",Dh!=null&&"mask",Dvf!=null&&"vfov",Dlm!=null&&"lm"].filter(Boolean));
+  state._snap={BotP,MidP,Hcam};
+}
+function annotateNone(){updateReadout(null,null,null,"no subject detected","—");$("d_tb").textContent="— / —";state._snap=null;}
+
+function drawOverlay(TopP,BotP,MidP,bb,lms){const w=canvas.width;
+  ctx.strokeStyle="rgba(82,214,196,.55)";ctx.lineWidth=1.5;ctx.setLineDash([7,7]);
+  ctx.beginPath();ctx.moveTo(0,MidP);ctx.lineTo(w,MidP);ctx.stroke();ctx.setLineDash([]);
+  ctx.fillStyle="rgba(82,214,196,.85)";ctx.font="600 13px IBM Plex Mono";ctx.fillText("horizon",10,MidP-7);
+  if(bb){ctx.strokeStyle="rgba(255,180,84,.9)";ctx.lineWidth=2;ctx.strokeRect(bb.left,bb.top,bb.right-bb.left,bb.bot-bb.top);}
+  const line=(y,c,t)=>{ctx.strokeStyle=c;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke();ctx.fillStyle=c;ctx.font="600 12px IBM Plex Mono";ctx.fillText(t,w-70,y-6);};
+  line(TopP,"rgba(255,180,84,.95)","head top");line(BotP,"rgba(255,106,106,.95)","feet");
+  ctx.fillStyle="#fff";[LM.NOSE,LM.L_ANKLE,LM.R_ANKLE].forEach(i=>{const p=lms[i];if(p&&(p.visibility??0)>0.2){ctx.beginPath();ctx.arc(p.x*canvas.width,p.y*canvas.height,4,0,7);ctx.fill();}});}
+
+function updateReadout(D,H,conf,reason,used){
+  $("distVal").textContent=D==null?"—":Math.round(D).toLocaleString();
+  $("distSub").textContent=D==null?"awaiting detection":(D/100).toFixed(2)+" m · "+used;
+  $("hrealVal").textContent=(H==null||!isFinite(H))?"—":Math.round(H);
+  $("confVal").textContent=conf==null?"—":conf;$("confBar").style.width=(conf||0)+"%";$("confSub").textContent=reason;
+  $("confVal").style.color=conf==null?"var(--txt)":conf>=75?"var(--ok)":conf>=45?"var(--warn)":"var(--bad)";}
+function updateDiag(d){$("d_tb").textContent=`${Math.round(d.TopP)} / ${Math.round(d.BotP)}`;$("d_mid").textContent=Math.round(d.MidP);
+  const m=$("d_marg");m.textContent=Math.round(d.feetMargin)+" px";m.className=d.feetMargin<state.vh*0.04?"flag-bad":d.feetMargin<state.vh*0.10?"flag-warn":"flag-ok";
+  $("d_f").textContent=d.f?d.f.toFixed(0)+(state.fFromCal?" (cal)":""):"— (set f)";
+  $("d_nose").textContent=d.noseVis.toFixed(2);$("d_nose").className=d.noseVis>0.7?"flag-ok":d.noseVis>0.4?"":"flag-warn";
+  $("d_ankle").textContent=d.ankleVis.toFixed(2);$("d_ankle").className=d.ankleVis>0.5?"flag-ok":"flag-bad";
+  $("d_dgh").textContent=(d.Dg!=null?Math.round(d.Dg):"—")+" / "+(d.Dh!=null?Math.round(d.Dh):"—");
+  const db=$("diagBanner");
+  if(d.feetClipped){db.classList.remove("hidden");db.className="banner bad";db.textContent="Feet at frame edge — step back so feet are visible. Distance unreliable.";}
+  else if(!d.f){db.classList.remove("hidden");db.className="banner warn";db.textContent="No focal length — H_real valid, distance can't compute. Calibrate or set FoV.";}
+  else db.classList.add("hidden");}
+const CHIP={ground:"ground",mask:"M1 mask",vfov:"M3 vfov",lm:"M2 landmark"};
+function updateChips(active){const h=$("methodChips");h.innerHTML="";["ground","mask","vfov","lm"].forEach(k=>{const c=document.createElement("span");c.className="chip"+(active.includes(k)?" on":"");c.textContent=CHIP[k];h.appendChild(c);});}
+
+/* ---- calibration ---- */
+$("calBtn").addEventListener("click",()=>{if(!state._snap){$("calStatus").innerHTML="<b>No subject.</b> Get feet in frame first.";return;}
+  const{BotP,MidP,Hcam}=state._snap,D0=parseFloat($("cald").value||"0"),margin=BotP-MidP;
+  if(D0<=0||margin<=2||Hcam<=0){$("calStatus").innerHTML="<b>Bad capture.</b> Need feet below horizon + valid distance.";return;}
+  state.f=margin*D0/Hcam;state.fFromCal=true;$("calStatus").innerHTML=`Calibrated: <b>f = ${state.f.toFixed(0)} px</b>. Distance now metric.`;$("d_f").textContent=state.f.toFixed(0)+" (cal)";});
+
+/* ---- tilt: gravity vector via devicemotion (Android-friendly) + zero ---- */
+$("tiltBtn").addEventListener("click",enableTilt);
+$("zeroBtn").addEventListener("click",()=>{if(state.pitchRaw!=null){state.pitchZero=state.pitchRaw;}});
+async function enableTilt(){
+  if(state.tiltOn)return;
+  try{
+    if(typeof DeviceMotionEvent!=="undefined"&&DeviceMotionEvent.requestPermission){
+      const p=await DeviceMotionEvent.requestPermission();if(p!=="granted")return;}
+    window.addEventListener("devicemotion",onMotion,{passive:true});
+    state.tiltOn=true;$("tiltBtn").textContent="Tilt: on";$("zeroBtn").style.display="block";
+  }catch(e){/* sensor unavailable; app still works */}
+}
+function onMotion(e){const g=e.accelerationIncludingGravity;if(!g||g.x==null)return;
+  // pitch proxy: angle of gravity out of the screen plane. Upright portrait ≈ 0°, flat ≈ ±90°.
+  state.pitchRaw=Math.atan2(g.z,Math.hypot(g.x,g.y))*180/Math.PI;
+  const p=pitchDeg();if(p==null)return;const a=Math.abs(p),vb=$("vertBadge");
+  vb.innerHTML=`tilt <b>${p>0?"+":""}${p.toFixed(0)}°</b>`;vb.className="vert "+(a<=3?"good":a<=8?"":"bad");
+  const pd=$("d_pitch");pd.textContent=p.toFixed(1)+"°";pd.className=a<=3?"flag-ok":a<=8?"flag-warn":"flag-bad";}
+
+/* ---- wake lock ---- */
+async function acquireWake(){try{if("wakeLock"in navigator){state.wake=await navigator.wakeLock.request("screen");}}catch(e){}}
+function releaseWake(){try{state.wake&&state.wake.release();state.wake=null;}catch(e){}}
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&state.running&&!state.wake)acquireWake();});
+
+/* ---- fullscreen ---- */
+$("fsBtn").addEventListener("click",()=>{const s=$("stage");
+  if(!document.fullscreenElement){(s.requestFullscreen||s.webkitRequestFullscreen).call(s).catch(()=>{});$("fsBtn").classList.add("on");}
+  else{document.exitFullscreen();$("fsBtn").classList.remove("on");}});
+
+/* ---- WebXR AR depth (true metric distance at centre reticle) ---- */
+let xrSession=null,xrRefSpace=null,xrGL=null;
+(async function checkXR(){
+  try{
+    if(navigator.xr&&await navigator.xr.isSessionSupported("immersive-ar")){
+      $("d_xr").textContent="ar supported";$("d_xr").className="flag-ok";$("arBtn").style.display="block";
+    }else{$("d_xr").textContent="not supported";}
+  }catch(e){$("d_xr").textContent="not supported";}
+})();
+$("arBtn").addEventListener("click",startAR);$("arExit").addEventListener("click",endAR);
+
+async function startAR(){
+  try{
+    const gl=document.createElement("canvas").getContext("webgl",{xrCompatible:true});
+    xrGL=gl;
+    xrSession=await navigator.xr.requestSession("immersive-ar",{
+      requiredFeatures:["depth-sensing"],optionalFeatures:["dom-overlay"],
+      depthSensing:{usagePreference:["cpu-optimized"],dataFormatPreference:["luminance-alpha","float32"]},
+      domOverlay:{root:$("arOverlay")}});
+    await gl.makeXRCompatible();
+    xrSession.updateRenderState({baseLayer:new XRWebGLLayer(xrSession,gl)});
+    xrRefSpace=await xrSession.requestReferenceSpace("viewer");
+    $("arOverlay").classList.add("on");$("arHint").textContent="point reticle at the subject";
+    xrSession.addEventListener("end",()=>{$("arOverlay").classList.remove("on");xrSession=null;});
+    xrSession.requestAnimationFrame(onXRFrame);
+  }catch(err){
+    $("arDist").textContent="—";$("arHint").textContent="AR depth unavailable: "+(err.message||err);
+    $("arOverlay").classList.add("on");
+  }
+}
+function endAR(){if(xrSession)xrSession.end();else $("arOverlay").classList.remove("on");}
+function onXRFrame(t,frame){
+  const s=frame.session;s.requestAnimationFrame(onXRFrame);
+  const pose=frame.getViewerPose(xrRefSpace);if(!pose)return;
+  for(const view of pose.views){
+    let depth=null;try{depth=frame.getDepthInformation(view);}catch(e){}
+    if(depth){
+      let m=null;try{m=depth.getDepthInMeters(0.5,0.5);}catch(e){}
+      if(m!=null&&isFinite(m)&&m>0){
+        $("arDist").textContent=m<1?(m*100).toFixed(0)+" cm":m.toFixed(2)+" m";
+        $("arHint").textContent="centre depth · live";
+      }else{$("arHint").textContent="no depth at centre — aim at a surface";}
+      return;
+    }
+  }
+  $("arHint").textContent="waiting for depth…";
+}
+
+/* ---- misc ---- */
+function setBanner(k,m){const b=$("secNote");b.className="banner "+k;b.textContent=m;}
+updateChips([]);$("methodLabel").textContent="method · voting";
+</script>
 </body>
 </html>

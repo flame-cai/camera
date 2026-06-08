@@ -5,158 +5,102 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
 <meta name="theme-color" content="#0a0b0c" />
 <meta name="mobile-web-app-capable" content="yes" />
-<title>Parallax — Monocular Distance Estimator</title>
-
-<!--
-  Parallax — Human Distance Estimator   (Android Chrome / GitHub Pages)
-  ====================================================================
-  ONLY USER INPUT = camera height (H_cam). Focal length is auto-detected.
-
-  WHY DISTANCE NEEDS FOCAL LENGTH BUT HEIGHT DOES NOT:
-    H_real = (BotP-TopP)/(BotP-MidP) * H_cam   -> ratio of pixel offsets, f cancels -> EXACT.
-    D      = f * H_cam / (BotP-MidP)           -> single pixel offset, f remains   -> needs f.
-
-  FOCAL-LENGTH DETECTORS (each reported, most reliable auto-selected):
-    1 EXIF 35mm-equiv (FocalLengthIn35mmFilm) -> diagonal FoV -> f_px
-    2 EXIF sensor geometry (FocalLength_mm + FocalPlaneResolution + PixelDimensions)
-    3 EXIF focal length (mm) only            -> informational (needs sensor size)
-    4 Capability probe (getCapabilities/getSettings) -> informational + focusDistance
-    5 Saved custom FoV (localStorage, per camera)
-    6 Standard 26mm-equivalent               -> universal fallback (distance = scale-approx)
-  All routes are normalised to a resolution-independent diagonal FoV, so they stay
-  valid if the capture resolution changes.
-
-  A "focal sweep" cannot recover lens focal length (it is fixed); sweeping FOCUS
-  instead yields the focus distance at peak sharpness, which ~= subject distance.
-  That is implemented as the Autofocus-Depth method (M5), an estimate independent
-  of focal length and of the upright/ground assumptions.
-
-  METHODS:
-    M1 mask bbox = ground plane (identical) | M2 landmarks (foot/head, no ankle bias)
-    M3 vertical-FoV angle (corrected pinhole) | M4 homography (+lateral X)
-    M5 autofocus depth (focus distance, f-free, device-gated) [replaces parallax]
-    M6 edge fallback (Sobel) | M7 voting (median M1-M4)
-    M8 progressive: M7 fused with the INDEPENDENT M5 by confidence.
--->
-
+<title>Distance</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
-
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
 <style>
-:root{--bg:#0a0b0c;--bg2:#0f1113;--panel:#121518;--panel2:#171b1f;--line:#262c31;--line2:#323a41;
---txt:#e9e7df;--muted:#8b938c;--dim:#5d655f;--amber:#ffb454;--amber-dim:#a9742d;--cyan:#52d6c4;
---ok:#7cfc9b;--warn:#ffcf5c;--bad:#ff6a6a;--grid:rgba(255,255,255,.025)}
+:root{--bg:#0a0b0c;--panel:#131619;--panel2:#181c20;--line:#272d33;--line2:#343c43;
+--txt:#ecebe4;--muted:#8c948d;--dim:#5d655f;--amber:#ffb454;--amber-dim:#a9742d;--cyan:#52d6c4;
+--ok:#7cfc9b;--warn:#ffcf5c;--bad:#ff6a6a}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;height:100%}
-body{background:radial-gradient(1200px 700px at 80% -10%,rgba(255,180,84,.06),transparent 60%),linear-gradient(180deg,var(--bg),var(--bg2));color:var(--txt);font-family:"IBM Plex Mono",ui-monospace,monospace;-webkit-font-smoothing:antialiased;min-height:100%}
-body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:34px 34px;mask-image:radial-gradient(circle at 50% 30%,#000,transparent 92%)}
-.wrap{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding:20px 14px calc(60px + env(safe-area-inset-bottom))}
-header{border-bottom:1px solid var(--line);padding-bottom:15px}
-.logo{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;letter-spacing:-.03em;font-size:clamp(24px,6vw,38px);line-height:1}
-.logo .dot{color:var(--amber)}
-.tag{font-size:10.5px;letter-spacing:.28em;text-transform:uppercase;color:var(--dim);margin-top:5px}
-.subtitle{font-size:12px;color:var(--muted);max-width:560px;line-height:1.5;margin-top:8px}
-.grid-main{display:grid;grid-template-columns:1.55fr 1fr;gap:16px;margin-top:18px}
-@media(max-width:900px){.grid-main{grid-template-columns:1fr}}
-.card{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:0 1px 0 rgba(255,255,255,.02) inset}
+body{background:radial-gradient(1200px 800px at 82% -12%,rgba(255,180,84,.05),transparent 60%),linear-gradient(180deg,var(--bg),#0d0f11);color:var(--txt);font-family:"IBM Plex Mono",ui-monospace,monospace;-webkit-font-smoothing:antialiased;min-height:100%}
+.wrap{max-width:1140px;margin:0 auto;padding:16px 14px calc(40px + env(safe-area-inset-bottom))}
+.grid{display:grid;grid-template-columns:1.55fr 1fr;gap:14px}
+@media(max-width:900px){.grid{grid-template-columns:1fr}}
+.card{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:14px;overflow:hidden}
 .card+.card{margin-top:14px}
-.card-h{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 14px;border-bottom:1px solid var(--line);background:rgba(255,255,255,.012)}
-.card-h h2{margin:0;font-family:"Bricolage Grotesque",sans-serif;font-weight:600;font-size:13.5px;letter-spacing:.01em}
-.card-h .hint{font-size:10px;color:var(--dim);letter-spacing:.13em;text-transform:uppercase}
-.card-b{padding:14px}
-.stage{position:relative;background:#000;aspect-ratio:9/16;max-height:74vh;margin:0 auto;display:flex;align-items:center;justify-content:center}
-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0}
-canvas#draw{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.ghost{color:var(--dim);font-size:12px;text-align:center;padding:26px;line-height:1.7;max-width:330px}
-.badge{position:absolute;display:flex;align-items:center;gap:7px;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);background:rgba(0,0,0,.55);border:1px solid var(--line2);padding:5px 9px;border-radius:30px;backdrop-filter:blur(4px)}
-.badge.live{top:9px;left:9px}.badge .pulse{width:7px;height:7px;border-radius:50%;background:var(--dim)}.badge.live.on .pulse{background:var(--bad);animation:pulse 1.6s infinite}
+.ch{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line)}
+.ch h2{margin:0;font-family:"Bricolage Grotesque",sans-serif;font-weight:600;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.ch .hint{font-size:10px;color:var(--dim);letter-spacing:.1em;text-transform:uppercase}
+.cb{padding:14px}
+.stage{position:relative;width:100%;aspect-ratio:9/16;max-height:76vh;margin:0 auto;background:#000;display:flex;align-items:center;justify-content:center;overflow:hidden}
+video,canvas#draw{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+video{opacity:0}
+.ghost{color:var(--dim);font-size:12px;text-align:center;padding:26px;line-height:1.7;max-width:320px}
+.badge{position:absolute;display:flex;align-items:center;gap:7px;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);background:rgba(0,0,0,.55);border:1px solid var(--line2);padding:5px 9px;border-radius:30px;backdrop-filter:blur(4px)}
+.badge.live{top:10px;left:10px}.badge .pulse{width:7px;height:7px;border-radius:50%;background:var(--dim)}.badge.live.on .pulse{background:var(--bad);animation:pulse 1.6s infinite}
 @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(255,106,106,.55)}70%{box-shadow:0 0 0 7px rgba(255,106,106,0)}100%{box-shadow:0 0 0 0 rgba(255,106,106,0)}}
-.stage-tools{position:absolute;top:9px;right:9px;display:flex;gap:6px}
+.tools{position:absolute;top:10px;right:10px;display:flex;gap:6px}
 .tool{font-size:14px;background:rgba(0,0,0,.55);border:1px solid var(--line2);color:var(--muted);border-radius:9px;padding:7px 9px;backdrop-filter:blur(4px);cursor:pointer}
 .tool.on{color:var(--amber);border-color:var(--amber-dim)}
-.vert{position:absolute;bottom:9px;left:9px;font-size:10px;letter-spacing:.08em;text-transform:uppercase;background:rgba(0,0,0,.55);border:1px solid var(--line2);padding:5px 9px;border-radius:8px;backdrop-filter:blur(4px);color:var(--muted)}
+.vert{position:absolute;bottom:10px;left:10px;font-size:10px;letter-spacing:.07em;text-transform:uppercase;background:rgba(0,0,0,.55);border:1px solid var(--line2);padding:5px 9px;border-radius:8px;backdrop-filter:blur(4px);color:var(--muted)}
 .vert b{color:var(--cyan)} .vert.good b{color:var(--ok)} .vert.bad b{color:var(--bad)}
 .read{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.metric{position:relative;border:1px solid var(--line);border-radius:11px;padding:12px;background:rgba(255,255,255,.014)}
-.metric .lab{font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim)}
+.metric{border:1px solid var(--line);border-radius:11px;padding:12px;background:rgba(255,255,255,.012)}
+.metric .lab{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
 .metric .val{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;letter-spacing:-.03em;line-height:1;margin-top:7px;font-variant-numeric:tabular-nums}
 .metric .unit{font-family:"IBM Plex Mono",monospace;font-weight:500;font-size:.42em;color:var(--muted);margin-left:5px}
 .metric .sub{font-size:10px;color:var(--muted);margin-top:6px;min-height:12px}
 .metric.dist{grid-column:1/-1}.metric.dist .val{font-size:clamp(36px,10vw,54px);color:var(--amber)}
 .metric.h .val{font-size:26px;color:var(--cyan)}.metric.conf .val{font-size:26px}
-.tagx{display:inline-block;font-size:9px;letter-spacing:.1em;text-transform:uppercase;border:1px solid var(--line2);border-radius:5px;padding:2px 6px;margin-left:6px;color:var(--muted);vertical-align:middle}
+.tagx{display:inline-block;font-size:9px;letter-spacing:.09em;text-transform:uppercase;border:1px solid var(--line2);border-radius:5px;padding:2px 6px;margin-left:6px;color:var(--muted);vertical-align:middle}
 .tagx.exact{color:var(--ok);border-color:rgba(124,252,155,.4)}.tagx.approx{color:var(--warn);border-color:rgba(255,207,92,.4)}
 .confbar{height:5px;border-radius:4px;background:var(--line);margin-top:8px;overflow:hidden}.confbar>i{display:block;height:100%;width:0%;background:linear-gradient(90deg,var(--bad),var(--warn),var(--ok));transition:width .25s}
-.field{margin-bottom:12px}.field>label{display:block;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.field{margin-bottom:12px}.field>label{display:block;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
 .row{display:flex;gap:8px;align-items:center}
 input[type=number],select{width:100%;background:var(--bg);color:var(--txt);border:1px solid var(--line2);border-radius:9px;padding:11px 12px;font-family:"IBM Plex Mono",monospace;font-size:15px;outline:none}
 input:focus,select:focus{border-color:var(--amber-dim);box-shadow:0 0 0 3px rgba(255,180,84,.1)}
-input[type=range]{width:100%;accent-color:var(--amber)}
-button.act{width:100%;cursor:pointer;border:1px solid var(--line2);border-radius:10px;padding:13px;font-family:"Bricolage Grotesque",sans-serif;font-weight:600;font-size:14px;background:var(--amber);color:#241500}
+input[type=range]{width:100%;accent-color:var(--amber);margin:2px 0}
+button.act{width:100%;cursor:pointer;border:1px solid var(--line2);border-radius:10px;padding:12px;font-family:"Bricolage Grotesque",sans-serif;font-weight:600;font-size:14px;background:var(--amber);color:#241500}
 button.act.ghost{background:transparent;color:var(--txt)}button.act.ghost:hover{border-color:var(--amber-dim);color:var(--amber)}button.act:disabled{opacity:.45}
 .btn-row{display:flex;gap:8px}
-.note{font-size:11px;color:var(--dim);line-height:1.55;margin-top:5px}.note b{color:var(--muted)}
 .unitspan{display:flex;align-items:center;color:var(--muted);font-size:13px;white-space:nowrap}
-.mlist,.dlist{display:flex;flex-direction:column;gap:6px;margin-top:8px}
-.mrow,.drow{display:grid;grid-template-columns:14px 1fr auto;gap:9px;align-items:center;font-size:11.5px;padding:8px 9px;border:1px solid var(--line);border-radius:9px;cursor:pointer}
-.mrow.sel,.drow.sel{border-color:var(--amber-dim);background:rgba(255,180,84,.06)}
+.note{font-size:11px;color:var(--dim);line-height:1.5;margin-top:5px}.note b{color:var(--muted)}
+.mlist{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.mrow{display:grid;grid-template-columns:14px 1fr auto;gap:9px;align-items:center;font-size:11.5px;padding:8px 9px;border:1px solid var(--line);border-radius:9px;cursor:pointer}
+.mrow.sel{border-color:var(--amber-dim);background:rgba(255,180,84,.06)}
 .mrow .dot{width:8px;height:8px;border-radius:50%;background:var(--dim)}
 .dot.ok{background:var(--ok)}.dot.warn{background:var(--warn)}.dot.bad{background:var(--bad)}
-.mrow .name,.drow .name{color:var(--muted)}.mrow.sel .name,.drow.sel .name{color:var(--txt)}
-.mrow .v,.drow .v{font-variant-numeric:tabular-nums;color:var(--txt);text-align:right}
-.drow .name small{display:block;color:var(--dim);font-size:9.5px;letter-spacing:.04em;margin-top:1px}
-.ctl{margin-bottom:11px}.ctl label{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);text-transform:lowercase;letter-spacing:.04em;margin-bottom:5px}
+.mrow .name{color:var(--muted)}.mrow.sel .name{color:var(--txt)}
+.mrow .v{font-variant-numeric:tabular-nums;text-align:right}
+.ctl{margin-bottom:11px}.ctl label{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);letter-spacing:.03em;margin-bottom:5px}
 .ctl .cv{color:var(--amber)}
-.toggle{border:1px solid var(--line2);background:transparent;color:var(--muted);border-radius:8px;padding:8px 16px;font-family:"IBM Plex Mono",monospace;cursor:pointer}
-.toggle.on{background:var(--amber);color:#241500;border-color:var(--amber)}
 .diag{font-size:11.5px;color:var(--muted);display:grid;grid-template-columns:auto 1fr;gap:4px 14px}
 .diag dt{color:var(--dim)}.diag dd{margin:0;color:var(--txt);font-variant-numeric:tabular-nums;text-align:right}
 .diag dd.flag-bad{color:var(--bad)}.diag dd.flag-ok{color:var(--ok)}.diag dd.flag-warn{color:var(--warn)}
-.banner{border-radius:10px;padding:11px 13px;font-size:11.5px;line-height:1.5;margin-bottom:12px;border:1px solid}
+.banner{border-radius:10px;padding:10px 12px;font-size:11.5px;line-height:1.45;margin-bottom:12px;border:1px solid}
 .banner.info{border-color:var(--line2);background:rgba(82,214,196,.06);color:var(--cyan)}
 .banner.warn{border-color:rgba(255,207,92,.4);background:rgba(255,207,92,.07);color:var(--warn)}
 .banner.bad{border-color:rgba(255,106,106,.4);background:rgba(255,106,106,.08);color:var(--bad)}
-.banner.hidden{display:none}
-details{margin-top:8px;border-top:1px dashed var(--line);padding-top:8px}
-summary{font-size:11px;color:var(--muted);cursor:pointer;letter-spacing:.04em}
-pre.raw{font-size:10px;color:var(--muted);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px;overflow:auto;max-height:220px;white-space:pre-wrap;word-break:break-word;margin-top:8px}
-footer{margin-top:22px;font-size:11px;color:var(--dim);line-height:1.65;border-top:1px solid var(--line);padding-top:15px}footer b{color:var(--muted)}
+details{margin-top:6px;border-top:1px dashed var(--line);padding-top:8px}summary{font-size:11px;color:var(--muted);cursor:pointer}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <header>
-    <div class="logo">Parallax<span class="dot">.</span></div>
-    <div class="tag">Monocular distance estimator</div>
-    <div class="subtitle">Enter the camera height, hold the phone upright in portrait with the rear camera on the subject. Height is computed exactly; distance uses the camera's auto-detected focal length.</div>
-  </header>
-
-  <div class="grid-main">
+  <div class="grid">
     <section>
       <div class="card">
-        <div class="card-h"><h2>Live viewport</h2><span class="hint" id="fpsLabel">— fps</span></div>
-        <div class="card-b" style="padding:0">
+        <div class="ch"><h2>Viewport</h2><span class="hint" id="fpsLabel">— fps</span></div>
+        <div class="cb" style="padding:0">
           <div class="stage" id="stage">
             <video id="video" playsinline muted></video>
             <canvas id="draw"></canvas>
-            <div class="ghost" id="ghost">Camera idle.<br/>Enter camera height, press <b>Start</b>.<br/><br/>Subject upright on flat ground, feet in frame.</div>
+            <div class="ghost" id="ghost">Enter the camera height and press Start.<br/><br/>Subject upright on flat ground, feet in frame, phone held upright.</div>
             <div class="badge live" id="liveBadge"><span class="pulse"></span><span>standby</span></div>
-            <div class="stage-tools">
-              <button class="tool" id="torchBtn" title="Torch" style="display:none">⚡</button>
-              <button class="tool" id="fsBtn" title="Fullscreen">⛶</button>
-            </div>
+            <div class="tools"><button class="tool" id="torchBtn" title="Torch" style="display:none">⚡</button><button class="tool" id="fsBtn" title="Fullscreen">⛶</button></div>
             <div class="vert" id="vertBadge">tilt <b>—</b></div>
           </div>
         </div>
       </div>
 
       <div class="card">
-        <div class="card-h"><h2>Readout</h2><span class="hint" id="methodLabel">method · M7</span></div>
-        <div class="card-b">
+        <div class="ch"><h2>Readout</h2><span class="hint" id="methodLabel">M7</span></div>
+        <div class="cb">
           <div class="read">
-            <div class="metric dist"><div class="lab">Distance to subject <span class="tagx approx" id="distTag">scale?</span></div><div class="val"><span id="distVal">—</span><span class="unit">cm</span></div><div class="sub" id="distSub">awaiting detection</div></div>
-            <div class="metric h"><div class="lab">H_real <span class="tagx exact">exact</span></div><div class="val"><span id="hrealVal">—</span><span class="unit">cm</span></div><div class="sub">focal-free</div></div>
+            <div class="metric dist"><div class="lab">Distance <span class="tagx approx" id="distTag">scale?</span></div><div class="val"><span id="distVal">—</span><span class="unit">cm</span></div><div class="sub" id="distSub">awaiting detection</div></div>
+            <div class="metric h"><div class="lab">Height <span class="tagx exact">exact</span></div><div class="val"><span id="hrealVal">—</span><span class="unit">cm</span></div><div class="sub">focal-free</div></div>
             <div class="metric conf"><div class="lab">Confidence</div><div class="val"><span id="confVal">—</span><span class="unit">%</span></div><div class="confbar"><i id="confBar"></i></div><div class="sub" id="confSub">—</div></div>
           </div>
           <div class="mlist" id="mlist"></div>
@@ -166,75 +110,62 @@ footer{margin-top:22px;font-size:11px;color:var(--dim);line-height:1.65;border-t
 
     <section>
       <div class="card">
-        <div class="card-h"><h2>Setup</h2><span class="hint">camera height only</span></div>
-        <div class="card-b">
-          <div class="banner info" id="secNote">Served over HTTPS — camera and sensors are available. Focal length is detected automatically.</div>
-          <div class="field">
-            <label>Camera height from ground · H_cam</label>
+        <div class="ch"><h2>Setup</h2><span class="hint">camera height only</span></div>
+        <div class="cb">
+          <div class="banner info" id="status">Served over HTTPS — camera and sensors available.</div>
+          <div class="field"><label>Camera height · H_cam</label>
             <div class="row"><input id="hcam" type="number" value="70" min="10" max="300" step="0.5" inputmode="decimal"/><select id="hcamUnit" style="max-width:84px"><option value="1">cm</option><option value="2.54">in</option></select></div>
-            <div class="note">The only value you supply. Lens-centre height above the floor.</div>
           </div>
-          <div class="field">
-            <label>Capture resolution</label>
-            <select id="resPref"><option value="max">Highest available (9:16)</option><option value="1440">QHD · 1440×2560</option><option value="1080">FHD · 1080×1920</option></select>
-            <div class="note">Highest resolution improves measurement precision but lowers frame rate.</div>
+          <div class="field"><label>Capture resolution</label>
+            <select id="resPref"><option value="max">Highest available · native aspect</option><option value="1440">~1440 long side</option><option value="1080">~1080 long side</option></select>
+            <div class="note">Native aspect is preserved — no stretching. Higher resolution lowers frame rate.</div>
           </div>
-          <div class="field">
-            <label>Active method</label>
+          <div class="field"><label>Method</label>
             <select id="method">
-              <option value="7">M7 · Voting (median) — recommended</option>
-              <option value="1">M1 · Mask bounding box</option>
-              <option value="2">M2 · Landmarks (feet→head)</option>
+              <option value="7">M7 · Voting (median)</option>
+              <option value="1">M1 · Mask bbox</option>
+              <option value="2">M2 · Landmarks</option>
               <option value="3">M3 · Vertical-FoV angle</option>
-              <option value="4">M4 · Homography (+ lateral X)</option>
+              <option value="4">M4 · Homography (+ X)</option>
               <option value="5">M5 · Autofocus depth</option>
               <option value="6">M6 · Edge fallback</option>
               <option value="8">M8 · Progressive (M7 ⊕ M5)</option>
             </select>
           </div>
-          <div class="btn-row"><button class="act" id="startBtn">Start</button><button class="act ghost" id="tiltBtn" style="max-width:110px">Tilt</button></div>
-          <button class="act ghost" id="zeroBtn" style="margin-top:8px;display:none">Set current pose as upright (0°)</button>
+          <div class="btn-row"><button class="act" id="startBtn">Start</button><button class="act ghost" id="tiltBtn" style="max-width:104px">Tilt</button></div>
+          <button class="act ghost" id="zeroBtn" style="margin-top:8px;display:none">Set upright (0°)</button>
         </div>
       </div>
 
       <div class="card">
-        <div class="card-h"><h2>Focal length</h2><span class="hint" id="fActiveHint">—</span></div>
-        <div class="card-b">
-          <div class="dlist" id="dlist"><div class="note">Start the camera to run the detectors.</div></div>
-          <button class="act ghost" id="sweepBtn" style="margin-top:10px;display:none">Focus sweep → autofocus depth</button>
-          <details>
-            <summary>Save a custom field of view (fallback)</summary>
-            <div class="field" style="margin-top:8px">
-              <label>Custom vertical FoV</label>
+        <div class="ch"><h2>Focus &amp; scale</h2><span class="hint" id="scaleHint">—</span></div>
+        <div class="cb">
+          <div class="field"><label>Field-of-view source (sets focal scale)</label>
+            <select id="fovSrc"><option value="std">Standard · 26 mm-equivalent</option><option value="custom">Custom (saved)</option></select>
+            <div class="note" id="scaleNote">Distance scale is approximate unless you measure and save your camera's FoV. Height is unaffected.</div>
+          </div>
+          <div id="focusCtl"><div class="note">Start the camera to load focus controls.</div></div>
+          <button class="act ghost" id="sweepBtn" style="margin-top:8px;display:none">Focus sweep → autofocus depth</button>
+          <details><summary>Save custom field of view</summary>
+            <div class="field" style="margin-top:8px"><label>Vertical FoV</label>
               <div class="row"><input id="cfov" type="number" min="20" max="120" step="0.5" placeholder="e.g. 68" inputmode="decimal"/><span class="unitspan">deg</span></div>
-              <div class="btn-row" style="margin-top:8px"><button class="act ghost" id="saveFov">Save for this camera</button><button class="act ghost" id="clearFov" style="max-width:90px">Clear</button></div>
-              <div class="note" id="fovSaveNote">Stored on this device and applied automatically next time this camera is used.</div>
+              <div class="btn-row" style="margin-top:8px"><button class="act ghost" id="saveFov">Save for this camera</button><button class="act ghost" id="clearFov" style="max-width:84px">Clear</button></div>
             </div>
           </details>
         </div>
       </div>
 
       <div class="card">
-        <div class="card-h"><h2>Camera controls</h2><span class="hint">device capabilities</span></div>
-        <div class="card-b">
-          <div id="camCtl"><div class="note">Start the camera to list adjustable properties.</div></div>
-          <details><summary>Raw capabilities &amp; settings</summary><pre class="raw" id="rawCaps">—</pre></details>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-h"><h2>Diagnostics</h2><span class="hint">per frame</span></div>
-        <div class="card-b">
-          <div class="banner warn hidden" id="diagBanner"></div>
+        <div class="ch"><h2>Diagnostics</h2><span class="hint">per frame</span></div>
+        <div class="cb">
           <dl class="diag">
-            <dt>f (px)</dt><dd id="d_f">—</dd>
-            <dt>vertical FoV</dt><dd id="d_vfov">—</dd>
+            <dt>f (px) / vFoV</dt><dd id="d_f">—</dd>
             <dt>TopP / BotP</dt><dd id="d_tb">— / —</dd>
-            <dt>MidP (horizon)</dt><dd id="d_mid">—</dd>
+            <dt>MidP</dt><dd id="d_mid">—</dd>
             <dt>feet margin</dt><dd id="d_marg">—</dd>
             <dt>lateral X</dt><dd id="d_x">—</dd>
-            <dt>focus distance</dt><dd id="d_fd">—</dd>
-            <dt>tilt (vs upright)</dt><dd id="d_pitch">sensor off</dd>
+            <dt>focus dist (live)</dt><dd id="d_fd">—</dd>
+            <dt>tilt</dt><dd id="d_pitch">sensor off</dd>
             <dt>foot / head vis</dt><dd id="d_vis">— / —</dd>
             <dt>capture res</dt><dd id="d_res">—</dd>
           </dl>
@@ -242,10 +173,6 @@ footer{margin-top:22px;font-size:11px;color:var(--dim);line-height:1.65;border-t
       </div>
     </section>
   </div>
-
-  <footer>
-    <b>Notes.</b> H_real is a ratio of pixel offsets, so it is exact and metric without any focal length. Distance requires the camera's angular scale: with only the camera height it must come from EXIF (preferred) or, failing that, an assumed field of view (distance then marked scale-approx). M1 and M4 are the same ground-plane geometry; M2 uses foot landmarks to avoid a +7% ankle bias; M3 uses the corrected pinhole form; M5 (autofocus depth) is independent of focal length and of the upright assumption but depends on the camera exposing focus distance; voting reduces detection outliers, not shared geometric error, so confidence is derived from detection quality, verticality, feet-margin and focal-length source rather than from method agreement.
-  </footer>
 </div>
 
 <script type="module">
@@ -253,177 +180,159 @@ import { PoseLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@m
 const V="0.10.20";
 const $=id=>document.getElementById(id);
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
-const DIAG35=43.2666, HALF35=21.6333; // 35mm frame diagonal / half
+const HALF35=21.6333;
 
-const S={running:false,landmarker:null,method:"7",f:null,activeDet:null,detectors:[],
+const S={running:false,landmarker:null,method:"7",f:null,fovSrc:"std",metric:false,
   vw:0,vh:0,frames:0,fpsT:0,track:null,torch:false,wake:null,camLabel:"",
-  tiltOn:false,pitchRaw:null,pitchZero:0,ema:{},afDepth:null,afPassive:null};
+  tiltOn:false,pitchRaw:null,pitchZero:0,ema:{},afDepth:null,afPassive:null,lastBB:null};
 
 const hcamCm=()=>parseFloat($("hcam").value||"0")*parseFloat($("hcamUnit").value||"1");
-$("method").addEventListener("change",e=>{S.method=e.target.value;$("methodLabel").textContent="method · M"+S.method;});
+const caps=()=>S.track&&S.track.getCapabilities?S.track.getCapabilities():{};
+const sett=()=>S.track&&S.track.getSettings?S.track.getSettings():{};
+$("method").addEventListener("change",e=>{S.method=e.target.value;$("methodLabel").textContent="M"+S.method;});
 $("resPref").addEventListener("change",()=>{if(S.running){stop();start();}});
+$("fovSrc").addEventListener("change",e=>{S.fovSrc=e.target.value;applyScale();});
 
-/* ===================== EXIF ===================== */
-function parseExif(buf){
-  const dv=new DataView(buf); if(dv.byteLength<4||dv.getUint16(0)!==0xFFD8)return null;
-  let off=2;
-  while(off+4<dv.byteLength){
-    const marker=dv.getUint16(off);
-    if(marker===0xFFE1){
-      const base=off+4;
-      if(dv.getUint32(base)!==0x45786966){off+=2+dv.getUint16(off+2);continue;}
-      const tiff=base+6, little=dv.getUint16(tiff)===0x4949;
-      const u16=o=>dv.getUint16(o,little),u32=o=>dv.getUint32(o,little);
-      const rat=o=>{const n=u32(o),d=u32(o+4);return d?n/d:0;};
-      const out={};
-      const read=(e)=>{const type=dv.getUint16(e+2,little),val=u32(e+8);
-        if(type===3)return dv.getUint16(e+8,little); if(type===4)return val; if(type===5)return rat(tiff+val); return val;};
-      const walk=p=>{const n=u16(p);p+=2;for(let i=0;i<n;i++){const e=p+i*12,tag=u16(e);
-        if(tag===0x8769)walk(tiff+u32(e+8));
-        else if(tag===0xA405)out.f35=read(e);
-        else if(tag===0x920A)out.focalMm=read(e);
-        else if(tag===0xA20E)out.fpXRes=read(e);
-        else if(tag===0xA210)out.fpUnit=read(e);
-        else if(tag===0xA002)out.pxW=read(e);
-        else if(tag===0xA003)out.pxH=read(e);
-        else if(tag===0x0100)out.iw=read(e);
-        else if(tag===0x0101)out.ih=read(e);
-      }};
-      try{walk(tiff+u32(tiff+4));}catch(e){return null;}
-      return out;
-    }
-    if((marker&0xFF00)!==0xFF00)break;
-    off+=2+dv.getUint16(off+2);
-  }
-  return null;
-}
-
-/* ============== focal-length detectors ============== */
-const fFromDiagFov=dfov=>(Math.hypot(S.vw,S.vh)/2)/Math.tan(dfov/2);
+/* ---------- focal scale (no EXIF): standard 26mm or saved custom ---------- */
+const fFromVFov=vd=>(S.vh/2)/Math.tan(vd*Math.PI/360);
 const vFovOf=f=>2*Math.atan((S.vh/2)/f)*180/Math.PI;
-function camKey(){return "parallax.fov::"+(S.camLabel||"default");}
-function loadCustomFov(){try{const v=localStorage.getItem(camKey());return v?parseFloat(v):null;}catch(e){return null;}}
-
-async function buildDetectors(){
-  const dets=[];
-  let exif=null;
-  try{ if(window.ImageCapture&&S.track){const ic=new ImageCapture(S.track);const blob=await ic.takePhoto();exif=parseExif(await blob.arrayBuffer());} }catch(e){}
-  // 1 EXIF 35mm-equiv
-  if(exif&&exif.f35){const dfov=2*Math.atan(HALF35/exif.f35);dets.push({id:"exif35",label:"EXIF · 35 mm-equivalent",dfov,info:exif.f35.toFixed(0)+" mm eq",metric:true});}
-  // 2 EXIF sensor geometry
-  if(exif&&exif.focalMm&&exif.fpXRes&&exif.fpUnit){const unit=exif.fpUnit===3?10:25.4;const pitch=unit/exif.fpXRes;
-    const w=exif.pxW||exif.iw, h=exif.pxH||exif.ih;
-    if(w&&h&&pitch>0){const diagMm=pitch*Math.hypot(w,h);const dfov=2*Math.atan(diagMm/(2*exif.focalMm));
-      dets.push({id:"exifsensor",label:"EXIF · sensor geometry",dfov,info:exif.focalMm.toFixed(2)+" mm · "+pitch.toFixed(4)+" mm/px",metric:true});}}
-  // 3 EXIF focal length mm only (informational)
-  if(exif&&exif.focalMm&&!dets.some(d=>d.id==="exifsensor")&&!exif.f35){dets.push({id:"exifmm",label:"EXIF · focal length",dfov:null,info:exif.focalMm.toFixed(2)+" mm (sensor size unknown)",metric:false});}
-  // 4 capability probe (informational)
-  {const caps=S.track.getCapabilities?.()||{},set=S.track.getSettings?.()||{};
-   const fd=set.focusDistance; let info=fd!=null?("focusDistance "+(typeof fd==="number"?fd.toFixed(2):fd)):"no focal length exposed";
-   dets.push({id:"caps",label:"Capability probe",dfov:null,info,metric:false});}
-  // 5 saved custom
-  const cf=loadCustomFov();
-  if(cf){const f=(S.vh/2)/Math.tan(cf*Math.PI/360);const dfov=2*Math.atan(Math.hypot(S.vw,S.vh)/(2*f));dets.push({id:"custom",label:"Saved custom FoV",dfov,info:cf.toFixed(1)+"° vertical",metric:true});}
-  // 6 standard default
-  {const dfov=2*Math.atan(HALF35/26);dets.push({id:"std",label:"Standard (26 mm-equiv)",dfov,info:"universal fallback",metric:false});}
-
-  dets.forEach(d=>{if(d.dfov){d.f=fFromDiagFov(d.dfov);}});
-  S.detectors=dets;
-  const order=["custom","exif35","exifsensor","std"];
-  S.activeDet=dets.find(d=>d.f&&order.includes(d.id)&&d.id===order.find(o=>dets.some(x=>x.id===o&&x.f)))||dets.find(d=>d.f);
-  applyActiveDetector();
-  renderDetectors();
+const camKey=()=>"distance.fov::"+(S.camLabel||"default");
+function loadCustom(){try{const v=localStorage.getItem(camKey());return v?parseFloat(v):null;}catch(e){return null;}}
+function applyScale(){
+  if(!S.vh)return;
+  const cust=loadCustom();
+  let vd,metric;
+  if(S.fovSrc==="custom"&&cust){vd=cust;metric=true;}
+  else{vd=2*Math.atan(HALF35/26)*180/Math.PI; // 26mm-equiv diagonal -> approximate; recompute as vertical below
+       // derive vertical FoV from the 26mm diagonal at this resolution:
+       const dfov=2*Math.atan(HALF35/26);const f=(Math.hypot(S.vw,S.vh)/2)/Math.tan(dfov/2);vd=vFovOf(f);metric=false;}
+  S.f=fFromVFov(vd);S.metric=metric;
+  $("scaleHint").textContent=vFovOf(S.f).toFixed(0)+"° vFoV";
+  $("d_f").textContent=Math.round(S.f)+" px · "+vFovOf(S.f).toFixed(1)+"°";
+  $("distTag").className="tagx "+(metric?"exact":"approx");$("distTag").textContent=metric?"metric":"scale-approx";
+  $("scaleNote").textContent=metric?("Using saved FoV "+cust.toFixed(1)+"° — distance is metric for this camera."):"Distance scale is approximate (standard 26 mm-equivalent). Save your camera's FoV for metric distance. Height is unaffected.";
+  // keep dropdown honest
+  const opt=[...$("fovSrc").options].find(o=>o.value==="custom"); if(opt)opt.disabled=!cust;
 }
-function applyActiveDetector(){const d=S.activeDet;if(!d){return;}
-  S.f=d.f;$("d_f").textContent=d.f.toFixed(0);$("d_vfov").textContent=vFovOf(d.f).toFixed(1)+"°";
-  $("fActiveHint").textContent=d.label;
-  const metric=!!d.metric;$("distTag").className="tagx "+(metric?"exact":"approx");$("distTag").textContent=metric?"metric":"scale-approx";}
-function renderDetectors(){const host=$("dlist");host.innerHTML="";
-  S.detectors.forEach(d=>{const row=document.createElement("div");row.className="drow"+(S.activeDet&&d.id===S.activeDet.id?" sel":"");
-    const dot=d.f?(d.metric?"ok":"warn"):"bad";
-    row.innerHTML=`<span class="mrow"><span class="dot ${dot}"></span></span><span class="name">${d.label}<small>${d.info}</small></span><span class="v">${d.f?Math.round(d.f)+" px · "+vFovOf(d.f).toFixed(0)+"°":"n/a"}</span>`;
-    if(d.f)row.onclick=()=>{S.activeDet=d;applyActiveDetector();renderDetectors();};
-    else row.style.cursor="default";
-    host.appendChild(row);});
-}
-$("saveFov").addEventListener("click",()=>{const v=parseFloat($("cfov").value);if(!(v>=20&&v<=120)){$("fovSaveNote").textContent="Enter a vertical FoV between 20 and 120°.";return;}
-  try{localStorage.setItem(camKey(),String(v));$("fovSaveNote").textContent="Saved "+v+"° for "+(S.camLabel||"this camera")+".";}catch(e){$("fovSaveNote").textContent="Could not save (storage blocked).";}
-  if(S.running)buildDetectors();});
-$("clearFov").addEventListener("click",()=>{try{localStorage.removeItem(camKey());}catch(e){}$("fovSaveNote").textContent="Custom FoV cleared.";if(S.running)buildDetectors();});
+$("saveFov").addEventListener("click",()=>{const v=parseFloat($("cfov").value);if(!(v>=20&&v<=120)){setStatus("warn","Enter a vertical FoV 20–120°.");return;}
+  try{localStorage.setItem(camKey(),String(v));}catch(e){}S.fovSrc="custom";$("fovSrc").value="custom";applyScale();setStatus("info","Saved "+v+"° for "+(S.camLabel||"this camera")+".");});
+$("clearFov").addEventListener("click",()=>{try{localStorage.removeItem(camKey());}catch(e){}if(S.fovSrc==="custom"){S.fovSrc="std";$("fovSrc").value="std";}applyScale();setStatus("info","Custom FoV cleared.");});
 
-/* ===================== camera ===================== */
+/* ---------- camera ---------- */
 const video=$("video"),canvas=$("draw"),ctx=canvas.getContext("2d");
 const eoff=document.createElement("canvas"),ectx=eoff.getContext("2d",{willReadFrequently:true});
 $("startBtn").addEventListener("click",()=>S.running?stop():start());
 
-function videoConstraints(){const pref=$("resPref").value;const v={facingMode:{ideal:"environment"},aspectRatio:{ideal:9/16}};
-  if(pref==="1080"){v.width={ideal:1080};v.height={ideal:1920};}
-  else if(pref==="1440"){v.width={ideal:1440};v.height={ideal:2560};}
-  else{v.width={ideal:2160};v.height={ideal:3840};v.advanced=[{width:2160,height:3840},{width:1440,height:2560}];}
+function videoConstraints(){const p=$("resPref").value;const v={facingMode:{ideal:"environment"}};
+  // hint the LONG side only; leave the other axis free so the native aspect ratio is preserved (no stretching)
+  if(p==="1080")v.height={ideal:1920};
+  else if(p==="1440")v.height={ideal:2560};
+  else{v.width={ideal:4096};v.height={ideal:4096};}
   return {video:v,audio:false};}
 
 async function start(){
-  enableTilt();setBanner("info","Requesting camera…");
-  let stream;
-  try{stream=await navigator.mediaDevices.getUserMedia(videoConstraints());}
-  catch(err){setBanner("bad","Camera blocked: "+err.message+". Tap the address-bar lock → Permissions → Camera → Allow, then reload.");return;}
+  enableTilt();setStatus("info","Requesting camera…");
+  let stream;try{stream=await navigator.mediaDevices.getUserMedia(videoConstraints());}
+  catch(err){setStatus("bad","Camera blocked: "+err.message+". Allow camera in the address-bar lock menu, then reload.");return;}
   video.srcObject=stream;await video.play();
   S.track=stream.getVideoTracks()[0];S.camLabel=S.track.label||"camera";
-  if($("resPref").value==="max"){try{const c=S.track.getCapabilities?.()||{};if(c.width&&c.height){const lo=Math.min(c.width.max,c.height.max),hi=Math.max(c.width.max,c.height.max);await S.track.applyConstraints({width:{ideal:lo},height:{ideal:hi},aspectRatio:{ideal:9/16}});}}catch(e){}}
+  if($("resPref").value==="max"){const c=caps();if(c.width&&c.height){try{await S.track.applyConstraints({width:{ideal:c.width.max},height:{ideal:c.height.max}});}catch(e){}}}
   S.vw=video.videoWidth;S.vh=video.videoHeight;canvas.width=S.vw;canvas.height=S.vh;
-  const st=S.track.getSettings?.()||{};$("d_res").textContent=(st.width||S.vw)+"×"+(st.height||S.vh);
-  if((S.track.getCapabilities?.()||{}).torch)$("torchBtn").style.display="block";
+  $("stage").style.aspectRatio=S.vw+" / "+S.vh;                // match viewport to real frame -> no distortion
+  $("d_res").textContent=S.vw+"×"+S.vh+(S.vw>S.vh?" (landscape)":"");
+  if(caps().torch)$("torchBtn").style.display="block";
 
-  await buildDetectors();
-  renderCamControls();
-  const caps=S.track.getCapabilities?.()||{};
-  if(caps.focusDistance&&(caps.focusMode||[]).includes("manual"))$("sweepBtn").style.display="block";
+  S.fovSrc=loadCustom()?"custom":"std";$("fovSrc").value=S.fovSrc;applyScale();
+  renderFocusCtl();
+  const c=caps();if(c.focusDistance)$("sweepBtn").style.display="block";
 
-  setBanner("info","Loading pose model…");
+  setStatus("info","Loading pose model…");
   try{const fs=await FilesetResolver.forVisionTasks(`https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${V}/wasm`);
     S.landmarker=await PoseLandmarker.createFromOptions(fs,{baseOptions:{modelAssetPath:"https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task",delegate:"GPU"},runningMode:"VIDEO",numPoses:1,minPoseDetectionConfidence:0.5,minPosePresenceConfidence:0.5,minTrackingConfidence:0.5,outputSegmentationMasks:true});
-  }catch(err){setBanner("bad","Model load failed: "+err.message);return;}
+  }catch(err){setStatus("bad","Model load failed: "+err.message);return;}
 
   await acquireWake();
   S.running=true;$("startBtn").textContent="Stop";$("ghost").style.display="none";
   $("liveBadge").classList.add("on");$("liveBadge").querySelector("span:last-child").textContent="live";
-  setBanner("info",(S.activeDet&&S.activeDet.metric)?"Focal length detected — distance is metric.":"No EXIF focal length — distance is scale-approx (height stays exact).");
-  loop();
+  setStatus("info","Tracking. Keep the phone upright, feet in frame.");loop();
 }
 function stop(){S.running=false;if(video.srcObject){video.srcObject.getTracks().forEach(t=>t.stop());video.srcObject=null;}
   S.track=null;$("torchBtn").style.display="none";$("sweepBtn").style.display="none";releaseWake();
   $("startBtn").textContent="Start";$("liveBadge").classList.remove("on");$("liveBadge").querySelector("span:last-child").textContent="standby";}
 $("torchBtn").addEventListener("click",async()=>{if(!S.track)return;S.torch=!S.torch;try{await S.track.applyConstraints({advanced:[{torch:S.torch}]});$("torchBtn").classList.toggle("on",S.torch);}catch(e){}});
 
-/* ===================== detection loop ===================== */
+/* ---------- focus-only camera controls (live) ---------- */
+function renderFocusCtl(){const host=$("focusCtl");host.innerHTML="";const c=caps(),s=sett();let any=false;
+  if(Array.isArray(c.focusMode)&&c.focusMode.length){any=true;const r=document.createElement("div");r.className="ctl";
+    r.innerHTML='<label>focus mode</label>';const sel=document.createElement("select");
+    c.focusMode.forEach(v=>{const o=document.createElement("option");o.value=v;o.textContent=v;if(v===s.focusMode)o.selected=true;sel.appendChild(o);});
+    sel.onchange=async()=>{try{await S.track.applyConstraints({advanced:[{focusMode:sel.value}]});}catch(e){}renderFocusCtl();};
+    r.appendChild(sel);host.appendChild(r);}
+  if(c.focusDistance&&"min"in c.focusDistance){any=true;const r=document.createElement("div");r.className="ctl";
+    r.innerHTML='<label>focus distance <span class="cv" id="cv_fd">'+(s.focusDistance!=null?s.focusDistance.toFixed(2)+" m":"—")+'</span></label>';
+    const inp=document.createElement("input");inp.type="range";inp.min=c.focusDistance.min;inp.max=c.focusDistance.max;inp.step=c.focusDistance.step||((c.focusDistance.max-c.focusDistance.min)/100)||0.01;inp.value=s.focusDistance??c.focusDistance.min;
+    inp.oninput=async()=>{try{await S.track.applyConstraints({advanced:[{focusMode:"manual",focusDistance:parseFloat(inp.value)}]});}catch(e){}
+      const fd=sett().focusDistance;const cv=$("cv_fd");if(cv)cv.textContent=(fd!=null?fd.toFixed(2)+" m":"—");S.afDepth=null;};
+    r.appendChild(inp);host.appendChild(r);
+    host.insertAdjacentHTML("beforeend",'<div class="note">Current focus distance is used live as the M5 estimate.</div>');}
+  if(!any)host.innerHTML='<div class="note">This camera does not expose focus controls in the browser.</div>';
+}
+
+/* ---------- improved focus sweep ---------- */
+$("sweepBtn").addEventListener("click",runSweep);
+async function runSweep(){
+  const c=caps();if(!c.focusDistance){setStatus("warn","This camera does not report focus distance.");return;}
+  $("sweepBtn").disabled=true;
+  const hasManual=Array.isArray(c.focusMode)&&c.focusMode.includes("manual");
+  let ok=false;
+  if(hasManual){try{await S.track.applyConstraints({advanced:[{focusMode:"manual"}]});}catch(e){}await sleep(120);ok=(sett().focusMode==="manual");}
+  if(ok){
+    const {min,max}=c.focusDistance,N=14;let best=min,bestS=-1;
+    for(let i=0;i<=N;i++){const fd=min+(max-min)*i/N;try{await S.track.applyConstraints({advanced:[{focusMode:"manual",focusDistance:fd}]});}catch(e){}
+      await sleep(240);const sh=sharpness(S.lastBB);if(sh>bestS){bestS=sh;best=fd;}$("sweepBtn").textContent="Sweeping… "+Math.round(100*i/N)+"%";}
+    try{await S.track.applyConstraints({advanced:[{focusMode:"manual",focusDistance:best}]});}catch(e){} // hold at sharpest
+    S.afDepth=best*100;renderFocusCtl();
+    setStatus("info","Autofocus depth ≈ "+(best*100).toFixed(0)+" cm (lens held at sharpest). Use M5 or M8.");
+  }else{
+    // no manual focus: let continuous AF settle on the subject, then read focus distance
+    try{await S.track.applyConstraints({advanced:[{focusMode:"continuous"}]});}catch(e){}
+    setStatus("info","Manual focus unsupported — letting autofocus settle on the subject…");await sleep(1600);
+    const fd=sett().focusDistance;
+    if(fd!=null){S.afDepth=fd*100;setStatus("info","Autofocus depth ≈ "+(fd*100).toFixed(0)+" cm (continuous AF). Use M5 or M8.");}
+    else setStatus("warn","Camera did not report a focus distance.");
+  }
+  $("sweepBtn").disabled=false;$("sweepBtn").textContent="Focus sweep → autofocus depth";
+}
+
+/* ---------- detection loop ---------- */
 const LM={NOSE:0,L_EYE:2,R_EYE:5,L_ANKLE:27,R_ANKLE:28,L_HEEL:29,R_HEEL:30,L_FOOT:31,R_FOOT:32};
 function loop(){if(!S.running)return;const now=performance.now();
   S.frames++;if(now-S.fpsT>500){$("fpsLabel").textContent=Math.round(S.frames*1000/(now-S.fpsT))+" fps";S.frames=0;S.fpsT=now;}
-  // passive autofocus distance readout
-  try{const fd=S.track&&S.track.getSettings?.().focusDistance;if(fd!=null){S.afPassive=fd;$("d_fd").textContent=(typeof fd==="number"?fd.toFixed(2)+" m":fd);}}catch(e){}
+  const fd=sett().focusDistance;if(fd!=null){S.afPassive=fd;$("d_fd").textContent=fd.toFixed(2)+" m";}
   let res=null;try{res=S.landmarker.detectForVideo(video,now);}catch(e){}
   ctx.drawImage(video,0,0,canvas.width,canvas.height);
   let bb=null,lms=null;
   if(res&&res.landmarks&&res.landmarks.length){lms=res.landmarks[0];const m=res.segmentationMasks&&res.segmentationMasks[0];if(m){bb=maskBBox(m);m.close&&m.close();}}
-  compute(lms,bb);requestAnimationFrame(loop);}
+  S.lastBB=bb;compute(lms,bb);requestAnimationFrame(loop);}
 
 function maskBBox(mask){const w=mask.width,h=mask.height,a=mask.getAsFloat32Array(),TH=0.5,MIN=3;
   let top=-1,bot=-1,left=w,right=0;const sX=Math.max(1,Math.floor(w/220));
-  for(let y=0;y<h;y++){let c=0,lx=w,rx=0,b=y*w;for(let x=0;x<w;x+=sX){if(a[b+x]>TH){c++;if(x<lx)lx=x;if(x>rx)rx=x;}}if(c>=MIN){if(top<0)top=y;bot=y;if(lx<left)left=lx;if(rx>right)right=rx;}}
+  for(let y=0;y<h;y++){let cnt=0,lx=w,rx=0,b=y*w;for(let x=0;x<w;x+=sX){if(a[b+x]>TH){cnt++;if(x<lx)lx=x;if(x>rx)rx=x;}}if(cnt>=MIN){if(top<0)top=y;bot=y;if(lx<left)left=lx;if(rx>right)right=rx;}}
   if(top<0)return null;const sy=S.vh/h,sx=S.vw/w;return{top:top*sy,bot:bot*sy,left:left*sx,right:right*sx};}
 
 function edgeBBox(){const W=160,H=Math.max(2,Math.round(W*S.vh/S.vw));eoff.width=W;eoff.height=H;ectx.drawImage(video,0,0,W,H);
-  const d=ectx.getImageData(0,0,W,H).data,g=new Float32Array(W*H);
-  for(let i=0,j=0;i<d.length;i+=4,j++)g[j]=0.299*d[i]+0.587*d[i+1]+0.114*d[i+2];
+  const d=ectx.getImageData(0,0,W,H).data,g=new Float32Array(W*H);for(let i=0,j=0;i<d.length;i+=4,j++)g[j]=0.299*d[i]+0.587*d[i+1]+0.114*d[i+2];
   const rowE=new Float32Array(H);for(let y=1;y<H-1;y++){let s=0;for(let x=1;x<W-1;x++){const o=y*W+x;
-    const gx=-g[o-W-1]-2*g[o-1]-g[o+W-1]+g[o-W+1]+2*g[o+1]+g[o+W+1];const gy=-g[o-W-1]-2*g[o-W]-g[o-W+1]+g[o+W-1]+2*g[o+W]+g[o+W+1];s+=Math.hypot(gx,gy);}rowE[y]=s;}
-  let mx=0;for(let y=0;y<H;y++)mx=Math.max(mx,rowE[y]);if(mx<1)return null;const th=mx*0.18;
-  let top=-1,bot=-1;for(let y=0;y<H;y++)if(rowE[y]>th){if(top<0)top=y;bot=y;}if(top<0)return null;const s=S.vh/H;return{top:top*s,bot:bot*s};}
+    const gx=-g[o-W-1]-2*g[o-1]-g[o+W-1]+g[o-W+1]+2*g[o+1]+g[o+W+1],gy=-g[o-W-1]-2*g[o-W]-g[o-W+1]+g[o+W-1]+2*g[o+W]+g[o+W+1];s+=Math.hypot(gx,gy);}rowE[y]=s;}
+  let mx=0;for(let y=0;y<H;y++)mx=Math.max(mx,rowE[y]);if(mx<1)return null;const th=mx*0.18;let top=-1,bot=-1;for(let y=0;y<H;y++)if(rowE[y]>th){if(top<0)top=y;bot=y;}if(top<0)return null;const s=S.vh/H;return{top:top*s,bot:bot*s};}
 
-function centerSharpness(){const W=120,H=Math.max(2,Math.round(W*S.vh/S.vw));eoff.width=W;eoff.height=H;ectx.drawImage(video,0,0,W,H);
-  const d=ectx.getImageData(0,0,W,H).data;const x0=W*0.3|0,x1=W*0.7|0,y0=H*0.2|0,y1=H*0.8|0;let s=0;
-  const gv=(x,y)=>{const i=(y*W+x)*4;return 0.299*d[i]+0.587*d[i+1]+0.114*d[i+2];};
-  for(let y=y0;y<y1;y++)for(let x=x0;x<x1;x++){const lap=4*gv(x,y)-gv(x-1,y)-gv(x+1,y)-gv(x,y-1)-gv(x,y+1);s+=lap*lap;}return s;}
+// sharpness (Laplacian energy) inside the subject bbox if available, else centre
+function sharpness(bb){const W=140,H=Math.max(2,Math.round(W*S.vh/S.vw));eoff.width=W;eoff.height=H;ectx.drawImage(video,0,0,W,H);
+  const d=ectx.getImageData(0,0,W,H).data;let x0=W*0.3|0,x1=W*0.7|0,y0=H*0.2|0,y1=H*0.8|0;
+  if(bb){x0=Math.max(1,(bb.left/S.vw*W)|0);x1=Math.min(W-1,(bb.right/S.vw*W)|0);y0=Math.max(1,(bb.top/S.vh*H)|0);y1=Math.min(H-1,(bb.bot/S.vh*H)|0);}
+  if(x1-x0<4||y1-y0<4){x0=W*0.3|0;x1=W*0.7|0;y0=H*0.2|0;y1=H*0.8|0;}
+  const gv=(x,y)=>{const i=(y*W+x)*4;return 0.299*d[i]+0.587*d[i+1]+0.114*d[i+2];};let s=0;
+  for(let y=y0;y<y1;y++)for(let x=x0;x<x1;x++){const l=4*gv(x,y)-gv(x-1,y)-gv(x+1,y)-gv(x,y-1)-gv(x,y+1);s+=l*l;}return s/((x1-x0)*(y1-y0));}
 
 const pitch=()=>S.pitchRaw==null?null:(S.pitchRaw-S.pitchZero);
 
@@ -433,28 +342,23 @@ function compute(lms,bb){
   if(lms){headVis=Math.max(lms[LM.NOSE].visibility??0,lms[LM.L_EYE].visibility??0,lms[LM.R_EYE].visibility??0);
     let fb=-1;[LM.L_ANKLE,LM.R_ANKLE,LM.L_HEEL,LM.R_HEEL,LM.L_FOOT,LM.R_FOOT].forEach(i=>{const p=lms[i];if(p){const v=p.visibility??0;if(v>footVis)footVis=v;if(v>0.2){const y=p.y*Himg;if(y>fb)fb=y;}}});
     if(fb>0){const headY=Math.min(lms[LM.NOSE].y,lms[LM.L_EYE].y,lms[LM.R_EYE].y)*Himg;
-      if(f&&fb>MidP)M[2]={D:f*Hcam/(fb-MidP),ok:footVis>0.4&&headVis>0.4};
-      if(!bb){TopP=headY;BotP=fb;}}}
+      if(f&&fb>MidP)M[2]={D:f*Hcam/(fb-MidP),ok:footVis>0.4&&headVis>0.4};if(!bb){TopP=headY;BotP=fb;}}}
   if(bb){TopP=bb.top;BotP=bb.bot;Xlat=(bb.left+bb.right)/2;}
   const feetMargin=BotP!=null?BotP-MidP:null;
   let Hreal=null;if(BotP!=null&&TopP!=null&&feetMargin>0.5)Hreal=(BotP-TopP)/(BotP-MidP)*Hcam;
   if(f&&feetMargin>1){
     if(bb){M[1]={D:f*Hcam/feetMargin,ok:!(bb.bot>=Himg*0.985)};const D4=M[1].D;M[4]={D:D4,ok:M[1].ok,X:(Xlat-cx)*D4/f};}
     if(bb&&Hreal){const hpx=BotP-TopP,ang=2*Math.atan(hpx/(2*f));M[3]={D:(Hreal/2)/Math.tan(ang/2),ok:M[1]?M[1].ok:true};}
-    const eb=edgeBBox();if(eb&&(eb.bot-MidP)>1)M[6]={D:f*Hcam/(eb.bot-MidP),ok:false};
-  }
-  // M5 autofocus depth (focus distance ~ subject distance), focal-free
+    const eb=edgeBBox();if(eb&&(eb.bot-MidP)>1)M[6]={D:f*Hcam/(eb.bot-MidP),ok:false};}
   const afd=S.afDepth!=null?S.afDepth:(S.afPassive!=null?S.afPassive*100:null);
-  if(afd!=null&&isFinite(afd)&&afd>10&&afd<5000)M[5]={D:afd,ok:S.afDepth!=null};
-  // M7 voting (median M1-M4)
+  if(afd!=null&&isFinite(afd)&&afd>10&&afd<6000)M[5]={D:afd,ok:S.afDepth!=null};
   const pool=[1,2,3,4].map(k=>M[k]&&M[k].D).filter(v=>v!=null).sort((a,b)=>a-b);
   if(pool.length){const md=pool.length%2?pool[(pool.length-1)/2]:(pool[pool.length/2-1]+pool[pool.length/2])/2;M[7]={D:md,ok:pool.length>=2};}
-  // M8 fuse with independent M5
   if(M[7]){let D8=M[7].D;if(M[5])D8=0.6*M[7].D+0.4*M[5].D;M[8]={D:D8,ok:M[7].ok};}
 
   const sel=M[S.method],p=pitch();let conf=100,reason="ok";
   if(!sel||sel.D==null){conf=null;reason=lms?"method unavailable":"no subject detected";}
-  else if(!f){conf=0;reason="no focal length";}
+  else if(!f){conf=0;reason="no scale";}
   else{
     if(bb&&bb.bot>=Himg*0.985){conf-=55;reason="feet clipped at frame edge";}
     if(footVis<0.5){conf-=Math.round((0.5-footVis)*120);if(reason==="ok")reason="feet not clearly visible";}
@@ -462,13 +366,12 @@ function compute(lms,bb){
     const mf=feetMargin/Himg;if(mf<0.04){conf-=40;if(reason==="ok")reason="subject near/above horizon";}else if(mf<0.10)conf-=15;
     if(M[1]&&M[2]){const r=Math.abs(M[1].D-M[2].D)/((M[1].D+M[2].D)/2);if(r>0.12){conf-=Math.min(25,Math.round(r*100));if(reason==="ok")reason="mask/landmark disagree";}}
     if(p!=null){const a=Math.abs(p);if(a>8){conf-=Math.min(40,Math.round((a-8)*4));if(reason==="ok")reason="phone not upright";}else if(a>3)conf-=Math.round((a-3)*3);}
-    if(S.activeDet&&!S.activeDet.metric){conf=Math.round(conf*0.78);if(reason==="ok")reason="scale assumed (no EXIF)";}
+    if(!S.metric&&S.method!=="5"){conf=Math.round(conf*0.78);if(reason==="ok")reason="scale approximate";}
     if(S.method==="5"||S.method==="6"){conf=Math.round(conf*0.6);if(reason==="ok")reason="device-dependent method";}
-    conf=Math.max(0,Math.min(100,Math.round(conf)));
-  }
+    conf=Math.max(0,Math.min(100,Math.round(conf)));}
+
   const sm=(k,v)=>{if(v==null||!isFinite(v))return S.ema[k];S.ema[k]=S.ema[k]==null?v:S.ema[k]*0.7+v*0.3;return S.ema[k];};
   const Dshow=sel&&sel.D!=null?sm("D",sel.D):null,Hshow=sm("H",Hreal);
-
   draw(TopP,BotP,MidP,bb,lms,Xlat);
   $("distVal").textContent=Dshow==null?"—":Math.round(Dshow).toLocaleString();
   $("distSub").textContent=Dshow==null?"awaiting detection":(Dshow/100).toFixed(2)+" m · M"+S.method;
@@ -481,67 +384,24 @@ function compute(lms,bb){
   const md=$("d_marg");if(feetMargin!=null){md.textContent=Math.round(feetMargin)+" px";md.className=feetMargin<Himg*0.04?"flag-bad":feetMargin<Himg*0.10?"flag-warn":"flag-ok";}else{md.textContent="—";md.className="";}
   $("d_x").textContent=M[4]&&M[4].X!=null?((M[4].X>0?"+":"")+Math.round(M[4].X)+" cm"):"—";
   $("d_vis").textContent=footVis.toFixed(2)+" / "+headVis.toFixed(2);
-  const db=$("diagBanner");if(bb&&bb.bot>=Himg*0.985){db.classList.remove("hidden");db.className="banner bad";db.textContent="Feet at frame edge — step back so feet are visible.";}else db.classList.add("hidden");
 }
 
 const MNAME={1:"M1 mask bbox",2:"M2 landmarks",3:"M3 vfov angle",4:"M4 homography",5:"M5 autofocus depth",6:"M6 edge",7:"M7 voting",8:"M8 progressive"};
 function renderMethods(M){const host=$("mlist");host.innerHTML="";
-  for(let k=1;k<=8;k++){const r=document.createElement("div");r.className="mrow"+(String(k)===S.method?" sel":"");
-    const m=M[k],dot=!m?"":(m.ok?"ok":(m.D!=null?"warn":"bad"));
+  for(let k=1;k<=8;k++){const r=document.createElement("div");r.className="mrow"+(String(k)===S.method?" sel":"");const m=M[k],dot=!m?"":(m.ok?"ok":(m.D!=null?"warn":"bad"));
     r.innerHTML=`<span class="dot ${dot}"></span><span class="name">${MNAME[k]}</span><span class="v">${m&&m.D!=null?Math.round(m.D)+" cm"+(k===4&&m.X!=null?" · X "+(m.X>0?"+":"")+Math.round(m.X):""):"—"}</span>`;
-    r.onclick=()=>{S.method=String(k);$("method").value=String(k);$("methodLabel").textContent="method · M"+k;};host.appendChild(r);}}
+    r.onclick=()=>{S.method=String(k);$("method").value=String(k);$("methodLabel").textContent="M"+k;};host.appendChild(r);}}
 
 function draw(TopP,BotP,MidP,bb,lms,Xlat){const w=canvas.width;
   ctx.strokeStyle="rgba(82,214,196,.55)";ctx.lineWidth=Math.max(1.5,S.vw/700);ctx.setLineDash([8,8]);ctx.beginPath();ctx.moveTo(0,MidP);ctx.lineTo(w,MidP);ctx.stroke();ctx.setLineDash([]);
   ctx.fillStyle="rgba(82,214,196,.85)";ctx.font="600 "+Math.max(13,S.vw/55)+"px IBM Plex Mono";ctx.fillText("horizon",12,MidP-8);
   if(bb){ctx.strokeStyle="rgba(255,180,84,.9)";ctx.lineWidth=Math.max(2,S.vw/500);ctx.strokeRect(bb.left,bb.top,bb.right-bb.left,bb.bot-bb.top);}
-  const fs=Math.max(12,S.vw/60);
-  const line=(y,c,t)=>{if(y==null)return;ctx.strokeStyle=c;ctx.lineWidth=Math.max(2,S.vw/600);ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke();ctx.fillStyle=c;ctx.font="600 "+fs+"px IBM Plex Mono";ctx.fillText(t,w-fs*6,y-8);};
+  const fs=Math.max(12,S.vw/60),line=(y,c,t)=>{if(y==null)return;ctx.strokeStyle=c;ctx.lineWidth=Math.max(2,S.vw/600);ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke();ctx.fillStyle=c;ctx.font="600 "+fs+"px IBM Plex Mono";ctx.fillText(t,w-fs*6,y-8);};
   line(TopP,"rgba(255,180,84,.95)","head top");line(BotP,"rgba(255,106,106,.95)","feet");
   if(Xlat!=null){ctx.strokeStyle="rgba(255,180,84,.5)";ctx.setLineDash([5,6]);ctx.beginPath();ctx.moveTo(Xlat,0);ctx.lineTo(Xlat,canvas.height);ctx.stroke();ctx.setLineDash([]);}
   if(lms){ctx.fillStyle="#fff";[LM.NOSE,LM.L_ANKLE,LM.R_ANKLE,LM.L_FOOT,LM.R_FOOT].forEach(i=>{const p=lms[i];if(p&&(p.visibility??0)>0.2){ctx.beginPath();ctx.arc(p.x*w,p.y*canvas.height,Math.max(4,S.vw/250),0,7);ctx.fill();}});}}
 
-/* ============== camera controls (dynamic) ============== */
-function fmt(v){return typeof v==="number"?(Math.abs(v)<10?v.toFixed(2):Math.round(v)):String(v);}
-function renderCamControls(){const host=$("camCtl");host.innerHTML="";if(!S.track){host.innerHTML='<div class="note">Start the camera to list properties.</div>';return;}
-  const caps=S.track.getCapabilities?.()||{},set=S.track.getSettings?.()||{};
-  $("rawCaps").textContent="capabilities:\n"+JSON.stringify(caps,null,1)+"\n\nsettings:\n"+JSON.stringify(set,null,1);
-  const skip=new Set(["width","height","aspectRatio","facingMode","frameRate","resizeMode","deviceId","groupId"]);
-  let any=false;
-  Object.keys(caps).forEach(key=>{if(skip.has(key))return;const cap=caps[key],cur=set[key];const row=document.createElement("div");row.className="ctl";
-    if(cap&&typeof cap==="object"&&!Array.isArray(cap)&&"min"in cap){any=true;
-      row.innerHTML=`<label>${key} <span class="cv" id="cv_${key}">${fmt(cur)}</span></label>`;
-      const inp=document.createElement("input");inp.type="range";inp.min=cap.min;inp.max=cap.max;inp.step=cap.step||((cap.max-cap.min)/100)||1;inp.value=cur??cap.min;
-      inp.oninput=async()=>{try{await S.track.applyConstraints({advanced:[{[key]:parseFloat(inp.value)}]});}catch(e){}const cv=$("cv_"+key);if(cv)cv.textContent=fmt((S.track.getSettings?.()||{})[key]);};
-      row.appendChild(inp);host.appendChild(row);
-    }else if(Array.isArray(cap)&&cap.length){
-      if(cap.every(v=>typeof v==="boolean")){any=true;row.innerHTML=`<label>${key}</label>`;const b=document.createElement("button");b.className="toggle"+(cur?" on":"");b.textContent=cur?"on":"off";
-        b.onclick=async()=>{const nv=!((S.track.getSettings?.()||{})[key]);try{await S.track.applyConstraints({advanced:[{[key]:nv}]});}catch(e){}b.classList.toggle("on",nv);b.textContent=nv?"on":"off";};row.appendChild(b);host.appendChild(row);
-      }else if(cap.length>1){any=true;row.innerHTML=`<label>${key}</label>`;const sel=document.createElement("select");
-        cap.forEach(v=>{const o=document.createElement("option");o.value=v;o.textContent=v;if(v===cur)o.selected=true;sel.appendChild(o);});
-        sel.onchange=async()=>{try{await S.track.applyConstraints({advanced:[{[key]:sel.value}]});}catch(e){}renderCamControls();};row.appendChild(sel);host.appendChild(row);}
-    }});
-  if(!any)host.innerHTML='<div class="note">This camera exposes no adjustable constraints in the browser.</div>';
-}
-
-/* ============== focus sweep → autofocus depth (M5) ============== */
-$("sweepBtn").addEventListener("click",runFocusSweep);
-async function runFocusSweep(){
-  if(!S.track)return;const caps=S.track.getCapabilities?.()||{};
-  if(!caps.focusDistance||!(caps.focusMode||[]).includes("manual")){setBanner("warn","Manual focus is not available on this camera.");return;}
-  $("sweepBtn").disabled=true;
-  try{await S.track.applyConstraints({advanced:[{focusMode:"manual"}]});}catch(e){}
-  const {min,max}=caps.focusDistance,N=12;let best=min,bestS=-1;
-  for(let i=0;i<=N;i++){const fd=min+(max-min)*i/N;try{await S.track.applyConstraints({advanced:[{focusDistance:fd}]});}catch(e){}
-    await sleep(230);const s=centerSharpness();if(s>bestS){bestS=s;best=fd;}$("sweepBtn").textContent="Sweeping… "+Math.round(100*i/N)+"%";}
-  try{await S.track.applyConstraints({advanced:[{focusMode:"continuous"}]});}catch(e){}
-  // focusDistance is reported in metres in Chrome; subject distance ≈ best
-  S.afDepth=best*100;$("d_fd").textContent=best.toFixed(2)+" m (swept)";
-  $("sweepBtn").disabled=false;$("sweepBtn").textContent="Focus sweep → autofocus depth";
-  setBanner("info","Autofocus depth ≈ "+(best*100).toFixed(0)+" cm. Select method M5 or M8 to use it.");
-}
-
-/* ============== tilt / wake / fullscreen ============== */
+/* ---------- tilt / wake / fullscreen ---------- */
 $("tiltBtn").addEventListener("click",enableTilt);
 $("zeroBtn").addEventListener("click",()=>{if(S.pitchRaw!=null)S.pitchZero=S.pitchRaw;});
 async function enableTilt(){if(S.tiltOn)return;try{if(typeof DeviceMotionEvent!=="undefined"&&DeviceMotionEvent.requestPermission){const p=await DeviceMotionEvent.requestPermission();if(p!=="granted")return;}
@@ -554,7 +414,7 @@ function releaseWake(){try{S.wake&&S.wake.release();S.wake=null;}catch(e){}}
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&S.running&&!S.wake)acquireWake();});
 $("fsBtn").addEventListener("click",()=>{const s=$("stage");if(!document.fullscreenElement){(s.requestFullscreen||s.webkitRequestFullscreen).call(s).catch(()=>{});$("fsBtn").classList.add("on");}else{document.exitFullscreen();$("fsBtn").classList.remove("on");}});
 
-function setBanner(k,m){const b=$("secNote");b.className="banner "+k;b.textContent=m;}
+function setStatus(k,m){const b=$("status");b.className="banner "+k;b.textContent=m;}
 renderMethods({});
 </script>
 </body>
